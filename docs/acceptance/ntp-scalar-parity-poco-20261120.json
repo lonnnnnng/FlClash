@@ -1,0 +1,730 @@
+{
+  "id": "KUI-VIS-060",
+  "date": "2026-11-20",
+  "status": "DONE-VERIFIED for NTP scalar dialog interaction and named visual slices; full motion and performance remain PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1,
+    "screen": "1080x2400",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "glassEnabled": false
+  },
+  "changes": [
+    "NTP server,port,interval,dialer-proxy use centered348dp dialog with filled input and cancel/submit buttons",
+    "No autofocus;URI/Number keyboard,512/5/10/64 character limits on new input and interaction validation",
+    "Cancel/Back/outside discard without writing;successful persistence revision closes;failure/no-state rejection stays editable",
+    "Saveable draft and close intent survive state recreation;numeric equivalent submits no change;empty original dialer preserved;cleared field can be readded without stale editor"
+  ],
+  "build": {
+    "jvmAppMotion": {
+      "tests": 618,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionLog": "build5.log",
+    "releaseLog": "release5.log",
+    "releaseInstalled": false,
+    "testTaskLog": [
+      "> Task :app:testMotionBenchmarkUnitTest"
+    ],
+    "motionBenchmarkLint": {
+      "Warning": 73,
+      "Hint": 14
+    },
+    "releaseLint": {
+      "Warning": 69,
+      "Hint": 13
+    },
+    "releaseApk": {
+      "sha256": "d4d6f89ed1bd45711691a451c15e54de0d472562607d1afb297571ffbb8487c2",
+      "bytes": 48453309
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "0e078c7092e285ef2c42aa945f71dfa0f3fb944dc438976a044612653dfd768e",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "ea7555b71c048e5288b5a1aabf25db596af5f869c2f31b4c047a44348a2938d2",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreScalarDialog.kt": "c36751b4747c091a9ec9969ecd8eb06136aeedde06b39c407ba21325795feef1",
+      "android/tests/instrumented/MainNtpScalarNaturalInstrumentedTest.kt": "ec6f7dd5f92547ab4800c14eb5cd6a2452e24d6a3652d8c63ff60cddf233ef57"
+    },
+    "app": {
+      "sha256": "d1c64b1522a3f0039f9da2e5035d6c77c80f82610dc44c9da62d05f28d99aa54",
+      "bytes": 66324673,
+      "installedMatched": true
+    },
+    "componentTest": {
+      "sha256": "1ccffb6e94ea049b35b57147e7df7980c923271c269115c57cbacbb3b39c0046",
+      "bytes": 3171434,
+      "installedMatched": true
+    },
+    "naturalTest": {
+      "sha256": "fba7f42591cd7184dc84e4c896f24bcf2705de9a70b028ef535c8bf8ea879862",
+      "bytes": 3171986,
+      "installedMatched": true
+    },
+    "identityNote": "Product build5 unchanged across final3/main3;testbuild7 changes only natural navigation readiness and merged text lookup;both packages installed bytes matched"
+  },
+  "reference": {
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "hostPath": "../acceptance-artifacts/flutter-ntp-provider-reference-host-20261120",
+    "gitMetadata": false,
+    "sdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "hostSourceSha256": "6e7a549d28db4fe876b01e641dd955bfef6de87a2e948dfed36eb057f68f234f",
+    "apkSha256": "ff276826fb851026ae23d8f2b881d762116c77930bd4ab00a428f295c106ff97",
+    "sourceHashes": {
+      "lib/views/config/ntp.dart": "d77597a82fb5083a92dde9e02e7f798267bc4c68ee0b4a765c2e2b123b6dddbf",
+      "lib/views/config/override.dart": "1b1f2d81cfb2e161e3176848d17f0d46da170ba822614b1aba80bb4b43102c38",
+      "lib/widgets/config_item.dart": "f79f8141ede15d4b7c14e6c88b7284e3066e7ad05477352701e6ca9392175ce4",
+      "lib/ui/list_item.dart": "e3e71e418d72ab423732b00dd412e87ce5633ceeb9f5ac2b0c9ea0e56d2e0afb",
+      "plugins/prism_ui/lib/input.dart": "42732f6fb073e1651baf3125f6fa6ef9e6891211ab2fe76fdfa626f1863e8dd5",
+      "plugins/prism_ui/lib/dialog.dart": "7ca6ad78189d6a97a450523d43cfba7dfe365fa1c0871a8f52f0eee072de9bef",
+      "plugins/prism_ui/lib/text_field.dart": "de140d6a0afba8a1e3aa1c9c3cdb4524137f5c4d792e1bfa3166fed76fb64d37",
+      "lib/common/input_limits.dart": "f6eed83f918903e04350b74597e4cdfc1ff5dbf16e03341c79b18ce69f340357"
+    },
+    "validScreenshots": {
+      "dark-interval.png": "e8269cb91186d07cefb418ac1e3f530b4618d395aaca69b3bf1bbe11970e02da",
+      "dark-server.png": "f29cff2a2ef1dfb8134f5bc59aec53b7483508bb3ac330011affa443bad5475c",
+      "light-interval.png": "5fc8011e56a7572978ec7a65c383680984914ac5f0ec09b5d1034fafcba35d1a",
+      "dark-dialer_proxy.png": "30d95419a54fafcca4e2d89b1eae9b264db5b5a24b3c2668b90d6ed642e0d426",
+      "dark-port.png": "aae4caf4efa646cfcb52428b20369d2bca137bcf186af7a740f9eb1c21bf3343",
+      "light-port.png": "396c9718c7143e9a654eb64a374cdce4cf105a86515c72483eff9b8e3ccb17dc",
+      "light-server.png": "125a54d30708aa55f4f7259ec267c0af00877b5f99d9c7a70212c4952b31d0ce",
+      "light-dialer_proxy.png": "30c917ea31de1f31480d3968a2d42f35c778fd2f132861c595fdfbf4f5278c57"
+    },
+    "scope": "Original NtpView, profile provider overridden with isolated fixture; no original Flutter app or database/core"
+  },
+  "acceptance": {
+    "component": {
+      "batch": "final3",
+      "passed": 11,
+      "total": 11,
+      "seconds": 80.164,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060ScalarSaveRestoreFailureAndClear",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "ntpAddsDefaultsValidatesEditsAndSavesOnlySelectedFields",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis059YamlUnacceptedAndRepeatedRejectedSavesRemainEditable",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060ScalarUnacceptedAndRepeatedRejectionRemainEditable",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis057EntryToolbarAndQuickEditorAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060NormalizedNumbersAndClearedFieldCanBeReadded",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "fieldAndYamlValidationDismissTheirOwnImeAndKeepFailedDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060ScalarDialogFieldsThemesValidationAndCancel",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis059ProtocolPickerGeometryAndNullableTargetAcrossThemes",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis060_save_failure": {
+          "count": 4,
+          "bytes": 112022,
+          "sha256": "095f07d5dc0e9a59449a2589b845b0598c2b03b40c963050b98f313831db3d8b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_light": {
+          "count": 2,
+          "bytes": 60027,
+          "sha256": "98076d9d7469f4b006159de5e1d61bb443274491d535c4ae265a7315c43f5c90",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_light": {
+          "count": 2,
+          "bytes": 48815,
+          "sha256": "44679253c7dafd4a9bbc5e671aefc840be07a7be1f728f71df1c54e8f4917af7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_light": {
+          "count": 3,
+          "bytes": 103569,
+          "sha256": "c55faa617af5bc81f48f8467050f3921f96be48da4d0634134eb60eab750206e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_light": {
+          "count": 2,
+          "bytes": 43318,
+          "sha256": "0c99884844d9150255a74facaa41b4cc992b48086f516f2b9cc128e814be6eb5",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_light": {
+          "count": 2,
+          "bytes": 43827,
+          "sha256": "4dec8bdead1571b678fe94862222a66d87aa6eadece87bf2f26d718e61d605f4",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_light": {
+          "count": 1,
+          "bytes": 34668,
+          "sha256": "d2afc1c7e6163e88d920baa0b639beef4ef9a0febb44e493bcce58412fe0812b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_light": {
+          "count": 2,
+          "bytes": 52921,
+          "sha256": "7d76f0f83fb940f9f94079b82a4f13f8cfcb18aca8b9c907cd3fd94a9b2cdb83",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_light": {
+          "count": 3,
+          "bytes": 97169,
+          "sha256": "0744ec78381cb645551f684a065b9aa52364c618e636cf350b5e17cf13156aae",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_add_menu_dark": {
+          "count": 2,
+          "bytes": 56028,
+          "sha256": "5a08c70eb6d7b202c1c2a8ed665415cfec8902fd7a2337b26c7c6cde2c409ec3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_dark": {
+          "count": 2,
+          "bytes": 49426,
+          "sha256": "c3fdd0a6b528aaccac221a86cf5bd4647ec3058284dc53c8c497a0965a03d623",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_entry_ime_dark": {
+          "count": 3,
+          "bytes": 104224,
+          "sha256": "9c0f2ba83deb5656498d1d812534f979ddaeba8d12a8484d591125d232a34d8f",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_list_dark": {
+          "count": 2,
+          "bytes": 44190,
+          "sha256": "f190cbcae9efe436388369accf1663936bc5cc1ace4e7f169f34d280aa6a8a8c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_selection_dark": {
+          "count": 2,
+          "bytes": 44704,
+          "sha256": "31e4f69117aa0ebbcd5c2c7b9fb2f980a7f3e7c02416b5d1d055bca5e0775775",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_dark": {
+          "count": 1,
+          "bytes": 36273,
+          "sha256": "42f85350d66ba27633744d919d78eb617b263b4cca4b6bc4c6ecf14fb2ddd0b6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_menu_dark": {
+          "count": 2,
+          "bytes": 49389,
+          "sha256": "ed961acf9dc8dfddef5090b156c0ab285b3d8482daa6c6a1be19ace97b4de7ad",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis057_quick_search_dark": {
+          "count": 3,
+          "bytes": 99582,
+          "sha256": "bd45bd8ef8727efebe4be0022b0d23182c754a39761397fbbd7e7745a3d7bb82",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_field_save_failure": {
+          "count": 3,
+          "bytes": 96218,
+          "sha256": "aef10a7251d5e90380b4be6a261c391e57c6709100f3be20407c3158587ba1bd",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_value_error_ime_hidden": {
+          "count": 3,
+          "bytes": 88611,
+          "sha256": "535c6c127b47467b17ab548d33ef01aea2bc85daa6bfc832cb7d1104015e8536",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_yaml_error_ime_hidden": {
+          "count": 3,
+          "bytes": 99512,
+          "sha256": "9615fb5578212ec9a9952b4a485d260ba74698bf820fa50095ce53c8fc6033ce",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_server_light": {
+          "count": 3,
+          "bytes": 100922,
+          "sha256": "f85ce84929953411718ac936ad57173231efc947add113b8968cef197934deb3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_port_light": {
+          "count": 3,
+          "bytes": 95879,
+          "sha256": "c49d7308c096a929d53672358298d68796be5f098e68691907de436e7d24b957",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_error_light": {
+          "count": 4,
+          "bytes": 128136,
+          "sha256": "52765c6dc368d8f7f2f3781e7d7c66f01739256e1d9554af05ef63cfeec359c0",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_interval_light": {
+          "count": 3,
+          "bytes": 100400,
+          "sha256": "124e549af97e36911671c010007c14edac008b70dfaae99bcde67f758af9b4a3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_dialer_proxy_light": {
+          "count": 3,
+          "bytes": 96975,
+          "sha256": "a38886b2f08858971e4ea25b43be5feccf259895f32c5d3a7906b5287366a24f",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_before_back_light": {
+          "count": 3,
+          "bytes": 94231,
+          "sha256": "84ba6ddcd78fe3fbb1f318711db966fa8b8e791046a0acf2f054d8b60bd68201",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_server_dark": {
+          "count": 3,
+          "bytes": 98470,
+          "sha256": "60c0a8ae636bce2ff57eb05df1155b4455bf59e6c17188987907784510722300",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_port_dark": {
+          "count": 3,
+          "bytes": 93129,
+          "sha256": "ac3ad76563b296698aa0b0079fad8d7b1e9126c8c97fe1ba27d5c216478f0ec6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_error_dark": {
+          "count": 4,
+          "bytes": 127109,
+          "sha256": "0c6b35ce11206a967c51f7bfaaeef71c146e4d015445037aa75a8880653ea412",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_interval_dark": {
+          "count": 3,
+          "bytes": 98186,
+          "sha256": "df3d24539bd9f20ffeb02794708339cab82f50ef2c52de0044d138891358cd8d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_dialer_proxy_dark": {
+          "count": 3,
+          "bytes": 94394,
+          "sha256": "bfde7ccc24a29870e2995d841ff9dc7f5500164433d0bb96ab441c47f5fc6179",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_before_back_dark": {
+          "count": 3,
+          "bytes": 91739,
+          "sha256": "4133200eae8e149c41a29a7933df82a1c19eb4493eabbc191ca9d52aec2acc4f",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_protocol_light": {
+          "count": 2,
+          "bytes": 42059,
+          "sha256": "be9fa9e63210507073ad30dc07c78b263166189098e65ff3aff2cbba6a9080b7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_default_light": {
+          "count": 2,
+          "bytes": 56029,
+          "sha256": "75be6aeb99357fe60df6a31cb1bffb33fc2b7e3936052e31ddc558756e866e49",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_enabled_light": {
+          "count": 2,
+          "bytes": 56032,
+          "sha256": "eba376f4678dab71efd327bfd2980d9e788b005ce5946990a0ce16dba202da4d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_protocol_dark": {
+          "count": 2,
+          "bytes": 42703,
+          "sha256": "39bbe37418db7c9c1acdc95e52eaaef6c5a29aca14f3105d1804ffa2d99862fa",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_default_dark": {
+          "count": 2,
+          "bytes": 51969,
+          "sha256": "126a9634591bbcc3decd257c338e611fa8c66a519cbd775ff4cae2a5075afe19",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_enabled_dark": {
+          "count": 2,
+          "bytes": 51964,
+          "sha256": "e68a8692179de4a681426d9bc11a4273185835f15274b99dc44fe2c78d7ebc3a",
+          "width": 1080,
+          "height": 2400
+        }
+      }
+    },
+    "naturalMain": {
+      "batch": "main3",
+      "passed": 1,
+      "total": 1,
+      "seconds": 54.029,
+      "receipt": "real-navigation=true;ime=true;draft-recreation=true;server-saved=true;port=124;interval=60;empty-dialer-preserved=true;clear-server=true;reopen=true;activity-recreation=true;room-readback=true;source-unchanged=true",
+      "scope": "Real MainActivity/Hilt/Room;actual dialog input and IME;draft Activity recreation,submit,reopen,Activity recreation and clear;STOPPED,no core/VPN",
+      "images": {
+        "vis060_main_empty": {
+          "count": 3,
+          "bytes": 74752,
+          "sha256": "6719fcf8ea3b0459ad4929ba8e3525f4bed4e6238ebed386c72289fac9f0e315",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_server": {
+          "count": 3,
+          "bytes": 99207,
+          "sha256": "358d797121242d826dc0a2233af984689cdee96724b45cc35fc62580ee39a737",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_server_ime": {
+          "count": 5,
+          "bytes": 149673,
+          "sha256": "92d9656e9ce156b810db244e9a6bd4e4ec5737f9478073adce13f3557ce426d2",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_draft_recreated": {
+          "count": 3,
+          "bytes": 100292,
+          "sha256": "d3740f1cdcb27fb70a929ea4d49a06f61d976136af15d4185f693d3fd96ad924",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_server_saved": {
+          "count": 3,
+          "bytes": 100890,
+          "sha256": "bf2c3735b1948f8f4f1c5119d0ae0c405960d68813a1da75100bee56728f10ac",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_port_error": {
+          "count": 3,
+          "bytes": 101095,
+          "sha256": "8cc79fe2753da13d75a00122009358bec973b9658b6fb5de35976545853dff72",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_reopened": {
+          "count": 4,
+          "bytes": 138758,
+          "sha256": "a26fa01315ac9b878651acf9e82aa62323acdbba7672a873a9224b547251b3ea",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_recreated": {
+          "count": 3,
+          "bytes": 100555,
+          "sha256": "1eae45040f986dedbbd34423b332b670e06f1558b176894b37b305c5f85fb706",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_cleared": {
+          "count": 3,
+          "bytes": 88411,
+          "sha256": "b49443c7b39f0bf4197624268b10916bbcae9b83c9dabdd721fe02e7104e067f",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "video": {
+        "passed": true,
+        "videoSha256": "e5dc85db4c6fc32d66be9c548b8304d9050e8bf01619662a2682c4743f3fa899",
+        "bytes": 26971857,
+        "deviceCopyRemoved": true,
+        "hasScreenshots": true,
+        "performanceEvidence": false,
+        "durationSeconds": 55.734267,
+        "sourcePtsFrameCount": 1482,
+        "reviewedTimeSamples": 12,
+        "fullFrameReview": false
+      }
+    },
+    "comparison": {
+      "pairs": [
+        {
+          "name": "server",
+          "theme": "light",
+          "reference": "flutter/light-server.png",
+          "kotlin": "final3/vis060_server_light.png",
+          "sha256": [
+            "125a54d30708aa55f4f7259ec267c0af00877b5f99d9c7a70212c4952b31d0ce",
+            "f85ce84929953411718ac936ad57173231efc947add113b8968cef197934deb3"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "port",
+          "theme": "light",
+          "reference": "flutter/light-port.png",
+          "kotlin": "final3/vis060_port_light.png",
+          "sha256": [
+            "396c9718c7143e9a654eb64a374cdce4cf105a86515c72483eff9b8e3ccb17dc",
+            "c49d7308c096a929d53672358298d68796be5f098e68691907de436e7d24b957"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "interval",
+          "theme": "light",
+          "reference": "flutter/light-interval.png",
+          "kotlin": "final3/vis060_interval_light.png",
+          "sha256": [
+            "5fc8011e56a7572978ec7a65c383680984914ac5f0ec09b5d1034fafcba35d1a",
+            "124e549af97e36911671c010007c14edac008b70dfaae99bcde67f758af9b4a3"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "dialer_proxy",
+          "theme": "light",
+          "reference": "flutter/light-dialer_proxy.png",
+          "kotlin": "final3/vis060_dialer_proxy_light.png",
+          "sha256": [
+            "30c917ea31de1f31480d3968a2d42f35c778fd2f132861c595fdfbf4f5278c57",
+            "a38886b2f08858971e4ea25b43be5feccf259895f32c5d3a7906b5287366a24f"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "server",
+          "theme": "dark",
+          "reference": "flutter/dark-server.png",
+          "kotlin": "final3/vis060_server_dark.png",
+          "sha256": [
+            "f29cff2a2ef1dfb8134f5bc59aec53b7483508bb3ac330011affa443bad5475c",
+            "60c0a8ae636bce2ff57eb05df1155b4455bf59e6c17188987907784510722300"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "port",
+          "theme": "dark",
+          "reference": "flutter/dark-port.png",
+          "kotlin": "final3/vis060_port_dark.png",
+          "sha256": [
+            "aae4caf4efa646cfcb52428b20369d2bca137bcf186af7a740f9eb1c21bf3343",
+            "ac3ad76563b296698aa0b0079fad8d7b1e9126c8c97fe1ba27d5c216478f0ec6"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "interval",
+          "theme": "dark",
+          "reference": "flutter/dark-interval.png",
+          "kotlin": "final3/vis060_interval_dark.png",
+          "sha256": [
+            "e8269cb91186d07cefb418ac1e3f530b4618d395aaca69b3bf1bbe11970e02da",
+            "df3d24539bd9f20ffeb02794708339cab82f50ef2c52de0044d138891358cd8d"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        },
+        {
+          "name": "dialer_proxy",
+          "theme": "dark",
+          "reference": "flutter/dark-dialer_proxy.png",
+          "kotlin": "final3/vis060_dialer_proxy_dark.png",
+          "sha256": [
+            "30d95419a54fafcca4e2d89b1eae9b264db5b5a24b3c2668b90d6ed642e0d426",
+            "bfde7ccc24a29870e2995d841ff9dc7f5500164433d0bb96ab441c47f5fc6179"
+          ],
+          "scope": "Same field initial value,theme and unfocused state; parent page and font/button colors differ. Not pixel equivalent."
+        }
+      ],
+      "pixelIdentical": false
+    },
+    "visualReview": {
+      "kotlinImages": 47,
+      "componentContacts": 4,
+      "naturalContacts": 1,
+      "comparisonContacts": 2,
+      "videoContacts": 1,
+      "notes": [
+        "vis060_main_reopened is navigation intermediate;use recreated and cleared frames for stable page view",
+        "more_yaml_error_ime_hidden retains keyboard pixels despite hidden-insets assertion;excluded from stable hidden-keyboard visual baseline",
+        "Eight dialog pairs compare same field,value,theme and no focus;parent page inset/arrow/empty label and button tint differ"
+      ]
+    }
+  },
+  "candidateDefects": [
+    {
+      "source": "Unshipped MoreScalarDialog candidate",
+      "issue": "Text123 to0123 normalized to same value;parent produces no revision",
+      "fix": "Compare parsed value before submission",
+      "verification": "vis060NormalizedNumbersAndClearedFieldCanBeReadded;no pre-fix runtime red claim"
+    },
+    {
+      "source": "Unshipped scalar caller candidate",
+      "issue": "Cleared field removes child before child can consume revision;editing could remain stale",
+      "fix": "Parent revision effect clears editing whose field no longer exists",
+      "verification": "Same test clears server and readds,asserts no auto dialog;no pre-fix runtime red claim"
+    }
+  ],
+  "failuresPreserved": [
+    {
+      "batch": "final1",
+      "passed": 10,
+      "total": 11,
+      "reason": "Immediate Back after replacing previous input window timed out; no focus/IME readiness wait."
+    },
+    {
+      "batch": "final2",
+      "passed": 10,
+      "total": 11,
+      "reason": "Same case failed after hidden-IME readiness wait. Candidate now clears own focus/hides keyboard on cancel/outside before dismiss; final3 records before-Back frames. Exact failed key consumer unrecorded."
+    }
+  ],
+  "protection": {
+    "inputCopyRemoved": true,
+    "packages": {
+      "com.lonnnnnng.flclash.motion.test": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.kclash.reference.flutter_ntp_provider_reference": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      }
+    },
+    "sourceAndSettingsPreserved": true,
+    "originalFlutterIdentityPreserved": true,
+    "originalFlutterIdentity": [
+      "versionCode=2026112401 minSdk=24 targetSdk=37",
+      "versionName=0.9.3",
+      "lastUpdateTime=2026-11-07 02:44:08",
+      "firstInstallTime=2026-11-07 02:44:08"
+    ]
+  },
+  "limits": [
+    "Flutter reference has original NtpView with in-memory provider;not full app/core",
+    "Kotlin waits for persistence before closing;Flutter returns value before parent update",
+    "Flutter404ms spring entry/held-scale fade exit not yet ported or accepted;no complete same-state video comparison",
+    "Parent page spacing,font and theme/button color differences remain;no pixel equivalence",
+    "Component restoration plus Activity recreation does not prove cold-process resumed save",
+    "No new release/formal Release install/core change;public0.1.10 unchanged;original1.yaml USB only and removed",
+    "Preferences preservation compares key/value,not updatedAt;original Flutter identity/settings/input SHA-size-mtime preserved",
+    "Cancel/reopen Back passed after both product focus release and extra before-Back screenshot delay;not a controlled single-factor proof of old IME root cause"
+  ],
+  "artifactRoot": "../acceptance-artifacts/ntp-scalar-parity-poco-20261120/",
+  "naturalFailuresPreserved": [
+    {
+      "batch": "main1",
+      "passed": 0,
+      "total": 1,
+      "reason": "Clicked add-sheet close before final addition saving receipt, close ignored;failed before scalar editing. Fixed test readiness and exact-line merged semantics lookup;product unchanged.",
+      "dataPreservationPassed": true
+    },
+    {
+      "batch": "main2",
+      "passed": 0,
+      "total": 1,
+      "reason": "Server draft Activity recreation/save passed;port input queried immediately after click before editable node became available.Only test readiness changed.",
+      "dataPreservationPassed": true
+    }
+  ]
+}

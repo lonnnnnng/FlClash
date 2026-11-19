@@ -317,7 +317,7 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_value_error").assertIsDisplayed()
         compose.onNodeWithTag("more_port_value").assertTextContains("0")
         capture("more_value_error_ime_hidden")
-        compose.onNodeWithTag("more_value_back").performClick(); compose.onNodeWithText("放弃").performClick()
+        compose.onNodeWithTag("more_value_back").performClick(); waitGone("more_value_dialog")
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performClick().performTextReplacement("port: 0")
         val yamlWindow = awaitVisibleIme()
@@ -407,10 +407,8 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_open_port").performClick()
         compose.onNodeWithTag("more_port_value").performTextReplacement("124")
         compose.onNodeWithTag("more_value_back").performClick()
-        compose.onNodeWithText("继续编辑").performClick()
-        compose.onNodeWithTag("more_port_value").assertTextContains("124")
-        compose.onNodeWithTag("more_value_back").performClick()
-        compose.onNodeWithText("放弃").performClick()
+        waitGone("more_value_dialog")
+        compose.onNodeWithText("放弃未保存的修改？").assertDoesNotExist()
         compose.onNodeWithTag("more_edit_port").assertTextContains("123", substring = true)
         compose.onNodeWithTag("profile_more_yaml").performClick()
         compose.onNodeWithTag("more_yaml_content").performTextReplacement("port: 999")
@@ -501,7 +499,7 @@ class ProfileMoreEditorInstrumentedTest {
             compose.onNodeWithTag("more_port_value").performTextReplacement("0")
             compose.onNodeWithTag("more_value_confirm").performClick()
             capture("more_ntp_error_$theme")
-            compose.onNodeWithTag("more_value_back").performClick(); compose.onNodeWithText("放弃").performClick()
+            compose.onNodeWithTag("more_value_back").performClick(); waitGone("more_value_dialog")
             compose.runOnIdle { section = "sniffer" }
             capture("more_sniffer_empty_$theme")
             compose.onNodeWithTag("profile_more_empty_add").performClick()
@@ -1023,6 +1021,125 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_yaml_back").performClick()
         waitGone("more_yaml_back")
         compose.runOnIdle { assertEquals(3, calls) }
+    }
+
+    @Test fun vis060ScalarDialogFieldsThemesValidationAndCancel() {
+        state = state.copy(ntp = ProfileNtpOverrides(server = "time.apple.com", port = 123, interval = 30, dialerProxy = ""))
+        render()
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark" }
+            for (key in listOf("server", "port", "interval", "dialer-proxy")) {
+                compose.onNodeWithTag("more_open_$key").performClick()
+                compose.onNodeWithTag("more_value_dialog").assertIsDisplayed()
+                compose.onNodeWithTag("more_${key}_value").assertIsNotFocused()
+                val rect = compose.onNodeWithTag("more_value_dialog").fetchSemanticsNode().boundsInWindow
+                val metrics = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics
+                assertEquals(minOf(348f * metrics.density, metrics.widthPixels - 80f * metrics.density), rect.width, 2f)
+                capture("vis060_${key.replace("-", "_")}_$theme")
+                val invalid = when (key) { "server" -> "https://bad.test"; "port" -> "0"; "interval" -> "2147483648"; else -> "Proxy Test" }
+                compose.onNodeWithTag("more_${key}_value").performTextReplacement(invalid)
+                if (key != "dialer-proxy") compose.onNodeWithTag("more_value_error").assertIsDisplayed()
+                if (key == "port") capture("vis060_error_$theme")
+                compose.onNodeWithTag("more_value_back").performClick(); waitGone("more_value_dialog")
+                compose.runOnIdle { assertEquals(0, saveCalls) }
+            }
+            // 作者 long：原空拨号代理确认不删除入口；主动清空原非空服务器才恢复继承。
+            compose.onNodeWithTag("more_open_dialer-proxy").performClick()
+            compose.onNodeWithTag("more_value_confirm").performClick(); waitGone("more_value_dialog")
+            compose.onNodeWithTag("more_field_dialer-proxy").assertExists()
+            compose.runOnIdle { assertEquals(0, saveCalls) }
+            compose.onNodeWithTag("more_open_server").performClick()
+            compose.onNodeWithTag("more_server_value").performTextReplacement("a".repeat(520))
+            compose.onNodeWithTag("more_server_value").assertTextEquals("a".repeat(512))
+            compose.onNodeWithTag("more_value_outside").performTouchInput { click(androidx.compose.ui.geometry.Offset(5f, 5f)) }
+            waitGone("more_value_dialog")
+            compose.onNodeWithTag("more_open_port").performClick()
+            // 作者 long：前一输入窗口销毁后键盘和焦点仍在交接；只在新弹框已接焦点且IME隐藏时验证返回取消。
+            compose.waitUntil(5_000) { ime()?.second == false }
+            android.os.SystemClock.sleep(500)
+            capture("vis060_before_back_$theme")
+            InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+            waitGone("more_value_dialog")
+        }
+    }
+
+    @Test fun vis060ScalarSaveRestoreFailureAndClear() {
+        val restore = StateRestorationTester(compose)
+        state = state.copy(ntp = ProfileNtpOverrides(server = "time.apple.com", port = 123, interval = 30))
+        restore.setContent { KClashTheme(darkTheme = true) {
+            ProfileMoreEditor(state, "ntp", "", {}) { ntp, sniffer ->
+                saveCalls++; pendingSave = ntp to sniffer; state = state.copy(isSaving = true, error = null)
+            }
+        } }
+        compose.onNodeWithTag("more_open_server").performClick()
+        compose.onNodeWithTag("more_server_value").performTextReplacement("time.example.com")
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("more_server_value").assertTextContains("time.example.com")
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.onNodeWithTag("more_value_confirm").assertIsNotEnabled()
+        compose.onNodeWithTag("more_value_back").assertIsNotEnabled()
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        compose.onNodeWithTag("more_value_outside").performTouchInput { click(androidx.compose.ui.geometry.Offset(5f, 5f)) }
+        compose.onNodeWithTag("more_value_dialog").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(1, saveCalls); completeHeldSave(false) }
+        compose.onNodeWithTag("more_server_value").assertTextContains("time.example.com")
+        compose.onNodeWithTag("more_value_error").assertIsDisplayed(); capture("vis060_save_failure")
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        restore.emulateSavedInstanceStateRestore()
+        compose.onNodeWithTag("more_value_saving").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(2, saveCalls); completeHeldSave(true) }
+        waitGone("more_value_dialog")
+        compose.onNodeWithTag("more_edit_server").assertTextContains("time.example.com", substring = true)
+        compose.onNodeWithTag("more_open_interval").performClick()
+        compose.onNodeWithTag("more_interval_value").performTextReplacement("60")
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.runOnIdle { completeHeldSave(true); assertEquals(60, savedNtp?.interval) }
+        waitGone("more_value_dialog")
+        compose.onNodeWithTag("more_open_server").performClick()
+        compose.onNodeWithTag("more_server_value").performTextClearance()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.runOnIdle { completeHeldSave(true); assertNull(savedNtp?.server); assertEquals(123, savedNtp?.port) }
+        waitGone("more_value_dialog")
+        compose.onNodeWithTag("more_field_server").assertDoesNotExist()
+    }
+
+    @Test fun vis060NormalizedNumbersAndClearedFieldCanBeReadded() {
+        state = state.copy(ntp = ProfileNtpOverrides(server = "time.apple.com", port = 123, interval = 30))
+        render()
+        for ((key, text) in listOf("port" to "0123", "interval" to "030")) {
+            compose.onNodeWithTag("more_open_$key").performClick()
+            compose.onNodeWithTag("more_${key}_value").performTextReplacement(text)
+            compose.onNodeWithTag("more_value_confirm").performClick(); waitGone("more_value_dialog")
+            compose.runOnIdle { assertEquals(0, saveCalls) }
+        }
+        compose.onNodeWithTag("more_open_server").performClick()
+        compose.onNodeWithTag("more_server_value").performTextClearance()
+        compose.onNodeWithTag("more_value_confirm").performClick(); waitGone("more_value_dialog")
+        compose.onNodeWithTag("more_field_server").assertDoesNotExist()
+        add("server")
+        compose.onNodeWithTag("more_value_dialog").assertDoesNotExist()
+        compose.onNodeWithTag("more_edit_server").assertTextContains("time.apple.com", substring = true)
+        compose.runOnIdle { assertEquals(2, saveCalls) }
+    }
+
+    @Test fun vis060ScalarUnacceptedAndRepeatedRejectionRemainEditable() {
+        state = state.copy(ntp = ProfileNtpOverrides(port = 123))
+        compose.setContent { KClashTheme {
+            ProfileMoreEditor(state, "ntp", "", {}) { _, _ ->
+                saveCalls++
+                if (saveCalls > 1) state = state.copy(error = "当前暂不可修改，请重试")
+            }
+        } }
+        compose.onNodeWithTag("more_open_port").performClick()
+        compose.onNodeWithTag("more_port_value").performTextReplacement("124")
+        repeat(3) { attempt ->
+            compose.onNodeWithTag("more_value_confirm").performClick()
+            compose.runOnIdle { assertEquals(attempt + 1, saveCalls) }
+            compose.onNodeWithTag("more_port_value").assertIsEnabled()
+        }
+        compose.onNodeWithTag("more_port_value").performTextReplacement("123")
+        compose.onNodeWithTag("more_value_confirm").performClick(); waitGone("more_value_dialog")
+        compose.runOnIdle { assertEquals(3, saveCalls) }
     }
 
     private fun render() {

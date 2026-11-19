@@ -12,7 +12,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -21,19 +20,16 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalDensity
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.unit.dp
-import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.service.ProfileExtensionApplier
@@ -64,6 +60,8 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     var pendingChild by remember(profile.id, section) { mutableStateOf<String?>(null) }
     LaunchedEffect(profile.id, section, state.revision) {
         when (pendingChild) { "value" -> editing = null; "yaml" -> yaml = false; "last-add" -> { adding = false; addQuery = "" } }
+        // 作者 long：清空字段成功会先移除子弹框，父页必须回收编辑标记，避免重新添加同字段时自动打开旧入口。
+        if (editing != null && fields.firstOrNull { it.key == editing }?.let { moreFieldValue(root, it) } == null) editing = null
         pendingChild = null
     }
     fun submit(next: JsonObject, child: String? = null) {
@@ -263,7 +261,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
         } else if (field.kind in setOf(MoreFieldKind.LIST, MoreFieldKind.ADDRESSES)) {
             MoreListEditor(field, value, root, state.isSaving, state.error, { editing = null }) { change(field, it, "value") }
         } else {
-            MoreValueEditor(field, value, root, ntp, state.isSaving, state.error, { editing = null }) { change(field, it, "value") }
+            MoreScalarDialog(field, value, root, ntp, state.isSaving, state.error, state.revision, { editing = null }) { change(field, it) }
         }
     } }
     if (yaml) MoreYamlEditor(if (ntp) "NTP" else "域名嗅探", root, ntp, state.isSaving, state.error, state.revision, { yaml = false }) { submit(it, "yaml") }
@@ -377,47 +375,6 @@ private fun MoreSettingRow(field: MoreField, value: JsonElement, enabled: Boolea
         if (toggle) Switch(value.asBoolean, onToggle, enabled = enabled, modifier = Modifier.padding(end = 16.dp).testTag("more_${field.key}_value"))
         else IconButton(onClick = onEdit, enabled = enabled, modifier = Modifier.testTag("more_open_${field.key}")) { Icon(Icons.Outlined.ChevronRight, null) }
     }
-}
-
-@Composable
-private fun MoreValueEditor(field: MoreField, initial: JsonElement, root: JsonObject, ntp: Boolean, saving: Boolean, saveError: String?, onDismiss: () -> Unit, onConfirm: (JsonElement?) -> Unit) {
-    val protocol = field.kind == MoreFieldKind.PROTOCOL
-    val list = field.kind in setOf(MoreFieldKind.LIST, MoreFieldKind.ADDRESSES)
-    val original = if (protocol) initial.asJsonObject.get("ports")?.asJsonArray?.joinToString("\n") { it.asString }.orEmpty() else if (list) initial.asJsonArray.joinToString("\n") { it.asString } else initial.asString
-    var text by rememberSaveable(field.key) { mutableStateOf(original) }
-    var error by remember { mutableStateOf<String?>(null) }
-    var discard by rememberSaveable { mutableStateOf(false) }
-    fun exit() { if (!saving) { if (text != original) discard = true else onDismiss() } }
-    ProfileEditorPage(::exit, title = { Text(field.label) }, backTag = "more_value_back", confirmButton = {
-        // 作者 long：字段页有自己的Window；确认前结束本页输入，校验失败时错误也能完整露出，不能操作父页IME控制器。
-        val focus = LocalFocusManager.current
-        val keyboard = LocalSoftwareKeyboardController.current
-        TextButton(enabled = !saving, modifier = Modifier.testTag("more_value_confirm"), onClick = {
-            focus.clearFocus(force = true); keyboard?.hide()
-            runCatching {
-                val value = if (protocol) initial.asJsonObject.deepCopy().apply {
-                    add("ports", Gson().toJsonTree(splitMoreList(text)))
-                } else if (list) splitMoreList(text).takeIf { it.isNotEmpty() }?.let { Gson().toJsonTree(it) }
-                else text.trim().takeIf(String::isNotEmpty)?.let { Gson().toJsonTree(it) }
-                val next = root.deepCopy(); setMoreField(next, field, value); validateMoreFields(next, ntp)
-                onConfirm(moreFieldValue(next, field))
-            }.onFailure { error = it.message ?: "字段无效，请检查后重试" }
-        }) { Text("确认") }
-    }, text = {
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            if (saving) LinearProgressIndicator(Modifier.fillMaxWidth())
-            (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_value_error")) }
-            if (field.description.isNotEmpty()) Text(field.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            OutlinedTextField(text, { text = it; error = null }, label = { Text(if (protocol) "端口或范围（每行一项）" else field.label) },
-                enabled = !saving, modifier = Modifier.fillMaxWidth().padding(top = 8.dp).testTag(if (protocol) "sniff_${field.protocol}_ports" else "more_${field.key}_value"),
-                singleLine = !list && !protocol, minLines = if (list || protocol) 6 else 1,
-                keyboardOptions = KeyboardOptions(keyboardType = if (field.kind in setOf(MoreFieldKind.PORT, MoreFieldKind.NUMBER)) KeyboardType.Number else KeyboardType.Text),
-                supportingText = if (protocol) ({ Text("留空使用协议默认端口，例如 80 或 8000-9000") })
-                else if (field.kind == MoreFieldKind.ADDRESSES) ({ Text("每行一个 IP、CIDR、geoip: 或 rule-set: 匹配项；留空恢复继承") })
-                else if (list) ({ Text("每行一项；留空恢复继承原配置") }) else null)
-        }
-    })
-    if (discard) MoreDiscardDialog("放弃未保存的修改？", { discard = false }, onDismiss)
 }
 
 @Composable
