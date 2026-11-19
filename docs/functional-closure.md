@@ -7,7 +7,7 @@
 
 2026-11-18增补：在线 age 订阅完整链路已在POCO API36真实UI验收1/1；授权源轮换到新identity，测试覆盖缺钥、错钥无写入、正确密钥解密导入、Mihomo运行加载和非直连HTTP200。见[验收说明](online-age-subscription-acceptance.md)与[脱敏JSON](acceptance/online-age-subscription-poco-20261118.json)。较早记录中的“明文/无密钥”只反映当时状态。
 
-2026-11-19更新发布：KClash 0.1.9/code1009 已发布为 GitHub Latest。标签CI的 Go race、JVM/R8、Debug/Release Lint、正式证书和ABI检查均通过；ARM64 APK回下载后核对签名证书、版本元数据、ABI、SHA256SUMS与远端digest。Release APK未安装到手机；KUI-VIS-054 使用POCO独立motion包验收。见[发布证据](acceptance/release-0.1.9-20261119.json)。
+2026-11-19更新发布：KClash 0.1.10/code1010 已发布为 GitHub Latest。标签CI的 Go race、JVM/R8、Debug/Release Lint、正式证书和ABI检查均通过；ARM64 APK回下载后核对签名证书、版本元数据、ABI、SHA256SUMS与远端digest。Release APK未安装到手机；本轮图标使用Redmi独立motion包验收。见[发布证据](acceptance/release-0.1.10-20261119.json)。
 
 2026-11-17历史快照：当时正式版本为0.1.5/code1005，按用户要求直接本机签名构建发布，未重跑单测、完整Lint、Go或真机；TUN受控原生异常补偿最终5/5、前后10笔实网通过，原RULE路径新增TLS失败另列。见[0.1.5发布记录](acceptance/release-0.1.5-20261112.json)。
 

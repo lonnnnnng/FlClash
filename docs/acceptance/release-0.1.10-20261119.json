@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-19",
+  "release": {
+    "tag": "kclash-v0.1.10",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.10",
+    "sourceCommit": "c145cdbed20079e27082e21f76a4412e82daf251",
+    "workflowRunId": 44553019945,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44553019945",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-19T15:40:25Z",
+    "publishedAtAsiaShanghai": "2026-11-19T23:40:25+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.10-android-arm64-v8a.apk",
+        "size": 48420349,
+        "digest": "sha256:4381910a43a763403d47c96108acca76038a755a2994a5bc85f013f8d953e6d7",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.10/KClash-0.1.10-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 102,
+        "digest": "sha256:6e412fdbcb64ab2409e524bc922aab7ad1be36d7ba3f9aed8b997e24afff2515",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.10/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.10",
+    "versionCode": 1010,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "remoteSha256Verified": true,
+    "sha256SumsVerified": true,
+    "signatureVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "jobs": [
+      {
+        "name": "Verify KClash Android arm64",
+        "conclusion": "success"
+      },
+      {
+        "name": "Publish signed KClash release",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "localPreflight": {
+    "result": "motion build and Lint successful",
+    "releaseBuild": "GitHub tag CI",
+    "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:assembleMotionBenchmark :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true"
+  },
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "featureAcceptance": "Redmi Note 8 Pro API36 independent motion package system App info circle icon; installed APK hash matched. Temporary package removed.",
+    "evidence": "launcher-icon-redmi-20261119.json"
+  },
+  "releaseIconChecks": {
+    "densityAssetsHashMatched": 10,
+    "manifestRoundIcon": true,
+    "adaptiveLayersVerified": true,
+    "monochromePathCount": 2,
+    "resourceShrinkPreserved": true
+  }
+}
