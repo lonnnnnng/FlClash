@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **KUI-VIS-066（2026-11-20）**：066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 原失败和trace discarded边界保留，独立包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](window-latency-and-close-investigation.md)、[证据](acceptance/window-latency-poco-20261120.json)
+
 > **KUI-VIS-065（2026-11-20）**：065已将来源菜单动作延后到Popup真实移窗后，统一Dialog自身清焦/收IME，减少首次坐标回写重组。920项JVM、POCO最终22/22、38图已核对，其中27张固定图像素一致，R8/motion构建、双Lint/DEX通过。Dialog首帧UI切片87–93ms→69ms，但首次绘制延后约19–35ms；Popup约75ms及整体掉帧仍未稳定改善。 三个独立包已清理，原Flutter/1.yaml/系统设置保持，未发版。[说明](popup-input-handoff-performance.md)、[证据](acceptance/popup-ime-poco-20261120.json)
 
 > **KUI-VIS-064（2026-11-20）**：064活动连接完整列表改为仅可见Tab轮询，取消迟到结果和空列表加载闪烁；920项JVM、POCO最终9/9、R8/motion构建、双Lint/DEX通过。同设备同源配置的纯代理/VPN前后台RSS比较，Kotlin约为原版90%～95%，未复现两倍；原版PSS缺测，缓存/内核/流量未完全冻结。整体掉帧仍未证明改善，两个绘制候选已撤回。 原版选择/网络开关恢复，独立包与USB副本清理，未发版。[说明](running-memory-jank-investigation.md)、[证据](acceptance/running-memory-jank-poco-20261120.json)
@@ -18,7 +20,7 @@
 
 > **KUI-VIS-057（2026-11-20）：POCO单项圆角输入、列表胶囊工具栏与带行号快速编辑已验；补查找/撤销重做/字号/换行，返回只合并列表草稿。最终产品618项App motion JVM、motion/Test、未签名Release-R8、双Lint与DEX通过。集中final6为28/29，旧测试宿主切分区抢在Sheet关闭前导致1失败；修正测试等待后final7定向5/5，真实MainActivity 1/1（47.374秒），各批次独立保留。Flutter Rust宿主已可用，深浅6组限定范围对照；49秒录像1404原PTS帧、12点抽样，不称完整逐帧或性能改善。** [说明](list-editor-flutter-alignment.md)与[证据](acceptance/list-editor-parity-poco-20261120.json)
 
-> **当前范围（2026-11-20）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。工具页整合、全应用中英双语与三态主题已验；063按用户反馈优先优化交互与内存并已完成具名范围验收。065已完成本组窗口交接修正；后续继续Popup首次建窗、表单端到端延迟和剩余慢帧，再继续 Flutter 子页与面板、连续转场，玻璃默认关闭。
+> **当前范围（2026-11-20）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。工具页整合、全应用中英双语与三态主题已验；063按用户反馈优先优化交互与内存并已完成具名范围验收。066已完成撤销重开修复、反向窗口交接与关闭线程帧观测；后续继续首次组合/测量、表单端到端延迟与缓冲等待，再继续 Flutter 子页与面板、连续转场，玻璃默认关闭。
 
 > **KUI-VIS-056（2026-11-20）POCO本组已验**：域名嗅探整页标题/空态/添加面板/协议文案收敛，端口/域名/地址新增列表草稿、增删排序与快速编辑；修复列表和目标菜单保存中恢复丢回执。最终组件及相邻回归28/28、真实MainActivity自然流程1/1，92张PNG；49秒录像保留1364原PTS帧，两个转场窗口抽取39/42张独立留存（原PTS窗口77/82帧）。618项App motion JVM、motion/Test、未签名Release-R8与Lint/DEX通过。Flutter Rust快速编辑在隔离宿主未初始化；单项弹框/快速编辑/列表工具栏/精确像素等仍未完成，菜单性能归因仍待。原版Flutter、1.yaml与设置保持，自有三包/输入副本已清。[说明](sniffer-page-list-alignment.md)与[证据](acceptance/sniffer-full-parity-poco-20261120.json)
 
@@ -892,14 +894,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 065最终build-final6：920项JVM零失败/错误/跳过（App627本批执行，其余293任务内复用）；performance-R8、motion/Test、未签名Release-R8、双Lint/DEX通过；POCO最终22/22、38图，27张固定主题图像素一致。6份Perfetto无正值error/data_loss。 |
+| 最新自动化记录 | 066最终build-final6：920项JVM零失败/错误/跳过（App627本批执行，其余293任务内复用）；performance-R8、motion/Test、未签名Release-R8、双Lint/DEX通过；POCO最终24/24、38图，27张固定主题图像素一致。23/24候选失败保留；trace无error severity但有discarded统计，完整性有限。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | 065仅使用POCO独立空配置STOPPED包；安装SHA核验后清理本轮三个包，包清单恢复。未启动/修改原Flutter，原版身份、系统设置及原1.yaml SHA/大小/mtime保持。064运行对照的缓存边界保留。 |
-| 正在推进 | 065已将来源菜单动作延后到Popup真实移窗后，统一Dialog自身清焦/收IME，减少首次坐标回写重组。920项JVM、POCO最终22/22、38图已核对，其中27张固定图像素一致，R8/motion构建、双Lint/DEX通过。Dialog首帧UI切片87–93ms→69ms，但首次绘制延后约19–35ms；Popup约75ms及整体掉帧仍未稳定改善。 下一步继续Popup首次建窗组成/测量、表单端到端延迟和关闭完整观测，再隔离高频观测重组；完整Flutter视觉与性能仍PARTIAL。 064同源运行RSS约原版90%～95%，严格同态缓存/内核/流量内存对照仍未完成。 |
+| 数据保护 | 066仅使用POCO独立空配置STOPPED包；安装SHA核验后清理本轮三个包，包清单恢复。未启动/修改原Flutter，原版身份、系统设置及原1.yaml SHA/大小/mtime保持。064运行对照的缓存边界保留。 |
+| 正在推进 | 066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 下一步继续Popup首次组合/测量、表单整体交接与BufferQueue/SurfaceFlinger等待，再处理高频观测重组和其余Flutter面板/连续转场；整体仍PARTIAL。 064严格同态缓存/内核/流量内存对照边界保持。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [065 Popup与IME交接](acceptance/popup-ime-poco-20261120.json)、 [064运行内存与掉帧](acceptance/running-memory-jank-poco-20261120.json)、 [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
+| 最新证据 | [066窗口延迟与关闭归因](acceptance/window-latency-poco-20261120.json)、 [065 Popup与IME交接](acceptance/popup-ime-poco-20261120.json)、 [064运行内存与掉帧](acceptance/running-memory-jank-poco-20261120.json)、 [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
 
 ## 4. 目标架构图
 

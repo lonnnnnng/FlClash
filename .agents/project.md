@@ -1,5 +1,9 @@
 # Project Context
 
+## 首次建窗与反向交接当前组（2026-11-20）
+
+066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 下一步继续Popup首次组合/测量、表单整体交接与BufferQueue/SurfaceFlinger等待，再处理高频观测重组和其余Flutter面板/连续转场；整体仍PARTIAL。 独立包已清理，原Flutter/1.yaml/设置保持，未发版。SQL从线程根起表并去同类嵌套重复，IME开始标记不是已可输入，discarded统计不能忽略；见`docs/window-latency-and-close-investigation.md`。旧组下一步仅作历史。
+
 ## Popup首次建窗与Dialog／键盘交接当前组（2026-11-20）
 
 065已将来源菜单动作延后到Popup真实移窗后，统一Dialog自身清焦/收IME，减少首次坐标回写重组。920项JVM、POCO最终22/22、38图已核对，其中27张固定图像素一致，R8/motion构建、双Lint/DEX通过。Dialog首帧UI切片87–93ms→69ms，但首次绘制延后约19–35ms；Popup约75ms及整体掉帧仍未稳定改善。 下一步继续Popup首次建窗组成/测量、表单端到端延迟和关闭完整观测，再隔离高频观测重组；完整Flutter视觉与性能仍PARTIAL。 本组仅POCO独立空配置STOPPED包；三个包已清理，原Flutter未启动/修改，原1.yaml与系统设置保持。未发版。见`docs/popup-input-handoff-performance.md`及配套JSON，旧组“下一步”只作历史。

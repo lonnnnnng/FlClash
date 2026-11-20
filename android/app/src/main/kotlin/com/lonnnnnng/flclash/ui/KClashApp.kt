@@ -4949,6 +4949,18 @@ internal fun AddProfileDialog(
     val batchFocus = remember { FocusRequester() }
     // 作者 long：来源与表单分步呈现，返回来源页也要终止已经不可见的批量解析。
     var step by rememberSaveable { mutableStateOf(if (initialRemoteUrl != null) AddProfileStep.REMOTE else AddProfileStep.SOURCE) }
+    val formWindow = remember { AppWindowReference() }
+    var formPresent by remember { mutableStateOf(true) }
+    var returningToSource by remember { mutableStateOf(false) }
+    LaunchedEffect(returningToSource) {
+        if (returningToSource) {
+            // 作者 long：返回也先让Dialog释放输入与窗口，再建来源Popup；草稿留在父会话，父会话退出会取消这次交接。
+            awaitAppWindowRemoved(formWindow.view) { formPresent = false }
+            step = AddProfileStep.SOURCE
+            formPresent = true
+            returningToSource = false
+        }
+    }
     // 作者 long：粘贴整批链接不能占用输入与动画线程；输入一变立即撤销旧结果，防止解析交接时提交上一批。
     var preview by remember(batchInput, existingUrls, batchMode, step) { mutableStateOf<ProfileUrlImportPreview?>(null) }
     LaunchedEffect(batchInput, existingUrls, batchMode, step) {
@@ -4986,10 +4998,13 @@ internal fun AddProfileDialog(
             { step = AddProfileStep.REMOTE }, { onAddCustom("") }, menuSource)
         return
     }
+    if (!formPresent) return
     AlertDialog(
         onDismissRequest = busyDismiss,
         title = { Text(tr("从链接导入")) },
         text = {
+            val formView = androidx.compose.ui.platform.LocalView.current
+            androidx.compose.runtime.SideEffect { formWindow.view = formView }
             val windowInfo = LocalWindowInfo.current
             val formKeyboard = LocalSoftwareKeyboardController.current
             val formFocus = LocalFocusManager.current
@@ -5116,7 +5131,7 @@ internal fun AddProfileDialog(
         dismissButton = {
             val keyboard = LocalSoftwareKeyboardController.current
             val focus = LocalFocusManager.current
-            TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; focus.clearFocus(force = true); keyboard?.hide(); step = AddProfileStep.SOURCE } }, enabled = terminal || !locked,
+            TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; focus.clearFocus(force = true); keyboard?.hide(); returningToSource = true } }, enabled = (terminal || !locked) && !returningToSource,
                 modifier = Modifier.testTag("profile_add_back")) { Text(tr("返回")) }
         },
     )

@@ -68,6 +68,62 @@ class ProfileInputWindowInstrumentedTest {
     private fun hiddenIme(token: IBinder) {
         compose.waitUntil(5_000) { ime()?.let { it.first == token && !it.second } == true }
     }
+    @Test fun sourceSnapshotKeepsMenuContentIdentityUntilWindowCloses() {
+        var open by mutableStateOf(false)
+        var entered = 0
+        var disposed = 0
+        lateinit var source: AppMenuSource
+        compose.setContent { KClashTheme {
+            source = rememberAppMenuSource()
+            Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+                AppMenuSourceContent(source) {
+                    Button({ open = true }, Modifier.appMenuSource(source).testTag("identity_source")) { Text("菜单") }
+                }
+                AppDropdownMenu(open, { open = false }, source = source) {
+                    // 作者 long：统计实际挂载/释放而非组合调用次数，避免把允许的状态重组误判为正文被重建。
+                    DisposableEffect(Unit) { entered++; onDispose { disposed++ } }
+                    AppDropdownMenuItem({ Text("选择") }, { open = false }, Modifier.testTag("identity_action"))
+                }
+            }
+        } }
+        compose.onNodeWithTag("identity_source").performClick()
+        compose.onNodeWithTag("identity_action").assertIsDisplayed()
+        compose.runOnIdle { assertTrue(source.hidden); assertEquals(1, entered); assertEquals(0, disposed) }
+        compose.onNodeWithTag("identity_action").performClick()
+        compose.runOnIdle { assertEquals(1, disposed) }
+    }
+
+    @Test fun reopeningAfterExternalRevocationDoesNotReplayPreviousSelection() {
+        var open by mutableStateOf(false)
+        var actions = 0
+        var dismissals = 0
+        compose.setContent { KClashTheme {
+            val source = rememberAppMenuSource()
+            Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+                AppMenuSourceContent(source) {
+                    Button({ open = true }, Modifier.appMenuSource(source).testTag("reopen_source")) { Text("菜单") }
+                }
+                AppDropdownMenu(open, { dismissals++; open = false }, source = source) {
+                    AppDropdownMenuItem({ Text("选择") }, { actions++; open = false }, Modifier.testTag("reopen_action"))
+                }
+            }
+        } }
+        compose.onNodeWithTag("reopen_source").performClick()
+        compose.onNodeWithTag("reopen_action").assertIsDisplayed()
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag("reopen_action").performClick()
+        compose.mainClock.advanceTimeBy(80)
+        // 作者 long：外部撤销和新一轮展开之间必须提交一帧；最终同为true不能让旧选择获得新窗口的授权。
+        compose.runOnIdle { open = false }
+        compose.mainClock.advanceTimeByFrame()
+        compose.runOnIdle { open = true }
+        compose.mainClock.advanceTimeBy(700)
+        compose.mainClock.autoAdvance = true
+        compose.runOnIdle { assertEquals(0, actions); assertEquals(0, dismissals); assertTrue(open) }
+        compose.onNodeWithTag("reopen_action").performClick()
+        compose.runOnIdle { assertEquals(1, actions); assertFalse(open) }
+    }
+
     @Test fun menuActionRunsAfterPopupViewHasDetached() {
         var open by mutableStateOf(false)
         var actions = 0

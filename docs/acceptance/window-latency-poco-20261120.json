@@ -1,0 +1,1014 @@
+{
+  "id": "KUI-VIS-066",
+  "date": "2026-11-20",
+  "status": "SCOPED_VERIFIED_OVERALL_PERFORMANCE_PARTIAL",
+  "baselineCommit": "87327f5798efaf5b09de7ed70b389b557e9f5739",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "fontScale": 1.0,
+    "portrait": true
+  },
+  "scope": "仅独立完整R8 performance及motion真机包，空配置STOPPED；玻璃默认关闭，组件回归含玻璃；原Flutter不启动或修改，原1.yaml不使用或上传。",
+  "changes": [
+    "外部撤销参与Popup交接协程key并清除旧选择，false→true重开不重放。",
+    "Dialog返回等待真实移窗再建立来源Popup，草稿留在父会话，退出取消等待。",
+    "共用移窗等待；新增线程帧起表与单次表单整体交接SQL，不遗漏无图像提交的关闭帧。"
+  ],
+  "rejected": [
+    "派生滚动Boolean候选在集中回归23/24及独立0/1失败，最终已恢复065直接订阅。",
+    "首开正文重复挂载假设未复现，计数用例1/1，未改可见性包装。"
+  ],
+  "build": {
+    "unit": {
+      "app": {
+        "tests": 627,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lint": {
+      "motionBenchmark": {
+        "Warning": 75,
+        "Hint": 15
+      },
+      "release": {
+        "Warning": 71,
+        "Hint": 14
+      }
+    },
+    "sourceHashesMatch": true,
+    "sourceCount": 652,
+    "jvmTotal": 920,
+    "jvmExecution": "App627本批执行，其余293任务内UP-TO-DATE复用",
+    "log": "build-final6.log",
+    "variants": [
+      "performanceBenchmark (R8/non-debuggable)",
+      "release (unsigned/R8)",
+      "motionBenchmark",
+      "motionBenchmarkAndroidTest"
+    ],
+    "lintLog": "lint-final6.log",
+    "dex": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "performance": {
+      "path": "final6.apk",
+      "bytes": 49566645,
+      "sha256": "26dbff46d179e21a87c115814469eff2e078e5cf6b3f985d31927de81707496c"
+    },
+    "installedReadbackMatches": true,
+    "motionApks": {
+      "com.lonnnnnng.flclash.motion": {
+        "sha256": "1e442380f4bb835c9c5c7161e2c8322a0129fd8d2c1601398d782f0be725e252",
+        "bytes": 67462977,
+        "installedMatched": true
+      },
+      "com.lonnnnnng.flclash.motion.test": {
+        "sha256": "1843f0add756fe60905fe00aa848232ff600521d847cde12f459d5736bc6cd41",
+        "bytes": 3189762,
+        "installedMatched": true
+      }
+    }
+  },
+  "regression": {
+    "batch": "final-ui2",
+    "passed": 24,
+    "failed": 0,
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "failureHidesDialogImeAndAllowsRetryWithoutLosingDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "reopeningAfterExternalRevocationDoesNotReplayPreviousSelection",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "sourceToSingleBatchAndBackKeepsNaturalInputAndWindowOwnership",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "sourceSnapshotKeepsMenuContentIdentityUntilWindowCloses",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "scannedDirectFormGetsNaturalImeAndSubmissionHidesItsOwnWindow",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "backgroundResumeAndReturnRestoreSourceWithoutKeyboard",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "menuActionRunsAfterPopupViewHasDetached",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longMenuFingerScrollDoesNotExecuteHoveredRows",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "invalidSingleSubscriptionStaysInFormWithoutSubmitting",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "batchEditsInvalidatePreviewAndOnlyLatestInputCanSubmit",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuRoutesQrAndFileImportActions",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "validSingleImportTrimsFieldsAndRepeatedTapSubmitsOnlyOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "backgroundPreservesExistingEditorAndClearsHiddenNewImportKey",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest",
+        "test": "proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest",
+        "test": "keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuGeometryParityInstrumentedTest",
+        "test": "openingAndReturningGeometryInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuShadowParityInstrumentedTest",
+        "test": "platterShadowLeavesInteriorAndDetachedDropletClearInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+        "test": "profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "code": 0
+      }
+    ],
+    "screenshots": 38,
+    "redGreen": {
+      "red2": "旧选择执行1次，预期0；同用例最终通过",
+      "final-ui1": "23/24，长菜单滑动失败",
+      "scroll-repeat1": "0/1，同一失败",
+      "final-ui2": "撤回派生滚动候选后24/24"
+    },
+    "intermediateNotAccumulated": [
+      "candidate-ui1 6/6",
+      "identity1 1/1",
+      "return-ui1 7/7"
+    ],
+    "boundary": "真实组件窗口/IME与自然输入；不冒充真实订阅导入、相机扫码或冷进程草稿持久性。"
+  },
+  "visual": {
+    "reviewed": "38PNG经4拼图全部目视；自然录像8fps抽样核对正反交接",
+    "compared": 38,
+    "identical": 27,
+    "identicalGroups": {
+      "geometry": 20,
+      "shadow": 2,
+      "profiles": 5
+    },
+    "other11": "液滴/系统栏及菜单采样不记像素一致，目视正常。",
+    "video": {
+      "width": 1080,
+      "height": 2400,
+      "duration": "8.696033",
+      "nb_frames": "180"
+    },
+    "samplingFps": 8,
+    "notFrameByFrame": true,
+    "observation": "菜单回源、Dialog/IME入场、返回来源及关闭恢复可见，无异常空白或卡住；系统退出动画与下一窗可短暂同屏，不把View detach等同像素已经完全消失。",
+    "flutter": "本轮本地固定Prism源码参考；完整Flutter页面/像素/连续转场未闭环。"
+  },
+  "gfxProcessCounts": {
+    "baseline1": {
+      "source-open": {
+        "janky": 20,
+        "frames": 164
+      },
+      "remote-open": {
+        "janky": 21,
+        "frames": 290
+      },
+      "ime-close": {
+        "janky": 0,
+        "frames": 111
+      },
+      "form-close": {
+        "janky": 0,
+        "frames": 3
+      }
+    },
+    "candidate1": {
+      "source-open": {
+        "janky": 17,
+        "frames": 169
+      },
+      "remote-open": {
+        "janky": 22,
+        "frames": 291
+      },
+      "ime-close": {
+        "janky": 0,
+        "frames": 115
+      },
+      "form-close": {
+        "janky": 0,
+        "frames": 0
+      }
+    },
+    "final1": {
+      "source-open": {
+        "janky": 15,
+        "frames": 171
+      },
+      "remote-open": {
+        "janky": 23,
+        "frames": 294
+      },
+      "ime-close": {
+        "janky": 0,
+        "frames": 111
+      },
+      "form-close": {
+        "janky": 0,
+        "frames": 3
+      }
+    },
+    "final2": {
+      "source-open": {
+        "janky": 17,
+        "frames": 173
+      },
+      "remote-open": {
+        "janky": 22,
+        "frames": 296
+      },
+      "ime-close": {
+        "janky": 0,
+        "frames": 110
+      },
+      "form-close": {
+        "janky": 0,
+        "frames": 4
+      }
+    }
+  },
+  "gfxConclusion": "最终source-open17/173，remote-open22/296；基线20/164与21/290。仅打开段减少、表单段未下降，冷首开有波动，不宣称整体掉帧闭环。关闭窗口消失后gfx仅宿主少量帧，不能用0卡顿宣称关闭免费。",
+  "traces": {
+    "baseline-trace1": {
+      "popupFirstUiWallMs": 78.092,
+      "returnPopupFirstUiWallMs": null,
+      "reverseHandoff": null,
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "105618683435744",
+          "after_click_dispatch_ms": "565.747000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "105618700107670",
+          "after_click_dispatch_ms": "582.418000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "105618768304857",
+          "after_click_dispatch_ms": "650.616000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "105618849095014",
+          "after_click_dispatch_ms": "731.406000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "105618854911785",
+          "after_click_dispatch_ms": "737.223000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "105618864454076",
+          "after_click_dispatch_ms": "746.765000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "105618925238920",
+          "after_click_dispatch_ms": "807.550000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "105619239700274",
+          "after_click_dispatch_ms": "1122.011000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "9"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "69158",
+          "token": "6497506",
+          "wall_ms": "18.648000",
+          "running_ms": "11.016000",
+          "waiting_ms": "7.263000",
+          "forgotten_ms": "15.844000",
+          "binder_ms": "5.708000"
+        }
+      ]
+    },
+    "candidate-trace1": {
+      "popupFirstUiWallMs": 72.484,
+      "returnPopupFirstUiWallMs": null,
+      "reverseHandoff": null,
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "105952823856970",
+          "after_click_dispatch_ms": "567.290000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "105952838537595",
+          "after_click_dispatch_ms": "581.971000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "105952907673064",
+          "after_click_dispatch_ms": "651.106000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "105952974759209",
+          "after_click_dispatch_ms": "718.192000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "105952981597126",
+          "after_click_dispatch_ms": "725.030000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "105952992088688",
+          "after_click_dispatch_ms": "735.522000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "105953049836188",
+          "after_click_dispatch_ms": "793.269000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "105953364472907",
+          "after_click_dispatch_ms": "1107.906000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "10"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "69133",
+          "token": "6552062",
+          "wall_ms": "21.118000",
+          "running_ms": "11.402000",
+          "waiting_ms": "8.037000",
+          "forgotten_ms": "18.109000",
+          "binder_ms": "6.336000"
+        }
+      ]
+    },
+    "candidate-return1": {
+      "popupFirstUiWallMs": 73.329,
+      "returnPopupFirstUiWallMs": 81.081,
+      "reverseHandoff": [
+        {
+          "first_start_ms": "8.202000",
+          "first_finish_ms": "89.251000"
+        }
+      ],
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "106104419502641",
+          "after_click_dispatch_ms": "571.996000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "106104432414517",
+          "after_click_dispatch_ms": "584.907000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "106104504251861",
+          "after_click_dispatch_ms": "656.745000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "106104586854568",
+          "after_click_dispatch_ms": "739.347000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "106104589632745",
+          "after_click_dispatch_ms": "742.126000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "106104603818891",
+          "after_click_dispatch_ms": "756.312000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "106104662644828",
+          "after_click_dispatch_ms": "815.138000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "106104976093995",
+          "after_click_dispatch_ms": "1128.587000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "11"
+        }
+      ],
+      "slowUiWithoutTimeline": []
+    },
+    "candidate-return2": {
+      "popupFirstUiWallMs": 64.527,
+      "returnPopupFirstUiWallMs": 86.646,
+      "reverseHandoff": [
+        {
+          "first_start_ms": "5.294000",
+          "first_finish_ms": "91.310000"
+        }
+      ],
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "106747684105209",
+          "after_click_dispatch_ms": "567.454000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "106747696663126",
+          "after_click_dispatch_ms": "580.012000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "106747764641042",
+          "after_click_dispatch_ms": "647.990000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "106747831084219",
+          "after_click_dispatch_ms": "714.433000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "106747833845729",
+          "after_click_dispatch_ms": "717.195000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "106747845421406",
+          "after_click_dispatch_ms": "728.771000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "106747894186719",
+          "after_click_dispatch_ms": "777.536000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "106748206523750",
+          "after_click_dispatch_ms": "1089.873000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "14"
+        }
+      ],
+      "slowUiWithoutTimeline": []
+    },
+    "return-trace1": {
+      "popupFirstUiWallMs": 73.534,
+      "returnPopupFirstUiWallMs": 47.287,
+      "reverseHandoff": [
+        {
+          "first_start_ms": "46.324000",
+          "first_finish_ms": "93.564000"
+        }
+      ],
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "106581181720428",
+          "after_click_dispatch_ms": "566.411000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "106581193772407",
+          "after_click_dispatch_ms": "578.463000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "106581263134334",
+          "after_click_dispatch_ms": "647.825000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "106581329476990",
+          "after_click_dispatch_ms": "714.168000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "106581334810740",
+          "after_click_dispatch_ms": "719.502000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "106581343805792",
+          "after_click_dispatch_ms": "728.497000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "106581407099178",
+          "after_click_dispatch_ms": "791.790000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "106581704178553",
+          "after_click_dispatch_ms": "1088.870000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "12"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "64837",
+          "token": "6589086",
+          "wall_ms": "18.249000",
+          "running_ms": "8.943000",
+          "waiting_ms": "8.332000",
+          "forgotten_ms": "16.130000",
+          "binder_ms": "6.856000"
+        }
+      ]
+    },
+    "return-trace2": {
+      "popupFirstUiWallMs": 74.975,
+      "returnPopupFirstUiWallMs": 46.849,
+      "reverseHandoff": [
+        {
+          "first_start_ms": "50.896000",
+          "first_finish_ms": "97.947000"
+        }
+      ],
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "106779810226186",
+          "after_click_dispatch_ms": "575.299000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "106779825496498",
+          "after_click_dispatch_ms": "590.569000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "106779895127852",
+          "after_click_dispatch_ms": "660.201000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "106779977697800",
+          "after_click_dispatch_ms": "742.771000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "106779981508060",
+          "after_click_dispatch_ms": "746.581000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "106779998032279",
+          "after_click_dispatch_ms": "763.105000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "106780053268998",
+          "after_click_dispatch_ms": "818.342000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "106780367023633",
+          "after_click_dispatch_ms": "1132.097000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "15"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "65215",
+          "token": "6614434",
+          "wall_ms": "16.682000",
+          "running_ms": "8.923000",
+          "waiting_ms": "6.276000",
+          "forgotten_ms": "14.325000",
+          "binder_ms": "6.680000"
+        }
+      ]
+    },
+    "return-close1": {
+      "popupFirstUiWallMs": 74.24,
+      "returnPopupFirstUiWallMs": null,
+      "reverseHandoff": null,
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "106605609685210",
+          "after_click_dispatch_ms": "568.152000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "106605624076669",
+          "after_click_dispatch_ms": "582.544000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "106605692016461",
+          "after_click_dispatch_ms": "650.484000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "106605758528023",
+          "after_click_dispatch_ms": "716.995000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "106605765668075",
+          "after_click_dispatch_ms": "724.135000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "106605777315002",
+          "after_click_dispatch_ms": "735.782000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "106605836942137",
+          "after_click_dispatch_ms": "795.409000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "106606149825106",
+          "after_click_dispatch_ms": "1108.292000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "13"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "68420",
+          "token": "6597341",
+          "wall_ms": "19.823000",
+          "running_ms": "11.578000",
+          "waiting_ms": "6.807000",
+          "forgotten_ms": "16.736000",
+          "binder_ms": "6.783000"
+        }
+      ]
+    },
+    "final-return1": {
+      "popupFirstUiWallMs": 75.585,
+      "returnPopupFirstUiWallMs": 47.953,
+      "reverseHandoff": [
+        {
+          "first_start_ms": "49.641000",
+          "first_finish_ms": "97.539000"
+        }
+      ],
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "107645482736064",
+          "after_click_dispatch_ms": "563.358000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "107645496136429",
+          "after_click_dispatch_ms": "576.758000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "107645564992418",
+          "after_click_dispatch_ms": "645.614000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "107645631836741",
+          "after_click_dispatch_ms": "712.458000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "107645635512470",
+          "after_click_dispatch_ms": "716.134000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "107645647346532",
+          "after_click_dispatch_ms": "727.968000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "107645691429449",
+          "after_click_dispatch_ms": "772.051000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "107646005581220",
+          "after_click_dispatch_ms": "1086.203000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "16"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "65196",
+          "token": "6788929",
+          "wall_ms": "23.089000",
+          "running_ms": "9.246000",
+          "waiting_ms": "12.341000",
+          "forgotten_ms": "20.578000",
+          "binder_ms": "7.549000"
+        }
+      ]
+    },
+    "final-close1": {
+      "popupFirstUiWallMs": 64.463,
+      "returnPopupFirstUiWallMs": null,
+      "reverseHandoff": null,
+      "forwardHandoff": [
+        {
+          "event": "popup_last_frame_finish",
+          "ts": "107670087622097",
+          "after_click_dispatch_ms": "571.985000"
+        },
+        {
+          "event": "dialog_first_frame_start",
+          "ts": "107670103403814",
+          "after_click_dispatch_ms": "587.767000"
+        },
+        {
+          "event": "dialog_first_frame_finish",
+          "ts": "107670174401575",
+          "after_click_dispatch_ms": "658.764000"
+        },
+        {
+          "event": "IC.showRequestFromApiToImeReady_start",
+          "ts": "107670254270377",
+          "after_click_dispatch_ms": "738.633000"
+        },
+        {
+          "event": "IMS.showSoftInput_start",
+          "ts": "107670257743971",
+          "after_click_dispatch_ms": "742.107000"
+        },
+        {
+          "event": "IMS.showSoftInput_end",
+          "ts": "107670274322721",
+          "after_click_dispatch_ms": "758.685000"
+        },
+        {
+          "event": "InsetsAnimation: ime_start",
+          "ts": "107670329697356",
+          "after_click_dispatch_ms": "814.060000"
+        },
+        {
+          "event": "InsetsAnimation: ime_end",
+          "ts": "107670645173554",
+          "after_click_dispatch_ms": "1129.536000"
+        }
+      ],
+      "stats": [
+        {
+          "name": "traced_chunks_discarded",
+          "severity": "info",
+          "value": "17"
+        }
+      ],
+      "slowUiWithoutTimeline": [
+        {
+          "id": "69057",
+          "token": "6797341",
+          "wall_ms": "17.995000",
+          "running_ms": "11.063000",
+          "waiting_ms": "6.622000",
+          "forgotten_ms": "14.913000",
+          "binder_ms": "6.141000"
+        }
+      ]
+    }
+  },
+  "traceConclusion": "反向返回旧路径两次首帧UI81.081/86.646ms，拆窗候选47.287/46.849ms，最终去滚动候选后47.953ms；完整点击分发结束到首帧完成89.251/91.310→最终97.539ms。减少集中卡顿，但总延迟增加约6–8ms，未称更快响应。首次建窗与表单整体未稳定改善。",
+  "attribution": {
+    "previous065": "原final-trace1回源32个RT切片中位墙钟16.070ms/Running2.251ms/waitForBufferRelease14.308ms；数据有采集限制，不外推独占CPU。",
+    "binderExample": "candidate-return1 app slice64928 21.724ms→system_server reply21.644ms→wmUpdateFocus19.146ms→Binder15.300ms→SurfaceFlinger reply14.732ms。",
+    "forwardFinal": "首次完整表单帧645.614/658.764ms；IMS.showSoftInput结束727.968/758.685ms；IME动画结束1086.203/1129.536ms。不是字符注入成功时刻。",
+    "closeFinal": "final-close1线程根6797341无FrameTimeline，UI17.995ms，Running11.063ms、等待6.622ms；最外层onForgotten14.913ms、Binder6.141ms。",
+    "limits": [
+      "UI切片为包容墙钟，各不同类别仍可能包含，不能相加。",
+      "同token可对应多window及多个真实RT根，按slice.id保留、不跨窗口重复统计UI。",
+      "IC.showRequestFromApiToImeReady的dur=-1，只能报告开始。",
+      "stats无正值error/data_loss，但traced_chunks_discarded读数9～17；没有证明全部事件完整或确定这些值是否会话累计，不映射为掉帧数量。",
+      "缺Compose细函数和完整GPU/BufferQueue消费者归因；单次表单查询不推广任意多次复用。"
+    ]
+  },
+  "failuresPreserved": [
+    "red1过早冻结时钟找不到菜单，修正用例准备后red2复现产品缺陷。",
+    "trace_processor --csv参数无效，改query --format csv。",
+    "DEX脚本误用--apk，改位置参数。",
+    "第一次关闭聚合重复计算嵌套onForgotten；去重后work_category字段又避免与原表category重名，已全量重算，并验证21.400/14.913ms已知根。",
+    "一次git diff误在证据目录执行，改回实际FlClash仓库；未修改仓库状态。",
+    "滚动派生候选失败留档并撤回，不混入最终通过。"
+  ],
+  "protection": {
+    "removed": [
+      "com.lonnnnnng.flclash.performance",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "packageSetMatches": true,
+    "extraPackages": [],
+    "missingPackages": [],
+    "flutterIdentityMatches": true,
+    "settings": {
+      "rotation": "0",
+      "userRotation": "0",
+      "fontScale": "1.0",
+      "night": "Night mode: yes"
+    },
+    "settingsMatch": true,
+    "local": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "size": 34220,
+      "mtimeNs": 1794392072317864361
+    },
+    "localMatches": true,
+    "originalFlutterNeverLaunchedOrModified": true
+  },
+  "remaining": [
+    "首次Popup组合/测量CPU成本",
+    "表单整体延迟与IME交接",
+    "BufferQueue/SurfaceFlinger等待的进一步归因",
+    "高频观测重组、剩余Flutter面板和完整连续转场"
+  ],
+  "notRun": [
+    "运行核心/实网/真实订阅",
+    "模拟器/低API/其他OEM",
+    "正式安装/发布"
+  ],
+  "rawEvidenceRoot": "../acceptance-artifacts/window-latency-poco-20261120/",
+  "manifest": {
+    "path": "manifest.json",
+    "bytes": 87512,
+    "sha256": "cb040288898a648200cbbb957f8d0207373736c937a43f69bc33884a90eb0ebb"
+  },
+  "queries": {
+    "tool/perfetto_window_work.sql": "c157305d69c2881a53ad100e0140f6520bb19ef7beae43716232ae6e290b4643",
+    "tool/perfetto_form_handoff.sql": "315b9b303efa014bacd88626a2f6a3e18d6e94e6b9b4f533063380796379c712"
+  },
+  "sourceIdentity": {
+    "path": "final6-identity.json",
+    "bytes": 93143,
+    "sha256": "de6cafe485ea204ffebbf4925e5f3ee73a9acb9ba3773367a464d08b9c442a15"
+  }
+}

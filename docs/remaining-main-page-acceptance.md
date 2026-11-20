@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **066窗口延迟与关闭（2026-11-20）**：066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 下一步继续Popup首次组合/测量、表单整体交接与BufferQueue/SurfaceFlinger等待，再处理高频观测重组和其余Flutter面板/连续转场；整体仍PARTIAL。 [说明](window-latency-and-close-investigation.md)、[证据](acceptance/window-latency-poco-20261120.json)
+
 > **065 Popup与IME交接（2026-11-20）**：065已将来源菜单动作延后到Popup真实移窗后，统一Dialog自身清焦/收IME，减少首次坐标回写重组。920项JVM、POCO最终22/22、38图已核对，其中27张固定图像素一致，R8/motion构建、双Lint/DEX通过。Dialog首帧UI切片87–93ms→69ms，但首次绘制延后约19–35ms；Popup约75ms及整体掉帧仍未稳定改善。 下一步继续Popup首次建窗组成/测量、表单端到端延迟和关闭完整观测，再隔离高频观测重组；完整Flutter视觉与性能仍PARTIAL。 [说明](popup-input-handoff-performance.md)、[证据](acceptance/popup-ime-poco-20261120.json)
 
 > **064运行内存与掉帧（2026-11-20）**：064活动连接完整列表改为仅可见Tab轮询，取消迟到结果和空列表加载闪烁；920项JVM、POCO最终9/9、R8/motion构建、双Lint/DEX通过。同设备同源配置的纯代理/VPN前后台RSS比较，Kotlin约为原版90%～95%，未复现两倍；原版PSS缺测，缓存/内核/流量未完全冻结。整体掉帧仍未证明改善，两个绘制候选已撤回。 下一步Popup首次建窗与Dialog/IME交接，严格同态内存仍有缓存/核心边界。[说明](running-memory-jank-investigation.md)、[证据](acceptance/running-memory-jank-poco-20261120.json)

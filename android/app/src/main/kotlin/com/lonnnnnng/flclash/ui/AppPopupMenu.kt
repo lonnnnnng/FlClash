@@ -54,28 +54,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
-import android.view.View
-
-private class AppMenuWindowReference { var view: View? = null }
-
-/** 作者 long：等菜单View实际离开窗口再交接，避免同帧拆Popup和建Dialog争抢焦点；取消等待不执行旧选择。 */
-private suspend fun awaitMenuWindowRemoved(view: View?, remove: () -> Unit) {
-    if (view == null || !view.isAttachedToWindow) { remove(); return }
-    suspendCancellableCoroutine<Unit> { continuation ->
-        val listener = object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(v: View) = Unit
-            override fun onViewDetachedFromWindow(v: View) {
-                v.removeOnAttachStateChangeListener(this)
-                if (continuation.isActive) continuation.resume(Unit)
-            }
-        }
-        view.addOnAttachStateChangeListener(listener)
-        continuation.invokeOnCancellation { android.os.Handler(android.os.Looper.getMainLooper()).post { view.removeOnAttachStateChangeListener(listener) } }
-        remove()
-    }
-}
 
 internal enum class AppMenuPlacement { OVER_ANCHOR_END, BELOW_POINT }
 internal data class AppMenuInsets(val left: Int, val top: Int, val right: Int, val bottom: Int)
@@ -217,7 +195,7 @@ internal fun AppDropdownMenu(
     var parentBounds by remember { mutableStateOf(IntRect.Zero) }
     var menuPosition by remember { mutableStateOf(IntOffset.Zero) }
     var sourceImage by remember { mutableStateOf<ImageBitmap?>(null) }
-    val popupWindow = remember { AppMenuWindowReference() }
+    val popupWindow = remember { AppWindowReference() }
     val opening = remember { Animatable(0f) }
     val returning = remember { Animatable(0f) }
     var returnFrom by remember { mutableFloatStateOf(.45f) }
@@ -257,7 +235,9 @@ internal fun AppDropdownMenu(
             registry.hovered = null
         }
     }
-    LaunchedEffect(active) {
+    LaunchedEffect(active, expanded) {
+        // 作者 long：回源期间外部撤销也必须取消旧交接；否则false→true重开时active仍为false，旧选择会借用新展开状态重放。
+        if (!expanded) { pendingAction = null; requestedClose = false }
         if (active) {
             stack.reset(pageKey)
             returnCard = null
@@ -280,7 +260,7 @@ internal fun AppDropdownMenu(
             returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
             MenuCloseCaptureProbe.afterAnimation()
             source?.hidden = false
-            awaitMenuWindowRemoved(popupWindow.view) { present = false }
+            awaitAppWindowRemoved(popupWindow.view) { present = false }
             // 作者 long：窗口移除也有取消窗口，交接时再核对外部展开与生命周期，防止后台或撤销后重放选择。
             val action = pendingAction.takeIf { expandedLatest && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
             pendingAction = null
