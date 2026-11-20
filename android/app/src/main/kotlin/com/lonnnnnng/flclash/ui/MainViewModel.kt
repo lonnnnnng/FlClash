@@ -164,6 +164,8 @@ class MainViewModel @Inject constructor(
     private val mutableDiagnosticHistory = MutableStateFlow<List<RuntimeDiagnosticEvent>>(emptyList())
     val diagnosticHistory = mutableDiagnosticHistory.asStateFlow()
     private val observationVisible = MutableStateFlow(false)
+    private val connectionsVisible = MutableStateFlow(false)
+    private var connectionsLoaded = false
     private var diagnosticSequence = 0L
 
     init {
@@ -220,9 +222,26 @@ class MainViewModel @Inject constructor(
                     }
                     while (isActive) {
                         refreshStats()
-                        refreshConnections()
                         delay(STATS_REFRESH_MILLIS)
                     }
+                }
+            }
+        }
+        viewModelScope.launch {
+            var sampledSession: Long? = null
+            // 作者 long：首页只需连接计数；完整列表随活动连接Tab订阅，避免配置编辑/菜单动画每秒承担JNI解码和列表分配。
+            combine(runtimeState, runtimeManager.runningSinceElapsedMillis, observationVisible, connectionsVisible) { state, since, appVisible, listVisible ->
+                Triple(state, since, appVisible && listVisible)
+            }.collectLatest { (state, since, visible) ->
+                if (sampledSession != since) {
+                    sampledSession = since
+                    connectionsLoaded = false
+                    mutableConnections.value = ConnectionsUiState()
+                }
+                if (!shouldPollRuntimeObservation(state, visible) || since == null) return@collectLatest
+                while (isActive) {
+                    refreshConnections()
+                    delay(STATS_REFRESH_MILLIS)
                 }
             }
         }
@@ -234,6 +253,10 @@ class MainViewModel @Inject constructor(
      */
     fun setObservationVisible(visible: Boolean) {
         observationVisible.value = visible
+    }
+
+    fun setConnectionsVisible(visible: Boolean) {
+        connectionsVisible.value = visible
     }
 
     fun startRuntime() {
@@ -352,9 +375,12 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun refreshConnections() {
-        mutableConnections.value = mutableConnections.value.copy(isLoading = true, error = null)
-        runtimeManager.getConnections()
-            .onSuccess { value ->
+        // 作者 long：后续轮询保留完整旧列表和错误，避免每秒制造一次加载闪烁；离开页面后拒绝迟到结果。
+        mutableConnections.value = mutableConnections.value.copy(isLoading = !connectionsLoaded)
+        val result = runtimeManager.getConnections()
+        currentCoroutineContext().ensureActive()
+        result.onSuccess { value ->
+                connectionsLoaded = true
                 mutableConnections.value = ConnectionsUiState(connections = value)
             }
             .onFailure { error ->

@@ -141,6 +141,34 @@ class MainViewModelTelemetryTest {
         } finally { model.viewModelScope.cancel(); runCurrent(); manager.stop().getOrThrow() }
     }
 
+    @Test fun connectionDetailsOnlyPollWhileVisibleAndHiddenResultsCannotOverwriteState() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val bridge = TelemetryBridge()
+        val manager = manager(bridge) { testScheduler.currentTime + 1_000 }
+        manager.startProxy().getOrThrow()
+        val model = MainViewModel(manager)
+        try {
+            model.setObservationVisible(true); runCurrent(); advanceTimeBy(3_000); runCurrent()
+            assertEquals(0, bridge.connectionReads)
+            assertTrue(model.stats.value.trafficHistory.isNotEmpty())
+            model.setConnectionsVisible(true); runCurrent()
+            assertEquals(1, bridge.connectionReads)
+            val pending = CompletableDeferred<List<CoreConnection>>()
+            bridge.readConnections = { pending.await() }
+            advanceTimeBy(1_000); runCurrent(); assertEquals(2, bridge.connectionReads)
+            assertFalse("已成功的空列表后台刷新也不能闪加载", model.connections.value.isLoading)
+            model.setConnectionsVisible(false); runCurrent()
+            pending.completeExceptionally(IllegalStateException("已离开列表")); runCurrent()
+            assertEquals(null, model.connections.value.error)
+            advanceTimeBy(2_000); runCurrent(); assertEquals(2, bridge.connectionReads)
+            bridge.readConnections = { emptyList() }
+            model.setConnectionsVisible(true); runCurrent(); assertEquals(3, bridge.connectionReads)
+            model.setObservationVisible(false); runCurrent(); advanceTimeBy(2_000); runCurrent()
+            assertEquals(3, bridge.connectionReads)
+            model.setObservationVisible(true); runCurrent(); assertEquals(4, bridge.connectionReads)
+        } finally { model.viewModelScope.cancel(); runCurrent(); manager.stop().getOrThrow() }
+    }
+
     private fun manager(bridge: CoreRuntimeBridge, clock: () -> Long): CoreRuntimeManager {
         val source = temporaryFolder.newFile().apply { writeText("mixed-port: 7890\n") }
         return CoreRuntimeManager(
@@ -182,7 +210,9 @@ private class TelemetryBridge : CoreRuntimeBridge {
     override suspend fun getTotalTraffic() = totalTraffic
     override suspend fun resetTraffic() { totalTraffic = CoreTraffic(0, 0) }
     override suspend fun getConnectionCount() = 0
-    override suspend fun getConnections() = emptyList<CoreConnection>()
+    var connectionReads = 0
+    var readConnections: suspend () -> List<CoreConnection> = { emptyList() }
+    override suspend fun getConnections(): List<CoreConnection> { connectionReads++; return readConnections() }
     override suspend fun clearDnsCache() = true
     override fun startEventListener() = Unit
     override fun stopEventListener() = Unit

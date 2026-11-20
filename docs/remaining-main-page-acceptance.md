@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **064运行内存与掉帧（2026-11-20）**：064活动连接完整列表改为仅可见Tab轮询，取消迟到结果和空列表加载闪烁；920项JVM、POCO最终9/9、R8/motion构建、双Lint/DEX通过。同设备同源配置的纯代理/VPN前后台RSS比较，Kotlin约为原版90%～95%，未复现两倍；原版PSS缺测，缓存/内核/流量未完全冻结。整体掉帧仍未证明改善，两个绘制候选已撤回。 下一步Popup首次建窗与Dialog/IME交接，严格同态内存仍有缓存/核心边界。[说明](running-memory-jank-investigation.md)、[证据](acceptance/running-memory-jank-poco-20261120.json)
+
 > **063交互与内存（2026-11-20）**：063已优化共用菜单阴影纹理、首页应用扫描、批量链接后台解析和图库分配。POCO R8对照：首页PSS中位降33%、五轮弹框峰值降34%、静置后降15%；919项JVM、24/24定向真机、三变体构建及双Lint/DEX通过。首帧约67ms及总体jank仍未稳定改善，运行核心与原版同态内存比较未验。 后续优先首帧窗口/表单交接与缓冲等待，再继续剩余连续视觉。[说明](interaction-memory-performance.md)与[证据](acceptance/interaction-memory-poco-20261120.json)
 
 > **062 工具页与双语外观（2026-11-20）**：工具页已合并为“网络活动”单入口，最近请求/活动连接/DNS/日志四个完整可搜索Tab；全应用2178组中英文案、语言三选项与深浅/系统主题已接入。POCO最终10/10、相邻回归5/5、冷进程准备与回读各1/1，16图已核对；917项JVM结果零失败，motion/Test、未签名Release-R8、双Lint/DEX通过。 此组按用户新要求推进，下一步仍为其余面板与精确排版/连续转场，再处理菜单慢帧。[证据](acceptance/tools-observation-appearance-poco-20261120.json)

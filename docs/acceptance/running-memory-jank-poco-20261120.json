@@ -1,0 +1,517 @@
+{
+  "id": "KUI-VIS-064",
+  "date": "2026-11-20",
+  "baseCommit": "58325dcab3e8b243b9041d9b2823a12571f0d565",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "portrait": true,
+    "fontScale": 1.0,
+    "glassDefault": false
+  },
+  "implementation": {
+    "connectionsPollOnlyVisibleTab": true,
+    "countAndTrafficContinue": true,
+    "cancelLateResultGuard": true,
+    "successfulEmptyListNoLoadingFlicker": true,
+    "perSessionReset": true,
+    "renderingCandidatesRetained": false
+  },
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 627,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 920,
+    "jvmReuse": "App627最终motion执行，其余293任务内执行后复用",
+    "performanceR8": true,
+    "motionAndTest": true,
+    "unsignedReleaseR8": true,
+    "lint": {
+      "motion": {
+        "errors": 0,
+        "warnings": 75,
+        "hints": 15
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 71,
+        "hints": 14
+      }
+    },
+    "mlkitDex": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "artifacts": {
+      "performance": {
+        "sha256": "6c24fedf141a530f9d3ba3a4869b9e1aa2f448ebda2d28d7b98c7d1ac9986681",
+        "bytes": 49566601,
+        "installedReadbackMatched": true
+      },
+      "motion": {
+        "sha256": "038faabf065f0bf4d7b65d17b746eacd9cb703b62a78e825ecd4d9d19625afbe",
+        "bytes": 67458405,
+        "installedReadbackMatched": true
+      },
+      "test": {
+        "sha256": "f2b84279cddb4b64b1f75f8957e188907b1d30fe1ac2eb183522b75d19618e95",
+        "bytes": 3175158,
+        "installedReadbackMatched": true
+      },
+      "release": {
+        "sha256": "79c9eb3404e3f6522580eb3ce54bfadb7eed99349d390864ad6f7e817e18054e",
+        "bytes": 49550133,
+        "installedReadbackMatched": false
+      }
+    },
+    "finalSourceHashesMatched": true
+  },
+  "finalUi": {
+    "returncode": 0,
+    "device": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+        "test": "clearsCacheHistoryAndLogsIndependentlyAndExports",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+        "test": "fourTabsSearchCompleteListsAndKeepIndependentQueries",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+        "test": "connectionDetailsKeepSnapshotAfterPollingRemovesRow",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+        "test": "scrollingAndSearchSurviveTabAndSavedStateRestoration",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "batchEditsInvalidatePreviewAndOnlyLatestInputCanSubmit",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest",
+        "test": "profileContextAvoidsRowAndBackClosesOnlySubmenuInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest",
+        "test": "proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.NetworkSettingsInstrumentedTest",
+        "test": "networkSectionsSaveOptionsAndRenderBothThemes",
+        "code": 0
+      }
+    ],
+    "images": {
+      "main_menu_profile_root_false": {
+        "count": 2,
+        "bytes": 65462,
+        "sha256": "bbd99839b5ebc09e98da729dec2d1c5edc7975523c764b13e70dccada27a30be",
+        "width": 1080,
+        "height": 2400
+      },
+      "main_menu_profile_more_false": {
+        "count": 2,
+        "bytes": 72135,
+        "sha256": "4a4a2e949e57fd718609a14da5ef59de1ade5662263bc31e39300f70efccf71a",
+        "width": 1080,
+        "height": 2400
+      },
+      "main_menu_profile_root_true": {
+        "count": 2,
+        "bytes": 70953,
+        "sha256": "03d6f92a424c97ca145b7eb1499b82daade045ae92a3d784de162a37d49923df",
+        "width": 1080,
+        "height": 2400
+      },
+      "main_menu_profile_more_true": {
+        "count": 3,
+        "bytes": 76778,
+        "sha256": "eb5ec65422d91161200f2a0aad50ed54d593522b557a5d49ae9f6c2bdc6ad5cd",
+        "width": 1080,
+        "height": 2400
+      },
+      "main_menu_proxy_sort": {
+        "count": 3,
+        "bytes": 75980,
+        "sha256": "ce94e5c1e070c4e8bdc22da8a69a068c870984ea41fcd053bf14310b269eae59",
+        "width": 1080,
+        "height": 2400
+      },
+      "network_light_top": {
+        "count": 6,
+        "bytes": 189993,
+        "sha256": "b357277fd3fdb503f2d8f8a89f8af1b719e9bd222f85af12cfb15cd3ee8112c6",
+        "width": 1080,
+        "height": 2400
+      },
+      "network_light_tun": {
+        "count": 5,
+        "bytes": 181632,
+        "sha256": "d090cda8035d4705a20914b4754eeb91022eea574d65342f623a41b232c36245",
+        "width": 1080,
+        "height": 2400
+      },
+      "network_dark_tun": {
+        "count": 5,
+        "bytes": 183898,
+        "sha256": "926b6abeda97a49b3917a89c40a06d3504df77b2f9d18813622d78a3c132cea6",
+        "width": 1080,
+        "height": 2400
+      },
+      "network_dark_top": {
+        "count": 6,
+        "bytes": 194459,
+        "sha256": "455916b6ea9b1c42e5dfbd1b64b17b9021a4a58fbf213e947868a9c0745c129a",
+        "width": 1080,
+        "height": 2400
+      }
+    },
+    "passed": true
+  },
+  "frameRuns": {
+    "baseline2": {
+      "source-open": {
+        "frames": 172,
+        "janky": 13,
+        "percent": 7.558
+      },
+      "remote-open": {
+        "frames": 294,
+        "janky": 22,
+        "percent": 7.483
+      },
+      "ime-close": {
+        "frames": 114,
+        "janky": 0,
+        "percent": 0.0
+      }
+    },
+    "direct1": {
+      "source-open": {
+        "frames": 170,
+        "janky": 15,
+        "percent": 8.824
+      },
+      "remote-open": {
+        "frames": 291,
+        "janky": 23,
+        "percent": 7.904
+      },
+      "ime-close": {
+        "frames": 110,
+        "janky": 0,
+        "percent": 0.0
+      }
+    },
+    "layout2": {
+      "source-open": {
+        "frames": 170,
+        "janky": 15,
+        "percent": 8.824
+      },
+      "remote-open": {
+        "frames": 290,
+        "janky": 24,
+        "percent": 8.276
+      },
+      "ime-close": {
+        "frames": 107,
+        "janky": 1,
+        "percent": 0.935
+      }
+    },
+    "running-before1": {
+      "source-open": {
+        "frames": 175,
+        "janky": 17,
+        "percent": 9.714
+      },
+      "remote-open": {
+        "frames": 292,
+        "janky": 17,
+        "percent": 5.822
+      },
+      "ime-close": {
+        "frames": 110,
+        "janky": 0,
+        "percent": 0.0
+      }
+    },
+    "running-after1": {
+      "source-open": {
+        "frames": 173,
+        "janky": 14,
+        "percent": 8.092
+      },
+      "remote-open": {
+        "frames": 288,
+        "janky": 22,
+        "percent": 7.639
+      },
+      "ime-close": {
+        "frames": 112,
+        "janky": 0,
+        "percent": 0.0
+      }
+    }
+  },
+  "stableOverallJankImprovementProven": false,
+  "trace": {
+    "candidate": "layout2, reverted",
+    "firstFrameMs": 76.196,
+    "firstUiScheduledMs": 61.077,
+    "rootFunctionAttributionComplete": false
+  },
+  "memory": {
+    "metric": "proc VmRSS KiB, shared pages included",
+    "sampleProtocol": "same source file and runtime mode; foreground dashboard/background HOME; 30s settle and five samples at 5s",
+    "pairs": {
+      "proxy-front": {
+        "kotlin": {
+          "run": "kotlin-proxy-front2",
+          "rssKiB": 479780,
+          "rssRangeKiB": [
+            479576,
+            480320
+          ],
+          "pssKiB": 364408
+        },
+        "flutter": {
+          "run": "flutter-proxy-front2",
+          "rssKiB": 505240,
+          "rssRangeKiB": [
+            504980,
+            505612
+          ],
+          "pssKiB": null
+        },
+        "rssRatioKotlinOverFlutter": 0.9496,
+        "processCounts": {
+          "kotlin": 1,
+          "flutter": 1
+        }
+      },
+      "proxy-back": {
+        "kotlin": {
+          "run": "kotlin-proxy-back2",
+          "rssKiB": 464664,
+          "rssRangeKiB": [
+            464580,
+            464848
+          ],
+          "pssKiB": 317848
+        },
+        "flutter": {
+          "run": "flutter-proxy-back2",
+          "rssKiB": 499052,
+          "rssRangeKiB": [
+            499052,
+            499052
+          ],
+          "pssKiB": null
+        },
+        "rssRatioKotlinOverFlutter": 0.9311,
+        "processCounts": {
+          "kotlin": 1,
+          "flutter": 1
+        }
+      },
+      "vpn-front": {
+        "kotlin": {
+          "run": "kotlin-vpn-front2",
+          "rssKiB": 474892,
+          "rssRangeKiB": [
+            474060,
+            505408
+          ],
+          "pssKiB": 361316
+        },
+        "flutter": {
+          "run": "flutter-vpn-front2",
+          "rssKiB": 504252,
+          "rssRangeKiB": [
+            504112,
+            504576
+          ],
+          "pssKiB": null
+        },
+        "rssRatioKotlinOverFlutter": 0.9418,
+        "processCounts": {
+          "kotlin": 1,
+          "flutter": 1
+        }
+      },
+      "vpn-back": {
+        "kotlin": {
+          "run": "kotlin-vpn-back2",
+          "rssKiB": 456236,
+          "rssRangeKiB": [
+            456112,
+            456328
+          ],
+          "pssKiB": 311212
+        },
+        "flutter": {
+          "run": "flutter-vpn-back2",
+          "rssKiB": 504360,
+          "rssRangeKiB": [
+            504360,
+            504360
+          ],
+          "pssKiB": null
+        },
+        "rssRatioKotlinOverFlutter": 0.9046,
+        "processCounts": {
+          "kotlin": 1,
+          "flutter": 1
+        }
+      }
+    }
+  },
+  "memoryConditions": {
+    "sourceBytes": 34220,
+    "sourceSha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "proxyCount": 6,
+    "groupCount": 34,
+    "rulesCount": 93,
+    "declaredHttpRuleProviders": 92,
+    "providerCacheBytesAndLoadedCountsMatched": false,
+    "coreBinariesMatched": false,
+    "geoFilesMatched": false,
+    "selectedLeafFrozen": false,
+    "mode": "RULE",
+    "stack": "mips",
+    "mtu": 9000,
+    "systemProxy": true,
+    "vpnAllowBypassMatched": true,
+    "ipv6": false,
+    "dnsHijack": false,
+    "controlledTrafficBytesMatched": false,
+    "processAgeMatched": false,
+    "strictIdenticalRuntimeExperiment": false,
+    "scope": "同设备/同源文件/同运行模式/同页面位置；缓存、内核版本、自动选叶、网络背景流量未逐项冻结。",
+    "flutterVersionName": "0.9.3",
+    "flutterVersionCode": 2026112401,
+    "flutterApkSha256": "700570428bde3a1b316ae7f7e8f10d77f9e23ee8bf8b3f45557362a061fbefb3"
+  },
+  "failedOrExcluded": [
+    "baseline1 overlapped candidate installation, excluded",
+    "flutter proxy front1/back1 PSS missing, retained null; proc RSS sampled in fresh runs",
+    "kotlin vpn front1 state uncertain on resume, excluded from final pairs",
+    "flutter vpn front1/back1 failed prerequisites, empty dirs preserved",
+    "direct image and repeated intrinsic measurement candidates lacked stable jank gain, reverted",
+    "first open identity duplication hypothesis not reproduced, temporary assertion passed and removed"
+  ],
+  "localEvidence": "../acceptance-artifacts/running-memory-jank-poco-20261120",
+  "released": false,
+  "protection": {
+    "removedPackages": [
+      "com.lonnnnnng.flclash.performance",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "inputDeviceCopyRemoved": true,
+    "packageSetMatches": true,
+    "flutterIdentityMatches": true,
+    "flutterApkShaMatches": true,
+    "flutterUiRestoration": {
+      "originalProfiles": 2,
+      "testProfileRemoved": true,
+      "originalSelectedProfileRestored": true,
+      "networkSwitchesMatch": true,
+      "coreStopped": true,
+      "restoredVpnEnabled": true
+    },
+    "settings": {
+      "rotation": "0",
+      "userRotation": "0",
+      "fontScale": "1.0",
+      "night": "Night mode: yes",
+      "alwaysOn": "null",
+      "lockdown": "null"
+    },
+    "settingsMatch": true,
+    "originalInputMatches": true,
+    "localInput": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "bytes": 34220,
+      "mtimeNs": 1794392072317864361
+    },
+    "flutterRuntimeCachesMayHaveChanged": true,
+    "flutterNeverUninstalledOrDataCleared": true
+  },
+  "evidenceHashes": {
+    "memory-comparison.json": "2c5b7a775c9157850124e563af5d0b0982029d46302deff34d216b0a0922c174",
+    "frame-summary.json": "6a73b700865e70f283a979187719800d185b419cb11188f87402431267f341a5",
+    "before.json": "757c0eeada9a8fdc8cb3adc0cbaedb2f74a9830237d13758ee6581960920730f",
+    "after.json": "d95f9d33aaf4e1c55537da550180f8083f11df9b73f3fedef678db4eeb4786cf",
+    "flutter-restoration.json": "649efcd7de6215a4e720a7a99484bf6f11d8c9acec222ddf91c24d2b20483e24",
+    "build-final4.log": "1daa107af248a05c6e08d87aca618344f8f4dfeae4186573766136970d757f7e",
+    "lint-final4.log": "9086d85b2d09fb005b31df1e67a3616043c82f8a82ec66a5f60167857578bcc1",
+    "final-ui1/instrumentation.log": "a309c39b504353dd1ab6bbf772d467dee00f171ff779058c826b0cbfa549f369",
+    "final4-identity.json": "395f0e55170eee4fc898787f93f75d6a3f94a182b8af81a65f0e1ffd41613d95",
+    "installedfinal4.json": "91cfc73d3ee9bfb7bb12c23c3a7029928500620712320ad887d611992ad46b06",
+    "driver.py": "5cac0ef7c7c560761a0f1d599633fccd620e3aed9876df139ead1322fb9a5a1a",
+    "memory.py": "f60e0a75b74a414518694dccbc38fa0b4d3a911bcd67592ed0510299c63fa1ac",
+    "frame-threads.sql": "193d07de9b15d7643a36a9515219ddcbc873a7468b4d66e3c2f7d1d5e8bcf50a",
+    "layout-trace/trace.perfetto-trace": "59b2b89a6c7c35700d4dcc58746c127b1b6613e5a1d97266d52f6846a9b51872"
+  }
+}

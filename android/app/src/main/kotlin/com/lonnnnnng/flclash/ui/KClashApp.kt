@@ -619,6 +619,12 @@ fun KClashApp(
     LaunchedEffect(selectedDestination, toolsSubpage) {
         if (selectedDestination == MainDestination.TOOLS) pageListState.scrollToItem(0)
     }
+    DisposableEffect(runtimeViewModel, selectedDestination, toolsSubpage, selectedObservationTabIndex) {
+        runtimeViewModel.setConnectionsVisible(selectedDestination == MainDestination.TOOLS &&
+            toolsSubpage == ToolsSubpage.OBSERVATIONS && selectedObservationTabIndex == ObservationTab.CONNECTIONS.ordinal)
+        onDispose { runtimeViewModel.setConnectionsVisible(false) }
+    }
+
 
     LaunchedEffect(developerToolsEnabled) {
         if (!developerToolsEnabled && toolsSubpage == ToolsSubpage.DEVELOPER) toolsSubpage = ToolsSubpage.MENU
