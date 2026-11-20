@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **0.1.11正式发布（2026-11-20）**：KClash 0.1.11/code1011 已发布为 GitHub Latest，标签`kclash-v0.1.11`固定`10697f3f`。标签CI 44754219878 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,584,177字节，SHA`b7fb8727…488c08da`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。 本版包含055～068的工具/双语/主题、输入面板与交互/材质改进；完整视觉/光学/菜单性能继续按下列剩余范围推进。[发布证据](acceptance/release-0.1.11-20261120.json)、[更新说明](releases/kclash-v0.1.11.md)
+
 > **KUI-VIS-068（2026-11-20）**：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 四个自有包与USB副本已清，原Flutter/原1.yaml/设置保持，未发版。[说明](floating-input-live-optics-alignment.md)、[证据](acceptance/panels-live-optics-poco-20261120.json)
 
 > **KUI-VIS-067（2026-11-20）**：067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 原失败保留，独立四包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](forms-live-material-flutter-alignment.md)、[证据](acceptance/forms-live-material-poco-20261120.json)
@@ -893,8 +895,8 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.10/code1010**，标签`kclash-v0.1.10`指向`c145cdbe`；公开APK SHA`4381910a…953e6d7`，沿用既有正式证书 |
-| 发布范围 | 0.1.10标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI/DEX检查通过；Release Latest及远端digest、签名和SHA256SUMS均回验。Release APK已下载核验，未安装到手机。详见[发布证据](acceptance/release-0.1.10-20261119.json) |
+| 当前公开版本 | **0.1.11/code1011**，标签`kclash-v0.1.11`指向`10697f3f`；公开APK SHA`b7fb8727…488c08da`，沿用既有正式证书 |
+| 发布范围 | 0.1.11标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI/DEX检查通过；Latest及下载资产SHA/digest回验一致。055～068具名功能纳入本版，完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.11-20261120.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
@@ -905,7 +907,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 数据保护 | 068仅POCO独立包；真实FILE/CUSTOM在独立库回收、核心STOPPED。四个包及本轮USB输入按哈希核验后清理，包清单/原Flutter身份/设置/原1.yaml SHA-size-mtime保持。 |
 | 正在推进 | 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [068输入浮框/光学/菜单定域](acceptance/panels-live-optics-poco-20261120.json)、 [067表单与实时材质](acceptance/forms-live-material-poco-20261120.json)、 [066窗口延迟与关闭归因](acceptance/window-latency-poco-20261120.json)、 [065 Popup与IME交接](acceptance/popup-ime-poco-20261120.json)、 [064运行内存与掉帧](acceptance/running-memory-jank-poco-20261120.json)、 [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
+| 最新证据 | [0.1.11发布](acceptance/release-0.1.11-20261120.json)、 [068输入浮框/光学/菜单定域](acceptance/panels-live-optics-poco-20261120.json)、 [067表单与实时材质](acceptance/forms-live-material-poco-20261120.json)、 [066窗口延迟与关闭归因](acceptance/window-latency-poco-20261120.json)、 [065 Popup与IME交接](acceptance/popup-ime-poco-20261120.json)、 [064运行内存与掉帧](acceptance/running-memory-jank-poco-20261120.json)、 [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
 
 ## 4. 目标架构图
 
@@ -1454,7 +1456,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-当前公开版为**0.1.10/code1010**，标签提交`c145cdbe`，正式证书、CI及远端资产摘要已核对；Release包已下载核验，未安装到手机，见[发布证据](acceptance/release-0.1.10-20261119.json)。较早版本签名/CI/真机记录为独立历史证据。
+KClash 0.1.11/code1011 已发布为 GitHub Latest，标签`kclash-v0.1.11`固定`10697f3f`。标签CI 44754219878 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,584,177字节，SHA`b7fb8727…488c08da`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。 见[发布证据](acceptance/release-0.1.11-20261120.json)。较早版本签名/CI/真机记录为独立历史证据。
 
 最新工程/视觉验收为KUI-VIS-068：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 既有功能验收在线age完整链路1/1、TUN补偿5/5与10笔实网仍按原证据独立保留；本组未重跑实网。其他条件边界见[功能清单](functional-closure.md)。首次联网TLS按用户决定归档。以下日期段落为历史，不覆盖第3节当前快照。
 

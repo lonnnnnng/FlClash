@@ -1,0 +1,225 @@
+{
+  "date": "2026-11-20",
+  "release": {
+    "tag": "kclash-v0.1.11",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.11",
+    "sourceCommit": "10697f3f3bd471640a93b364d2bc289f5e8ef6da",
+    "workflowRunId": 44754219878,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44754219878",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-20T14:52:03Z",
+    "publishedAtAsiaShanghai": "2026-11-20T22:52:03+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.11-android-arm64-v8a.apk",
+        "size": 49584177,
+        "digest": "sha256:b7fb87271fea898a5733514887e0547f32b27f3cda437f9919d92bb4488c08da",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.11/KClash-0.1.11-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 102,
+        "digest": "sha256:0f73edeac42e68ca0bf15fd8f79ccf4153580c0ab2d493c33fe116e2e7eb06f2",
+        "state": "uploaded",
+        "browser_download_url": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.11/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.11",
+    "versionCode": 1011,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "abis": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "remoteSha256Verified": true,
+    "sha256SumsVerified": true,
+    "signatureVerified": true,
+    "downloadedMlkitDexVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "jobs": [
+      {
+        "name": "Verify KClash Android arm64",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Checkout",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Java",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Go",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Android SDK",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install Android build tools",
+            "conclusion": "success"
+          },
+          {
+            "name": "Set up Gradle",
+            "conclusion": "success"
+          },
+          {
+            "name": "Resolve build version",
+            "conclusion": "success"
+          },
+          {
+            "name": "Configure KClash release signing",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify Go core, controllers and Geo recovery with race detector",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify tests, R8 and arm64 Release package",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify Release artifact",
+            "conclusion": "success"
+          },
+          {
+            "name": "Upload Release artifact",
+            "conclusion": "success"
+          },
+          {
+            "name": "Remove runner signing material",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Gradle",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Go",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Set up Java",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Checkout",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "Publish signed KClash release",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Checkout release notes",
+            "conclusion": "success"
+          },
+          {
+            "name": "Download signed APK",
+            "conclusion": "success"
+          },
+          {
+            "name": "Publish GitHub Release",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Checkout release notes",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ],
+    "sameSourceBranch": {
+      "runId": 44754220419,
+      "conclusion": "success"
+    },
+    "timing": {
+      "build": "11m 26s",
+      "lint": "5m 56s",
+      "verifyJob": "20m35s",
+      "publishJob": "17s"
+    },
+    "nonBlockingWarnings": [
+      "部分GitHub Actions Node20运行时和setup-java v4已弃用；本次verify/publish均成功，未在发布中扩改workflow依赖"
+    ]
+  },
+  "localPreflight": {
+    "result": "版本与文档差异检查通过；签名构建及发布门禁由标签CI执行",
+    "featureEvidence": "panels-live-optics-poco-20261120.json",
+    "featureBuildAndTest": "前组最终921项JVM（含复用）、POCO37/37，版本调整前源码cedef07a",
+    "additionalLocalBuild": false
+  },
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "reason": "本轮发布并核验下载制品，未操作手机",
+    "featureDevice": "POCO F2 Pro / API36",
+    "evidence": "panels-live-optics-poco-20261120.json"
+  },
+  "protection": {
+    "originalYamlShaSizeMtimePreserved": true,
+    "originalYamlUploaded": false,
+    "flutterOriginalModified": false
+  },
+  "remaining": [
+    "完整Flutter页面/面板精确排版与连续转场",
+    "任意重叠玻璃捕获分层、运行按钮轮廓与采样策略",
+    "菜单首开/关闭和RenderThread慢帧、稳定性能收益"
+  ],
+  "rawEvidenceRoot": "../acceptance-artifacts/release-0.1.11-20261120",
+  "rawEvidence": {
+    "tag-ci.log": {
+      "sha256": "8bf34a856fe62e2044a2cf5fb02e336800b56d48d5dc7fd66dbc67acf4abdb6f",
+      "bytes": 249256
+    },
+    "signature.txt": {
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798",
+      "bytes": 974
+    },
+    "badging.txt": {
+      "sha256": "a0eb0034ed6ba4e1ca679fe56ca1cf816a4ccb066e5c0b9f39264131b5966f2b",
+      "bytes": 5941
+    },
+    "checksum-verification.txt": {
+      "sha256": "8c8f2fe62f6af76ee1860ce2f8ed513e3b8ac5640676fce269a1f91292042568",
+      "bytes": 40
+    },
+    "dex-check.txt": {
+      "sha256": "9a9d6b59c1bfdc97d05c36140041e8f639c769c75cae52cc3b6995291193711a",
+      "bytes": 662
+    },
+    "source-commits.json": {
+      "sha256": "0b97c5fddb8301c07457566eb93db9c945c4496ec4dc7d97cca50bb70b18da88",
+      "bytes": 2248
+    }
+  }
+}
