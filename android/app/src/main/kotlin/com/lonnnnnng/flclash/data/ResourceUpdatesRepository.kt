@@ -48,7 +48,7 @@ class ResourceUpdatesRepository @Inject constructor(
     private val manual = mutableSetOf<String>()
 
     init {
-        scope.launch { merge(icons.changes.map { Unit }, rules.changes.map { Unit }, scripts.scripts.map { Unit },
+        scope.launch { merge(icons.invalidations, rules.changes.map { Unit }, scripts.scripts.map { Unit },
             runtime.geoSettings.map { Unit }, runtime.geoUpdates.map { Unit }).collect { refresh() } }
     }
 

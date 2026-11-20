@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -276,6 +277,7 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithTag("profile_add_mode_batch").performClick()
         composeRule.onNodeWithTag("profile_add_remote_batch")
             .performTextInput("$first\n$existing\n$first")
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithText("识别到 1 个链接").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText("识别到 1 个链接").assertIsDisplayed()
         composeRule.onNodeWithText("跳过已添加的重复项 1 个").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_add_submit").performClick()
@@ -305,10 +307,34 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithTag("profile_add_remote_batch")
             .performTextInput("https://valid.invalid/sub\nfile:///private/config")
 
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithText("有 1 条链接格式无效，修正后才能导入").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText("有 1 条链接格式无效，修正后才能导入").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_add_submit").assertIsNotEnabled()
         composeRule.onAllNodesWithText("file:///private/config").assertCountEquals(0)
         assertEquals(false, added)
+    }
+
+    @Test
+    fun batchEditsInvalidatePreviewAndOnlyLatestInputCanSubmit() {
+        val submissions = mutableListOf<List<String>>()
+        var existing by mutableStateOf(emptySet<String>())
+        composeRule.setContent { KClashTheme {
+            AddProfileDialog(false, {}, {}, {}, { _, _ -> }, onAddRemoteBatch = { submissions += it },
+                existingUrls = existing, onAddCustom = {}, initialRemoteUrl = "")
+        } }
+        composeRule.onNodeWithTag("profile_add_mode_batch").performClick()
+        composeRule.onNodeWithTag("profile_add_remote_batch").performTextInput(
+            (1..300).joinToString("\n") { "https://example.invalid/sub/$it" })
+        // 作者 long：快速替换大批量输入后必须撤销旧预览；后续已存在列表变化也不能让旧链接重放提交。
+        composeRule.onNodeWithTag("profile_add_remote_batch").performTextReplacement("https://latest.invalid/sub")
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithText("识别到 1 个链接").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.runOnIdle { existing = setOf("https://latest.invalid/sub") }
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithText("跳过已添加的重复项 1 个").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("profile_add_submit").assertIsNotEnabled()
+        composeRule.onNodeWithTag("profile_add_remote_batch").performTextReplacement("https://final.invalid/sub")
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithText("识别到 1 个链接").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("profile_add_submit").performTouchInput { click(); advanceEventTime(40); click() }
+        assertEquals(listOf(listOf("https://final.invalid/sub")), submissions)
     }
 
     @Test

@@ -126,6 +126,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.material.icons.Icons
@@ -4936,7 +4939,19 @@ internal fun AddProfileDialog(
     val urlFocus = remember { FocusRequester() }
     val keyFocus = remember { FocusRequester() }
     val batchFocus = remember { FocusRequester() }
-    val preview = remember(batchInput, existingUrls) { parseProfileUrlImport(batchInput, existingUrls) }
+    // 作者 long：来源与表单分步呈现，返回来源页也要终止已经不可见的批量解析。
+    var step by rememberSaveable { mutableStateOf(if (initialRemoteUrl != null) AddProfileStep.REMOTE else AddProfileStep.SOURCE) }
+    // 作者 long：粘贴整批链接不能占用输入与动画线程；输入一变立即撤销旧结果，防止解析交接时提交上一批。
+    var preview by remember(batchInput, existingUrls, batchMode, step) { mutableStateOf<ProfileUrlImportPreview?>(null) }
+    LaunchedEffect(batchInput, existingUrls, batchMode, step) {
+        if (batchMode && step == AddProfileStep.REMOTE) {
+            if (batchInput.isNotBlank()) delay(120)
+            preview = withContext(Dispatchers.Default) {
+                val context = currentCoroutineContext()
+                parseProfileUrlImport(batchInput, existingUrls) { context.ensureActive() }
+            }
+        }
+    }
     val urlError = if (attempted && !batchMode) profileUrlInputError(url) else null
     val keyboard = LocalSoftwareKeyboardController.current
     LaunchedEffect(feedback.requestId, feedback.phase) {
@@ -4950,10 +4965,11 @@ internal fun AddProfileDialog(
         if (busy || submitted) return
         attempted = true
         if (batchMode) {
-            if (preview.urls.isEmpty() || preview.invalidCount > 0) return
+            val ready = preview ?: return
+            if (ready.urls.isEmpty() || ready.invalidCount > 0) return
             submitted = true
             keyboard?.hide()
-            onAddRemoteBatch(preview.urls)
+            onAddRemoteBatch(ready.urls)
         } else {
             if (profileUrlInputError(url) != null) { urlFocus.requestFocus(); return }
             // 作者 long：按钮和IME共用同步认领，父窗口关闭前的连续点击也只能发出一次导入。
@@ -4964,8 +4980,6 @@ internal fun AddProfileDialog(
             ageKey = ""
         }
     }
-    // 作者 long：来源与表单分步呈现，避免订阅字段和自定义配置字段同时挤在添加入口。
-    var step by rememberSaveable { mutableStateOf(if (initialRemoteUrl != null) AddProfileStep.REMOTE else AddProfileStep.SOURCE) }
     val busyDismiss = { if (!locked) onDismiss() }
     if (step == AddProfileStep.SOURCE) {
         ProfileSourceMenu(sourceAnchor, locked, busyDismiss, onPickQrCode, onPickFile,
@@ -5018,13 +5032,15 @@ internal fun AddProfileDialog(
                         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri),
                         modifier = Modifier.fillMaxWidth().focusRequester(batchFocus).testTag("profile_add_remote_batch"),
                     )
-                    Text(tr("识别到 {0} 个链接", preview.urls.size))
-                    if (preview.skippedExisting > 0) {
-                        Text(tr("跳过已添加的重复项 {0} 个", preview.skippedExisting))
+                    val ready = preview
+                    if (ready == null) Text(tr("正在识别链接…"), Modifier.testTag("profile_add_parsing"))
+                    else Text(tr("识别到 {0} 个链接", ready.urls.size))
+                    if (ready != null && ready.skippedExisting > 0) {
+                        Text(tr("跳过已添加的重复项 {0} 个", ready.skippedExisting))
                     }
-                    if (preview.invalidCount > 0) {
+                    if (ready != null && ready.invalidCount > 0) {
                         Text(
-                            tr("有 {0} 条链接格式无效，修正后才能导入", preview.invalidCount),
+                            tr("有 {0} 条链接格式无效，修正后才能导入", ready.invalidCount),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -5077,12 +5093,12 @@ internal fun AddProfileDialog(
             else TextButton(
                     onClick = ::submit,
                     enabled = !locked && if (batchMode) {
-                        preview.urls.isNotEmpty() && preview.invalidCount == 0
+                        preview?.let { it.urls.isNotEmpty() && it.invalidCount == 0 } == true
                     } else {
                         url.isNotBlank()
                     },
                     modifier = Modifier.testTag("profile_add_submit"),
-                ) { Text(if (feedback.phase == ProfileAddPhase.FAILED) tr("重试导入") else if (batchMode) tr("导入 {0} 条", preview.urls.size) else tr("导入")) }
+                ) { Text(if (feedback.phase == ProfileAddPhase.FAILED) tr("重试导入") else if (batchMode) tr("导入 {0} 条", preview?.urls?.size ?: 0) else tr("导入")) }
         },
         dismissButton = {
             TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; keyboard?.hide(); step = AddProfileStep.SOURCE } }, enabled = terminal || !locked,

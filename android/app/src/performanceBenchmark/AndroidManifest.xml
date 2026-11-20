@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 作者 long：仅独立R8验收包允许shell取线程trace；正式Release不携带性能诊断声明。 -->
+    <application><profileable android:shell="true" /></application>
+</manifest>

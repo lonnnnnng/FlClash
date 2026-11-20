@@ -64,4 +64,11 @@ class ProfileUrlImportTest {
         assertEquals(listOf(first, second), preview.urls)
         assertEquals(0, preview.invalidCount)
     }
+    @Test(expected = kotlinx.coroutines.CancellationException::class)
+    fun cancelledBatchStopsWithoutReturningPartialPreview() {
+        var checks = 0
+        parseProfileUrlImport((1..500).joinToString(" ") { "https://example.invalid/$it" }, emptySet()) {
+            if (++checks == 8) throw kotlinx.coroutines.CancellationException("superseded")
+        }
+    }
 }

@@ -2179,4 +2179,5 @@
     <string name="text_ffcf62b2ac71" formatted="false">"外部控制器监听 127.0.0.1:9090。启用入站认证后，系统 HTTP 代理不会自动下发。"</string>
     <string name="text_ffd92888cff2" formatted="false">"正在准备订阅导入…"</string>
     <string name="text_ffecef0ae6ee" formatted="false">"不支持的策略组类型："</string>
+    <string name="text_dd44ca603959">正在识别链接…</string>
 </resources>

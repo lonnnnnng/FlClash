@@ -67,30 +67,32 @@ internal fun AppMenuMorphFrame.contentScale(size: Size): Float {
     return if (returning) min(widthScale, platter.height / source.height.coerceAtLeast(1f)) else widthScale
 }
 
-/** 作者 long：外层只投影platter，液滴内部不染黑；普通回源由正文阴影渐交给外层，玻璃则由外层贯穿承担。 */
+/** 作者 long：动画期间复用最终卡片的阴影纹理，只变换位置/大小/透明度，避免每帧软件光栅化新路径并扩大GPU缓存。 */
 @Composable
 internal fun AppMenuPlatterShadow(modifier: Modifier, size: State<IntSize>, frame: (Size) -> AppMenuMorphFrame,
     visible: () -> Boolean, dark: Boolean, glass: Boolean) {
-    if (!visible()) return
-    val measured = size.value
-    if (measured.width <= 0 || measured.height <= 0) return
-    val current = frame(Size(measured.width.toFloat(), measured.height.toFloat()))
-    val strength = current.outerShadowStrength(glass)
-    if (strength <= 0f) return
-    val shape = remember(current.platter, current.radius) { object : Shape {
-        override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density) = Outline.Generic(current.path())
-    } }
+    val shape = remember { AppSuperellipseShape(24.dp) }
     val radius = with(LocalDensity.current) { appMenuShadowRadiusPx(density).toDp() }
-    Box(modifier.graphicsLayer { compositingStrategy = CompositingStrategy.ModulateAlpha; alpha = strength }
-        .drawWithContent {
-            // 作者 long：Flutter的evenOdd裁剪先限定三倍sigma加偏移的外界，再扣内部；不让反向路径裁剪扩展到整个透明Window。
-            val bounds = current.outline().getBounds().inflate((3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density)
-            clipRect(bounds.left, bounds.top, bounds.right, bounds.bottom) {
-                clipPath(current.outline(), clipOp = ClipOp.Difference) { this@drawWithContent.drawContent() }
-            }
+    Box(modifier.drawWithContent {
+        if (!visible() || size.value.width <= 0 || size.value.height <= 0) return@drawWithContent
+        val motion = frame(this.size)
+        if (motion.outerShadowStrength(glass) <= 0f) return@drawWithContent
+        // 作者 long：液滴联合轮廓内部仍扣空；只在动画瞬间缩放柔和阴影，稳定终帧的尺寸/半径与旧实现相同。
+        val bounds = motion.outline().getBounds().inflate((3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density)
+        clipRect(bounds.left, bounds.top, bounds.right, bounds.bottom) {
+            clipPath(motion.outline(), clipOp = ClipOp.Difference) { this@drawWithContent.drawContent() }
         }
-        .dropShadow(shape, Shadow(radius = radius,
-            color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
+    }.graphicsLayer {
+        val motion = frame(this.size)
+        compositingStrategy = CompositingStrategy.ModulateAlpha
+        alpha = if (visible()) motion.outerShadowStrength(glass) else 0f
+        transformOrigin = TransformOrigin(0f, 0f)
+        scaleX = motion.platter.width / this.size.width.coerceAtLeast(1f)
+        scaleY = motion.platter.height / this.size.height.coerceAtLeast(1f)
+        translationX = motion.platter.left
+        translationY = motion.platter.top
+    }.dropShadow(shape, Shadow(radius = radius,
+        color = Color.Black.copy(alpha = .118f * if (dark) 1.5f else 1f), offset = DpOffset(0.dp, 8.dp))))
 }
 
 /** 作者 long：只保留最后一份几何，不把每帧路径长期塞进缓存；同一时刻的多次绘制共享路径。 */

@@ -33,6 +33,7 @@ val defaultVersionCode = 1010
 val defaultVersionName = "0.1.10"
 // 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
 val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"
+val performanceBenchmarkEnabled = providers.gradleProperty("kclashPerformanceBenchmark").orNull == "true"
 val requestedVersionCode = providers.gradleProperty("kclashVersionCode")
     .orNull
     ?.toIntOrNull()
@@ -99,6 +100,14 @@ android {
                 "proguard-rules.pro",
             )
         }
+        if (performanceBenchmarkEnabled) create("performanceBenchmark") {
+            // 作者 long：真实页面性能使用完整R8和release库，独立包仅更换安装身份，避免Debug探针与测试框架污染内存。
+            initWith(getByName("release"))
+            applicationIdSuffix = ".performance"
+            versionNameSuffix = "-performance"
+            matchingFallbacks += "release"
+            signingConfig = signingConfigs.getByName("debug")
+        }
         if (motionBenchmarkEnabled) create("motionBenchmark") {
             initWith(getByName("debug"))
             isDebuggable = false
@@ -111,6 +120,9 @@ android {
     if (motionBenchmarkEnabled) testBuildType = "motionBenchmark"
 
     sourceSets {
+        if (performanceBenchmarkEnabled) getByName("performanceBenchmark") {
+            kotlin.srcDir("src/release/kotlin")
+        }
         if (motionBenchmarkEnabled) getByName("motionBenchmark") {
             // 作者 long：同一个固定对象宿主用于Debug/非Debug对照，禁止另写简化动画冒充产品性能。
             kotlin.srcDir("src/debug/kotlin")

@@ -20,20 +20,22 @@ internal fun profileUrlInputError(value: String): String? {
  * 作者 long：粘贴配置列表时沿用 Flutter 的行、YAML 列表标记和引号解析规则，
  * 先在界面反馈重复及无效条目，避免用户提交后才发现整批链接不可导入。
  */
-internal fun parseProfileUrlImport(text: String, existingUrls: Set<String>): ProfileUrlImportPreview {
+internal fun parseProfileUrlImport(text: String, existingUrls: Set<String>, checkActive: () -> Unit = {}): ProfileUrlImportPreview {
     val urls = mutableListOf<String>()
     val seen = mutableSetOf<String>()
     var skippedExisting = 0
     var invalidCount = 0
 
     text.lineSequence().forEach { originalLine ->
+        // 作者 long：大量粘贴后继续编辑或离开表单时，及时结束已失效的后台解析，避免旧任务持续争用CPU。
+        checkActive()
         var line = originalLine.trim()
         if (line.startsWith("- ")) line = line.removePrefix("- ").trim()
         if (line.endsWith(',')) line = line.dropLast(1).trim()
 
-        line.split(Regex("\\s+"))
+        PROFILE_URL_SEPARATOR.splitToSequence(line)
             .map { token ->
-                if (token.length >= 2 && token.first() == token.last() && token.first() in setOf('\'', '"')) {
+                if (token.length >= 2 && token.first() == token.last() && (token.first() == '\'' || token.first() == '"')) {
                     token.substring(1, token.lastIndex).trim()
                 } else {
                     token
@@ -41,6 +43,7 @@ internal fun parseProfileUrlImport(text: String, existingUrls: Set<String>): Pro
             }
             .filter(String::isNotEmpty)
             .forEach { url ->
+                checkActive()
                 val valid = profileUrlInputError(url) == null
                 if (!valid) {
                     invalidCount++
@@ -54,3 +57,5 @@ internal fun parseProfileUrlImport(text: String, existingUrls: Set<String>): Pro
 }
 
 private const val MAX_PROFILE_URL_LENGTH = 2_048
+
+private val PROFILE_URL_SEPARATOR = Regex("\\s+")

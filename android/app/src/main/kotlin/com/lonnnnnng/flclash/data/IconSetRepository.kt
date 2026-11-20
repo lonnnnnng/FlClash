@@ -75,6 +75,8 @@ class IconSetRepository @Inject constructor(private val database: KClashDatabase
     private val lock = Mutex()
     private val preferences = database.appPreferences()
     val changes = preferences.observe(ICON_SETS_KEY).map(IconSetCodec::decode)
+    // 作者 long：更新总览只需要失效信号，不能先解码整份图库再在refresh里重复读取解码。
+    val invalidations = preferences.observe(ICON_SETS_KEY).map { Unit }
     suspend fun all() = IconSetCodec.decode(preferences.get(ICON_SETS_KEY))
     private suspend fun save(rows: List<ResourceIconSet>) = preferences.put(AppPreferenceEntity(ICON_SETS_KEY, IconSetCodec.encode(rows), System.currentTimeMillis()))
 

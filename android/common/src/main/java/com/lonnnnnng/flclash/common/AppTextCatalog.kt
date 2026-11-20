@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.common
 /** 作者 long：固定文案与Android资源对应；按字面长度优先匹配完整错误模板，禁止对任意用户字符串逐词替换。 */
 internal object AppTextCatalog {
     val ids: Map<String, Int> by lazy { buildMap {
+        put("正在识别链接…", R.string.text_dd44ca603959)
         putAll(part0())
         putAll(part1())
         putAll(part2())

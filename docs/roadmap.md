@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **KUI-VIS-063（2026-11-20）**：063已优化共用菜单阴影纹理、首页应用扫描、批量链接后台解析和图库分配。POCO R8对照：首页PSS中位降33%、五轮弹框峰值降34%、静置后降15%；919项JVM、24/24定向真机、三变体构建及双Lint/DEX通过。首帧约67ms及总体jank仍未稳定改善，运行核心与原版同态内存比较未验。 原始失败留档；独立测试包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](interaction-memory-performance.md)与[证据](acceptance/interaction-memory-poco-20261120.json)
+
 > **KUI-VIS-062（2026-11-20）**：工具页已合并为“网络活动”单入口，最近请求/活动连接/DNS/日志四个完整可搜索Tab；全应用2178组中英文案、语言三选项与深浅/系统主题已接入。POCO最终10/10、相邻回归5/5、冷进程准备与回读各1/1，16图已核对；917项JVM结果零失败，motion/Test、未签名Release-R8、双Lint/DEX通过。 原启动失败和修复留档，未发版。[说明](tools-observation-appearance.md)与[证据](acceptance/tools-observation-appearance-poco-20261120.json)
 
 > **KUI-VIS-061（2026-11-20）：061 NTP输入弹框404ms弹簧入场、冻结缩放淡出、提前反转、清空留窗与关闭恢复已验；修正首次系统遮罩叠加及浮点端点残差，隔离配置身份。POCO最终11/11、真实MainActivity1/1；622项App motion JVM、motion/Test、未签名Release-R8、双Lint/DEX通过。** 原失败和中间视觉偏差留存。Flutter深浅录像与Kotlin自然窗口已核对，完整页面视觉和菜单性能仍PARTIAL。[说明](ntp-dialog-motion-flutter-alignment.md)与[证据](acceptance/ntp-dialog-motion-poco-20261120.json)
@@ -12,7 +14,7 @@
 
 > **KUI-VIS-057（2026-11-20）：POCO单项圆角输入、列表胶囊工具栏与带行号快速编辑已验；补查找/撤销重做/字号/换行，返回只合并列表草稿。最终产品618项App motion JVM、motion/Test、未签名Release-R8、双Lint与DEX通过。集中final6为28/29，旧测试宿主切分区抢在Sheet关闭前导致1失败；修正测试等待后final7定向5/5，真实MainActivity 1/1（47.374秒），各批次独立保留。Flutter Rust宿主已可用，深浅6组限定范围对照；49秒录像1404原PTS帧、12点抽样，不称完整逐帧或性能改善。** [说明](list-editor-flutter-alignment.md)与[证据](acceptance/list-editor-parity-poco-20261120.json)
 
-> **当前范围（2026-11-20）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。本轮新增工具页整合、全应用中英双语与三态主题并已完成定向验收；后续继续 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
+> **当前范围（2026-11-20）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。工具页整合、全应用中英双语与三态主题已验；063按用户反馈优先优化交互与内存并已完成具名范围验收。后续先处理菜单首次窗口/表单交接和剩余慢帧，再继续 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
 > **KUI-VIS-056（2026-11-20）POCO本组已验**：域名嗅探整页标题/空态/添加面板/协议文案收敛，端口/域名/地址新增列表草稿、增删排序与快速编辑；修复列表和目标菜单保存中恢复丢回执。最终组件及相邻回归28/28、真实MainActivity自然流程1/1，92张PNG；49秒录像保留1364原PTS帧，两个转场窗口抽取39/42张独立留存（原PTS窗口77/82帧）。618项App motion JVM、motion/Test、未签名Release-R8与Lint/DEX通过。Flutter Rust快速编辑在隔离宿主未初始化；单项弹框/快速编辑/列表工具栏/精确像素等仍未完成，菜单性能归因仍待。原版Flutter、1.yaml与设置保持，自有三包/输入副本已清。[说明](sniffer-page-list-alignment.md)与[证据](acceptance/sniffer-full-parity-poco-20261120.json)
 
@@ -886,14 +888,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 062最终同套build7：POCO final4 10/10、regression2 5/5、冷进程准备/回读各1/1；App624+Service220+Core39+Common34=917项零失败，含任务内复用。motion/Test、Release-R8、双Lint零错误及DEX通过。 |
+| 最新自动化记录 | 063最终build-final3：919项JVM结果零失败（App626最终执行，其余293本组复用）；performance-R8、motion/Test、未签名Release-R8、双Lint/DEX通过；POCO 21/21+3/3，44图核验。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | 062只使用POCO独立motion/test，两包已卸载；原1.yaml SHA/大小/mtime、原版com.follow.clash身份/安装时间、包清单和设备设置保持。独立包MainActivity配置/选择不变、结束STOPPED；未导入配置或启动VPN。 |
-| 正在推进 | 工具页已合并为“网络活动”单入口，最近请求/活动连接/DNS/日志四个完整可搜索Tab；全应用2178组中英文案、语言三选项与深浅/系统主题已接入。POCO最终10/10、相邻回归5/5、冷进程准备与回读各1/1，16图已核对；917项JVM结果零失败，motion/Test、未签名Release-R8、双Lint/DEX通过。 下一组继续其余子页/输入面板精确排版与连续转场，再集中菜单首开/关闭无损Perfetto与RenderThread归因。完整视觉和性能仍PARTIAL。 |
+| 数据保护 | 063仅操作POCO独立performance/motion/test，安装回拉后已卸载三包；包清单、原Flutter身份/安装时间、系统设置、原1.yaml SHA/大小/mtime保持。空库、核心停止，未导入配置或启动VPN。 |
+| 正在推进 | 063已优化共用菜单阴影纹理、首页应用扫描、批量链接后台解析和图库分配。POCO R8对照：首页PSS中位降33%、五轮弹框峰值降34%、静置后降15%；919项JVM、24/24定向真机、三变体构建及双Lint/DEX通过。首帧约67ms及总体jank仍未稳定改善，运行核心与原版同态内存比较未验。 下一步定位首次窗口创建/重组/布局、Dialog与IME交接及缓冲区等待；继续剩余子页视觉/连续转场。完整视觉和性能仍PARTIAL。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
+| 最新证据 | [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
 
 ## 4. 目标架构图
 

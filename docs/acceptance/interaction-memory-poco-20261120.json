@@ -1,0 +1,1806 @@
+{
+  "id": "KUI-VIS-063",
+  "date": "2026-11-20",
+  "baseCommit": "35e3dbe7f5e25da22d23772eee3458d7316dd8e2",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "glass": false,
+    "core": "STOPPED",
+    "profiles": "empty"
+  },
+  "scope": [
+    "添加配置与共用菜单阴影分配",
+    "首页安装应用按需扫描",
+    "批量链接后台取消解析",
+    "图库减少重复解码与列表分配"
+  ],
+  "build": {
+    "jvm": {
+      "app": {
+        "tests": 626,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 919,
+    "motionAndTest": true,
+    "releaseR8": true,
+    "performanceR8": true,
+    "releaseSigned": false,
+    "mlkitDex": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "lint": {
+      "motion": {
+        "errors": 0,
+        "warnings": 75,
+        "hints": 15
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 71,
+        "hints": 14
+      }
+    },
+    "bilingualResourcePairs": 2179,
+    "sourceHashesMatchedFinalPerformance": true,
+    "releaseHasNoProfileableOrDebugHosts": true,
+    "artifacts": {
+      "performance": {
+        "sha256": "f577e215345715f934693aa92afc2221f37573df9606c98749ac0fae656113f8",
+        "bytes": 49564649,
+        "installedReadbackMatched": true
+      },
+      "motion": {
+        "sha256": "6a7d0115c9d10783ee8f6b7270e6c60882964e1dca346090d71dcc01e0839fd0",
+        "bytes": 67458529,
+        "installedReadbackMatched": true
+      },
+      "test": {
+        "sha256": "f2b84279cddb4b64b1f75f8957e188907b1d30fe1ac2eb183522b75d19618e95",
+        "bytes": 3175158,
+        "installedReadbackMatched": true
+      },
+      "release": {
+        "sha256": "3670d7a39f46c4c9c9579b53368321e15a5e6334180ac4e6b896f9086e48baa2",
+        "bytes": 49548277,
+        "installedReadbackMatched": false
+      }
+    }
+  },
+  "deviceTests": {
+    "main": {
+      "returncode": 0,
+      "device": "POCO F2 Pro",
+      "serial": "31936bb6",
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "invalidSingleSubscriptionStaysInFormWithoutSubmitting",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "batchEditsInvalidatePreviewAndOnlyLatestInputCanSubmit",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "addProfileSourceMenuRoutesQrAndFileImportActions",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "batchProfileImportBlocksInvalidEntriesWithoutShowingTheirContents",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "addProfileDialogSwitchesToCustomAndInvokesCallback",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "validSingleImportTrimsFieldsAndRepeatedTapSubmitsOnlyOnce",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+          "test": "batchProfileImportShowsDuplicateCountAndSubmitsOnlyNewUrls",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+          "test": "backgroundPreservesExistingEditorAndClearsHiddenNewImportKey",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+          "test": "singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileQrFormsInstrumentedTest",
+          "test": "scannedLinkPrefillsFormAndOnlyImportsAfterConfirmation",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+          "test": "permissionRetryPreservesSelectionAndAllTransitionStatesLockEdits",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.AccessControlPanelInstrumentedTest",
+          "test": "searchAndSelectPackageUpdatesBlacklist",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourcesPageInstrumentedTest",
+          "test": "iconSetPreviewAndGroupPickerUseGalleryNamesAndSelection",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+          "test": "fourTabsSearchCompleteListsAndKeepIndependentQueries",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.MenuShadowParityInstrumentedTest",
+          "test": "platterShadowLeavesInteriorAndDetachedDropletClearInBothThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.MenuGeometryParityInstrumentedTest",
+          "test": "openingAndReturningGeometryInBothThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+          "test": "sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+          "test": "profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.data.AccessControlSettingsStoreInstrumentedTest",
+          "test": "savesAndRestoresSanitizedPackageSelection",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.data.ResourceRepositoriesInstrumentedTest",
+          "test": "iconGallerySyncKeepsRenameAndRejectsDeletedChangedOrInvalidVersions",
+          "code": 0
+        }
+      ],
+      "images": {
+        "icon_set_list_false": {
+          "count": 2,
+          "bytes": 44097,
+          "sha256": "dbcba1b1ce5d4413b3375b1667982d5fca712138e3b52ac437336e928a3e3f0a",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_preview_false": {
+          "count": 2,
+          "bytes": 48120,
+          "sha256": "7e74642e97881f9518a3a9d62fc2827f211d56d0d421ca1528583c0f0cc3e790",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_preview_no_results_false": {
+          "count": 4,
+          "bytes": 121478,
+          "sha256": "8ad770c7b3ae8d201b635b354444d8680dc2265b006f1bfcad2ed08167b6a145",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_group_picker_false": {
+          "count": 3,
+          "bytes": 107368,
+          "sha256": "99447a8a5e551f8d32adea8747a628fdf8d2ac75aadd8fb4054d0499de2a3f02",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_list_true": {
+          "count": 2,
+          "bytes": 44256,
+          "sha256": "875564470aed74e111e1a914d49d26233f4e6d97abeced0fa53b6b330a8ed1d7",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_preview_true": {
+          "count": 2,
+          "bytes": 48597,
+          "sha256": "219f77403912aa665ec72ff5479607e30597e1d0773797b166afc56943b3db48",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_preview_no_results_true": {
+          "count": 4,
+          "bytes": 123343,
+          "sha256": "1d9505f68f52824797f2f4b37c9abef342f03777962b3f6810e64a0398e7a948",
+          "width": 1080,
+          "height": 2400
+        },
+        "icon_set_group_picker_true": {
+          "count": 3,
+          "bytes": 108006,
+          "sha256": "405030e69d9a3d11e5774d5df8aa4cfe1b54368096e972cce9942f3d5b72a7c6",
+          "width": 1080,
+          "height": 2400
+        },
+        "platter_shadow_false_legacy_false": {
+          "count": 1,
+          "bytes": 9748,
+          "sha256": "4c735e0526a130ec958f5f266e899458d640de47fd0414698a2d822d4b3acd5d",
+          "width": 842,
+          "height": 842
+        },
+        "platter_shadow_true_legacy_false": {
+          "count": 1,
+          "bytes": 7842,
+          "sha256": "56b7464dcf4d6a5776c26e8c9d8f407af1637a36b164516c59f7e86598b2061b",
+          "width": 842,
+          "height": 842
+        },
+        "geometry_false_false_20": {
+          "count": 1,
+          "bytes": 7340,
+          "sha256": "406cebbc1f72926c7803f73c24136e81d61330fb386fe0202038a71fbf9994fb",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_false_70": {
+          "count": 1,
+          "bytes": 28418,
+          "sha256": "85a5b2b56ac75815f3e6ff6ec8347adf0f371dc0e7f1160b35cb375565b253b9",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_false_140": {
+          "count": 2,
+          "bytes": 65040,
+          "sha256": "ee16924673ab3f40811c6560672e48d5b6d638dd7a3cfcdea8ce4b1140dd9e1f",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_false_250": {
+          "count": 2,
+          "bytes": 38387,
+          "sha256": "6f133048378c3f2a9deb8a314bedf190ba75376895b65dfe43c26f16f2b0f2d7",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_false_450": {
+          "count": 2,
+          "bytes": 38271,
+          "sha256": "43fde276d5d55717090ca12d4c96a2c6237888e5675020ecef7e7082221b7d54",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_true_20": {
+          "count": 2,
+          "bytes": 39360,
+          "sha256": "15921a84a92f73db401985f51cc179fa66566e17657b1d67c9c5efa21fb1385a",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_true_70": {
+          "count": 1,
+          "bytes": 21631,
+          "sha256": "54f92000e06d35e4cbf9757ec12ab0d4f32a032cc2c48023ad3cb5d16a3dfbec",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_true_140": {
+          "count": 1,
+          "bytes": 14750,
+          "sha256": "7c160109e0b11bb56c976d7eac01b073bb915e7c340ab557e6534aa35de40552",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_true_250": {
+          "count": 1,
+          "bytes": 7199,
+          "sha256": "0458c6373e871d3e434c7ee150819c4ed95209aac74f980eda051ac33fc41885",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_false_true_400": {
+          "count": 1,
+          "bytes": 6869,
+          "sha256": "a372c1875e556f9551110aebc031da19d90c624181cad9a338d6ad402d8b18ef",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_false_20": {
+          "count": 1,
+          "bytes": 7195,
+          "sha256": "1c8b414a5f27a489a00e6c1cc13535e352f68233daf268a664c262e06285ff9e",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_false_70": {
+          "count": 1,
+          "bytes": 24910,
+          "sha256": "4b2eab8163fc263e1208bd239b6c03ab245c6ea6e2b79f7547c6df20188ce6a7",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_false_140": {
+          "count": 2,
+          "bytes": 53357,
+          "sha256": "2e6959ac981a4c609cff38161351a517ac49e36080d8df87e968f94d37d5d084",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_false_250": {
+          "count": 1,
+          "bytes": 34110,
+          "sha256": "e69bbd192b111bf009eedc529477c6f699bc38d7e9ff8c537b1e8318855b8d44",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_false_450": {
+          "count": 1,
+          "bytes": 33402,
+          "sha256": "22402f9d1fe5f2ecd3da1dca7375677181a25ca129cae5dcb82c2a2c183aadbd",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_true_20": {
+          "count": 1,
+          "bytes": 34390,
+          "sha256": "184e27969d517fe702e73d83d74fde29b1294a11252cb5e8c3568103c2a514f1",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_true_70": {
+          "count": 1,
+          "bytes": 18715,
+          "sha256": "70bd5be17f7d6965cc44dffdac1d12b905196dce52a30a026595464378978b15",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_true_140": {
+          "count": 1,
+          "bytes": 13581,
+          "sha256": "f1e2ca2e6c78ed7d7ed60d22a3700f484863805312a5b51df59c8c10a22ce02a",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_true_250": {
+          "count": 1,
+          "bytes": 6984,
+          "sha256": "8ab9e885ca5de6b35f64afb124c0ce4ebf6b9c171a0b611ac2d79adfed4141d6",
+          "width": 842,
+          "height": 1089
+        },
+        "geometry_true_true_400": {
+          "count": 1,
+          "bytes": 6751,
+          "sha256": "ffbe675db9782dbc066c4f1d61da47c17f07cb4efaa97a5943deedf07ff8650e",
+          "width": 842,
+          "height": 1089
+        },
+        "liquid_open_false_false": {
+          "count": 2,
+          "bytes": 52799,
+          "sha256": "ab8ab39d21a60b4683466fb793137942ce4166a938dff019e03ebe9ede664e3d",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_return_false_false": {
+          "count": 2,
+          "bytes": 61361,
+          "sha256": "86ce1571ccf7b4944edd0e56ce1469bddd9fe97b34cb735694bf0b401f1dd2ba",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_open_false_true": {
+          "count": 2,
+          "bytes": 54746,
+          "sha256": "ef59519e693d8d8c2c223d2ab472c08a7590207aad43b6b2fc1b9301633b6c6b",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_return_false_true": {
+          "count": 2,
+          "bytes": 46416,
+          "sha256": "ec28bf0427b0585bc7ca89a32aff5ba845cd0a8bee8fca0959530b6086412206",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_open_true_false": {
+          "count": 2,
+          "bytes": 51930,
+          "sha256": "18f1733b4e572d9e83b200451a7a5713090fdc18a8edee4b8fa006c6ea312b25",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_return_true_false": {
+          "count": 2,
+          "bytes": 53797,
+          "sha256": "2a78213f847dd4c104e647603b96ee3a35c7af1452afe62d168bbbdb4c461a81",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_open_true_true": {
+          "count": 2,
+          "bytes": 59585,
+          "sha256": "dce5b6b7ecdf09f95557064e98482e81e99d2db302b29ac83a095f6f831950d0",
+          "width": 1080,
+          "height": 2400
+        },
+        "liquid_return_true_true": {
+          "count": 2,
+          "bytes": 50602,
+          "sha256": "f52055a8e404bfe095f3ae1cb165addc098fc2d7873c48e90e3b4bc8a6870122",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_empty_light": {
+          "count": 3,
+          "bytes": 78122,
+          "sha256": "8223266454bd8b260ba46aa708bd8667bf5aff8c541a96f489f3a3d9bdd5aff0",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_custom_selected_light": {
+          "count": 2,
+          "bytes": 60907,
+          "sha256": "0accd7670026a56529990e2df09981c593e867ad318baa0ddb8ff3f6c0c07aaa",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_remote_usage_light": {
+          "count": 2,
+          "bytes": 65596,
+          "sha256": "896f19f5974a53d405514577a70b5856c69ca817ad7625bb3f1d846ca52fc762",
+          "width": 1080,
+          "height": 2400
+        },
+        "profiles_source_menu_light": {
+          "count": 1,
+          "bytes": 34816,
+          "sha256": "4309e87becde843c04ed6399215a2365259d99d79efc210647ced8f99b2ae0e1",
+          "width": 471,
+          "height": 558
+        },
+        "profiles_source_menu_dark": {
+          "count": 1,
+          "bytes": 34383,
+          "sha256": "ef94c909f4107b27c8c958dd3eb8b21c94773a1fc518168550c204ce17edc6fc",
+          "width": 471,
+          "height": 558
+        }
+      },
+      "passed": true
+    },
+    "extra": {
+      "returncode": 0,
+      "device": "POCO F2 Pro",
+      "serial": "31936bb6",
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+          "test": "carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+          "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+          "test": "longMenuFingerScrollDoesNotExecuteHoveredRows",
+          "code": 0
+        }
+      ],
+      "images": {
+        "liquid_return_nested_top": {
+          "count": 2,
+          "bytes": 46577,
+          "sha256": "790f92a3693193c3f8a2797c59cac9b17439d81cc1360add956c791987bb7d41",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "passed": true
+    },
+    "totalUnique": 24,
+    "allPassed": true,
+    "actualMainActivityAppsFirstEntry": {
+      "passed": true,
+      "assetsBefore": 26,
+      "assetsAfter": 282,
+      "savedSettingsChanged": false,
+      "evidence": "lazy-apps/"
+    },
+    "visual": {
+      "instrumentedImages": 44,
+      "steadyFullPageImages": 4,
+      "steadyPagePixelsChangedExcludingStatusBar": 0,
+      "fixedGeometryReviewed": true,
+      "nestedReturnReviewed": true,
+      "completeFlutterPixelParity": false
+    }
+  },
+  "performance": {
+    "sequence": [
+      "baseline2",
+      "shadow1",
+      "baseline3",
+      "combined1",
+      "baseline4",
+      "combined2"
+    ],
+    "runs": {
+      "baseline2": {
+        "memoryKb": {
+          "home": {
+            "TOTAL PSS": 214763,
+            "TOTAL RSS": 393488,
+            "TOTAL SWAP PSS": 9,
+            "Java Heap": 9984,
+            "Native Heap": 34388,
+            "Code": 83492,
+            "Stack": 1248,
+            "Graphics": 45368,
+            "Private Other": 10380,
+            "System": 29903,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 282
+          },
+          "profiles": {
+            "TOTAL PSS": 164137,
+            "TOTAL RSS": 309988,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 8888,
+            "Native Heap": 30240,
+            "Code": 50424,
+            "Stack": 1248,
+            "Graphics": 56992,
+            "Private Other": 10480,
+            "System": 5865,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "form": {
+            "TOTAL PSS": 237876,
+            "TOTAL RSS": 394020,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 10408,
+            "Native Heap": 56224,
+            "Code": 50520,
+            "Stack": 1300,
+            "Graphics": 100368,
+            "Private Other": 10968,
+            "System": 8088,
+            "Views": 19,
+            "ViewRootImpl": 3,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "after5": {
+            "TOTAL PSS": 323658,
+            "TOTAL RSS": 481496,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 26076,
+            "Native Heap": 112236,
+            "Code": 50528,
+            "Stack": 1172,
+            "Graphics": 113560,
+            "Private Other": 11064,
+            "System": 9022,
+            "Views": 11,
+            "ViewRootImpl": 10,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "settled": {
+            "TOTAL PSS": 215694,
+            "TOTAL RSS": 373532,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 7248,
+            "Native Heap": 45416,
+            "Code": 50528,
+            "Stack": 1176,
+            "Graphics": 91240,
+            "Private Other": 11064,
+            "System": 9022,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "observations": {
+            "TOTAL PSS": 226202,
+            "TOTAL RSS": 384412,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 12100,
+            "Native Heap": 46132,
+            "Code": 50536,
+            "Stack": 1220,
+            "Graphics": 95056,
+            "Private Other": 11884,
+            "System": 9274,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          }
+        },
+        "phases": {
+          "source-open": {
+            "stages": 5,
+            "processFrames": 159,
+            "processJankyFrames": 21,
+            "percent": 13.208
+          },
+          "remote-open": {
+            "stages": 5,
+            "processFrames": 294,
+            "processJankyFrames": 24,
+            "percent": 8.163
+          },
+          "ime-close": {
+            "stages": 5,
+            "processFrames": 109,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          },
+          "form-close": {
+            "stages": 5,
+            "processFrames": 4,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          }
+        },
+        "missingMemory": []
+      },
+      "shadow1": {
+        "memoryKb": {
+          "home": {
+            "TOTAL PSS": 225617,
+            "TOTAL RSS": 405068,
+            "TOTAL SWAP PSS": 9,
+            "Java Heap": 11240,
+            "Native Heap": 34848,
+            "Code": 85428,
+            "Stack": 1288,
+            "Graphics": 45440,
+            "Private Other": 18140,
+            "System": 29233,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 282
+          },
+          "profiles": {
+            "TOTAL PSS": 171291,
+            "TOTAL RSS": 318756,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 7584,
+            "Native Heap": 30240,
+            "Code": 50972,
+            "Stack": 1292,
+            "Graphics": 57024,
+            "Private Other": 18244,
+            "System": 5935,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "form": {
+            "TOTAL PSS": 208568,
+            "TOTAL RSS": 359172,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 9040,
+            "Native Heap": 40544,
+            "Code": 51080,
+            "Stack": 1332,
+            "Graphics": 87644,
+            "Private Other": 12472,
+            "System": 6456,
+            "Views": 19,
+            "ViewRootImpl": 3,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "after5": {
+            "TOTAL PSS": 217280,
+            "TOTAL RSS": 375736,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 23376,
+            "Native Heap": 46444,
+            "Code": 51096,
+            "Stack": 1208,
+            "Graphics": 73576,
+            "Private Other": 12612,
+            "System": 8968,
+            "Views": 11,
+            "ViewRootImpl": 10,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "settled": {
+            "TOTAL PSS": 185084,
+            "TOTAL RSS": 343540,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 5884,
+            "Native Heap": 43224,
+            "Code": 51096,
+            "Stack": 1208,
+            "Graphics": 62092,
+            "Private Other": 12612,
+            "System": 8968,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "observations": {
+            "TOTAL PSS": 195520,
+            "TOTAL RSS": 354320,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 10860,
+            "Native Heap": 44180,
+            "Code": 51108,
+            "Stack": 1228,
+            "Graphics": 65512,
+            "Private Other": 13432,
+            "System": 9200,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          }
+        },
+        "phases": {
+          "source-open": {
+            "stages": 5,
+            "processFrames": 172,
+            "processJankyFrames": 15,
+            "percent": 8.721
+          },
+          "remote-open": {
+            "stages": 5,
+            "processFrames": 291,
+            "processJankyFrames": 23,
+            "percent": 7.904
+          },
+          "ime-close": {
+            "stages": 5,
+            "processFrames": 110,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          },
+          "form-close": {
+            "stages": 5,
+            "processFrames": 5,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          }
+        },
+        "missingMemory": []
+      },
+      "baseline3": {
+        "memoryKb": {
+          "home": {
+            "TOTAL PSS": 226864,
+            "TOTAL RSS": 405032,
+            "TOTAL SWAP PSS": 9,
+            "Java Heap": 11152,
+            "Native Heap": 35060,
+            "Code": 86204,
+            "Stack": 1276,
+            "Graphics": 45368,
+            "Private Other": 18180,
+            "System": 29624,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 282
+          },
+          "profiles": {
+            "TOTAL PSS": 170390,
+            "TOTAL RSS": 317340,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 7588,
+            "Native Heap": 29424,
+            "Code": 50764,
+            "Stack": 1276,
+            "Graphics": 56992,
+            "Private Other": 18304,
+            "System": 6042,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "form": {
+            "TOTAL PSS": 248971,
+            "TOTAL RSS": 405856,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 9440,
+            "Native Heap": 59092,
+            "Code": 50892,
+            "Stack": 1328,
+            "Graphics": 107520,
+            "Private Other": 12404,
+            "System": 8295,
+            "Views": 19,
+            "ViewRootImpl": 3,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "after5": {
+            "TOTAL PSS": 324180,
+            "TOTAL RSS": 482532,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 24764,
+            "Native Heap": 111372,
+            "Code": 50888,
+            "Stack": 1156,
+            "Graphics": 114316,
+            "Private Other": 12492,
+            "System": 9192,
+            "Views": 11,
+            "ViewRootImpl": 10,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "settled": {
+            "TOTAL PSS": 216028,
+            "TOTAL RSS": 374380,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 5984,
+            "Native Heap": 44364,
+            "Code": 50888,
+            "Stack": 1160,
+            "Graphics": 91948,
+            "Private Other": 12492,
+            "System": 9192,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "observations": {
+            "TOTAL PSS": 226311,
+            "TOTAL RSS": 385040,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 10904,
+            "Native Heap": 45572,
+            "Code": 50900,
+            "Stack": 1168,
+            "Graphics": 95428,
+            "Private Other": 12892,
+            "System": 9447,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          }
+        },
+        "phases": {
+          "source-open": {
+            "stages": 5,
+            "processFrames": 168,
+            "processJankyFrames": 13,
+            "percent": 7.738
+          },
+          "remote-open": {
+            "stages": 5,
+            "processFrames": 292,
+            "processJankyFrames": 23,
+            "percent": 7.877
+          },
+          "ime-close": {
+            "stages": 5,
+            "processFrames": 110,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          },
+          "form-close": {
+            "stages": 5,
+            "processFrames": 3,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          }
+        },
+        "missingMemory": []
+      },
+      "combined1": {
+        "memoryKb": {
+          "home": {
+            "TOTAL PSS": 147928,
+            "TOTAL RSS": 292996,
+            "TOTAL SWAP PSS": 9,
+            "Java Heap": 6948,
+            "Native Heap": 19256,
+            "Code": 51284,
+            "Stack": 1264,
+            "Graphics": 45376,
+            "Private Other": 18220,
+            "System": 5580,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "profiles": {
+            "TOTAL PSS": 168712,
+            "TOTAL RSS": 315372,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 9080,
+            "Native Heap": 25344,
+            "Code": 51284,
+            "Stack": 1268,
+            "Graphics": 57316,
+            "Private Other": 18408,
+            "System": 6012,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "form": {
+            "TOTAL PSS": 206418,
+            "TOTAL RSS": 356424,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 8768,
+            "Native Heap": 38628,
+            "Code": 51404,
+            "Stack": 1312,
+            "Graphics": 87488,
+            "Private Other": 12240,
+            "System": 6578,
+            "Views": 19,
+            "ViewRootImpl": 3,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "after5": {
+            "TOTAL PSS": 213475,
+            "TOTAL RSS": 365112,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 23016,
+            "Native Heap": 44972,
+            "Code": 51412,
+            "Stack": 1168,
+            "Graphics": 73132,
+            "Private Other": 12308,
+            "System": 7467,
+            "Views": 11,
+            "ViewRootImpl": 10,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "settled": {
+            "TOTAL PSS": 182467,
+            "TOTAL RSS": 334104,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 5652,
+            "Native Heap": 42044,
+            "Code": 51412,
+            "Stack": 1172,
+            "Graphics": 62412,
+            "Private Other": 12308,
+            "System": 7467,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "observations": {
+            "TOTAL PSS": 192513,
+            "TOTAL RSS": 344480,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 10824,
+            "Native Heap": 42824,
+            "Code": 51428,
+            "Stack": 1176,
+            "Graphics": 65908,
+            "Private Other": 12672,
+            "System": 7681,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          }
+        },
+        "phases": {
+          "source-open": {
+            "stages": 5,
+            "processFrames": 170,
+            "processJankyFrames": 14,
+            "percent": 8.235
+          },
+          "remote-open": {
+            "stages": 5,
+            "processFrames": 288,
+            "processJankyFrames": 25,
+            "percent": 8.681
+          },
+          "ime-close": {
+            "stages": 5,
+            "processFrames": 111,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          },
+          "form-close": {
+            "stages": 5,
+            "processFrames": 3,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          }
+        },
+        "missingMemory": []
+      },
+      "baseline4": {
+        "memoryKb": {
+          "home": {
+            "TOTAL PSS": null,
+            "TOTAL RSS": null,
+            "TOTAL SWAP PSS": null,
+            "Java Heap": null,
+            "Native Heap": null,
+            "Code": null,
+            "Stack": null,
+            "Graphics": null,
+            "Private Other": null,
+            "System": null,
+            "Views": null,
+            "ViewRootImpl": null,
+            "Activities": null,
+            "AppContexts": null,
+            "Assets": null
+          },
+          "profiles": {
+            "TOTAL PSS": null,
+            "TOTAL RSS": null,
+            "TOTAL SWAP PSS": null,
+            "Java Heap": null,
+            "Native Heap": null,
+            "Code": null,
+            "Stack": null,
+            "Graphics": null,
+            "Private Other": null,
+            "System": null,
+            "Views": null,
+            "ViewRootImpl": null,
+            "Activities": null,
+            "AppContexts": null,
+            "Assets": null
+          },
+          "form": {
+            "TOTAL PSS": 250003,
+            "TOTAL RSS": 400128,
+            "TOTAL SWAP PSS": 9,
+            "Java Heap": 8384,
+            "Native Heap": 59524,
+            "Code": 51536,
+            "Stack": 1292,
+            "Graphics": 110284,
+            "Private Other": 12520,
+            "System": 6463,
+            "Views": 19,
+            "ViewRootImpl": 3,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "after5": {
+            "TOTAL PSS": 323053,
+            "TOTAL RSS": 474868,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 24788,
+            "Native Heap": 110916,
+            "Code": 51548,
+            "Stack": 1176,
+            "Graphics": 114452,
+            "Private Other": 12648,
+            "System": 7525,
+            "Views": 11,
+            "ViewRootImpl": 10,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "settled": {
+            "TOTAL PSS": 215097,
+            "TOTAL RSS": 366912,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 5980,
+            "Native Heap": 44132,
+            "Code": 51548,
+            "Stack": 1180,
+            "Graphics": 92084,
+            "Private Other": 12648,
+            "System": 7525,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "observations": {
+            "TOTAL PSS": 224724,
+            "TOTAL RSS": 376872,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 10812,
+            "Native Heap": 44980,
+            "Code": 51544,
+            "Stack": 1188,
+            "Graphics": 95292,
+            "Private Other": 13060,
+            "System": 7848,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          }
+        },
+        "phases": {
+          "source-open": {
+            "stages": 5,
+            "processFrames": 171,
+            "processJankyFrames": 17,
+            "percent": 9.942
+          },
+          "remote-open": {
+            "stages": 5,
+            "processFrames": 292,
+            "processJankyFrames": 22,
+            "percent": 7.534
+          },
+          "ime-close": {
+            "stages": 5,
+            "processFrames": 115,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          },
+          "form-close": {
+            "stages": 5,
+            "processFrames": 1,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          }
+        },
+        "missingMemory": [
+          "home",
+          "profiles"
+        ]
+      },
+      "combined2": {
+        "memoryKb": {
+          "home": {
+            "TOTAL PSS": 147907,
+            "TOTAL RSS": 293024,
+            "TOTAL SWAP PSS": 9,
+            "Java Heap": 7012,
+            "Native Heap": 19516,
+            "Code": 50900,
+            "Stack": 1276,
+            "Graphics": 45396,
+            "Private Other": 18236,
+            "System": 5571,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "profiles": {
+            "TOTAL PSS": 168210,
+            "TOTAL RSS": 314920,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 9148,
+            "Native Heap": 25392,
+            "Code": 50904,
+            "Stack": 1280,
+            "Graphics": 57060,
+            "Private Other": 18424,
+            "System": 6002,
+            "Views": 9,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "form": {
+            "TOTAL PSS": 206368,
+            "TOTAL RSS": 356416,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 8772,
+            "Native Heap": 38432,
+            "Code": 51000,
+            "Stack": 1320,
+            "Graphics": 88040,
+            "Private Other": 12244,
+            "System": 6560,
+            "Views": 19,
+            "ViewRootImpl": 3,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "after5": {
+            "TOTAL PSS": 213897,
+            "TOTAL RSS": 365568,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 23016,
+            "Native Heap": 45412,
+            "Code": 51012,
+            "Stack": 1192,
+            "Graphics": 73496,
+            "Private Other": 12328,
+            "System": 7441,
+            "Views": 11,
+            "ViewRootImpl": 10,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "settled": {
+            "TOTAL PSS": 182553,
+            "TOTAL RSS": 334224,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 5664,
+            "Native Heap": 42160,
+            "Code": 51012,
+            "Stack": 1196,
+            "Graphics": 62744,
+            "Private Other": 12336,
+            "System": 7441,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          },
+          "observations": {
+            "TOTAL PSS": 192784,
+            "TOTAL RSS": 344804,
+            "TOTAL SWAP PSS": 6,
+            "Java Heap": 10584,
+            "Native Heap": 43324,
+            "Code": 51024,
+            "Stack": 1200,
+            "Graphics": 66228,
+            "Private Other": 12748,
+            "System": 7676,
+            "Views": 11,
+            "ViewRootImpl": 1,
+            "Activities": 1,
+            "AppContexts": 6,
+            "Assets": 26
+          }
+        },
+        "phases": {
+          "source-open": {
+            "stages": 5,
+            "processFrames": 172,
+            "processJankyFrames": 17,
+            "percent": 9.884
+          },
+          "remote-open": {
+            "stages": 5,
+            "processFrames": 295,
+            "processJankyFrames": 22,
+            "percent": 7.458
+          },
+          "ime-close": {
+            "stages": 5,
+            "processFrames": 117,
+            "processJankyFrames": 0,
+            "percent": 0.0
+          },
+          "form-close": {
+            "stages": 5,
+            "processFrames": 0,
+            "processJankyFrames": 0,
+            "percent": null
+          }
+        },
+        "missingMemory": []
+      }
+    },
+    "comparison": {
+      "home": {
+        "baselineSamplesKb": [
+          214763,
+          226864
+        ],
+        "candidateSamplesKb": [
+          147928,
+          147907
+        ],
+        "medianReductionPercent": 33.01
+      },
+      "form": {
+        "baselineSamplesKb": [
+          237876,
+          248971,
+          250003
+        ],
+        "candidateSamplesKb": [
+          206418,
+          206368
+        ],
+        "medianReductionPercent": 17.1
+      },
+      "after5": {
+        "baselineSamplesKb": [
+          323658,
+          324180,
+          323053
+        ],
+        "candidateSamplesKb": [
+          213475,
+          213897
+        ],
+        "medianReductionPercent": 33.98
+      },
+      "settled": {
+        "baselineSamplesKb": [
+          215694,
+          216028,
+          215097
+        ],
+        "candidateSamplesKb": [
+          182467,
+          182553
+        ],
+        "medianReductionPercent": 15.38
+      },
+      "observations": {
+        "baselineSamplesKb": [
+          226202,
+          226311,
+          224724
+        ],
+        "candidateSamplesKb": [
+          192513,
+          192784
+        ],
+        "medianReductionPercent": 14.83
+      }
+    }
+  },
+  "threadAttribution": {
+    "baseline-trace1": {
+      "phases": {
+        "popup_segment_1": {
+          "frames": 28,
+          "appDeadlineMissed": 3,
+          "droppedFrames": 0,
+          "bufferStuffing": 27,
+          "ui_sched_running_ms": {
+            "samples": 28,
+            "median": 8.366,
+            "max": 56.469
+          },
+          "rt_sched_running_ms": {
+            "samples": 28,
+            "median": 6.423,
+            "max": 14.547
+          },
+          "ui_runnable_ms": {
+            "samples": 28,
+            "median": 0.015,
+            "max": 1.887
+          },
+          "rt_runnable_ms": {
+            "samples": 20,
+            "median": 0.213,
+            "max": 0.397
+          },
+          "ui_sleeping_ms": {
+            "samples": 28,
+            "median": 0.514,
+            "max": 14.547
+          },
+          "rt_sleeping_ms": {
+            "samples": 8,
+            "median": 0.104,
+            "max": 0.202
+          },
+          "ui_elapsed_ms": {
+            "samples": 28,
+            "median": 8.913,
+            "max": 67.78
+          },
+          "rt_elapsed_ms": {
+            "samples": 28,
+            "median": 6.627,
+            "max": 14.547
+          }
+        },
+        "popup_segment_2": {
+          "frames": 1,
+          "appDeadlineMissed": 1,
+          "droppedFrames": 0,
+          "bufferStuffing": 0,
+          "ui_sched_running_ms": {
+            "samples": 1,
+            "median": 1.631,
+            "max": 1.631
+          },
+          "rt_sched_running_ms": {
+            "samples": 1,
+            "median": 7.453,
+            "max": 7.453
+          },
+          "ui_runnable_ms": {
+            "samples": 1,
+            "median": 3.822,
+            "max": 3.822
+          },
+          "rt_runnable_ms": {
+            "samples": 1,
+            "median": 0.027,
+            "max": 0.027
+          },
+          "ui_sleeping_ms": {
+            "samples": 1,
+            "median": 0.191,
+            "max": 0.191
+          },
+          "rt_sleeping_ms": {
+            "samples": 0,
+            "median": null,
+            "max": null
+          },
+          "ui_elapsed_ms": {
+            "samples": 1,
+            "median": 5.643,
+            "max": 5.643
+          },
+          "rt_elapsed_ms": {
+            "samples": 1,
+            "median": 7.48,
+            "max": 7.48
+          }
+        },
+        "popup_segment_3": {
+          "frames": 34,
+          "appDeadlineMissed": 1,
+          "droppedFrames": 2,
+          "bufferStuffing": 31,
+          "ui_sched_running_ms": {
+            "samples": 32,
+            "median": 6.088,
+            "max": 14.294
+          },
+          "rt_sched_running_ms": {
+            "samples": 32,
+            "median": 2.446,
+            "max": 10.132
+          },
+          "ui_runnable_ms": {
+            "samples": 32,
+            "median": 0.016,
+            "max": 0.559
+          },
+          "rt_runnable_ms": {
+            "samples": 30,
+            "median": 0.066,
+            "max": 0.965
+          },
+          "ui_sleeping_ms": {
+            "samples": 32,
+            "median": 10.243,
+            "max": 22.889
+          },
+          "rt_sleeping_ms": {
+            "samples": 30,
+            "median": 13.968,
+            "max": 26.807
+          },
+          "ui_elapsed_ms": {
+            "samples": 32,
+            "median": 16.044,
+            "max": 34.205
+          },
+          "rt_elapsed_ms": {
+            "samples": 32,
+            "median": 16.273,
+            "max": 35.363
+          }
+        }
+      },
+      "hashes": {
+        "trace.perfetto-trace": "de750eb004b639fe70277621efd72c29566a82ccf0a2d6b2392fe436fe33e464",
+        "frame-threads.csv": "63a4d22119d3d3fc8d4f47c23a41909b0da2fa83601e1de90988578c68441a02"
+      }
+    },
+    "combined-trace1": {
+      "phases": {
+        "popup_segment_1": {
+          "frames": 36,
+          "appDeadlineMissed": 3,
+          "droppedFrames": 7,
+          "bufferStuffing": 27,
+          "ui_sched_running_ms": {
+            "samples": 30,
+            "median": 2.274,
+            "max": 54.108
+          },
+          "rt_sched_running_ms": {
+            "samples": 30,
+            "median": 7.206,
+            "max": 12.668
+          },
+          "ui_runnable_ms": {
+            "samples": 30,
+            "median": 0.015,
+            "max": 2.242
+          },
+          "rt_runnable_ms": {
+            "samples": 22,
+            "median": 0.025,
+            "max": 0.206
+          },
+          "ui_sleeping_ms": {
+            "samples": 29,
+            "median": 0.088,
+            "max": 13.512
+          },
+          "rt_sleeping_ms": {
+            "samples": 21,
+            "median": 1.146,
+            "max": 2.671
+          },
+          "ui_elapsed_ms": {
+            "samples": 30,
+            "median": 2.402,
+            "max": 67.114
+          },
+          "rt_elapsed_ms": {
+            "samples": 30,
+            "median": 8.084,
+            "max": 13.937
+          }
+        },
+        "popup_segment_2": {
+          "frames": 1,
+          "appDeadlineMissed": 1,
+          "droppedFrames": 0,
+          "bufferStuffing": 0,
+          "ui_sched_running_ms": {
+            "samples": 1,
+            "median": 2.637,
+            "max": 2.637
+          },
+          "rt_sched_running_ms": {
+            "samples": 1,
+            "median": 11.768,
+            "max": 11.768
+          },
+          "ui_runnable_ms": {
+            "samples": 1,
+            "median": 0.479,
+            "max": 0.479
+          },
+          "rt_runnable_ms": {
+            "samples": 1,
+            "median": 0.23,
+            "max": 0.23
+          },
+          "ui_sleeping_ms": {
+            "samples": 1,
+            "median": 0.201,
+            "max": 0.201
+          },
+          "rt_sleeping_ms": {
+            "samples": 0,
+            "median": null,
+            "max": null
+          },
+          "ui_elapsed_ms": {
+            "samples": 1,
+            "median": 3.317,
+            "max": 3.317
+          },
+          "rt_elapsed_ms": {
+            "samples": 1,
+            "median": 11.998,
+            "max": 11.998
+          }
+        },
+        "popup_segment_3": {
+          "frames": 33,
+          "appDeadlineMissed": 1,
+          "droppedFrames": 0,
+          "bufferStuffing": 32,
+          "ui_sched_running_ms": {
+            "samples": 33,
+            "median": 3.28,
+            "max": 11.46
+          },
+          "rt_sched_running_ms": {
+            "samples": 33,
+            "median": 2.378,
+            "max": 11.006
+          },
+          "ui_runnable_ms": {
+            "samples": 33,
+            "median": 0.016,
+            "max": 0.317
+          },
+          "rt_runnable_ms": {
+            "samples": 33,
+            "median": 0.117,
+            "max": 0.944
+          },
+          "ui_sleeping_ms": {
+            "samples": 33,
+            "median": 3.255,
+            "max": 13.482
+          },
+          "rt_sleeping_ms": {
+            "samples": 33,
+            "median": 14.022,
+            "max": 27.083
+          },
+          "ui_elapsed_ms": {
+            "samples": 33,
+            "median": 6.236,
+            "max": 16.033
+          },
+          "rt_elapsed_ms": {
+            "samples": 33,
+            "median": 16.42,
+            "max": 37.335
+          }
+        }
+      },
+      "hashes": {
+        "trace.perfetto-trace": "520122524ee0135205d5d5943da9519ecc4f8044296db15c578581cbbf2ab688",
+        "frame-threads.csv": "e28f073daf8756c7f715271a78b6ce18662743eecf61b449c2efe0510e3e3ca0"
+      }
+    },
+    "scope": "Popup按250ms静默分段；1首次展开、2孤立更新、3选择后回源。UI/RT token为进程帧，非Popup独占CPU；一组trace不证明统计显著收益。无GPU驱动函数栈。",
+    "sourceScope": "trace与稳态截图属于combined1；最终combined2仅补批量返回来源页取消，最终25阶段及24项UI另验。"
+  },
+  "failuresAndLimits": [
+    "baseline1定位空页顶部添加按钮失败，改真实空态入口",
+    "inspect0的/dev/tty dump不支持",
+    "baseline4首页及配置meminfo缺少PSS，保留null不计比较",
+    "UI初次构建缺少performTextReplacement导入已修",
+    "截图收集器误将Profiles菜单节点截图当全屏；原JUnit21/21保留并离线校验完整分片，不重跑累计",
+    "初次后台解析返回来源页仍在工作，最终源码已增加step取消键",
+    "关闭Dialog后窗口不在gfx中，不以宿主零帧认定零耗时",
+    "空列表Tab只有一帧，不能外推运行中高频数据",
+    "前台Kotlin与后台Flutter不具可比性，原版两倍占用未验证",
+    "未验非空配置及核心运行内存",
+    "单对trace仅部分线程归因，无GPU驱动原生函数栈；首帧约67ms和总体jank无稳定改善仍待"
+  ],
+  "localEvidence": "../acceptance-artifacts/interaction-memory-poco-20261120",
+  "released": false,
+  "protection": {
+    "removed": [
+      "com.lonnnnnng.flclash.performance",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "packageSetMatches": true,
+    "extraPackages": [],
+    "missingPackages": [],
+    "flutterIdentityMatches": true,
+    "settings": {
+      "rotation": "0",
+      "userRotation": "0",
+      "fontScale": "1.0",
+      "night": "Night mode: yes"
+    },
+    "settingsMatch": true,
+    "local": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "size": 34220,
+      "mtimeNs": 1794392072317864361
+    },
+    "localMatches": true,
+    "originalFlutterNeverLaunchedOrModified": true
+  },
+  "evidenceHashes": {
+    "comparison.json": "6c504966c5bec6aa75925ab4c793786beede656768d3dc1bc24773fde25fd3bc",
+    "trace-comparison.json": "249ad474d3ab1915d2f5dcdc35f508470b1d3879b645ab4355c13c894b22be31",
+    "driver.py": "11f2ce8592bb65d72c22a790811973992af238fc0db6c4c898953bbafbfb1cc5",
+    "install.py": "9bcc783bab751552b1eef26056c504bda4534eb36868ae9c87c1aba30b41711a",
+    "trace.py": "ce6058791be650bc016c48107145801126b89454f0a6e2e7c20165b302c43d47",
+    "frame-threads.sql": "193d07de9b15d7643a36a9515219ddcbc873a7468b4d66e3c2f7d1d5e8bcf50a",
+    "build-final3.log": "ac7bb8b9a90ff507cdead0913f3710594a6a32910aabc3636a6e672dadc381b9",
+    "lint-final3.log": "72485ec96ae7a9a7668e5e714cb5b7ab02666891691d23dc377308dcac585c1c",
+    "ui-final1/instrumentation.log": "5dfa38fbc0229b062b7f34709261599062abc7b725be239ba9dfb5ec2ad61441",
+    "ui-menu-extra/instrumentation.log": "0e223acee3b099ce5eef63c2dbed405bfa06bd73d1c9f488273fde813ef04068",
+    "combined2-identity.json": "6ecf24f2da2a0f6b350b7d55fcb7fc4e364ea5897fa709d2c0a4ea0f60eb1d81",
+    "installedfinal3.json": "b1d4f06eadfc49af5666ec79b066d2dac02e8e5ea60039bb331799a13bbcfe15",
+    "before.json": "baae25857057bee970212024ff00c246a191d2bff1324ba6da1d415b07cf2d4f",
+    "after.json": "e03101f8c5ddff89b109a62670089d0a4642984d62ae066c272127b7fb74ebec"
+  }
+}

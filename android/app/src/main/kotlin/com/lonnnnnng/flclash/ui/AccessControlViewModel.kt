@@ -188,6 +188,7 @@ class AccessControlViewModel internal constructor(
     private var smartJob: Job? = null
     private var revision = 0L
     private var settingsLoaded = false
+    private var appsRequested = false
 
     val state: StateFlow<AccessControlUiState> = mutableState.asStateFlow()
     val errors = mutableErrors.asSharedFlow()
@@ -199,10 +200,12 @@ class AccessControlViewModel internal constructor(
                 if (status !in listOf(CoreRuntimeStatus.STOPPED, CoreRuntimeStatus.FAILED)) cancelSmartSelection()
             }
         }
-        reload()
+        loadSettings()
     }
 
-    fun reload() {
+    fun reload() { appsRequested = true; loadSettings() }
+
+    private fun loadSettings() {
         if (mutableState.value.isSaving) return
         cancelSmartSelection()
         loadJob?.cancel()
@@ -217,7 +220,8 @@ class AccessControlViewModel internal constructor(
                 mutableState.value = mutableState.value.copy(
                     settings = persisted, persistedSettings = persisted, settingsReady = true,
                 )
-                readApps()
+                // 作者 long：首页只需名单偏好，不应提前加载全机应用资源；进入名单页后才扫描，且接住设置读取期间的进入请求。
+                if (appsRequested) readApps() else mutableState.value = mutableState.value.copy(isLoading = false)
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) {
                 mutableState.value = mutableState.value.copy(isLoading = false, error = "读取按应用代理设置失败，请重试")
@@ -227,6 +231,7 @@ class AccessControlViewModel internal constructor(
     }
 
     fun refreshApps() {
+        appsRequested = true
         // 作者 long：设置页往返只重查安装信息和OEM授权，不能用磁盘旧值覆盖未保存的名单草稿。
         if (!settingsLoaded || mutableState.value.isLoading || mutableState.value.isSaving) return
         cancelSmartSelection()

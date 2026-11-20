@@ -2179,4 +2179,5 @@
     <string name="text_ffcf62b2ac71" formatted="false">"The external controller listens on 127.0.0.1:9090. The system HTTP proxy is not configured automatically when inbound authentication is enabled."</string>
     <string name="text_ffd92888cff2" formatted="false">"Preparing subscription import…"</string>
     <string name="text_ffecef0ae6ee" formatted="false">"Unsupported proxy group type: "</string>
+    <string name="text_dd44ca603959">Recognizing links…</string>
 </resources>

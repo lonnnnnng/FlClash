@@ -32,6 +32,7 @@ class AccessControlSafetyTest {
         matcher: suspend (List<InstalledAppInfo>) -> Set<String> = { setOf("com.tencent.mm") }): AccessControlViewModel {
         val model = AccessControlViewModel(store, runtime, clipboard, loader, matcher)
         owners += ViewModelStore().also { it.put("access", model) }
+        model.refreshApps()
         return model
     }
 
@@ -130,9 +131,34 @@ class AccessControlSafetyTest {
         assertEquals(original.acceptList.sorted(), model.state.value.settings.acceptList)
     }
 
+    @Test fun startupLoadsSettingsWithoutScanningAppsAndEarlyEntryIsNotLost() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        var scans = 0
+        val model = AccessControlViewModel(Store(original), Runtime(), Clipboard(),
+            { scans++; InstalledAppsSnapshot(apps) }, { emptySet() })
+        owners += ViewModelStore().also { it.put("access", model) }
+        runCurrent()
+        assertTrue(model.state.value.settingsReady)
+        assertFalse(model.state.value.isLoading)
+        assertEquals(0, scans)
+        assertTrue(model.state.value.apps.isEmpty())
+        model.refreshApps(); runCurrent()
+        assertEquals(1, scans); assertEquals(apps, model.state.value.apps)
+        var earlyScans = 0
+        val pending = Store(original).apply { readGate = CompletableDeferred() }
+        val early = AccessControlViewModel(pending, Runtime(), Clipboard(),
+            { earlyScans++; InstalledAppsSnapshot(apps) }, { emptySet() })
+        owners += ViewModelStore().also { it.put("early", early) }
+        runCurrent()
+        early.refreshApps(); runCurrent()
+        assertEquals(0, earlyScans)
+        pending.readGate!!.complete(Unit); runCurrent()
+        assertEquals(1, earlyScans); assertEquals(apps, early.state.value.apps)
+    }
+
     private class Store(var value: AccessControlProps) : AccessControlSettingsProvider {
-        var writes = 0; var failRead = false
-        override suspend fun current(): AccessControlProps { check(!failRead); return value }
+        var writes = 0; var failRead = false; var readGate: CompletableDeferred<Unit>? = null
+        override suspend fun current(): AccessControlProps { readGate?.await(); check(!failRead); return value }
         override suspend fun save(value: AccessControlProps) { writes++; this.value = value }
     }
     private class Runtime : CoreRuntimeStatusProvider {
