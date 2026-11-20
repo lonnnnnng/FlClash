@@ -54,6 +54,28 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import android.view.View
+
+private class AppMenuWindowReference { var view: View? = null }
+
+/** 作者 long：等菜单View实际离开窗口再交接，避免同帧拆Popup和建Dialog争抢焦点；取消等待不执行旧选择。 */
+private suspend fun awaitMenuWindowRemoved(view: View?, remove: () -> Unit) {
+    if (view == null || !view.isAttachedToWindow) { remove(); return }
+    suspendCancellableCoroutine<Unit> { continuation ->
+        val listener = object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) = Unit
+            override fun onViewDetachedFromWindow(v: View) {
+                v.removeOnAttachStateChangeListener(this)
+                if (continuation.isActive) continuation.resume(Unit)
+            }
+        }
+        view.addOnAttachStateChangeListener(listener)
+        continuation.invokeOnCancellation { android.os.Handler(android.os.Looper.getMainLooper()).post { view.removeOnAttachStateChangeListener(listener) } }
+        remove()
+    }
+}
 
 internal enum class AppMenuPlacement { OVER_ANCHOR_END, BELOW_POINT }
 internal data class AppMenuInsets(val left: Int, val top: Int, val right: Int, val bottom: Int)
@@ -195,6 +217,7 @@ internal fun AppDropdownMenu(
     var parentBounds by remember { mutableStateOf(IntRect.Zero) }
     var menuPosition by remember { mutableStateOf(IntOffset.Zero) }
     var sourceImage by remember { mutableStateOf<ImageBitmap?>(null) }
+    val popupWindow = remember { AppMenuWindowReference() }
     val opening = remember { Animatable(0f) }
     val returning = remember { Animatable(0f) }
     var returnFrom by remember { mutableFloatStateOf(.45f) }
@@ -257,13 +280,13 @@ internal fun AppDropdownMenu(
             returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
             MenuCloseCaptureProbe.afterAnimation()
             source?.hidden = false
-            // 作者 long：源按钮重新接管绘制后才打开目标子页，避免新Window先出现导致液滴被截断；外部状态撤销不执行旧操作。
+            awaitMenuWindowRemoved(popupWindow.view) { present = false }
+            // 作者 long：窗口移除也有取消窗口，交接时再核对外部展开与生命周期，防止后台或撤销后重放选择。
             val action = pendingAction.takeIf { expandedLatest && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
             pendingAction = null
-            if (requestedClose) { if (action == null) dismiss() else action() }
             sourceImage = null; backdrop = null
             carry.cancel(); registry.hovered = null
-            present = false
+            if (requestedClose) { if (action == null) dismiss() else action() }
             requestedClose = false
         }
     }
@@ -275,10 +298,12 @@ internal fun AppDropdownMenu(
             return IntOffset.Zero
         }
     } }
-    Popup(popupPositionProvider = windowOrigin, onDismissRequest = { navigateBack() },
+    if (present || active) Popup(popupPositionProvider = windowOrigin, onDismissRequest = { navigateBack() },
         // 作者 long：源长按尚未抬手时不抢Window焦点，原指针才能持续送到源控件；释放后恢复键盘和系统返回接管。
         properties = PopupProperties(focusable = !sourceHeld, clippingEnabled = false)) {
         val focus = LocalFocusManager.current
+        val popupView = LocalView.current
+        SideEffect { popupWindow.view = popupView }
         Box(Modifier.fillMaxSize().focusGroup().testTag("app_popup_window").pointerInput(carry, scrollable) {
             try { awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
@@ -327,13 +352,14 @@ internal fun AppDropdownMenu(
                             visible = { opening.value < .45f || !active }, dark = dark, glass = backdrop != null)
                         // 作者 long：正文先保留为独立绘制节点；外层每帧重录变形/模糊时复用它，避免重复遍历菜单正文与软件阴影。
                         Box(Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
-                            Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()),
+                            // 作者 long：定位在测量阶段产生，绘制时读取即可，不能让首次坐标回写重组整棵菜单。
+                            { Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()) },
                             sourceColor = source?.color ?: Color.Unspecified,
                             drawSurface = { opening.value < .45f || !active }).graphicsLayer()) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
                             LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
                             LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
-                            AppMenuStack(stack, pageKey, active, surface, backdrop, menuPosition, opening.asState(), returning.asState(), sourceReady,
+                            AppMenuStack(stack, pageKey, active, surface, backdrop, opening.asState(), returning.asState(), sourceReady,
                                 onScrollable = { scrollable = it }, content = content)
                         }
                         }

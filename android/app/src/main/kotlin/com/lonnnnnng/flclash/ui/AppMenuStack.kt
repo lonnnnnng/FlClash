@@ -117,7 +117,7 @@ internal fun appMenuStackRect(size: Size, top: Float, ownerTop: Float, ownerHeig
 /** 作者 long：完整内容先布局，仅改变卡片裁剪范围；文字不做纵向缩放，后层既不暴露语义也不接收内部点击。 */
 @Composable
 internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boolean, surface: Color,
-    backdrop: AppMenuBackdrop?, menuPosition: IntOffset, opening: State<Float>, returning: State<Float>, sourceReady: Boolean,
+    backdrop: AppMenuBackdrop?, opening: State<Float>, returning: State<Float>, sourceReady: Boolean,
     onScrollable: (Boolean) -> Unit, content: @Composable ColumnScope.(Any?) -> Unit) {
     val density = LocalDensity.current.density
     val inputModeManager = LocalInputModeManager.current
@@ -152,8 +152,8 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
             val quality = LocalAppGlassQuality.current
             val dim = MaterialTheme.colorScheme.surface
             val enabled = active && top && !state.folding && level.key == pageKey
-            // 作者 long：maxValue首帧尚未测量时是Int.MAX_VALUE；在组合阶段订阅它，测量后必须撤回“可滚动”，否则短菜单会永久拒绝拖选。
-            val hasScroll = level.scroll.maxValue > 0
+            // 作者 long：未知上限不等于可滚动；短菜单首帧不能先误启滚动再取消拖选协程，实测上限仍须订阅以接住长菜单。
+            val hasScroll = level.scroll.maxValue.let { it != Int.MAX_VALUE && it > 0 }
             SideEffect { if (top) onScrollable(hasScroll) }
             val minWidth = if (index == 0) 160.dp else with(LocalDensity.current) { (level.fromWidth * 1.12f).toDp().coerceAtMost(280.dp) }
             val cardWidth = if (index == 0) Modifier.widthIn(min = minWidth, max = 280.dp).width(IntrinsicSize.Max)

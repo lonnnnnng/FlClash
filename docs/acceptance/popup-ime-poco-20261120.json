@@ -1,0 +1,1132 @@
+{
+  "id": "KUI-VIS-065",
+  "date": "2026-11-20",
+  "status": "SCOPED_HANDOFF_VERIFIED_PERFORMANCE_PARTIAL",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "scope": "独立performance完整R8及motion组件包；空配置、核心停止。玻璃默认关闭；不启动或修改原Flutter，不使用或上传原1.yaml。",
+  "baseline": {
+    "commit": "ac8c1195bdea36c7ba7cd42a122b53b2d6bcb9b9",
+    "apk": {
+      "path": "baseline.apk",
+      "bytes": 49566601,
+      "sha256": "6c24fedf141a530f9d3ba3a4869b9e1aa2f448ebda2d28d7b98c7d1ac9986681"
+    }
+  },
+  "implementation": [
+    "Popup坐标改绘制阶段读取，移除未使用的栈位置参数；maxValue未知不冒充可滚动，保留真实滚动订阅。",
+    "回源动画后等待Popup View真实detach，再执行选择；取消/后台/外部撤销抑制迟到动作。",
+    "表单等待Dialog窗口获焦，仅requestFocus让TextField自然建立输入连接；提交/失败/返回使用Dialog自身控制器清焦收IME，等待期间读取最新忙态。"
+  ],
+  "build": {
+    "log": "build-final6.log",
+    "passed": true,
+    "unit": {
+      "app": {
+        "tests": 627,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "unitTotal": 920,
+    "execution": "App627本批执行，Service220/Core39/Common34任务内UP-TO-DATE复用",
+    "variants": [
+      "performanceBenchmark (R8/non-debuggable)",
+      "motionBenchmark",
+      "motionBenchmarkAndroidTest",
+      "release (unsigned/R8)"
+    ],
+    "lint": {
+      "motionBenchmark": {
+        "Warning": 75,
+        "Hint": 15
+      },
+      "release": {
+        "Warning": 71,
+        "Hint": 14
+      }
+    },
+    "dex": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "sourceHashCount": 651,
+    "sourceHashesMatch": true,
+    "performanceApk": {
+      "path": "final6.apk",
+      "bytes": 49568405,
+      "sha256": "81a886019e58e18570818a6aeb6ed408e446f34c06cc41958805c935c61b4462"
+    },
+    "performanceInstalledBytesMatch": true,
+    "motionApks": {
+      "com.lonnnnnng.flclash.motion": {
+        "sha256": "4c4401fb0a2c34f056e15f5e73db82505acd6fe77e5f38ce1f931f1cf5487cf4",
+        "bytes": 67458221,
+        "installedMatched": true
+      },
+      "com.lonnnnnng.flclash.motion.test": {
+        "sha256": "dcc6cf8116706d204e9913077f63486e899cebcca6870ee8dc7c4b1d48c566f8",
+        "bytes": 3184834,
+        "installedMatched": true
+      }
+    }
+  },
+  "deviceRegression": {
+    "batch": "final-ui1",
+    "passed": 22,
+    "failed": 0,
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "failureHidesDialogImeAndAllowsRetryWithoutLosingDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "sourceToSingleBatchAndBackKeepsNaturalInputAndWindowOwnership",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "scannedDirectFormGetsNaturalImeAndSubmissionHidesItsOwnWindow",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "backgroundResumeAndReturnRestoreSourceWithoutKeyboard",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "menuActionRunsAfterPopupViewHasDetached",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longMenuFingerScrollDoesNotExecuteHoveredRows",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "invalidSingleSubscriptionStaysInFormWithoutSubmitting",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "batchEditsInvalidatePreviewAndOnlyLatestInputCanSubmit",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuRoutesQrAndFileImportActions",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "addProfileSourceMenuOpensDedicatedRemoteSubscriptionForm",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileUiInstrumentedTest",
+        "test": "validSingleImportTrimsFieldsAndRepeatedTapSubmitsOnlyOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "backgroundPreservesExistingEditorAndClearsHiddenNewImportKey",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest",
+        "test": "proxyToolsSubmenuBackOutsideAndProfileChangeStayIndependent",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainMenuInstrumentedTest",
+        "test": "keyboardContextMenuAndOutsideDismissDoNotSelectCard",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuGeometryParityInstrumentedTest",
+        "test": "openingAndReturningGeometryInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuShadowParityInstrumentedTest",
+        "test": "platterShadowLeavesInteriorAndDetachedDropletClearInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfilesVisualInstrumentedTest",
+        "test": "profilesLightThemeAndSourceMenusRenderWithoutChangingProfiles",
+        "code": 0
+      }
+    ],
+    "screenshots": 38,
+    "intermediateBatchesNotAccumulated": [
+      "input-ui1: 5/5",
+      "detach-ui1: 6/6"
+    ],
+    "limits": "组件真实窗口/输入验收；源码初始URL模拟扫码跳转，不是重新摄像扫码；返回/重开保留草稿，不是冷进程持久性验证。"
+  },
+  "visual": {
+    "reviewed": "38张组件图的4张拼图、最终R8来源菜单/表单与独立自然录像8fps抽样",
+    "fixedThemeCompared": 35,
+    "pixelIdentical": 27,
+    "identicalGroups": {
+      "geometry": 20,
+      "shadow": 2,
+      "profiles": 5
+    },
+    "remaining8": "液滴开关采样图不同，目视正常，不记像素一致。",
+    "historicalSteadyComparison": {
+      "file": "steady-visual.json",
+      "status": "NOT_COMPARABLE",
+      "reason": "063历史深色截图与本轮浅色截图主题不一致，原差异保留但不据此判断回归。"
+    },
+    "naturalVideo": {
+      "durationSeconds": 5.369178,
+      "sourceFrames": 159,
+      "samplingFps": 8,
+      "notFrameByFrameAcceptance": true,
+      "observation": "回源、表单显示、自然IME入场、收起、返回均可见；未见整屏异常闪烁，原500ms回源后的等待感仍存在。录像不计性能数据。"
+    },
+    "flutterBoundary": "固定Flutter手机表单使用SnapSheetRoute；本组保留Kotlin Material AlertDialog，不称完整Flutter布局或连续动效等价。"
+  },
+  "gfxProcessCounts": {
+    "baseline2": {
+      "source-open": {
+        "stages": 5,
+        "frames": 171,
+        "janky": 14,
+        "jankPercent": 8.187
+      },
+      "remote-open": {
+        "stages": 5,
+        "frames": 289,
+        "janky": 21,
+        "jankPercent": 7.266
+      },
+      "ime-close": {
+        "stages": 5,
+        "frames": 111,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "form-close": {
+        "stages": 5,
+        "frames": 1,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "tools-observe": {
+        "stages": 1,
+        "frames": 1,
+        "janky": 1,
+        "jankPercent": 100.0
+      },
+      "tabs": {
+        "stages": 4,
+        "frames": 4,
+        "janky": 4,
+        "jankPercent": 100.0
+      }
+    },
+    "baseline3": {
+      "source-open": {
+        "stages": 5,
+        "frames": 172,
+        "janky": 14,
+        "jankPercent": 8.14
+      },
+      "remote-open": {
+        "stages": 5,
+        "frames": 296,
+        "janky": 23,
+        "jankPercent": 7.77
+      },
+      "ime-close": {
+        "stages": 5,
+        "frames": 114,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "form-close": {
+        "stages": 5,
+        "frames": 3,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "tools-observe": {
+        "stages": 1,
+        "frames": 1,
+        "janky": 1,
+        "jankPercent": 100.0
+      },
+      "tabs": {
+        "stages": 4,
+        "frames": 4,
+        "janky": 4,
+        "jankPercent": 100.0
+      }
+    },
+    "candidate1": {
+      "source-open": {
+        "stages": 5,
+        "frames": 172,
+        "janky": 14,
+        "jankPercent": 8.14
+      },
+      "remote-open": {
+        "stages": 5,
+        "frames": 288,
+        "janky": 20,
+        "jankPercent": 6.944
+      },
+      "ime-close": {
+        "stages": 5,
+        "frames": 112,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "form-close": {
+        "stages": 5,
+        "frames": 3,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "tools-observe": {
+        "stages": 1,
+        "frames": 1,
+        "janky": 1,
+        "jankPercent": 100.0
+      },
+      "tabs": {
+        "stages": 4,
+        "frames": 7,
+        "janky": 4,
+        "jankPercent": 57.143
+      }
+    },
+    "detach1": {
+      "source-open": {
+        "stages": 5,
+        "frames": 172,
+        "janky": 15,
+        "jankPercent": 8.721
+      },
+      "remote-open": {
+        "stages": 5,
+        "frames": 295,
+        "janky": 21,
+        "jankPercent": 7.119
+      },
+      "ime-close": {
+        "stages": 5,
+        "frames": 111,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "form-close": {
+        "stages": 5,
+        "frames": 3,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "tools-observe": {
+        "stages": 1,
+        "frames": 1,
+        "janky": 1,
+        "jankPercent": 100.0
+      },
+      "tabs": {
+        "stages": 4,
+        "frames": 4,
+        "janky": 4,
+        "jankPercent": 100.0
+      }
+    },
+    "detach2": {
+      "source-open": {
+        "stages": 5,
+        "frames": 174,
+        "janky": 14,
+        "jankPercent": 8.046
+      },
+      "remote-open": {
+        "stages": 5,
+        "frames": 289,
+        "janky": 19,
+        "jankPercent": 6.574
+      },
+      "ime-close": {
+        "stages": 5,
+        "frames": 110,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "form-close": {
+        "stages": 5,
+        "frames": 5,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "tools-observe": {
+        "stages": 1,
+        "frames": 1,
+        "janky": 1,
+        "jankPercent": 100.0
+      },
+      "tabs": {
+        "stages": 4,
+        "frames": 4,
+        "janky": 4,
+        "jankPercent": 100.0
+      }
+    },
+    "final1": {
+      "source-open": {
+        "stages": 5,
+        "frames": 170,
+        "janky": 15,
+        "jankPercent": 8.824
+      },
+      "remote-open": {
+        "stages": 5,
+        "frames": 292,
+        "janky": 20,
+        "jankPercent": 6.849
+      },
+      "ime-close": {
+        "stages": 5,
+        "frames": 110,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "form-close": {
+        "stages": 5,
+        "frames": 3,
+        "janky": 0,
+        "jankPercent": 0.0
+      },
+      "tools-observe": {
+        "stages": 1,
+        "frames": 1,
+        "janky": 1,
+        "jankPercent": 100.0
+      },
+      "tabs": {
+        "stages": 4,
+        "frames": 4,
+        "janky": 4,
+        "jankPercent": 100.0
+      }
+    }
+  },
+  "gfxLimits": "每目录25阶段，菜单各5次。remote-open包含回源+Dialog+IME；窗口销毁后的form-close缺观测，不把宿主0帧当作无成本；不同批次不累计。",
+  "perfetto": {
+    "baseline-trace1": {
+      "positiveErrorOrDataLossStats": 0,
+      "popupFirstUiElapsedMs": 74.566,
+      "dialogFirstUiElapsedMs": 87.226,
+      "dialogFirstUiScheduledMs": 71.05,
+      "dialogFirstRtElapsedMs": 9.506,
+      "dialogFirstPhase": "TX - com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity#55411_segment_1",
+      "clickDispatchEndToDialogFrameStartMs": 565.123,
+      "popupLastFrameFinishToDialogFirstStartMs": -12.207
+    },
+    "baseline-trace2": {
+      "positiveErrorOrDataLossStats": 0,
+      "popupFirstUiElapsedMs": 69.404,
+      "dialogFirstUiElapsedMs": 93.009,
+      "dialogFirstUiScheduledMs": 73.565,
+      "dialogFirstRtElapsedMs": 10.558,
+      "dialogFirstPhase": "TX - com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity#57169_segment_1",
+      "clickDispatchEndToDialogFrameStartMs": 549.112,
+      "popupLastFrameFinishToDialogFirstStartMs": 3.184
+    },
+    "candidate-trace1": {
+      "positiveErrorOrDataLossStats": 0,
+      "popupFirstUiElapsedMs": 74.04,
+      "dialogFirstUiElapsedMs": 82.837,
+      "dialogFirstUiScheduledMs": 65.236,
+      "dialogFirstRtElapsedMs": 8.516,
+      "dialogFirstPhase": "TX - com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity#55978_segment_1",
+      "clickDispatchEndToDialogFrameStartMs": 551.109,
+      "popupLastFrameFinishToDialogFirstStartMs": 3.17
+    },
+    "detach-trace1": {
+      "positiveErrorOrDataLossStats": 0,
+      "popupFirstUiElapsedMs": 72.963,
+      "dialogFirstUiElapsedMs": 71.836,
+      "dialogFirstUiScheduledMs": 59.511,
+      "dialogFirstRtElapsedMs": 3.418,
+      "dialogFirstPhase": "TX - com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity#56870_segment_1",
+      "clickDispatchEndToDialogFrameStartMs": 583.388,
+      "popupLastFrameFinishToDialogFirstStartMs": 12.361
+    },
+    "detach-trace2": {
+      "positiveErrorOrDataLossStats": 0,
+      "popupFirstUiElapsedMs": 74.401,
+      "dialogFirstUiElapsedMs": 71.35,
+      "dialogFirstUiScheduledMs": 58.616,
+      "dialogFirstRtElapsedMs": 3.396,
+      "dialogFirstPhase": "TX - com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity#57114_segment_1",
+      "clickDispatchEndToDialogFrameStartMs": 573.954,
+      "popupLastFrameFinishToDialogFirstStartMs": 12.904
+    },
+    "final-trace1": {
+      "positiveErrorOrDataLossStats": 0,
+      "popupFirstUiElapsedMs": 75.327,
+      "dialogFirstUiElapsedMs": 69.291,
+      "dialogFirstUiScheduledMs": 57.089,
+      "dialogFirstRtElapsedMs": 3.576,
+      "dialogFirstPhase": "TX - com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity#58913_segment_1",
+      "clickDispatchEndToDialogFrameStartMs": 583.88,
+      "popupLastFrameFinishToDialogFirstStartMs": 12.71
+    }
+  },
+  "performanceConclusion": "Dialog首帧UI包容墙钟切片由旧包87.226/93.009ms到最终69.291ms；两次detach候选71.836/71.350ms支持局部下降。最终表单首次FrameTimeline开始583.880ms，旧包549.112/565.123ms，交接延后18.757～34.768ms。Popup首帧最终75.327ms，旧包69.404/74.566ms，无稳定改善；整体掉帧仍未闭环。",
+  "attributionLimits": "按同进程surface_frame_token匹配UI/RenderThread与sched。UI为包容墙钟时间，不是CPU、该窗口独占成本或点击到可输入耗时；不把不同layer同token重复累计。缺原生函数/Compose函数调用栈与完整GPU fence归因，不宣称RenderThread根因已解决。",
+  "failuresPreserved": [
+    {
+      "batch": "baseline1",
+      "reason": "首次通知权限挡住，未进入测量；仅授权独立包POST_NOTIFICATIONS后新目录重跑。"
+    },
+    {
+      "batch": "build-candidate1",
+      "reason": "漏LocalFocusManager导入，修正后重建。"
+    },
+    {
+      "batch": "build-candidate2",
+      "reason": "测试引用未依赖UiDevice，改现有Instrumentation系统Back。"
+    },
+    {
+      "batch": "build-final5",
+      "reason": "漏rememberUpdatedState导入，修正后最终重建。"
+    }
+  ],
+  "protection": {
+    "removed": [
+      "com.lonnnnnng.flclash.performance",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "packageSetMatches": true,
+    "extraPackages": [],
+    "missingPackages": [],
+    "flutterIdentityMatches": true,
+    "settings": {
+      "rotation": "0",
+      "userRotation": "0",
+      "fontScale": "1.0",
+      "night": "Night mode: yes"
+    },
+    "settingsMatch": true,
+    "local": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "size": 34220,
+      "mtimeNs": 1794392072317864361
+    },
+    "localMatches": true,
+    "originalFlutterNeverLaunchedOrModified": true
+  },
+  "remaining": [
+    "Popup首次建窗仍约75ms",
+    "Dialog首次绘制/IME整体延迟及关闭完整观测",
+    "RenderThread慢帧的更细归因",
+    "高频观测状态重组隔离",
+    "其余Flutter子页与完整连续转场"
+  ],
+  "notRun": [
+    "运行核心/网络/导入真实订阅",
+    "低API/其他OEM/模拟器",
+    "正式APK安装",
+    "发布"
+  ],
+  "rawEvidenceRoot": "../acceptance-artifacts/popup-ime-poco-20261120/",
+  "evidence": [
+    {
+      "path": "after.json",
+      "bytes": 625,
+      "sha256": "e03101f8c5ddff89b109a62670089d0a4642984d62ae066c272127b7fb74ebec"
+    },
+    {
+      "path": "all-window-threads.sql",
+      "bytes": 4435,
+      "sha256": "8e357451f0db07b9cc443ff91699a334070e52a64625a9703654b359375fddf3"
+    },
+    {
+      "path": "baseline-trace1/all-window-threads.csv",
+      "bytes": 33863,
+      "sha256": "b2b18271a3593953c968beb51ddcd9e9c89e7ee5d4d50c4c5c46619f38af20fd"
+    },
+    {
+      "path": "baseline-trace1/handoff.csv",
+      "bytes": 160,
+      "sha256": "9904c3e865f8c9063e6e85950bfd8690ec5443c9be16272cbff707ba9c577d7c"
+    },
+    {
+      "path": "baseline-trace1/phases.txt",
+      "bytes": 5445,
+      "sha256": "37675f9a543684a0c8228343f1bf60c94473d65b459ffa4605ac3fdcc7dc6ce9"
+    },
+    {
+      "path": "baseline-trace1/trace.log",
+      "bytes": 461,
+      "sha256": "5ea17f5889ca93c3dcccfc6a7231a201c3fcd8a438caf43ac2d431a8eac06dd0"
+    },
+    {
+      "path": "baseline-trace1/trace.perfetto-trace",
+      "bytes": 7467056,
+      "sha256": "698b79ee410fb0258f277ef7d7ce1022edce0f23157a66f29ad37fccb2a4f8d4"
+    },
+    {
+      "path": "baseline-trace1/window-frames.csv",
+      "bytes": 2866,
+      "sha256": "860da1471a7194c8ed8d0af73c77323df133b05ef3a7cd6f46abf5d134662c4c"
+    },
+    {
+      "path": "baseline-trace1-summary.log",
+      "bytes": 20,
+      "sha256": "f6a871203ce8b32a0918e8f6d7d985f2843730a94124da5b8c7003554beb8910"
+    },
+    {
+      "path": "baseline-trace2/all-window-threads.csv",
+      "bytes": 33665,
+      "sha256": "93681ae18cc82e2b042cd3326275804374e070caf7424e1dac7e48f51fb24563"
+    },
+    {
+      "path": "baseline-trace2/handoff.csv",
+      "bytes": 158,
+      "sha256": "a14dec05eee910a5fc6fe06767363b9dbf68916b1deb28a79d3c6903a9d2d06c"
+    },
+    {
+      "path": "baseline-trace2/phases.txt",
+      "bytes": 5442,
+      "sha256": "62efbd4c0e3ee2cc030109a2a4f3498db1f292150502cc4d0eb487aba633050c"
+    },
+    {
+      "path": "baseline-trace2/trace.log",
+      "bytes": 461,
+      "sha256": "2839df7c399c5cfa582fe1c1f53c962fee3c742a581d42433b6a41a9cb8dd4f0"
+    },
+    {
+      "path": "baseline-trace2/trace.perfetto-trace",
+      "bytes": 7672304,
+      "sha256": "fe5c8a0b27c2f4219c34cd6f696907ca5119cb47454628bbb5ae5afba1da5ff5"
+    },
+    {
+      "path": "baseline-trace2-summary.log",
+      "bytes": 20,
+      "sha256": "2d9f577aec479ca018004b07c4ee2b59adbe1ef387abab51b873125b079221a7"
+    },
+    {
+      "path": "baseline1-summary.log",
+      "bytes": 722,
+      "sha256": "ffe9fd4153194475d836fa76475d5fe8a0a58fca1b4f2aef4f3a0d98d9527762"
+    },
+    {
+      "path": "baseline2/result.json",
+      "bytes": 71358,
+      "sha256": "0c8b7958f98a0a20f4cd8bb93c65d39b4350e9d144973aa8694bf91807db0d3d"
+    },
+    {
+      "path": "baseline2-summary.log",
+      "bytes": 4133,
+      "sha256": "aa6af6a04bba43a9465f0e60cd212e71c28feada7a1546bcdfab72537999d8b3"
+    },
+    {
+      "path": "baseline3/result.json",
+      "bytes": 71387,
+      "sha256": "9deb4a4c09bc571430d74130185fd134c637339d70baf331a8169991bfc795be"
+    },
+    {
+      "path": "baseline3-summary.log",
+      "bytes": 4152,
+      "sha256": "36e78bee7e9bdd06a3dfad7a2c8e4314a471a9cdcedbc6786bceaac97522f608"
+    },
+    {
+      "path": "build-candidate1.log",
+      "bytes": 21987,
+      "sha256": "cfc5e48ad730c3040893dbb9015fad50504a7a9d58813f14600ab9015d6efc0f"
+    },
+    {
+      "path": "build-candidate2.log",
+      "bytes": 23638,
+      "sha256": "5bf5eed04393c630df372874cfed2bf5733e0e59a506860ed4b0b7d0df13be94"
+    },
+    {
+      "path": "build-candidate3.log",
+      "bytes": 28810,
+      "sha256": "8dc9ee393a3d1ba9adb62a0961fbd8c8864a57037fbf73e937386006e5dc1eef"
+    },
+    {
+      "path": "build-detach4.log",
+      "bytes": 22838,
+      "sha256": "f087a3f3ee763dacd4b1d1d0fe1d356f5e7cfff2f9159ad410093683e87d6a40"
+    },
+    {
+      "path": "build-final5.log",
+      "bytes": 25956,
+      "sha256": "417703ebe9e3464f4107759e399e6b69556d562c3a8a6825b097d20ad0b4957b"
+    },
+    {
+      "path": "build-final6.log",
+      "bytes": 29438,
+      "sha256": "8ac3eb36eb884681d752bf1bd075d8cce61ba5142741d717b3902284e72aec60"
+    },
+    {
+      "path": "candidate-trace1/all-window-threads.csv",
+      "bytes": 32472,
+      "sha256": "10e145fd72b6cdc3c30d559972cc69a73e12032f849af9e181cf83d177c5cea8"
+    },
+    {
+      "path": "candidate-trace1/handoff.csv",
+      "bytes": 158,
+      "sha256": "0c1fbd9d350edea1a7ee642a3c7e8dfdb3c8fe2438633eba913fd2b9ef41710c"
+    },
+    {
+      "path": "candidate-trace1/phases.txt",
+      "bytes": 5445,
+      "sha256": "cbd01a88b57a5728d68316e3c58db126e3c28aa5ac15ac8d5540ce436b230832"
+    },
+    {
+      "path": "candidate-trace1/trace.log",
+      "bytes": 462,
+      "sha256": "db8e0d3b13f8196af9950f52d3e2e632e0d0874256bace4cdbe334aaa52c448d"
+    },
+    {
+      "path": "candidate-trace1/trace.perfetto-trace",
+      "bytes": 7373214,
+      "sha256": "9a9f54a34abb1a80efb0b7bcd74242fca510893ed544f3abc42170c5e75313fe"
+    },
+    {
+      "path": "candidate-trace1-summary.log",
+      "bytes": 20,
+      "sha256": "5700d40fe8b49476bfe27fcec3f4719e3ffae7d0aca8102ed8f61565ef34c0ab"
+    },
+    {
+      "path": "candidate1/result.json",
+      "bytes": 71391,
+      "sha256": "ea42f60ce87f044f9a3ddaa89d8c3d9acef233b9cfc077182d68aaadeccf84d5"
+    },
+    {
+      "path": "candidate1-summary.log",
+      "bytes": 4146,
+      "sha256": "d335724496102d25a905575d1bc1337efb4e3f9f5ff6521090e9179ff5ad7db7"
+    },
+    {
+      "path": "candidate3-identity.json",
+      "bytes": 92995,
+      "sha256": "5a944f3fde25cbf454f52dbc08679ae2ff492c67da07e907a54849026c002779"
+    },
+    {
+      "path": "collect.py",
+      "bytes": 3555,
+      "sha256": "83adea11dd7f7b9fb47dc458c01421d6fcf497868c3f10c33c1e332ee0dde914"
+    },
+    {
+      "path": "detach-trace1/all-window-threads.csv",
+      "bytes": 33036,
+      "sha256": "6ff200c1ea0b3e85f4e80f70a4aceb82cbdbbf2ffa1b78db4fbe0012c3a60292"
+    },
+    {
+      "path": "detach-trace1/handoff.csv",
+      "bytes": 159,
+      "sha256": "3fe54d609999d435930e3723fb1e9757f828878eaa2ab024b7603346e3653b80"
+    },
+    {
+      "path": "detach-trace1/phases.txt",
+      "bytes": 5448,
+      "sha256": "e1e01b86c1754b68c4c25bc8894edc17f6fc84e55e73d0bf2bd754905246009d"
+    },
+    {
+      "path": "detach-trace1/trace.log",
+      "bytes": 459,
+      "sha256": "88c2e4bc22fd80c2eb9b1b3184a4e664ae2f31e56a8ed07927569ffb1220a5f8"
+    },
+    {
+      "path": "detach-trace1/trace.perfetto-trace",
+      "bytes": 7392346,
+      "sha256": "797cb6ef79f856d8a8074bcbcdbe9754beb25169866706f38a1abad6aefc5baf"
+    },
+    {
+      "path": "detach-trace1-summary.log",
+      "bytes": 20,
+      "sha256": "cacc7d202730f5576f8ff7b94607ba09e06fd9efc96b9f6179ef2fc790f66f98"
+    },
+    {
+      "path": "detach-trace2/all-window-threads.csv",
+      "bytes": 33123,
+      "sha256": "f7cd3aa29537863361f3c426b3a4d2c77ffb9f18dfc0d7119b97a493f70b8a4e"
+    },
+    {
+      "path": "detach-trace2/handoff.csv",
+      "bytes": 159,
+      "sha256": "b5a472ba9cadd2e52605759d55c17788de916fea30de313ca34d8b9099addd65"
+    },
+    {
+      "path": "detach-trace2/phases.txt",
+      "bytes": 5441,
+      "sha256": "9ce4ff6addb631a757ffd717d87c74d17517a76835a0f03b28e135240de299e1"
+    },
+    {
+      "path": "detach-trace2/trace.log",
+      "bytes": 459,
+      "sha256": "900feb3dae25f41621c0013ca12fb1346b09ff795531e2ce209262a694d18eb0"
+    },
+    {
+      "path": "detach-trace2/trace.perfetto-trace",
+      "bytes": 7354530,
+      "sha256": "71ead26230354f2ce5db1523b0fcd3c3faec42241feda65e7f01a43b37ad76c3"
+    },
+    {
+      "path": "detach-trace2-summary.log",
+      "bytes": 20,
+      "sha256": "96e3159ad4e1d4a614810bdaee346338d7ce7931bdf9dd056a24d9cc9ed675e8"
+    },
+    {
+      "path": "detach-ui1/instrumentation.log",
+      "bytes": 650519,
+      "sha256": "289883affb180cac9fb3173cf2106db488c4265a1e05d38bc89f5c8b753b5cc9"
+    },
+    {
+      "path": "detach-ui1/screenshots.json",
+      "bytes": 3077,
+      "sha256": "c41ce693f8ed1589d15344ee6efe4c10fbb07e49af8d427b68ab072c540ab582"
+    },
+    {
+      "path": "detach-ui1-summary.log",
+      "bytes": 1217,
+      "sha256": "4e6b92f3d549808355c8f7f8cb2f94ad5454ccc7b1e4effb45d604a0aff4e7fc"
+    },
+    {
+      "path": "detach1/result.json",
+      "bytes": 71360,
+      "sha256": "bdb91054ba9e88eb553976f61c8598e778b63a3393fe8a123d34cc6ccab0f9ad"
+    },
+    {
+      "path": "detach1-summary.log",
+      "bytes": 4118,
+      "sha256": "37d00ab8890e58ea7d59a5ec5024d0dd3c8aa372a8ba5d210872c1d9e75a1bf4"
+    },
+    {
+      "path": "detach2/result.json",
+      "bytes": 71368,
+      "sha256": "5a888b99066ceff9385d195030e140c3aa9d7896eec8d36626a1bb5febf9e744"
+    },
+    {
+      "path": "detach2-summary.log",
+      "bytes": 4151,
+      "sha256": "7b66907634d8c0c365d9f881bfbeed50da2bd31970fe4802f8d1b9cfc83df743"
+    },
+    {
+      "path": "detach4-identity.json",
+      "bytes": 92995,
+      "sha256": "bfe7e0e69775baea1d4ab5b19c67254dc4fa0a7c88d92de116c76e500b1bc6cf"
+    },
+    {
+      "path": "device.py",
+      "bytes": 1496,
+      "sha256": "a6a6eb081865fefa34fedb7e92f1358551e2597de1600813918c997a7b5872d2"
+    },
+    {
+      "path": "dex-final6.log",
+      "bytes": 588,
+      "sha256": "6371512ad3aa342f5732145fd0e4d1000e475a2fbf388580a2379478b034dee0"
+    },
+    {
+      "path": "driver.py",
+      "bytes": 5256,
+      "sha256": "5cac0ef7c7c560761a0f1d599633fccd620e3aed9876df139ead1322fb9a5a1a"
+    },
+    {
+      "path": "final-methods.json",
+      "bytes": 2086,
+      "sha256": "1212e46701829d602a554fc3a96c2302585f1f9572989ae8afe185ca6cdef294"
+    },
+    {
+      "path": "final-trace1/all-window-threads.csv",
+      "bytes": 32886,
+      "sha256": "e04d602fa455f101aa1eac9b434af20c84e79c58f1e5f9c6e0d1b9ca5627bfc0"
+    },
+    {
+      "path": "final-trace1/handoff.csv",
+      "bytes": 159,
+      "sha256": "ed2b1001abe706682b0b4a44f459a32f917de7ed3300857342e014ee7763b4d6"
+    },
+    {
+      "path": "final-trace1/phases.txt",
+      "bytes": 5433,
+      "sha256": "6f6859c0bb1d659dd3c675ec8ba2decf5216da81491e6f9c339b7c94d06fbb5c"
+    },
+    {
+      "path": "final-trace1/trace.log",
+      "bytes": 458,
+      "sha256": "98ad30021d53f33ae473716271de807e7fbfb895965dc223d94f258f5434f1ba"
+    },
+    {
+      "path": "final-trace1/trace.perfetto-trace",
+      "bytes": 7300965,
+      "sha256": "d82cfce668b3008f749b4a9f38420c6580155e25560c474cfb56a1675cb2d3b8"
+    },
+    {
+      "path": "final-trace1-summary.log",
+      "bytes": 20,
+      "sha256": "dc0b1426430b69669eef6b20e0e092ffdf392692a8a8aa810a1727107b906f7d"
+    },
+    {
+      "path": "final-ui1/instrumentation.log",
+      "bytes": 1920243,
+      "sha256": "fbedc13084694a5295433045b3b4fd909d8ce63c4dfa0b17052ce82fab1ec647"
+    },
+    {
+      "path": "final-ui1/screenshots.json",
+      "bytes": 11787,
+      "sha256": "7b306641534feef85eea7162e4143b4244b98a2f7991f62eb1d6076be7c97e85"
+    },
+    {
+      "path": "final1/result.json",
+      "bytes": 71375,
+      "sha256": "77e54b220660c2b1520bcdaf9a398aba675d0b844753fdefa0c952a63a87e2b8"
+    },
+    {
+      "path": "final1-summary.log",
+      "bytes": 4115,
+      "sha256": "edefd5f2f59d6d707cb953ead7abfcb8ea3c04e15ca5970a8d727596dcaba2bf"
+    },
+    {
+      "path": "final6-identity.json",
+      "bytes": 92995,
+      "sha256": "9005e0d0880610126a55f1ca9626ae0821bdce22804fc625366470e52e75ee1c"
+    },
+    {
+      "path": "finish.py",
+      "bytes": 2250,
+      "sha256": "7fe8db92f1a88738f2b815170c2e1fecf8342d80ddba7fe797a3e72b82653eea"
+    },
+    {
+      "path": "frame-threads.sql",
+      "bytes": 4444,
+      "sha256": "193d07de9b15d7643a36a9515219ddcbc873a7468b4d66e3c2f7d1d5e8bcf50a"
+    },
+    {
+      "path": "handoff.sql",
+      "bytes": 847,
+      "sha256": "7bfa63902e1ceaddb381e49c7666ec8bfc05f47c4521001adc92dbde9a61c3a3"
+    },
+    {
+      "path": "input-ui1/instrumentation.log",
+      "bytes": 3723,
+      "sha256": "7288bcae881e434e0c44aa8910db6cfe2f6b2f75fd5fb3e544c9c095734f6d66"
+    },
+    {
+      "path": "input-ui1/screenshots.json",
+      "bytes": 1018,
+      "sha256": "f680d28820cb2b77c121eb7ff558b327d2bfb25fd27109e27846f65d8ba0b8c4"
+    },
+    {
+      "path": "input-ui1-summary.log",
+      "bytes": 801,
+      "sha256": "34e23084e9751bcecdc7d03e3abd9d561c283754672a5c0840949c1c331200e6"
+    },
+    {
+      "path": "install-candidate3.log",
+      "bytes": 36,
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "install-detach4.log",
+      "bytes": 36,
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "install-final6.log",
+      "bytes": 36,
+      "sha256": "781a31c82430c97897af612ece5e0ca2205e301cb5ff121ce2660541ea5182c7"
+    },
+    {
+      "path": "install-motion-candidate3.log",
+      "bytes": 106,
+      "sha256": "bfef0c385bdd33f7d9dcd27a3c78c7f8aba19cf68e90e648cbabec4255f2f37c"
+    },
+    {
+      "path": "install-motion-detach4.log",
+      "bytes": 106,
+      "sha256": "bfef0c385bdd33f7d9dcd27a3c78c7f8aba19cf68e90e648cbabec4255f2f37c"
+    },
+    {
+      "path": "install-motion-final6.log",
+      "bytes": 106,
+      "sha256": "bfef0c385bdd33f7d9dcd27a3c78c7f8aba19cf68e90e648cbabec4255f2f37c"
+    },
+    {
+      "path": "install.py",
+      "bytes": 764,
+      "sha256": "9bcc783bab751552b1eef26056c504bda4534eb36868ae9c87c1aba30b41711a"
+    },
+    {
+      "path": "installedcandidate3.json",
+      "bytes": 130318,
+      "sha256": "3b56bdcd151a0051dcc2903dd6aae88ba0d385d62558e83f8d05a819e6b465e7"
+    },
+    {
+      "path": "installeddetach4.json",
+      "bytes": 130318,
+      "sha256": "b82840625d1c8846cab165a1fed349fb33dbab3a6507226b16a6af4672a21c96"
+    },
+    {
+      "path": "installedfinal6.json",
+      "bytes": 130318,
+      "sha256": "a4eff112582bea220bec8709904cc026d5ef10062ca37af650ac5287f02e2b5e"
+    },
+    {
+      "path": "lint-final6.log",
+      "bytes": 15063,
+      "sha256": "58c5e857a8beb90e134cdebc49433124065c55cd5f9c7bc1332530c1a6a2e7f3"
+    },
+    {
+      "path": "natural/natural.mp4",
+      "bytes": 3352625,
+      "sha256": "86a0f3d1a59d073285280a69d82376ca93e68c884e0d5112e379073a103cab31"
+    },
+    {
+      "path": "natural/pts.csv",
+      "bytes": 1431,
+      "sha256": "5dae9091b123ee5547d7b2f661a22efad0b69f723794b3ed9c9a3511c57f7bc0"
+    },
+    {
+      "path": "natural/record.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "natural-summary.log",
+      "bytes": 52,
+      "sha256": "a7ee6f7ae983f779661077e00e7a02aab3961e132d79aca6fecefaa26fe33179"
+    },
+    {
+      "path": "phases.sql",
+      "bytes": 705,
+      "sha256": "35d5a06e2718dda2f3a6324faaf1ac5ec870a544c398a6a747e56d48ddfdd55f"
+    },
+    {
+      "path": "raw-manifest.json",
+      "bytes": 66259,
+      "sha256": "569c680252e60a72746e5ed9d8e75f6e0b0836a3c70528cfbef04f50c2398886"
+    },
+    {
+      "path": "record.py",
+      "bytes": 993,
+      "sha256": "55f551d41c9991df8b9370a53a1d94e7271599034d5938722ebd7cb9810b807d"
+    },
+    {
+      "path": "shots.py",
+      "bytes": 533,
+      "sha256": "af9afe538ca2dc89e061f10932b7613a9dfe5a9ec801e551efa5fc318d99760b"
+    },
+    {
+      "path": "steady-visual.json",
+      "bytes": 226,
+      "sha256": "012e032ed3b01a090d8e93274459c6c543727d7dd3d77374a5febed96c07ac09"
+    },
+    {
+      "path": "summarize.py",
+      "bytes": 10564,
+      "sha256": "5b7a373c1ae84e20851a9a41f9d6c953020aa1e26e076fa1fa657253930df364"
+    },
+    {
+      "path": "trace.py",
+      "bytes": 1723,
+      "sha256": "f89d22e396b2f4074b5a40e52133ad2f96b8352f24bdb9ce5b576bfdb8aa05c9"
+    },
+    {
+      "path": "verification-final6.zip",
+      "bytes": 113171,
+      "sha256": "9e5a4a26be654f77537ad093460f41ba9ba4c41dd12fb2553cdb3e5f420d481e"
+    },
+    {
+      "path": "verification-summary.json",
+      "bytes": 598,
+      "sha256": "41b2bc9471c2600b6a5a5fc061dd83d0108454c2249c7f8f92ac97e8b0bda793"
+    },
+    {
+      "path": "visual-comparison.json",
+      "bytes": 3079,
+      "sha256": "ebc39df93757f8283aa4458882772366dfb242e8c380a8cb8b8e59f8f2e3f268"
+    },
+    {
+      "path": "window-frames.sql",
+      "bytes": 336,
+      "sha256": "b8059f1c815ef19a41fe4df1bde929503fea1fa5d26503c3847f0bee04ba65f7"
+    }
+  ]
+}

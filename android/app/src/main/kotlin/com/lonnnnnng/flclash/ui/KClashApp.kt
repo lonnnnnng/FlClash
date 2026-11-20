@@ -82,6 +82,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -92,6 +93,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -4959,28 +4961,20 @@ internal fun AddProfileDialog(
         }
     }
     val urlError = if (attempted && !batchMode) profileUrlInputError(url) else null
-    val keyboard = LocalSoftwareKeyboardController.current
-    LaunchedEffect(feedback.requestId, feedback.phase) {
-        when (feedback.phase) {
-            ProfileAddPhase.FAILED -> { submitted = false; keyboard?.hide() }
-            ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> { submitted = true; keyboard?.hide() }
-            else -> Unit
-        }
-    }
-    fun submit() {
+    fun submit(hideInput: () -> Unit) {
         if (busy || submitted) return
         attempted = true
         if (batchMode) {
             val ready = preview ?: return
             if (ready.urls.isEmpty() || ready.invalidCount > 0) return
             submitted = true
-            keyboard?.hide()
+            hideInput()
             onAddRemoteBatch(ready.urls)
         } else {
             if (profileUrlInputError(url) != null) { urlFocus.requestFocus(); return }
             // 作者 long：按钮和IME共用同步认领，父窗口关闭前的连续点击也只能发出一次导入。
             submitted = true
-            keyboard?.hide()
+            hideInput()
             if (onAddRemoteWithAgeKey != null) onAddRemoteWithAgeKey(label.trim(), url.trim(), ageKey.trim())
             else onAddRemote(label.trim(), url.trim())
             ageKey = ""
@@ -4998,12 +4992,23 @@ internal fun AddProfileDialog(
         text = {
             val windowInfo = LocalWindowInfo.current
             val formKeyboard = LocalSoftwareKeyboardController.current
+            val formFocus = LocalFocusManager.current
+            val hideInput = { formFocus.clearFocus(force = true); formKeyboard?.hide(); Unit }
+            // 作者 long：输入会话属于Dialog；提交/失败也从同一窗口清焦收键盘，不能向底层Activity发送隐藏请求。
+            LaunchedEffect(feedback.requestId, feedback.phase) {
+                when (feedback.phase) {
+                    ProfileAddPhase.FAILED -> { submitted = false; hideInput() }
+                    ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> { submitted = true; hideInput() }
+                    else -> Unit
+                }
+            }
+            val inputLocked by rememberUpdatedState(locked || terminal)
             LaunchedEffect(batchMode) {
                 // 作者 long：来源菜单关闭与Dialog取焦点有交接窗口，等本表单窗口真正获焦后才请求输入，避免焦点落在底层Activity而没有键盘。
                 snapshotFlow { windowInfo.isWindowFocused }.first { it }
-                if (!locked) {
+                if (!inputLocked) {
+                    // 作者 long：TextField获得焦点后自行创建输入连接；不在同一回调重复show，避免窗口交接时发出过早请求。
                     if (batchMode) batchFocus.requestFocus() else urlFocus.requestFocus()
-                    formKeyboard?.show()
                 }
             }
             Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -5076,7 +5081,7 @@ internal fun AddProfileDialog(
                     AgeSecretKeyField(ageKey, { ageKey = it }, !locked, "profile_add_remote_age_key",
                         modifier = Modifier.focusRequester(keyFocus), singleLine = true,
                         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { submit() }))
+                        keyboardActions = KeyboardActions(onDone = { submit(hideInput) }))
                 }
                 when (feedback.phase) {
                     ProfileAddPhase.RUNNING -> Column(Modifier.fillMaxWidth().testTag("profile_add_progress"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -5095,9 +5100,11 @@ internal fun AddProfileDialog(
             }
         },
         confirmButton = {
+            val keyboard = LocalSoftwareKeyboardController.current
+            val focus = LocalFocusManager.current
             if (terminal) TextButton(onClick = onDismiss, modifier = Modifier.testTag("profile_add_done")) { Text(tr("完成")) }
             else TextButton(
-                    onClick = ::submit,
+                    onClick = { submit { focus.clearFocus(force = true); keyboard?.hide() } },
                     enabled = !locked && if (batchMode) {
                         preview?.let { it.urls.isNotEmpty() && it.invalidCount == 0 } == true
                     } else {
@@ -5107,7 +5114,9 @@ internal fun AddProfileDialog(
                 ) { Text(if (feedback.phase == ProfileAddPhase.FAILED) tr("重试导入") else if (batchMode) tr("导入 {0} 条", preview?.urls?.size ?: 0) else tr("导入")) }
         },
         dismissButton = {
-            TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; keyboard?.hide(); step = AddProfileStep.SOURCE } }, enabled = terminal || !locked,
+            val keyboard = LocalSoftwareKeyboardController.current
+            val focus = LocalFocusManager.current
+            TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; focus.clearFocus(force = true); keyboard?.hide(); step = AddProfileStep.SOURCE } }, enabled = terminal || !locked,
                 modifier = Modifier.testTag("profile_add_back")) { Text(tr("返回")) }
         },
     )

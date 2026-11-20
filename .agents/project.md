@@ -1,5 +1,9 @@
 # Project Context
 
+## Popup首次建窗与Dialog／键盘交接当前组（2026-11-20）
+
+065已将来源菜单动作延后到Popup真实移窗后，统一Dialog自身清焦/收IME，减少首次坐标回写重组。920项JVM、POCO最终22/22、38图已核对，其中27张固定图像素一致，R8/motion构建、双Lint/DEX通过。Dialog首帧UI切片87–93ms→69ms，但首次绘制延后约19–35ms；Popup约75ms及整体掉帧仍未稳定改善。 下一步继续Popup首次建窗组成/测量、表单端到端延迟和关闭完整观测，再隔离高频观测重组；完整Flutter视觉与性能仍PARTIAL。 本组仅POCO独立空配置STOPPED包；三个包已清理，原Flutter未启动/修改，原1.yaml与系统设置保持。未发版。见`docs/popup-input-handoff-performance.md`及配套JSON，旧组“下一步”只作历史。
+
 ## 运行内存与掉帧复验当前组（2026-11-20）
 
 064活动连接完整列表改为仅可见Tab轮询，取消迟到结果和空列表加载闪烁；920项JVM、POCO最终9/9、R8/motion构建、双Lint/DEX通过。同设备同源配置的纯代理/VPN前后台RSS比较，Kotlin约为原版90%～95%，未复现两倍；原版PSS缺测，缓存/内核/流量未完全冻结。整体掉帧仍未证明改善，两个绘制候选已撤回。 用户本轮明确授权与原版运行对照，只操作POCO。原版UI状态已恢复、未清库/替换APK；后续原版操作仍以具体任务授权为准。下一步Popup/IME交接与高频观测重组，见`docs/running-memory-jank-investigation.md`。
