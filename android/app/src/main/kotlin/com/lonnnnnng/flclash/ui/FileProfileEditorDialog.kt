@@ -70,10 +70,13 @@ internal fun FileProfileEditorDialog(
         text = {
             Column(Modifier.fillMaxWidth().testTag("file_profile_editor_form")
                 .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                ProfileFormSection {
-                    OutlinedTextField(label, { label = it.take(64); onMetadataChange(label, key) }, enabled = !locked, singleLine = true,
-                        label = { Text(tr("名称")) }, modifier = Modifier.fillMaxWidth().testTag("file_profile_editor_label"))
-                    AgeSecretKeyField(key, { key = it; onMetadataChange(label, key) }, !locked, "file_profile_editor_age_key")
+                ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
+                    ProfileFormInput(tr("名称"), label, { label = it.take(64); onMetadataChange(label, key) },
+                        "file_profile_editor_label", enabled = !locked, placeholder = tr("必填"))
+                    ProfileFormDivider()
+                    ProfileFormInput(tr("age 私钥"), key, { key = it; onMetadataChange(label, key) },
+                        "file_profile_editor_age_key", enabled = !locked, secret = true, placeholder = tr("可选"),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Password))
                 }
                 ProfileFormSection {
                 ProfileSectionRow(title = tr("从文件替换"), detail = replacement?.name,

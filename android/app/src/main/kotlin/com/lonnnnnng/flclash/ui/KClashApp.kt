@@ -4354,33 +4354,16 @@ internal fun ProfileRenameDialog(
 ) {
     var label by rememberSaveable(profile.id) { mutableStateOf(profile.label) }
     val normalized = label.trim()
-    AlertDialog(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text(tr("重命名配置")) },
-        text = {
-            OutlinedTextField(
-                value = label,
-                onValueChange = { label = it.take(64) },
-                enabled = !saving,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth().testTag("profile_rename_label"),
-                label = { Text(tr("名称")) },
-                supportingText = { Text(tr("名称不能为空，最多 64 个字符")) },
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(normalized) },
-                enabled = !saving && normalized.isNotEmpty() && normalized != profile.label,
-                modifier = Modifier.testTag("profile_rename_save"),
-            ) {
-                if (saving) CircularProgressIndicator() else Text(tr("保存"))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !saving) { Text(tr("取消")) }
-        },
-    )
+    var selection by remember { mutableStateOf(androidx.compose.ui.text.TextRange.Zero) }
+    FloatingInputDialog(title = tr("重命名配置"), tag = "profile_rename_dialog", busy = saving,
+        confirmEnabled = normalized.isNotEmpty() && normalized != profile.label,
+        onDismiss = onDismiss, onConfirm = { onSave(normalized) }, confirmTag = "profile_rename_save",
+        confirmLabel = if (saving) tr("正在保存") else tr("保存"),
+    ) { enabled, submit ->
+        FloatingInputField(androidx.compose.ui.text.input.TextFieldValue(label, selection), {
+            label = it.text.take(64); selection = it.selection
+        }, "profile_rename_label", enabled, submit, placeholder = tr("名称"))
+    }
 }
 
 /**

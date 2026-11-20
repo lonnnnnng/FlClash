@@ -34,6 +34,7 @@ val defaultVersionName = "0.1.10"
 // 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
 val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"
 val performanceBenchmarkEnabled = providers.gradleProperty("kclashPerformanceBenchmark").orNull == "true"
+val menuTraceEnabled = providers.gradleProperty("kclashMenuTrace").orNull == "true"
 val requestedVersionCode = providers.gradleProperty("kclashVersionCode")
     .orNull
     ?.toIntOrNull()
@@ -59,6 +60,7 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = requestedVersionCode
         versionName = requestedVersionName
+        buildConfigField("boolean", "MENU_TRACE", "false")
         ndk {
             abiFilters += "arm64-v8a"
         }
@@ -107,6 +109,8 @@ android {
             versionNameSuffix = "-performance"
             matchingFallbacks += "release"
             signingConfig = signingConfigs.getByName("debug")
+            // 作者 long：定域追踪只进入显式诊断的独立R8包，正常性能分母及正式包不携带计数开销。
+            buildConfigField("boolean", "MENU_TRACE", menuTraceEnabled.toString())
         }
         if (motionBenchmarkEnabled) create("motionBenchmark") {
             initWith(getByName("debug"))

@@ -240,10 +240,10 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
         val path = motion.path()
         val outline = motion.outline()
         // 作者 long：文字100ms先退场，材质沿回源弹簧继续；磨砂只在按钮吸收阶段减弱，三条时间线互不替代。
-        val material = regular.interpolate(menu, motion.materialProgress).copy(blur = regular.blur + (menu.blur - regular.blur) * motion.frostProgress)
-        val refracted = backdrop != null && glass.draw(this, motion, backdrop, backdropOffset(), tint, dark, style = material, quality = quality)
-        if (!refracted) {
-            if (backdrop != null) clipPath(outline) { drawAppGlassFallback(motion, backdrop, backdropOffset(), material, quality) }
+        if (backdrop != null) {
+            val material = regular.interpolate(menu, motion.materialProgress).copy(blur = regular.blur + (menu.blur - regular.blur) * motion.frostProgress)
+            if (!glass.draw(this, motion, backdrop, backdropOffset(), tint, dark, style = material, quality = quality))
+                clipPath(outline) { drawAppGlassFallback(motion, backdrop, backdropOffset(), material, quality) }
         }
         val controlFill = sourceColor.takeOrElse { if (backdrop != null) Color.Transparent else surface }
         drawPath(outline, motion.fillColor(controlFill, surface, backdrop != null))

@@ -39,6 +39,8 @@ Release生成后执行`python3 tool/check_mlkit_release.py <APK>`核对清单注
 
 真实 MainActivity 的 R8 性能/内存对照可用 `./gradlew :app:assemblePerformanceBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashPerformanceBenchmark=true`。独立包 `com.lonnnnnng.flclash.performance` 继承 release/R8/资源压缩和 release 库，仅以 debug 密钥安装并允许 shell profile；没有 debug 验收宿主、Instrumentation依赖，也不更改正式Release清单。仅在指定真机的独立空库、核心停止状态采样，不触碰原版Flutter。测量与截图/录像/Instrumentation分开，内存分别记录PSS、Native/Graphics、窗口数和静置后回落，不能用前台Kotlin与后台Flutter比较倍数。063驱动、原始数据和边界见`docs/interaction-memory-performance.md`。
 
+菜单测量定域仅在上述独立R8构建追加`-PkclashMenuTrace=true`；正式Release及默认performanceBenchmark均为false。用`tool/perfetto_menu_scopes.sql`查询Popup/stack测量与固有尺寸；wall与Running分列，各层嵌套不可相加。诊断包不进入普通性能对照，采集后恢复哈希已核验的无探针APK；068数据和discarded边界见`docs/floating-input-live-optics-alignment.md`。
+
 菜单独立ART方法采样只选`VisualMotionNaturalInstrumentedTest#darkMenuOpenAndCloseMethodSamples`，参数`kclashMotionMethodTrace=true`、`kclashMotionInlineTrace=true`及唯一安全名称`kclashMotionRun`，不要启用PNG。每轮分别回传open/close，共6份trace；`kclash_method_chunk`分片必须核验name/index/count/bytes/sha256再解码。设备文件在完整发送后核对原字节并删除。Perfetto59.1只导入dual-clock墙钟，线程CPU需另解析原字段并交叉验证，不能把slice.dur称为CPU；见`docs/menu-content-compositing-defect.md`与`docs/acceptance/menu-methods-redmi-20261109.json`。
 
 gfxinfo离线分窗口报告使用`python3 tool/android_menu_frame_report.py --expected-window 弹出式窗口 --output report.json input.gfx`。保留进程与各Window的原始计数，不相加；RTAnimation/Skipped位可重叠，区间只使用各窗口重置后的Flags=0行。关闭后Popup缺席必须报告不可观测，不可记零耗时。解析器验证：`python3 -m unittest discover -s tool -p test_android_menu_frame_report.py -v`。边界见`docs/menu-source-preparation-investigation.md`。

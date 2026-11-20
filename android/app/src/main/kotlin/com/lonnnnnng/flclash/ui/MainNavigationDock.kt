@@ -184,19 +184,24 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                         } finally { light?.release(); if (!committed) motion.release(latestIndex) }
                     }
                 }) {
-              Box(Modifier.fillMaxSize().padding(hitSlop).testTag("main_navigation_dock")
-                  .dockPaintTransform(motion).appDockShadow(shape)
-                  .appLiveMaterial(shape, surface.copy(alpha = if (dark) .48f else .58f), blurDp = 15.6f, refractionDp = 5.5f)
-                  .then(if (light != null) Modifier.appTouchLight(light, shape, dock = true) else Modifier)) {
-                Canvas(Modifier.fillMaxSize()) {
+              AppLiveMaterialHost(Modifier.fillMaxSize().padding(hitSlop).testTag("main_navigation_dock")
+                  .dockPaintTransform(motion).appDockShadow(shape), background = {
+                Canvas(Modifier.fillMaxSize().appLiveMaterial(shape, AppGlassStyle.pill(dark), light, dock = true)) {
                     if (!liveGlass) drawOutline(shape.createOutline(size, layoutDirection, this), surface)
                     val rect = geometry.lens(motion.lens.value, motion.lift.value, motion.jelly.value, rtl)
                     val tone = lerp(platter, colors.onSurface, .08f * motion.lift.value.coerceIn(0f, 1f))
                     withTransform({ translate(rect.left, rect.top) }) {
-                        drawOutline(shape.createOutline(rect.size, layoutDirection, this), if (liveGlass) tone.copy(alpha = .3f) else tone)
+                        drawOutline(shape.createOutline(rect.size, layoutDirection, this),
+                            if (liveGlass) tone.copy(alpha = .3f * (1f-motion.lift.value.coerceIn(0f,1f))) else tone)
                     }
                 }
-                Row(Modifier.fillMaxSize().padding(horizontal = with(density) { (geometry.padding + geometry.inset).toDp() }, vertical = 4.dp)
+              }, foreground = {
+                Box(Modifier.fillMaxSize().then(if (liveGlass) Modifier.appLiveMaterialRegion(shape,
+                    { AppGlassStyle.lens(dark).strength(motion.lift.value) },
+                    region = { geometry.lens(motion.lens.value,motion.lift.value,motion.jelly.value,rtl) }) else Modifier))
+                Row(Modifier.fillMaxSize().appLensContent(shape,{AppGlassStyle.lensContent(dark)},{motion.lift.value},
+                    {geometry.lens(motion.lens.value,motion.lift.value,motion.jelly.value,rtl)})
+                    .padding(horizontal = with(density) { (geometry.padding + geometry.inset).toDp() }, vertical = 4.dp)
                     .selectableGroup(), verticalAlignment = Alignment.CenterVertically) {
                     destinations.forEachIndexed { item, destination ->
                         val active = item == index
@@ -213,7 +218,7 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                         }
                     }
                 }
-              }
+              })
             }
         }
     }

@@ -19,7 +19,16 @@ import com.lonnnnnng.flclash.data.Profile
 /** 作者 long：业务会话由控制器持有，Compose只保留选区、滚动和放弃确认；弹窗和整页都使用同一独立密文保存树。 */
 @Composable
 internal fun ProfileManagementHost(controller: ProfileManagementController, profiles: List<Profile>, users: Map<Long, List<String>>) {
-    val state by controller.state.collectAsState()
+    val current by controller.state.collectAsState()
+    var retainedRename by remember { mutableStateOf<ProfileManagementState?>(null) }
+    var exitedSession by remember { mutableStateOf<String?>(null) }
+    // 作者 long：保存回执先关闭业务会话，最后一帧只保留只读外观淡出，不能延迟提交或重放旧会话事件。
+    SideEffect {
+        if (current.draft?.kind == "rename") retainedRename = current
+        else if (current.draft != null || retainedRename?.draft?.session == exitedSession) retainedRename = null
+    }
+    val state = if (current.draft == null && retainedRename?.draft?.session != exitedSession) retainedRename ?: current else current
+    val externallyClosing = current.draft == null && state.draft != null
     if (state.recoveryFailed) {
         AlertDialog(onDismissRequest = {}, title = { Text(tr("配置管理草稿")) }, text = { Text(tr(state.error.orEmpty())) },
             confirmButton = { TextButton(controller::retryRecovery, enabled = !state.busy) { Text(tr("重试恢复")) } })
@@ -37,28 +46,21 @@ internal fun ProfileManagementHost(controller: ProfileManagementController, prof
                 var end by rememberSaveable(draft.session) { mutableStateOf(0) }
                 var composition by remember(draft.session) { mutableStateOf<TextRange?>(null) }
                 val value = TextFieldValue(draft.label, TextRange(start.coerceIn(0, draft.label.length), end.coerceIn(0, draft.label.length)), composition)
-                EditorAlertDialog(
-                    onDismissRequest = controller::close,
-                    title = { Text(tr("重命名配置")) },
-                    text = {
-                        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(value, {
-                                start = it.selection.start; end = it.selection.end; composition = it.composition
-                                controller.label(draft.session, it.text)
-                            }, enabled = !state.busy && !draft.committed, singleLine = true,
-                                modifier = Modifier.fillMaxWidth().testTag("profile_rename_label"), label = { Text(tr("名称")) },
-                                supportingText = { Text(tr("名称不能为空，最多 64 个字符")) },
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(onDone = { if (canSave) submit() }))
-                            state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_management_error")) }
-                        }
-                    },
-                    confirmButton = {
-                        TextButton(::submit, enabled = canSave && draft.label.trim().isNotEmpty() && draft.label.trim() != draft.originalLabel,
-                            modifier = Modifier.testTag("profile_rename_save")) { Text(if (state.busy) tr("正在保存") else tr("保存")) }
-                    },
-                    dismissButton = { TextButton(controller::close, enabled = !state.busy) { Text(if (draft.committed) tr("关闭") else tr("取消")) } },
-                )
+                FloatingInputDialog(
+                    title = tr("重命名配置"), tag = "profile_rename_dialog", busy = state.busy,
+                    confirmEnabled = canSave && draft.label.trim().isNotEmpty() && draft.label.trim() != draft.originalLabel,
+                    onDismiss = controller::close, onConfirm = ::submit,
+                    confirmLabel = if (state.busy) tr("正在保存") else tr("保存"),
+                    cancelLabel = if (draft.committed) tr("关闭") else tr("取消"),
+                    error = state.error, errorTag = "profile_management_error", confirmTag = "profile_rename_save",
+                    externallyClosing = externallyClosing, dismissAfterAcknowledgement = true,
+                    onExitComplete = { exitedSession = draft.session },
+                ) { enabled, confirm ->
+                    FloatingInputField(value, {
+                        start = it.selection.start; end = it.selection.end; composition = it.composition
+                        controller.label(draft.session, it.text.take(64))
+                    }, "profile_rename_label", enabled && !draft.committed, confirm, placeholder = tr("名称"), invalid = state.error != null)
+                }
             }
             "delete" -> EditorAlertDialog(
                 onDismissRequest = controller::close,

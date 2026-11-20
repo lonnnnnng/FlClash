@@ -325,7 +325,7 @@ internal fun AppDropdownMenu(
                         stack.outerBounds = if (active && opening.value < .45f) motion.platter.translate(Offset(menuPosition.x.toFloat(), menuPosition.y.toFloat())) else null
                         frameCache.resolve(motion)
                     }
-                    Box(modifier.widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
+                    Box(modifier.menuTraceMeasure("popup-shell").widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
                         .onSizeChanged { measuredSize.value = it }.testTag("app_popup_menu")) {
                         // 作者 long：只有入场/回源绘制外层变形阴影，展开完成交给各层；零透明度阴影也会产生缓存和路径工作。
                         AppMenuPlatterShadow(Modifier.matchParentSize(), measuredSize, morph,
@@ -351,7 +351,7 @@ internal fun AppDropdownMenu(
                 val available = constraints.copy(minWidth = 0, minHeight = 0,
                     maxWidth = (constraints.maxWidth - insets.left - insets.right - margin * 2).coerceAtLeast(0),
                     maxHeight = (constraints.maxHeight - insets.top - insets.bottom - margin * 2).coerceAtLeast(0))
-                val child = children.single().measure(available)
+                val child = menuTrace("kclash/popup-root/measure") { children.single().measure(available) }
                 val point = positioner.position(source?.bounds?.takeUnless { it == IntRect.Zero } ?: anchor ?: parentBounds, IntSize(constraints.maxWidth, constraints.maxHeight),
                     IntSize(child.width, child.height), insets, placement, avoid)
                 menuPosition = point

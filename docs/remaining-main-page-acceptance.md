@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **KUI-VIS-068（2026-11-20）**：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 四个自有包与USB副本已清，原Flutter/原1.yaml/设置保持，未发版。[说明](floating-input-live-optics-alignment.md)、[证据](acceptance/panels-live-optics-poco-20261120.json)
+
 > **067表单Sheet与实时材质（2026-11-20）**：067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 原失败保留，独立四包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](forms-live-material-flutter-alignment.md)、[证据](acceptance/forms-live-material-poco-20261120.json)
 
 > **066窗口延迟与关闭（2026-11-20）**：066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 下一步继续Popup首次组合/测量、表单整体交接与BufferQueue/SurfaceFlinger等待，再处理高频观测重组和其余Flutter面板/连续转场；整体仍PARTIAL。 [说明](window-latency-and-close-investigation.md)、[证据](acceptance/window-latency-poco-20261120.json)

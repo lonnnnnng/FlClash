@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **KUI-VIS-068（2026-11-20）**：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 四个自有包与USB副本已清，原Flutter/原1.yaml/设置保持，未发版。[说明](floating-input-live-optics-alignment.md)、[证据](acceptance/panels-live-optics-poco-20261120.json)
+
 > **KUI-VIS-067（2026-11-20）**：067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 原失败保留，独立四包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](forms-live-material-flutter-alignment.md)、[证据](acceptance/forms-live-material-poco-20261120.json)
 
 > **KUI-VIS-066（2026-11-20）**：066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 原失败和trace discarded边界保留，独立包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](window-latency-and-close-investigation.md)、[证据](acceptance/window-latency-poco-20261120.json)
@@ -22,7 +24,7 @@
 
 > **KUI-VIS-057（2026-11-20）：POCO单项圆角输入、列表胶囊工具栏与带行号快速编辑已验；补查找/撤销重做/字号/换行，返回只合并列表草稿。最终产品618项App motion JVM、motion/Test、未签名Release-R8、双Lint与DEX通过。集中final6为28/29，旧测试宿主切分区抢在Sheet关闭前导致1失败；修正测试等待后final7定向5/5，真实MainActivity 1/1（47.374秒），各批次独立保留。Flutter Rust宿主已可用，深浅6组限定范围对照；49秒录像1404原PTS帧、12点抽样，不称完整逐帧或性能改善。** [说明](list-editor-flutter-alignment.md)与[证据](acceptance/list-editor-parity-poco-20261120.json)
 
-> **当前范围（2026-11-20）**。按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。工具页整合、全应用中英双语与三态主题已验；063按用户反馈优先优化交互与内存并已完成具名范围验收。066已完成撤销重开修复、反向窗口交接与关闭线程帧观测；后续继续首次组合/测量、表单端到端延迟与缓冲等待，再继续 Flutter 子页与面板、连续转场，玻璃默认关闭。
+> **当前范围（2026-11-20）**：语义预检与系统兼容按用户决定保留当前覆盖，停止扩项；工具、双语和主题已完成具名验收。继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 玻璃默认关闭。
 
 > **KUI-VIS-056（2026-11-20）POCO本组已验**：域名嗅探整页标题/空态/添加面板/协议文案收敛，端口/域名/地址新增列表草稿、增删排序与快速编辑；修复列表和目标菜单保存中恢复丢回执。最终组件及相邻回归28/28、真实MainActivity自然流程1/1，92张PNG；49秒录像保留1364原PTS帧，两个转场窗口抽取39/42张独立留存（原PTS窗口77/82帧）。618项App motion JVM、motion/Test、未签名Release-R8与Lint/DEX通过。Flutter Rust快速编辑在隔离宿主未初始化；单项弹框/快速编辑/列表工具栏/精确像素等仍未完成，菜单性能归因仍待。原版Flutter、1.yaml与设置保持，自有三包/输入副本已清。[说明](sniffer-page-list-alignment.md)与[证据](acceptance/sniffer-full-parity-poco-20261120.json)
 
@@ -896,14 +898,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 Lint motion0错误/75警告/15提示，Release0错误/71警告/14提示；本组通过不覆盖整体视觉/性能。 |
+| 最新自动化记录 | 068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 Lint motion0错误/75警告/15提示，Release0错误/71警告/14提示；本组具名范围通过，不覆盖整体视觉/性能。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | 067仅POCO独立空配置STOPPED包；三种Kotlin包与Flutter独立参考包按安装SHA核对后移除，包清单恢复，原Flutter身份/系统设置/原1.yaml SHA-size-mtime保持。 |
-| 正在推进 | 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 简单GPU折射不是完整Flutter光学模型；默认关闭，真实R8静置4秒无新增帧仅为有限样本。 |
+| 数据保护 | 068仅POCO独立包；真实FILE/CUSTOM在独立库回收、核心STOPPED。四个包及本轮USB输入按哈希核验后清理，包清单/原Flutter身份/设置/原1.yaml SHA-size-mtime保持。 |
+| 正在推进 | 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [067表单与实时材质](acceptance/forms-live-material-poco-20261120.json)、 [066窗口延迟与关闭归因](acceptance/window-latency-poco-20261120.json)、 [065 Popup与IME交接](acceptance/popup-ime-poco-20261120.json)、 [064运行内存与掉帧](acceptance/running-memory-jank-poco-20261120.json)、 [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
+| 最新证据 | [068输入浮框/光学/菜单定域](acceptance/panels-live-optics-poco-20261120.json)、 [067表单与实时材质](acceptance/forms-live-material-poco-20261120.json)、 [066窗口延迟与关闭归因](acceptance/window-latency-poco-20261120.json)、 [065 Popup与IME交接](acceptance/popup-ime-poco-20261120.json)、 [064运行内存与掉帧](acceptance/running-memory-jank-poco-20261120.json)、 [063交互与内存](acceptance/interaction-memory-poco-20261120.json)、 [062工具/双语外观](acceptance/tools-observation-appearance-poco-20261120.json)、[061 NTP弹框动效](acceptance/ntp-dialog-motion-poco-20261120.json)、 [060 NTP标量弹框](acceptance/ntp-scalar-parity-poco-20261120.json)、 [059目标菜单与分区YAML](acceptance/protocol-yaml-parity-poco-20261120.json)、 [058搜索空态与菜单](acceptance/menu-empty-parity-poco-20261120.json)、 [057列表输入与快速编辑](acceptance/list-editor-parity-poco-20261120.json)、 [056域名嗅探与真实转场](acceptance/sniffer-full-parity-poco-20261120.json)、[055 NTP/Provider组件对照](acceptance/ntp-provider-flutter-parity-poco-20261120.json)、[054 Sniffer 添加面板 Flutter 对照](acceptance/sniffer-add-panel-flutter-parity-poco-20261119.json)、[0.1.10 发布](acceptance/release-0.1.10-20261119.json)、[053 非空图标集 Flutter 对照](acceptance/icon-set-flutter-parity-poco-20261119.json)、[052 空态 Flutter 对照](acceptance/icon-set-empty-flutter-poco-20261119.json)、[051 多候选 Provider](acceptance/provider-multi-candidate-poco-20261119.json)、[048 规则选择器与菜单 Perfetto](acceptance/visual-048-rule-picker-poco-20261119.json)、[043～047 验收](acceptance/visual-043-047-poco-20261118.json) |
 
 ## 4. 目标架构图
 
@@ -1454,7 +1456,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 当前公开版为**0.1.10/code1010**，标签提交`c145cdbe`，正式证书、CI及远端资产摘要已核对；Release包已下载核验，未安装到手机，见[发布证据](acceptance/release-0.1.10-20261119.json)。较早版本签名/CI/真机记录为独立历史证据。
 
-最新具名验收为911 JVM（含复用）、POCO在线age完整链路1/1、TUN重建补偿5/5与10笔实网。在线age已覆盖真实armor下载、缺钥/错钥保护、正确解密导入、Mihomo运行加载和授权目标非直连HTTP200。其他自然原生故障/来源/协议及设备条件仍见[功能清单](functional-closure.md)。11月12日TLS未复现是历史结果，本轮原RULE路径再次失败、固定节点通过，该项已按用户决定归档。以下日期段落为历史，不覆盖第3节当前快照。
+最新工程/视觉验收为KUI-VIS-068：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 既有功能验收在线age完整链路1/1、TUN补偿5/5与10笔实网仍按原证据独立保留；本组未重跑实网。其他条件边界见[功能清单](functional-closure.md)。首次联网TLS按用户决定归档。以下日期段落为历史，不覆盖第3节当前快照。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 

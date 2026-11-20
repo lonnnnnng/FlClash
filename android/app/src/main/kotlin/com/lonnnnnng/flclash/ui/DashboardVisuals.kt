@@ -303,6 +303,7 @@ internal fun RuntimeCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         AppLiveMaterialHost(Modifier.fillMaxWidth().heightIn(min = 240.dp), background = {
+            Box(Modifier.matchParentSize().background(dashboardCardColor()))
             // 作者 long：主控背景只作装饰，出口信息由独立状态提供，不能从运行状态推测国家或质量。
             Canvas(Modifier.align(Alignment.TopEnd).offset(x = 60.dp, y = (-66).dp).size(240.dp)) {
                 val path = Path()
@@ -361,8 +362,8 @@ internal fun RuntimeCard(
                         enabled = !busy,
                         modifier = Modifier.size(88.dp).testTag("dashboard_runtime_toggle")
                             .appElasticPress(enabled = !busy)
-                            .appLiveMaterial(CircleShape, (if (state.isRunning) colors.primary else colors.primaryContainer).copy(alpha = .82f), refractionDp = 5f)
-                            .appGlassTouch(CircleShape, !busy)
+                            .appLiveButton(CircleShape, AppGlassStyle.tinted(LocalKClashDarkTheme.current,
+                                if (state.isRunning) colors.primary else colors.primaryContainer), !busy)
                             .appFocusRing(CircleShape, standsOff = true),
                         shape = CircleShape,
                         color = if (LocalAppMenuGlass.current && LocalAppLiveBackdrop.current != null) Color.Transparent else if (state.isRunning) colors.primary else colors.primaryContainer,

@@ -73,16 +73,19 @@ internal fun AgeSecretKeyDialog(onSubmit: (String) -> Unit, onDismiss: () -> Uni
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
-    AlertDialog(
-        onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text(tr("age 加密配置")) },
-        text = { androidx.compose.foundation.layout.Column {
-            AgeSecretKeyField(key, { key = it }, !busy, "profile_age_required_key", optional = false)
-            error?.let { Text(tr(it), color = androidx.compose.material3.MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_age_required_error")) }
-        } },
-        confirmButton = {
-            TextButton(onClick = { onSubmit(key.trim()); key = "" }, enabled = !busy && key.isNotBlank()) { Text(if (busy) tr("解密中…") else tr("解密并导入")) }
+    var selection by remember { mutableStateOf(androidx.compose.ui.text.TextRange.Zero) }
+    FloatingInputDialog(title = tr("age 加密配置"), tag = "profile_age_dialog", busy = busy,
+        confirmEnabled = key.isNotBlank(), onDismiss = onDismiss,
+        onConfirm = {
+            // 作者 long：IME与按钮可能在同帧到达，先消费当前密钥，再交给外层异步解密，不能重放第二次提交。
+            val submitted = key.trim()
+            if (submitted.isNotEmpty()) { key = ""; onSubmit(submitted) }
         },
-        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("取消")) } },
-    )
+        confirmLabel = if (busy) tr("解密中…") else tr("解密并导入"), error = error,
+        errorTag = "profile_age_required_error",
+    ) { enabled, submit ->
+        FloatingInputField(androidx.compose.ui.text.input.TextFieldValue(key, selection), {
+            key = it.text; selection = it.selection
+        }, "profile_age_required_key", enabled, submit, secret = true, placeholder = tr("age 私钥"), invalid = error != null)
+    }
 }

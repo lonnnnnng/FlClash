@@ -165,7 +165,7 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                     val child = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
                     layout(child.width, child.height) { child.place(0, 0) }
                 }
-            Box(cardWidth
+            Box(Modifier.menuTraceMeasure("stack-card-$index").then(cardWidth)
                 .graphicsLayer {
                     // 作者 long：回源只带走最上层卡片；后层保持组合与滚动身份，但不穿过收回中的主体露出。
                     alpha = if (!top && sourceReady && (opening.value < .45f || !active)) 0f else 1f
@@ -207,14 +207,16 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                         val hit = state.outerBounds?.let(rect::intersect) ?: rect
                         if (state.hitBounds != hit) { state.hitBounds = hit; state.hitRevision++ }
                     }
-                    val material = if (top && index > 0) (state.unfold.value / .35f).coerceIn(0f, 1f) else 1f
-                    val style = AppGlassStyle.menu(dark, tint).resolve(quality, material)
                     // 作者 long：外层图层已按同一帧轮廓裁剪，正文不再叠加第二次路径裁剪，避免每帧重复生成裁剪遮罩。
                         if (backdrop == null || opening.value >= .45f && active) {
-                            if (backdrop == null || !renderer.draw(this, motion, backdrop,
-                                Offset(-level.bounds.left, -level.bounds.top), tint, dark, paintScale = paintScale.coerceAtLeast(.001f), style = style, quality = quality)) {
-                                if (backdrop != null) drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, paintScale.coerceAtLeast(.001f))
-                                else drawPath(motion.path(), surface)
+                            if (backdrop == null) drawPath(motion.path(), surface)
+                            else {
+                                // 作者 long：默认实色没有材质消费者，不能每帧仍构造光学插值对象。
+                                val material = if (top && index > 0) (state.unfold.value / .35f).coerceIn(0f, 1f) else 1f
+                                val style = AppGlassStyle.menu(dark, tint).resolve(quality, material)
+                                if (!renderer.draw(this, motion, backdrop, Offset(-level.bounds.left, -level.bounds.top),
+                                    tint, dark, paintScale = paintScale.coerceAtLeast(.001f), style = style, quality = quality))
+                                    drawAppGlassFallback(motion, backdrop, Offset(-level.bounds.left, -level.bounds.top), style, quality, paintScale.coerceAtLeast(.001f))
                             }
                         }
                         this@drawWithContent.drawContent()
@@ -223,7 +225,7 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
                 CompositionLocalProvider(LocalAppMenuStack provides state, LocalAppMenuLevel provides level,
                     LocalAppMenuEnabled provides enabled, LocalAppMenuHeaderEnabled provides (active && top),
                     LocalAppMenuCarry provides if (top) LocalAppMenuCarry.current else null) {
-                    Column(Modifier.then(if (!top) Modifier.clearAndSetSemantics {} else Modifier)
+                    Column(Modifier.menuTraceMeasure("stack-content-$index").then(if (!top) Modifier.clearAndSetSemantics {} else Modifier)
                         .verticalScroll(level.scroll, enabled = top && !state.folding).padding(8.dp)) { content(level.key) }
                 }
                 if (!top) Box(Modifier.matchParentSize().clickable(enabled = active) { state.onBack() }.clearAndSetSemantics {})
@@ -231,8 +233,9 @@ internal fun AppMenuStack(state: AppMenuStackState, pageKey: Any?, active: Boole
             }
         } }
     }) { children, constraints ->
-        val measured = children.mapIndexed { index, child -> child.measure(constraints.copy(minWidth = 0, minHeight = 0,
-            maxHeight = (constraints.maxHeight - levels[index].top.roundToInt()).coerceAtLeast(1))) }
+        val measured = children.mapIndexed { index, child -> menuTrace("kclash/stack-root-$index/measure") {
+            child.measure(constraints.copy(minWidth = 0, minHeight = 0,
+                maxHeight = (constraints.maxHeight - levels[index].top.roundToInt()).coerceAtLeast(1))) } }
         val width = measured.maxOfOrNull { it.width } ?: 0
         val height = measured.mapIndexed { i, child -> child.height + levels[i].top.roundToInt() }.maxOrNull() ?: 0
         layout(width, height.coerceAtMost(constraints.maxHeight)) {

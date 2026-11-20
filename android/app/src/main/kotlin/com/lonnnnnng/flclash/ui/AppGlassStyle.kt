@@ -62,6 +62,8 @@ internal data class AppGlassStyle(
         fun tinted(dark: Boolean, color: Color) = AppGlassStyle(color.copy(alpha = .82f), saturation = 1.2f,
             rim = if (dark) .14f else .2f, rimWidth = 1.2f, rimTail = .17f, rimFocus = 1f, rimAdded = .38f,
             hairline = if (dark) 0f else .34f, hairlineSide = if (dark) .73f else .5f)
+        fun lensContent(dark: Boolean) = AppGlassStyle(Color.Transparent, blur = 0f, refraction = 14f, bevel = 11.2f,
+            saturation = 1f, brightness = if (dark) 1.33f else 1f, rim = 0f, dispersion = 3.6f, rimBlur = 2.5f)
         fun lens(dark: Boolean) = AppGlassStyle(Color.Transparent, blur = 0f, refraction = -4.3f, bevel = 5.5f,
             saturation = 1f, brightness = if (dark) 1.33f else 1f, rim = if (dark) .3f else .6f,
             rimWidth = 1.1f, endShade = .045f, dispersion = 6.5f, rimBlur = 1.5f, hairline = .42f)

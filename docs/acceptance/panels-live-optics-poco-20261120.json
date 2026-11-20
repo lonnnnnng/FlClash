@@ -1,0 +1,1772 @@
+{
+  "id": "KUI-VIS-068",
+  "date": "2026-11-20",
+  "status": "本组具名切片通过；整体Flutter视觉/光学/菜单性能PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "sourceBaseline": "df3ef17f58c6bd2a7567b8d5a8d61813639ba08a",
+  "glassDefault": false,
+  "releasePerformed": false,
+  "build": {
+    "log": "final-build12.log",
+    "variants": [
+      "motionBenchmark",
+      "motionBenchmarkAndroidTest",
+      "performanceBenchmark R8",
+      "Release R8"
+    ],
+    "jvm": {
+      "app": {
+        "tests": 628,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "jvmTotal": 921,
+    "includesUpToDateReuse": true,
+    "lintLog": "final-lint13.log",
+    "lint": {
+      "motionBenchmark": {
+        "errors": 0,
+        "warnings": 75,
+        "hints": 15
+      },
+      "release": {
+        "errors": 0,
+        "warnings": 71,
+        "hints": 14
+      }
+    },
+    "mlkitDex": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    }
+  },
+  "products": {
+    "performance": {
+      "sha256": "c138d67686fce8a26727fc701305f0205f1663befc6bf771a4fa79272e6756a8",
+      "bytes": 49593961
+    },
+    "release": {
+      "sha256": "67f030d6a38bc2eba385c9607db3a1dc04841d5c50c67cac79e69e30210ee069",
+      "bytes": 49577573
+    },
+    "jvm": {
+      "app": {
+        "tests": 628,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "installed": {
+    "com.lonnnnnng.flclash.motion": {
+      "sha256": "2509a2344ca9157e43b454f6b753b99d9b061b208162e7f0a801334ad9cc5e8c",
+      "bytes": 67519841,
+      "installedMatched": true
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "sha256": "cfc1642fef1dd007ed54f53272043ea9609aec9cb9a178e032f7f4678d0c7851",
+      "bytes": 3223134,
+      "installedMatched": true
+    }
+  },
+  "sourceIdentity": {
+    "kotlinFiles": 660,
+    "matchesFinalBuild": true
+  },
+  "instrumentation": {
+    "returncode": 0,
+    "device": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "tests": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+        "test": "closeFailureRemainsVisibleAndSecondAcknowledgementCloses",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+        "test": "liveOpticsKeepSharpCenterMixHazeAndSeparateLensChannels",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+        "test": "ageInputRevealLongValueFailureRetryAndCancelKeepSecretLocal",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+        "test": "floatingRenameKeepsDraftBusyErrorAndFadesOutWithoutExpanding",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainPanelOpticsInstrumentedTest",
+        "test": "localMetadataAndManagedRenameSurviveRecreationAndSaveOnlyOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "runtimeCardKeepsHeightWhenGlassChanges",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "liveLayerFollowsScrollAndTransformWithoutBakingForeground",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "importSheetThemesBatchErrorAndBusyPreserveDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "liveButtonUsesSeparateBackgroundAndBusyCancelsPress",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "glassTogglePreservesPageDraftScrollAndLastRowRemainsAboveDock",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "completedImportClosesWindowAndDoesNotReopenSource",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.FormMaterialInstrumentedTest",
+        "test": "liveDockTracksBackgroundWithoutSamplingOnTouchAndCancelDoesNotNavigate",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "failureHidesDialogImeAndAllowsRetryWithoutLosingDraft",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "reopeningAfterExternalRevocationDoesNotReplayPreviousSelection",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "sourceToSingleBatchAndBackKeepsNaturalInputAndWindowOwnership",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "sourceSnapshotKeepsMenuContentIdentityUntilWindowCloses",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "scannedDirectFormGetsNaturalImeAndSubmissionHidesItsOwnWindow",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "backgroundResumeAndReturnRestoreSourceWithoutKeyboard",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileInputWindowInstrumentedTest",
+        "test": "menuActionRunsAfterPopupViewHasDetached",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longPressCarriesOriginalPointerIntoNodeMenuAndReleasesOnce",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "carriedDragSelectsOnlyReleaseRowAndBackgroundRevokesPendingAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "nestedSelectionReturnsOnlyTopCardBeforeRunningAction",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "sourceReturnsBeforeActionAndInterruptedOpeningRestoresInBothMaterialsAndThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LiquidMenuInstrumentedTest",
+        "test": "longMenuFingerScrollDoesNotExecuteHoveredRows",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuGeometryParityInstrumentedTest",
+        "test": "openingAndReturningGeometryInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MenuShadowParityInstrumentedTest",
+        "test": "platterShadowLeavesInteriorAndDetachedDropletClearInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest",
+        "test": "rapidReversalAndSkippedDestinationsFinishWithoutDuplicatePages",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.MainPageMotionInstrumentedTest",
+        "test": "continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.GlassStackInstrumentedTest",
+        "test": "glassSubmenuKeepsCapturedHostAndReturnsInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.AppearanceHostInstrumentedTest",
+        "test": "glassPreferencePersistsWithoutChangingProfileOrRuntime",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LocalFileProfileInstrumentedTest",
+        "test": "unsavedKeyAndYamlRequireDiscardConfirmation",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LocalFileProfileInstrumentedTest",
+        "test": "invalidPreviewAndMissingKeyBlockSaveAndClearingSelectionDoesNotWrite",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.LocalFileProfileInstrumentedTest",
+        "test": "localEditorMasksKeyTrimsMetadataSaveAndRendersBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "backgroundPreservesExistingEditorAndClearsHiddenNewImportKey",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "remoteEditorMasksAndTrimsAgeKeyInBothThemes",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "singleImportForwardsKeyAndBatchModeDoesNotOfferSharedKey",
+        "code": 0
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ProfileAgeInstrumentedTest",
+        "test": "missingKeyDialogDisablesEmptySubmitAndClearsWhenBackgrounded",
+        "code": 0
+      }
+    ],
+    "images": {
+      "panel_optics_close_failure_visible": {
+        "count": 2,
+        "bytes": 56673,
+        "sha256": "586fdb891914cca18eb638bef6821882ce07977b903546b9b3a0fea46e5c36fc",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_raw": {
+        "count": 1,
+        "bytes": 30297,
+        "sha256": "98daf2a3a4d5ae01ca1b1ff78dabc4db9b74810816024fc82a1547a30a8ba19d",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_refracted": {
+        "count": 2,
+        "bytes": 48835,
+        "sha256": "59a4c8b04e3bc4db12907f5a4d3c728087630dbc8bbce7865254f0a24542c791",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_haze_mixed": {
+        "count": 1,
+        "bytes": 35918,
+        "sha256": "1a5a86757877bea903db3892fc693ff87e9b75965f957d83ec03cc154882cbc2",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_lens_dispersion": {
+        "count": 2,
+        "bytes": 58121,
+        "sha256": "1a96627abe484000a7352b2d909528c8bbe0f751f81fa1b0a879fad88e147e8e",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_age_revealed_ime": {
+        "count": 4,
+        "bytes": 122450,
+        "sha256": "151ce7d16c70de4e854e959e775ae711a33366f91ecfdbb8af2aa8aa55572d62",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_age_retry": {
+        "count": 4,
+        "bytes": 117229,
+        "sha256": "7e0d7da170a71a4c4d6b4fdbdd09c7563aa44d6e390b844a2e91d41a11306a2f",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_rename_light": {
+        "count": 2,
+        "bytes": 43075,
+        "sha256": "b721d7cca3d461ea64bacd8ccd5ce9a88350922d825311e87ac41d486dda77c5",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_rename_dark": {
+        "count": 2,
+        "bytes": 45340,
+        "sha256": "b143c4da6325d58356f630bbc3d318693ca53965ee6ade5df62d1a365edebfcb",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_rename_error": {
+        "count": 2,
+        "bytes": 56721,
+        "sha256": "0abd1e901f90870b789679d1b579aee6b6d15c89de1426e2de23884d07882d80",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_optics_rename_closing": {
+        "count": 2,
+        "bytes": 45649,
+        "sha256": "c0b50abb50cc44767dcc26fe1346aa2a3bf91ccdc62bbcea33008c10899bd0d5",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_main_local_edited": {
+        "count": 5,
+        "bytes": 148774,
+        "sha256": "2a18cf35871b93c6d60b256aed605d1afcf8587b51e7995259c8bed4f2086fe3",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_main_rename_draft": {
+        "count": 3,
+        "bytes": 108260,
+        "sha256": "4eaf18bba0a13165f5bdf3c1ffb1821967427329c6de39b73443d8106c39f184",
+        "width": 1080,
+        "height": 2400
+      },
+      "panel_main_rename_saved": {
+        "count": 3,
+        "bytes": 81186,
+        "sha256": "3d9f0f7d54e46c91cf16fcad96bc33815fc178c37ce6bf77b6545fe37cda6804",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_runtime_glass": {
+        "count": 2,
+        "bytes": 67715,
+        "sha256": "98f8b23c9235560c9537fd8dc33ef154640573d075f1614df6ba5484cbf25d55",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_scroll_transformed": {
+        "count": 1,
+        "bytes": 26523,
+        "sha256": "a6ec430be8b4e85746d8d52dd54c62c5bb020f4d6d6711b0d7e33cf4a3583582",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_empty_light_ime": {
+        "count": 4,
+        "bytes": 117612,
+        "sha256": "7621110aa957782a9ed190726c3cabd080dac02657ce3e7218860b25a7973352",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_empty_dark_ime": {
+        "count": 4,
+        "bytes": 120628,
+        "sha256": "a2b67d26688d9a679f141ade4483ece82055855d4a6ab19a774eb3d32b421618",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_single_light_ime": {
+        "count": 4,
+        "bytes": 122934,
+        "sha256": "5dcc53acb8bb255e070dbf5daf1f91d653b7e07eb408f5798721d4bf0f0fd036",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_single_dark_ime": {
+        "count": 4,
+        "bytes": 125577,
+        "sha256": "5c3b808feffc3670f497e4ae309008a73ecc4b39d86df5d05925bb3ccdb7695b",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_batch_dark_ime": {
+        "count": 4,
+        "bytes": 112472,
+        "sha256": "73b33effc775b7bfd5e0fdf605a271fbc096e9799313d846cd6ba4c3f8c7785f",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_busy_dark": {
+        "count": 3,
+        "bytes": 78396,
+        "sha256": "ed03197c1a1803aaaece77bfee57702ccf1cf732d83edb91205e5c21aaeac0c6",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_failed_dark": {
+        "count": 3,
+        "bytes": 82511,
+        "sha256": "0cfa11cc6724768bd1470ead8e4483dcd13c306a33c6b7f3387589cd22b1b7b7",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_button_disabled": {
+        "count": 1,
+        "bytes": 28773,
+        "sha256": "3f145c7a77e9713de2e9d9d9203306be76e4fadcdba1edb96aead38a0a8d9976",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_last_row_above_dock": {
+        "count": 3,
+        "bytes": 82623,
+        "sha256": "5f5ffaf443af1e4ae8f930c752f95550ecabdfdfedd1dd23a4e9948b95306b4d",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_live_dock_blue": {
+        "count": 2,
+        "bytes": 51886,
+        "sha256": "db958376ed2db72f005a436eff70829684a88acfaa26d6b415c4f567522f10d7",
+        "width": 1080,
+        "height": 2400
+      },
+      "form_material_live_dock_held": {
+        "count": 2,
+        "bytes": 68000,
+        "sha256": "6a22691306d98a8cf85b2bf89d22ffade40f986b6ad155bacd0662a6e5cec433",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_return_nested_top": {
+        "count": 2,
+        "bytes": 45881,
+        "sha256": "4a11875b99b1648622840540be8a0a8eb1703cb2ce2b096709509b118fe0e809",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_open_false_false": {
+        "count": 2,
+        "bytes": 52774,
+        "sha256": "953ed9ddb3f1b4262b0bbcfcfdc3c05c10fd6f8c68e6e2b3da360ab7418d772f",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_return_false_false": {
+        "count": 2,
+        "bytes": 61367,
+        "sha256": "5b9f55d1deb4c4a3b82ed234652475a61db7cdcb9c3619f218003a337d97fede",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_open_false_true": {
+        "count": 2,
+        "bytes": 54734,
+        "sha256": "6204bf8759189ad5a547d0da5a1ab90aa585757d0fac5d5d127f6d9bee3a996f",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_return_false_true": {
+        "count": 2,
+        "bytes": 45698,
+        "sha256": "ab3caabc5892fa3604c3cc9cefc08c0ef61fb6c8d28ea557192e658654feee33",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_open_true_false": {
+        "count": 2,
+        "bytes": 51905,
+        "sha256": "3eef046452d3239179709240084644c20875edf63b34d6d65f6627cc87f036ca",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_return_true_false": {
+        "count": 2,
+        "bytes": 53806,
+        "sha256": "af4ba79ca4171350cc7da749e263abd1ccf3cc293538271cd40d5dfa814ee7d1",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_open_true_true": {
+        "count": 2,
+        "bytes": 59559,
+        "sha256": "64abcad0a6f6f583a768388992d76dadceeefa19c2304ae865a6fbca9768a34f",
+        "width": 1080,
+        "height": 2400
+      },
+      "liquid_return_true_true": {
+        "count": 2,
+        "bytes": 50570,
+        "sha256": "c7e7064064af72ed03ac61e25cbd3fb161b525fd7786c0728e7d7cdebf6d5b66",
+        "width": 1080,
+        "height": 2400
+      },
+      "geometry_false_false_20": {
+        "count": 1,
+        "bytes": 7340,
+        "sha256": "406cebbc1f72926c7803f73c24136e81d61330fb386fe0202038a71fbf9994fb",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_false_70": {
+        "count": 1,
+        "bytes": 28418,
+        "sha256": "85a5b2b56ac75815f3e6ff6ec8347adf0f371dc0e7f1160b35cb375565b253b9",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_false_140": {
+        "count": 2,
+        "bytes": 65040,
+        "sha256": "ee16924673ab3f40811c6560672e48d5b6d638dd7a3cfcdea8ce4b1140dd9e1f",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_false_250": {
+        "count": 2,
+        "bytes": 38387,
+        "sha256": "6f133048378c3f2a9deb8a314bedf190ba75376895b65dfe43c26f16f2b0f2d7",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_false_450": {
+        "count": 2,
+        "bytes": 38271,
+        "sha256": "43fde276d5d55717090ca12d4c96a2c6237888e5675020ecef7e7082221b7d54",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_true_20": {
+        "count": 2,
+        "bytes": 39360,
+        "sha256": "15921a84a92f73db401985f51cc179fa66566e17657b1d67c9c5efa21fb1385a",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_true_70": {
+        "count": 1,
+        "bytes": 21631,
+        "sha256": "54f92000e06d35e4cbf9757ec12ab0d4f32a032cc2c48023ad3cb5d16a3dfbec",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_true_140": {
+        "count": 1,
+        "bytes": 14750,
+        "sha256": "7c160109e0b11bb56c976d7eac01b073bb915e7c340ab557e6534aa35de40552",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_true_250": {
+        "count": 1,
+        "bytes": 7199,
+        "sha256": "0458c6373e871d3e434c7ee150819c4ed95209aac74f980eda051ac33fc41885",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_false_true_400": {
+        "count": 1,
+        "bytes": 6869,
+        "sha256": "a372c1875e556f9551110aebc031da19d90c624181cad9a338d6ad402d8b18ef",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_false_20": {
+        "count": 1,
+        "bytes": 7195,
+        "sha256": "1c8b414a5f27a489a00e6c1cc13535e352f68233daf268a664c262e06285ff9e",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_false_70": {
+        "count": 1,
+        "bytes": 24910,
+        "sha256": "4b2eab8163fc263e1208bd239b6c03ab245c6ea6e2b79f7547c6df20188ce6a7",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_false_140": {
+        "count": 2,
+        "bytes": 53357,
+        "sha256": "2e6959ac981a4c609cff38161351a517ac49e36080d8df87e968f94d37d5d084",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_false_250": {
+        "count": 1,
+        "bytes": 34110,
+        "sha256": "e69bbd192b111bf009eedc529477c6f699bc38d7e9ff8c537b1e8318855b8d44",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_false_450": {
+        "count": 1,
+        "bytes": 33402,
+        "sha256": "22402f9d1fe5f2ecd3da1dca7375677181a25ca129cae5dcb82c2a2c183aadbd",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_true_20": {
+        "count": 1,
+        "bytes": 34390,
+        "sha256": "184e27969d517fe702e73d83d74fde29b1294a11252cb5e8c3568103c2a514f1",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_true_70": {
+        "count": 1,
+        "bytes": 18715,
+        "sha256": "70bd5be17f7d6965cc44dffdac1d12b905196dce52a30a026595464378978b15",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_true_140": {
+        "count": 1,
+        "bytes": 13581,
+        "sha256": "f1e2ca2e6c78ed7d7ed60d22a3700f484863805312a5b51df59c8c10a22ce02a",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_true_250": {
+        "count": 1,
+        "bytes": 6984,
+        "sha256": "8ab9e885ca5de6b35f64afb124c0ce4ebf6b9c171a0b611ac2d79adfed4141d6",
+        "width": 842,
+        "height": 1089
+      },
+      "geometry_true_true_400": {
+        "count": 1,
+        "bytes": 6751,
+        "sha256": "ffbe675db9782dbc066c4f1d61da47c17f07cb4efaa97a5943deedf07ff8650e",
+        "width": 842,
+        "height": 1089
+      },
+      "platter_shadow_false_legacy_false": {
+        "count": 1,
+        "bytes": 9748,
+        "sha256": "4c735e0526a130ec958f5f266e899458d640de47fd0414698a2d822d4b3acd5d",
+        "width": 842,
+        "height": 842
+      },
+      "platter_shadow_true_legacy_false": {
+        "count": 1,
+        "bytes": 7842,
+        "sha256": "56b7464dcf4d6a5776c26e8c9d8f407af1637a36b164516c59f7e86598b2061b",
+        "width": 842,
+        "height": 842
+      },
+      "main_page_light_frame_0": {
+        "count": 3,
+        "bytes": 92326,
+        "sha256": "1128988add1ec2834649721a2aebedfd34317c9b0ac1f4f1b6653b751b913f18",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_light_frame_1": {
+        "count": 3,
+        "bytes": 103843,
+        "sha256": "cae31a9c9cc9c45c58cbf8a95b67406e667195b49ca49159472e6372cf36eccd",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_light_frame_2": {
+        "count": 3,
+        "bytes": 103856,
+        "sha256": "712f4b8c1f50d3b818f682dc37af73e3b074417102ca1297dca28f6902ecf2b9",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_light_frame_3": {
+        "count": 3,
+        "bytes": 103900,
+        "sha256": "50d4e2ab5a7c261ee82b2604ced62e84235016def67acb36a6e1da63847e18f1",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_light_frame_4": {
+        "count": 3,
+        "bytes": 103803,
+        "sha256": "88b507cc46bbcf8fe5a71e38e0d88031c240c51a7e31a3d35169730142e8db03",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_light_settled": {
+        "count": 3,
+        "bytes": 103842,
+        "sha256": "cc06528e892540f4de0961c13a66786bb6a4b3c88219b8d9b75c923e6e70de09",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_dark_frame_0": {
+        "count": 3,
+        "bytes": 92361,
+        "sha256": "c7468715bc6fa09333a0c1d9712dfffc5cc6baa7d6a3d1e137e50ecf0b6660b5",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_dark_frame_1": {
+        "count": 3,
+        "bytes": 104151,
+        "sha256": "edf48341ed3ab48e1b29cd4a70c873dbc6f09b8a9b3e6dcd1b70cb8c8d775aa0",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_dark_frame_2": {
+        "count": 3,
+        "bytes": 104208,
+        "sha256": "d25ef2bfa2f4d16bc7688e4b47552b68212117345a247600c0d7d176ec9da534",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_dark_frame_3": {
+        "count": 3,
+        "bytes": 104216,
+        "sha256": "f4079ae86b993210a03fa8ada622eb7a5fe28d256461bc067bf064974b87a071",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_dark_frame_4": {
+        "count": 3,
+        "bytes": 104127,
+        "sha256": "d653207eac301222e797be25ed0ae10c81b066c72649f9f99de165234213252c",
+        "width": 1080,
+        "height": 2175
+      },
+      "main_page_dark_settled": {
+        "count": 3,
+        "bytes": 104118,
+        "sha256": "829691fc126b92292a9c299c872d5be9d7e460875790e5f25bf0ffd22393f8e6",
+        "width": 1080,
+        "height": 2175
+      },
+      "glass_stack_opening_false": {
+        "count": 3,
+        "bytes": 78617,
+        "sha256": "ef0b2e02a57146fb4535bfa22f3fcdb6d9e16ed38e7a3598ddc47d14876b11a9",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_frozen_host_false": {
+        "count": 2,
+        "bytes": 59520,
+        "sha256": "1667c69ca1813176ee5025a55321bf83ecdc131387ade0e0d42c78cf86a38199",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_false": {
+        "count": 3,
+        "bytes": 95664,
+        "sha256": "39bf34b9937976a51055c32f96614b34879325fba44da4f47aeb47a0dd1bb79f",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_recaptured_false": {
+        "count": 2,
+        "bytes": 59409,
+        "sha256": "b8194134431cab4641e8c873868eb39528bf67896d1b635bbc0552d129fd1ebb",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_opening_true": {
+        "count": 3,
+        "bytes": 84709,
+        "sha256": "d38a25b2dbbeef32467f0623a9f290db7fcf8adc9c9a945f6c98bb35b2507c6a",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_frozen_host_true": {
+        "count": 2,
+        "bytes": 65650,
+        "sha256": "31ce872e8e82c604ccaf872f2e916a0f8b0012d670490442fb7ed820d6b84ae9",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_true": {
+        "count": 3,
+        "bytes": 104496,
+        "sha256": "57c0343a70b192d14e1f2965c94434600f6e06e0c97880f84a5fcd3f3495e91c",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_stack_recaptured_true": {
+        "count": 2,
+        "bytes": 65729,
+        "sha256": "f1f94682d4367e616f2a47cc7a8133c029172599a613883ddc05b04c5f030ae8",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_preference_enabled": {
+        "count": 4,
+        "bytes": 123985,
+        "sha256": "71f8d383df96ea54aa06e6fae802a6a0fc2b635ddf5e183ae1e6401f80795faa",
+        "width": 1080,
+        "height": 2400
+      },
+      "glass_tools_last_item": {
+        "count": 4,
+        "bytes": 127049,
+        "sha256": "98174992130b06bb112e6e3ebae2f2b691af6cd9fd727e37a5d8cace87f39962",
+        "width": 1080,
+        "height": 2400
+      },
+      "profile_local_file_editor_light": {
+        "count": 3,
+        "bytes": 74743,
+        "sha256": "a3fb50b492705d1f0efe2b748d77843566e37d225a744e02eb91cf413aa77abd",
+        "width": 1080,
+        "height": 2400
+      },
+      "profile_local_file_editor_dark": {
+        "count": 2,
+        "bytes": 73091,
+        "sha256": "b9f38ad13ee066b124ed02090cabcd2235c00ed92c66a6b581381800a3d087e3",
+        "width": 1080,
+        "height": 2400
+      },
+      "profile_age_editor_light": {
+        "count": 3,
+        "bytes": 107213,
+        "sha256": "460bbe369b1ee732370dc38dc21a97cc8fc024fed6036a4931e0227bfb6557e5",
+        "width": 1000,
+        "height": 1326
+      },
+      "profile_age_editor_dark": {
+        "count": 3,
+        "bytes": 108138,
+        "sha256": "c85effbd5b05b54fb8c80d47c59f521d577c168289025e4a893c685f5ffa6930",
+        "width": 1000,
+        "height": 1326
+      }
+    },
+    "passed": true
+  },
+  "fixedMenuPixels": {
+    "count": 22,
+    "equal": 22,
+    "record": {
+      "path": "menu-pixel-compare.json",
+      "sha256": "c7261ec0a7087c06ecc611dff8cfda6b7efeedddc8a2838621d1080b4c07d8a6",
+      "bytes": 2147
+    }
+  },
+  "visualReview": {
+    "allFinalPngsReviewed": 84,
+    "montages": 7,
+    "flutterScreenshots": 10,
+    "scope": "固定InputDialog深浅状态、局部光学高频灰条及真实上游Dock拖动有限对照；背景/坐标/图标不同，不称全页像素一致"
+  },
+  "flutterReference": {
+    "package": "com.lonnnnnng.kclash.reference.flutter_form_material_reference",
+    "sha256": "1c0e6cc646f927eab24df7cb64ec8ddcecb43fc8578edfa0f50734805153e507",
+    "bytes": 180899132
+  },
+  "r8Glass": {
+    "persistedAfterForceStop": true,
+    "restoredGlass": false,
+    "core": "STOPPED",
+    "idleSeconds": 4,
+    "idleGfx": {
+      "process": {
+        "statsSinceNs": 107187205711662,
+        "frames": 0,
+        "janky": 0,
+        "jankPercent": null
+      },
+      "windows": [
+        {
+          "name": "com.lonnnnnng.flclash.performance/com.lonnnnnng.flclash.MainActivity",
+          "statsSinceNs": 107187205710724,
+          "frames": 0,
+          "janky": 0,
+          "jankPercent": null,
+          "rowsAfterReset": 0,
+          "flags": {},
+          "rtAnimationRows": 0,
+          "skippedRows": 0,
+          "unknownFlagRows": 0,
+          "flagZeroRows": 0,
+          "regularRowCoveragePercent": null,
+          "vsyncDelayElapsed": {
+            "samples": 0,
+            "rejected": 0,
+            "medianMs": null,
+            "maxMs": null
+          },
+          "uiElapsed": {
+            "samples": 0,
+            "rejected": 0,
+            "medianMs": null,
+            "maxMs": null
+          },
+          "syncQueueElapsed": {
+            "samples": 0,
+            "rejected": 0,
+            "medianMs": null,
+            "maxMs": null
+          },
+          "renderElapsed": {
+            "samples": 0,
+            "rejected": 0,
+            "medianMs": null,
+            "maxMs": null
+          },
+          "completionElapsed": {
+            "samples": 0,
+            "rejected": 0,
+            "medianMs": null,
+            "maxMs": null
+          },
+          "coverage": "no-regular-frame-rows"
+        }
+      ],
+      "warnings": [],
+      "interpretation": "保留进程与各窗口原始计数，不相加、不从部分帧表重算卡顿分母。区间仅使用Flags=0且位于该窗口重置后的记录，是经过时间，不是CPU/GPU归因；RT动画与Skipped标记可能重叠，静态终态或窗口消失不证明动效流畅。普通帧覆盖率只描述帧表样本；完成时刻不等于实际呈现，Vsync延后/同步排队也不是线程CPU时间。"
+    },
+    "memoryReadPid": "13048",
+    "note": "空库真实R8入口，静止样本不能证明全应用无重绘或长期内存稳定。"
+  },
+  "r8Natural": {
+    "sha256": "41cc311582100afa1fc15c4b7ab9ec63abb4a55705b0901e2c0b505a96bc4ee0",
+    "bytes": 9808409,
+    "glassRestored": false,
+    "core": "STOPPED",
+    "steps": [
+      "source",
+      "sheet-ime",
+      "ime-back",
+      "sheet-close",
+      "tools",
+      "glass-on",
+      "dashboard",
+      "scroll",
+      "dock-drag"
+    ],
+    "performance": false,
+    "durationSeconds": 28.801011,
+    "originalPtsFrames": 610,
+    "reviewSamples": 12,
+    "review": "完整流程低频拼图与原始PTS留存，不称610帧逐帧对照；录像覆盖来源菜单、Sheet/IME、工具与主题、首页滚动，晚段Dock拖动不计入录像覆盖，另有独立held图"
+  },
+  "performance": {
+    "phases": {
+      "source-open": {
+        "baseline067": {
+          "processFrames": 162,
+          "processJanky": 18,
+          "percent": 11.111,
+          "popupObservedStages": 5,
+          "popupFrames": 138,
+          "popupJanky": 10,
+          "popupAbsentMeansZero": false
+        },
+        "final068": {
+          "processFrames": 171,
+          "processJanky": 12,
+          "percent": 7.018,
+          "popupObservedStages": 5,
+          "popupFrames": 145,
+          "popupJanky": 7,
+          "popupAbsentMeansZero": false
+        }
+      },
+      "remote-open": {
+        "baseline067": {
+          "processFrames": 351,
+          "processJanky": 24,
+          "percent": 6.838,
+          "popupObservedStages": 0,
+          "popupFrames": 0,
+          "popupJanky": 0,
+          "popupAbsentMeansZero": false
+        },
+        "final068": {
+          "processFrames": 356,
+          "processJanky": 21,
+          "percent": 5.899,
+          "popupObservedStages": 0,
+          "popupFrames": 0,
+          "popupJanky": 0,
+          "popupAbsentMeansZero": false
+        }
+      },
+      "ime-close": {
+        "baseline067": {
+          "processFrames": 116,
+          "processJanky": 1,
+          "percent": 0.862,
+          "popupObservedStages": 0,
+          "popupFrames": 0,
+          "popupJanky": 0,
+          "popupAbsentMeansZero": false
+        },
+        "final068": {
+          "processFrames": 114,
+          "processJanky": 1,
+          "percent": 0.877,
+          "popupObservedStages": 0,
+          "popupFrames": 0,
+          "popupJanky": 0,
+          "popupAbsentMeansZero": false
+        }
+      },
+      "form-close": {
+        "baseline067": {
+          "processFrames": 150,
+          "processJanky": 6,
+          "percent": 4.0,
+          "popupObservedStages": 0,
+          "popupFrames": 0,
+          "popupJanky": 0,
+          "popupAbsentMeansZero": false
+        },
+        "final068": {
+          "processFrames": 155,
+          "processJanky": 2,
+          "percent": 1.29,
+          "popupObservedStages": 0,
+          "popupFrames": 0,
+          "popupJanky": 0,
+          "popupAbsentMeansZero": false
+        }
+      }
+    },
+    "memoryKb": {
+      "baseline-r8-1": {
+        "home": {
+          "TOTAL PSS": 154882,
+          "TOTAL RSS": 306360,
+          "TOTAL SWAP PSS": 9,
+          "Java Heap": 9488,
+          "Native Heap": 21796,
+          "Code": 51288,
+          "Stack": 1256,
+          "Graphics": 45684,
+          "Private Other": 19072,
+          "System": 6298,
+          "Views": 9,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "profiles": {
+          "TOTAL PSS": 171890,
+          "TOTAL RSS": 324848,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 7440,
+          "Native Heap": 27888,
+          "Code": 51292,
+          "Stack": 1276,
+          "Graphics": 58028,
+          "Private Other": 19320,
+          "System": 6646,
+          "Views": 9,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "form": {
+          "TOTAL PSS": 272699,
+          "TOTAL RSS": 429020,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 9984,
+          "Native Heap": 40000,
+          "Code": 51344,
+          "Stack": 1316,
+          "Graphics": 149636,
+          "Private Other": 13124,
+          "System": 7295,
+          "Views": 19,
+          "ViewRootImpl": 3,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "after5": {
+          "TOTAL PSS": 259312,
+          "TOTAL RSS": 417856,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 11980,
+          "Native Heap": 54304,
+          "Code": 51368,
+          "Stack": 1216,
+          "Graphics": 118496,
+          "Private Other": 13412,
+          "System": 8536,
+          "Views": 11,
+          "ViewRootImpl": 3,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "settled": {
+          "TOTAL PSS": 246442,
+          "TOTAL RSS": 404988,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 5204,
+          "Native Heap": 48560,
+          "Code": 51364,
+          "Stack": 1216,
+          "Graphics": 118300,
+          "Private Other": 13260,
+          "System": 8538,
+          "Views": 11,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "observations": {
+          "TOTAL PSS": 262824,
+          "TOTAL RSS": 421800,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 10744,
+          "Native Heap": 50960,
+          "Code": 51364,
+          "Stack": 1224,
+          "Graphics": 126136,
+          "Private Other": 13636,
+          "System": 8760,
+          "Views": 11,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        }
+      },
+      "final-r8-1": {
+        "home": {
+          "TOTAL PSS": 151180,
+          "TOTAL RSS": 295760,
+          "TOTAL SWAP PSS": 9,
+          "Java Heap": 8876,
+          "Native Heap": 19972,
+          "Code": 51760,
+          "Stack": 1264,
+          "Graphics": 46212,
+          "Private Other": 18548,
+          "System": 4548,
+          "Views": 9,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "profiles": {
+          "TOTAL PSS": 173026,
+          "TOTAL RSS": 325292,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 7228,
+          "Native Heap": 28836,
+          "Code": 52348,
+          "Stack": 1284,
+          "Graphics": 58488,
+          "Private Other": 18860,
+          "System": 5982,
+          "Views": 9,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "form": {
+          "TOTAL PSS": 271499,
+          "TOTAL RSS": 427308,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 10032,
+          "Native Heap": 38728,
+          "Code": 52472,
+          "Stack": 1308,
+          "Graphics": 149756,
+          "Private Other": 12556,
+          "System": 6647,
+          "Views": 19,
+          "ViewRootImpl": 3,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "after5": {
+          "TOTAL PSS": 263358,
+          "TOTAL RSS": 421156,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 11948,
+          "Native Heap": 53200,
+          "Code": 52476,
+          "Stack": 1196,
+          "Graphics": 123872,
+          "Private Other": 12816,
+          "System": 7850,
+          "Views": 11,
+          "ViewRootImpl": 3,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "settled": {
+          "TOTAL PSS": 250332,
+          "TOTAL RSS": 408048,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 5136,
+          "Native Heap": 47248,
+          "Code": 52476,
+          "Stack": 1196,
+          "Graphics": 123676,
+          "Private Other": 12668,
+          "System": 7932,
+          "Views": 11,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        },
+        "observations": {
+          "TOTAL PSS": 266356,
+          "TOTAL RSS": 424440,
+          "TOTAL SWAP PSS": 6,
+          "Java Heap": 10744,
+          "Native Heap": 49148,
+          "Code": 52488,
+          "Stack": 1204,
+          "Graphics": 131588,
+          "Private Other": 13056,
+          "System": 8128,
+          "Views": 11,
+          "ViewRootImpl": 1,
+          "Activities": 1,
+          "AppContexts": 6
+        }
+      }
+    },
+    "conclusion": "五轮观察值部分下降；首开普通R8 UI75.732→74.761ms接近，单轮非随机对照不能证明稳定收益；内存未显著改善。",
+    "trace": {
+      "baseline-trace1": {
+        "identity": {
+          "sha256": "9219274f1658e2291160dfd0ac74d9976c65dde6e3ce7ab3f9b00ec1b5a2b391",
+          "bytes": 6600671,
+          "package": "com.lonnnnnng.flclash.performance",
+          "scope": "source-menu-only; open1/back/open2/back; no form or IME"
+        },
+        "openingFrames": [
+          {
+            "role": "UI",
+            "id": "263",
+            "token": "7560567",
+            "ts": "123105502872963",
+            "dur": "75731614",
+            "wall_ms": "75.732000",
+            "running_ms": "58.375000",
+            "runnable_ms": "4.089000",
+            "waiting_ms": "13.268000",
+            "timeline_rows": "2",
+            "recompose_ms": "18.373000",
+            "remembered_ms": "10.225000",
+            "forgotten_ms": "[NULL]",
+            "measure_ms": "10.128000",
+            "relayout_ms": "6.092000",
+            "layout_ms": "5.782000",
+            "draw_ms": "14.732000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "11.628000"
+          },
+          {
+            "role": "UI",
+            "id": "35673",
+            "token": "7563190",
+            "ts": "123109740137857",
+            "dur": "63440677",
+            "wall_ms": "63.441000",
+            "running_ms": "49.346000",
+            "runnable_ms": "3.215000",
+            "waiting_ms": "10.879000",
+            "timeline_rows": "2",
+            "recompose_ms": "10.349000",
+            "remembered_ms": "9.739000",
+            "forgotten_ms": "[NULL]",
+            "measure_ms": "7.175000",
+            "relayout_ms": "6.734000",
+            "layout_ms": "5.080000",
+            "draw_ms": "14.712000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "10.524000"
+          }
+        ],
+        "releaseFrames": [
+          {
+            "role": "UI",
+            "id": "29902",
+            "token": "7562565",
+            "ts": "123108150755670",
+            "dur": "17488959",
+            "wall_ms": "17.489000",
+            "running_ms": "10.128000",
+            "runnable_ms": "1.033000",
+            "waiting_ms": "6.328000",
+            "timeline_rows": "1",
+            "recompose_ms": "0.891000",
+            "remembered_ms": "[NULL]",
+            "forgotten_ms": "11.880000",
+            "measure_ms": "[NULL]",
+            "relayout_ms": "[NULL]",
+            "layout_ms": "[NULL]",
+            "draw_ms": "2.994000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "6.528000"
+          },
+          {
+            "role": "UI",
+            "id": "64453",
+            "token": "7565215",
+            "ts": "123112395928012",
+            "dur": "18981979",
+            "wall_ms": "18.982000",
+            "running_ms": "9.384000",
+            "runnable_ms": "2.824000",
+            "waiting_ms": "6.774000",
+            "timeline_rows": "1",
+            "recompose_ms": "0.892000",
+            "remembered_ms": "[NULL]",
+            "forgotten_ms": "13.877000",
+            "measure_ms": "[NULL]",
+            "relayout_ms": "[NULL]",
+            "layout_ms": "[NULL]",
+            "draw_ms": "2.692000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "8.213000"
+          }
+        ],
+        "renderThreadMaxWallMs": 21.56,
+        "traceStats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "value": "18"
+          }
+        ],
+        "work": {
+          "path": "baseline-trace1/work.csv",
+          "sha256": "589b8851ea51f3fe9089161bb24d7f3fd7e3a4f6561e479aed2257ce5810c84e",
+          "bytes": 73922
+        },
+        "timeline": {
+          "path": "baseline-trace1/timeline.csv",
+          "sha256": "7bb2a836a92d426dcc822b4e101847cb548f914738a6d07f44b0131309eff6c7",
+          "bytes": 12093
+        }
+      },
+      "final-trace1": {
+        "identity": {
+          "sha256": "eb92c50c815aaac15e21fb4e90a7e9484abed2a984954ecce6a3de4cfe73bf10",
+          "bytes": 6418322,
+          "package": "com.lonnnnnng.flclash.performance",
+          "scope": "source-menu-only; open1/back/open2/back; no form or IME"
+        },
+        "openingFrames": [
+          {
+            "role": "UI",
+            "id": "262",
+            "token": "7718529",
+            "ts": "125057436942166",
+            "dur": "74761458",
+            "wall_ms": "74.761000",
+            "running_ms": "59.212000",
+            "runnable_ms": "1.579000",
+            "waiting_ms": "13.971000",
+            "timeline_rows": "2",
+            "recompose_ms": "18.078000",
+            "remembered_ms": "9.568000",
+            "forgotten_ms": "[NULL]",
+            "measure_ms": "8.705000",
+            "relayout_ms": "5.901000",
+            "layout_ms": "4.836000",
+            "draw_ms": "17.503000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "10.920000"
+          },
+          {
+            "role": "UI",
+            "id": "35063",
+            "token": "7721141",
+            "ts": "125061661599508",
+            "dur": "58547396",
+            "wall_ms": "58.547000",
+            "running_ms": "46.065000",
+            "runnable_ms": "2.403000",
+            "waiting_ms": "10.079000",
+            "timeline_rows": "2",
+            "recompose_ms": "10.239000",
+            "remembered_ms": "9.590000",
+            "forgotten_ms": "[NULL]",
+            "measure_ms": "6.703000",
+            "relayout_ms": "5.277000",
+            "layout_ms": "4.447000",
+            "draw_ms": "12.938000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "9.844000"
+          }
+        ],
+        "releaseFrames": [
+          {
+            "role": "UI",
+            "id": "29524",
+            "token": "7720516",
+            "ts": "125060070164821",
+            "dur": "18265834",
+            "wall_ms": "18.266000",
+            "running_ms": "10.359000",
+            "runnable_ms": "0.898000",
+            "waiting_ms": "7.009000",
+            "timeline_rows": "1",
+            "recompose_ms": "0.879000",
+            "remembered_ms": "[NULL]",
+            "forgotten_ms": "12.990000",
+            "measure_ms": "[NULL]",
+            "relayout_ms": "[NULL]",
+            "layout_ms": "[NULL]",
+            "draw_ms": "2.759000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "6.847000"
+          },
+          {
+            "role": "UI",
+            "id": "63462",
+            "token": "7723152",
+            "ts": "125064289321955",
+            "dur": "17126146",
+            "wall_ms": "17.126000",
+            "running_ms": "9.808000",
+            "runnable_ms": "0.940000",
+            "waiting_ms": "6.378000",
+            "timeline_rows": "1",
+            "recompose_ms": "0.851000",
+            "remembered_ms": "[NULL]",
+            "forgotten_ms": "11.960000",
+            "measure_ms": "[NULL]",
+            "relayout_ms": "[NULL]",
+            "layout_ms": "[NULL]",
+            "draw_ms": "2.718000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "5.890000"
+          }
+        ],
+        "renderThreadMaxWallMs": 14.325,
+        "traceStats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "value": "19"
+          }
+        ],
+        "work": {
+          "path": "final-trace1/work.csv",
+          "sha256": "1becb425bb2b784e64b01d78bcab7531ad1249db73daa7105fbc4d6410d06b72",
+          "bytes": 73268
+        },
+        "timeline": {
+          "path": "final-trace1/timeline.csv",
+          "sha256": "c6624a80fe0463c7cf208003c966df87a07e8fc42e1f7fb0a685eb34313fef54",
+          "bytes": 12077
+        }
+      },
+      "diagnostic-trace1": {
+        "identity": {
+          "sha256": "b3bab367858cc2637e001323fab5229c6b1460dc9663c7eb412312896d6b3d32",
+          "bytes": 6418781,
+          "package": "com.lonnnnnng.flclash.performance",
+          "scope": "source-menu-only; open1/back/open2/back; no form or IME"
+        },
+        "openingFrames": [
+          {
+            "role": "UI",
+            "id": "266",
+            "token": "7725729",
+            "ts": "125357481761062",
+            "dur": "74511250",
+            "wall_ms": "74.511000",
+            "running_ms": "59.366000",
+            "runnable_ms": "2.080000",
+            "waiting_ms": "13.065000",
+            "timeline_rows": "2",
+            "recompose_ms": "18.574000",
+            "remembered_ms": "10.303000",
+            "forgotten_ms": "[NULL]",
+            "measure_ms": "8.813000",
+            "relayout_ms": "6.973000",
+            "layout_ms": "5.274000",
+            "draw_ms": "14.305000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "12.054000"
+          },
+          {
+            "role": "UI",
+            "id": "35017",
+            "token": "7728345",
+            "ts": "125361719809811",
+            "dur": "65050781",
+            "wall_ms": "65.051000",
+            "running_ms": "49.060000",
+            "runnable_ms": "4.451000",
+            "waiting_ms": "11.540000",
+            "timeline_rows": "2",
+            "recompose_ms": "9.651000",
+            "remembered_ms": "10.076000",
+            "forgotten_ms": "[NULL]",
+            "measure_ms": "7.114000",
+            "relayout_ms": "7.780000",
+            "layout_ms": "5.264000",
+            "draw_ms": "15.927000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "12.403000"
+          }
+        ],
+        "releaseFrames": [
+          {
+            "role": "UI",
+            "id": "29448",
+            "token": "7727720",
+            "ts": "125360129847728",
+            "dur": "17188489",
+            "wall_ms": "17.188000",
+            "running_ms": "9.571000",
+            "runnable_ms": "1.228000",
+            "waiting_ms": "6.389000",
+            "timeline_rows": "1",
+            "recompose_ms": "0.830000",
+            "remembered_ms": "[NULL]",
+            "forgotten_ms": "12.045000",
+            "measure_ms": "[NULL]",
+            "relayout_ms": "[NULL]",
+            "layout_ms": "[NULL]",
+            "draw_ms": "2.745000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "6.663000"
+          },
+          {
+            "role": "UI",
+            "id": "63633",
+            "token": "7730365",
+            "ts": "125364361394966",
+            "dur": "17606302",
+            "wall_ms": "17.606000",
+            "running_ms": "9.353000",
+            "runnable_ms": "1.025000",
+            "waiting_ms": "7.228000",
+            "timeline_rows": "1",
+            "recompose_ms": "0.807000",
+            "remembered_ms": "[NULL]",
+            "forgotten_ms": "12.686000",
+            "measure_ms": "[NULL]",
+            "relayout_ms": "[NULL]",
+            "layout_ms": "[NULL]",
+            "draw_ms": "2.588000",
+            "buffer_release_wait_ms": "[NULL]",
+            "binder_ms": "6.823000"
+          }
+        ],
+        "renderThreadMaxWallMs": 12.837,
+        "traceStats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "value": "20"
+          }
+        ],
+        "work": {
+          "path": "diagnostic-trace1/work.csv",
+          "sha256": "507748595f35d90bfa376af93d457cf09775c22e577a51e36b2454440d914ac5",
+          "bytes": 73588
+        },
+        "timeline": {
+          "path": "diagnostic-trace1/timeline.csv",
+          "sha256": "eac2972441ef5d0ebdee54d799bf3803139ba8d036498c31062fa081f5372ef2",
+          "bytes": 11140
+        },
+        "scopes": {
+          "path": "diagnostic-trace1/scopes-repo.csv",
+          "sha256": "76faab4d1b1c283671bf98c49734419edc688d7dde928fca72bc42b25e1757e8",
+          "bytes": 5624
+        },
+        "firstPopupMeasure": {
+          "id": "1144",
+          "name": "kclash/popup-root/measure",
+          "ts": "125357523924135",
+          "wall_ms": "8.000000",
+          "running_ms": "8.000000",
+          "frame": "Choreographer#doFrame 7725729"
+        }
+      }
+    },
+    "diagnosticApk": {
+      "sha256": "36ef0bcbac01a68d36791ab9f4daf872305c8b863448e87dd62cce09ed4d3e55",
+      "bytes": 49597097,
+      "r8": true,
+      "debuggable": false
+    },
+    "normalPackageRestored": {
+      "sha256": "c138d67686fce8a26727fc701305f0205f1663befc6bf771a4fa79272e6756a8",
+      "installedMatched": true,
+      "menuTrace": false
+    },
+    "limits": [
+      "诊断探针包不进入普通R8分母",
+      "UI/RenderThread wall不等于CPU，Running另列",
+      "各scope含子区间，不能相加",
+      "traced_chunks_discarded旧18/新19/诊断20非零，是否跨会话累计未定，不称无丢失",
+      "关闭Popup销毁后gfx缺席为不可观测；线程释放帧保留"
+    ]
+  },
+  "protection": {
+    "checks": {
+      "rotation": true,
+      "userRotation": true,
+      "fontScale": true,
+      "night": true,
+      "local": true,
+      "flutterIdentity": true,
+      "packageList": true,
+      "ownPackagesAbsent": true,
+      "flutterNoService": true
+    },
+    "removedExactPackages": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "2509a2344ca9157e43b454f6b753b99d9b061b208162e7f0a801334ad9cc5e8c",
+        "absent": true,
+        "note": "前一轮卸载后pm path返回1使脚本停止，已确认包缺席"
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "cfc1642fef1dd007ed54f53272043ea9609aec9cb9a178e032f7f4678d0c7851",
+        "uninstallOutput": "Success",
+        "absent": true
+      },
+      {
+        "package": "com.lonnnnnng.flclash.performance",
+        "sha256": "c138d67686fce8a26727fc701305f0205f1663befc6bf771a4fa79272e6756a8",
+        "uninstallOutput": "Success",
+        "absent": true
+      },
+      {
+        "package": "com.lonnnnnng.kclash.reference.flutter_form_material_reference",
+        "sha256": "1c0e6cc646f927eab24df7cb64ec8ddcecb43fc8578edfa0f50734805153e507",
+        "uninstallOutput": "Success",
+        "absent": true
+      }
+    ],
+    "ownUsbInputRemoved": true,
+    "sourceInputInternetUpload": false,
+    "local": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "size": 34220,
+      "mtimeNs": 1794392072317864361
+    },
+    "settings": {
+      "rotation": "0",
+      "userRotation": "0",
+      "fontScale": "1.0",
+      "night": "Night mode: yes"
+    }
+  },
+  "failuresPreserved": [
+    "optics1/optics2 age显隐后IME旧回调；rememberUpdatedState修复",
+    "age3把masked EditableText当明文的测试断言失败；age4 1/1及final12通过",
+    "取消先退场后清草稿导致失败时透明禁用窗口；改先回执，closeFailure精确测试通过",
+    "build6缺readAuthorizedProxyProfile包导入；后续已修",
+    "Flutter build2不支持copyWith，build3直接构造",
+    "main1误用FILE独立重命名入口；main2及final12验证CUSTOM实际入口",
+    "build9/10有短暂AGP重叠，最终身份只认串行final12",
+    "diagnostic-build14在android子目录没有Wrapper；根目录build15成功",
+    "flutter-held按text找Flutter标签失败；held2按content-desc成功",
+    "清理首次pm path在包不存在时退出1，已删首包后脚本停止；包清单回验并完成其余精确清理",
+    "文档更新脚本相对Path父目录未解析导致找不到外层todo；改绝对路径完成，未丢弃已更新文档"
+  ],
+  "remaining": [
+    "其他输入面板与页面外框、字形、间距、分隔线及所有页面连续转场尚未逐页完成同态对照",
+    "任意重叠pane的atlas分层/group/veil、运行启动按钮circle→cookie9和全局采样降采样策略尚未完整移植",
+    "菜单首次组合/绘制/窗口交接与关闭组件释放、RenderThread/合成等待未完成函数级归因和稳定收益验证",
+    "严格同态长期内存；玻璃开启的长期GPU资源/拖动负载尚未形成稳定性能结论"
+  ],
+  "notRun": [
+    "低API/其他OEM/横屏/大字号",
+    "核心/VPN/订阅实网",
+    "正式签名发版和远端CI"
+  ],
+  "rawEvidenceRoot": "../acceptance-artifacts/panels-optics-poco-20261120",
+  "manifest": {
+    "path": "evidence-manifest.json",
+    "sha256": "6dad781011bcebf0dd5d167215f9113029230619e7bdc521b93402de6979d904",
+    "bytes": 73633
+  }
+}
