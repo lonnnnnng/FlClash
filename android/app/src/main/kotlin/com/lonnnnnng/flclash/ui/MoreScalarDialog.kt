@@ -149,7 +149,7 @@ internal fun MoreScalarDialog(field: MoreField, initial: JsonElement, root: Json
                                 keyboardOptions = KeyboardOptions(keyboardType = if (field.kind in setOf(MoreFieldKind.PORT, MoreFieldKind.NUMBER)) KeyboardType.Number else KeyboardType.Uri,
                                     imeAction = ImeAction.Done), keyboardActions = KeyboardActions(onDone = { confirm() }))
                         }
-                        message?.let { Text(it, Modifier.padding(top = 8.dp).testTag("more_value_error"),
+                        message?.let { Text(tr(it), Modifier.padding(top = 8.dp).testTag("more_value_error"),
                             color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
                         if (saving) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp).testTag("more_value_saving"))
                     }
@@ -158,12 +158,12 @@ internal fun MoreScalarDialog(field: MoreField, initial: JsonElement, root: Json
                             colors = ButtonDefaults.buttonColors(containerColor = inputColor, contentColor = MaterialTheme.colorScheme.onSurface,
                                 disabledContainerColor = if (closing) inputColor else MaterialTheme.colorScheme.onSurface.copy(alpha = .12f),
                                 disabledContentColor = if (closing) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = .38f)),
-                            modifier = Modifier.weight(1f).height(48.dp).testTag("more_value_back")) { Text("取消") }
+                            modifier = Modifier.weight(1f).height(48.dp).testTag("more_value_back")) { Text(tr("取消")) }
                         Button(onClick = ::confirm, enabled = enabled, shape = AppSuperellipseShape(24.dp),
                             colors = ButtonDefaults.buttonColors(
                                 disabledContainerColor = if (closing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = .12f),
                                 disabledContentColor = if (closing) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = .38f)),
-                            modifier = Modifier.weight(1f).height(48.dp).testTag("more_value_confirm")) { Text("提交") }
+                            modifier = Modifier.weight(1f).height(48.dp).testTag("more_value_confirm")) { Text(tr("提交")) }
                     }
                 }
             }

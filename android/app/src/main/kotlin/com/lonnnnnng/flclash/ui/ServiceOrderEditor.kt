@@ -88,7 +88,7 @@ internal fun ServiceOrderEditor(
         }
     }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("长按服务调整顺序；至少启用一项，前两项显示在仪表盘", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(tr("长按服务调整顺序；至少启用一项，前两项显示在仪表盘"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (saving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("service_order_saving"))
         LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("service_order_list")
             .pointerInput(list, owner) {
@@ -131,7 +131,7 @@ internal fun ServiceOrderEditor(
                             .testTag("service_toggle_" + target.id).padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(target.label, style = MaterialTheme.typography.bodyLarge)
-                                if (target in preview.filterNot(settings.disabled::contains).take(2)) Text("显示在仪表盘", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (target in preview.filterNot(settings.disabled::contains).take(2)) Text(tr("显示在仪表盘"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Switch(enabled, onCheckedChange = null, enabled = !locked && !(enabled && settings.enabled.size == 1))
                         }

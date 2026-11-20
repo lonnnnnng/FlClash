@@ -23,7 +23,7 @@ import com.lonnnnnng.flclash.service.GeneralSettings
 /** 作者 long：常规设置逐项保存并接真实系统/核心行为；输入失败保持草稿，不把未落盘值显示成已生效。 */
 @Composable
 internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralSettings = GeneralSettings(), busy: Boolean = false,
-    allowLan: Boolean = false, lanBusy: Boolean = false, onAllowLan: (Boolean) -> Unit = {}, onShowLogs: () -> Unit = {},
+    allowLan: Boolean = false, lanBusy: Boolean = false, onAllowLan: (Boolean) -> Unit = {},
     saving: Boolean = false,
     onSave: (GeneralSettings, (Boolean) -> Unit) -> Unit = { _, done -> done(false) }) {
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
@@ -32,48 +32,47 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
     var hosts by rememberSaveable { mutableStateOf(false) }
     fun save(value: GeneralSettings) { onSave(value) { if (!it) error = "设置未能应用，请检查当前状态后重试" else error = null } }
     Column(Modifier.fillMaxWidth().testTag("page_general"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        if (saving || lanBusy) GeneralSaveProgress(if (lanBusy) "正在更新局域网设置…" else "正在保存并应用常规设置…")
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_error")) }
-        GeneralSection("启动和后台") {
-            GeneralToggle("自动运行", settings.autoRun, busy, "general_auto_run") { save(settings.copy(autoRun = it)) }
-            GeneralOpenRow("按需连接", "电池优化与系统授权", "general_item_on_demand", busy, onOpenOnDemand)
-            GeneralToggle("退出时最小化", settings.minimizeOnExit, busy, "general_minimize") { save(settings.copy(minimizeOnExit = it)) }
-            GeneralToggle("从最近任务中隐藏", settings.hidden, busy, "general_hidden") { save(settings.copy(hidden = it)) }
-            GeneralToggle("显示通知停止按钮", settings.showNotificationStopAction, busy, "general_notification_stop") { save(settings.copy(showNotificationStopAction = it)) }
+        if (saving || lanBusy) GeneralSaveProgress(if (lanBusy) tr("正在更新局域网设置…") else tr("正在保存并应用常规设置…"))
+        error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_error")) }
+        GeneralSection(tr("启动和后台")) {
+            GeneralToggle(tr("自动运行"), settings.autoRun, busy, "general_auto_run") { save(settings.copy(autoRun = it)) }
+            GeneralOpenRow(tr("按需连接"), tr("电池优化与系统授权"), "general_item_on_demand", busy, onOpenOnDemand)
+            GeneralToggle(tr("退出时最小化"), settings.minimizeOnExit, busy, "general_minimize") { save(settings.copy(minimizeOnExit = it)) }
+            GeneralToggle(tr("从最近任务中隐藏"), settings.hidden, busy, "general_hidden") { save(settings.copy(hidden = it)) }
+            GeneralToggle(tr("显示通知停止按钮"), settings.showNotificationStopAction, busy, "general_notification_stop") { save(settings.copy(showNotificationStopAction = it)) }
         }
-        Text("自动运行在打开应用时启动服务。最小化保留后台连接，关闭最小化后退出会停止服务。",
+        Text(tr("自动运行在打开应用时启动服务。最小化保留后台连接，关闭最小化后退出会停止服务。"),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        GeneralSection("请求与更新") {
-            GeneralOpenRow("User-Agent", settings.userAgent ?: "默认", "general_user_agent", busy) { ua = true }
-            GeneralToggle("校验证书", settings.checkCertificate, busy, "general_check_certificate") { save(settings.copy(checkCertificate = it)) }
+        GeneralSection(tr("请求与更新")) {
+            GeneralOpenRow("User-Agent", settings.userAgent ?: tr("默认"), "general_user_agent", busy) { ua = true }
+            GeneralToggle(tr("校验证书"), settings.checkCertificate, busy, "general_check_certificate") { save(settings.copy(checkCertificate = it)) }
         }
-        GeneralSection("入站") {
-            GeneralOpenRow("端口", settings.mixedPort.toString(), "general_ports", busy) { editing = "ports" }
-            GeneralToggle("允许局域网访问", allowLan, busy || lanBusy, "general_allow_lan", onAllowLan)
-            GeneralToggle("外部控制器", settings.externalController, busy, "general_controller") { save(settings.copy(externalController = it)) }
-            if (settings.externalController) GeneralOpenRow("控制器密钥", "••••••••", "general_secret", busy) { editing = "secret" }
-            GeneralToggle("入站认证", settings.authentication, busy, "general_authentication") { save(settings.copy(authentication = it)) }
+        GeneralSection(tr("入站")) {
+            GeneralOpenRow(tr("端口"), settings.mixedPort.toString(), "general_ports", busy) { editing = "ports" }
+            GeneralToggle(tr("允许局域网访问"), allowLan, busy || lanBusy, "general_allow_lan", onAllowLan)
+            GeneralToggle(tr("外部控制器"), settings.externalController, busy, "general_controller") { save(settings.copy(externalController = it)) }
+            if (settings.externalController) GeneralOpenRow(tr("控制器密钥"), "••••••••", "general_secret", busy) { editing = "secret" }
+            GeneralToggle(tr("入站认证"), settings.authentication, busy, "general_authentication") { save(settings.copy(authentication = it)) }
             if (settings.authentication) {
-                GeneralOpenRow("账号", settings.username, "general_username", busy) { editing = "username" }
-                GeneralOpenRow("密码", "••••••••", "general_password", busy) { editing = "password" }
+                GeneralOpenRow(tr("账号"), settings.username, "general_username", busy) { editing = "username" }
+                GeneralOpenRow(tr("密码"), "••••••••", "general_password", busy) { editing = "password" }
             }
         }
-        Text("外部控制器监听 127.0.0.1:9090。启用入站认证后，系统 HTTP 代理不会自动下发。",
+        Text(tr("外部控制器监听 127.0.0.1:9090。启用入站认证后，系统 HTTP 代理不会自动下发。"),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        GeneralSection("连接") {
-            GeneralOpenRow("测速超时", "${settings.delayTestTimeout} ms", "general_timeout", busy) { editing = "timeout" }
-            GeneralToggle("查找进程", settings.findProcess, busy, "general_find_process") { save(settings.copy(findProcess = it)) }
-            GeneralToggle("切换时关闭旧连接", settings.closeConnections, busy, "general_close_connections") { save(settings.copy(closeConnections = it)) }
-            GeneralToggle("仅统计代理流量", settings.onlyStatisticsProxy, busy, "general_only_proxy") { save(settings.copy(onlyStatisticsProxy = it)) }
+        GeneralSection(tr("连接")) {
+            GeneralOpenRow(tr("测速超时"), "${settings.delayTestTimeout} ms", "general_timeout", busy) { editing = "timeout" }
+            GeneralToggle(tr("查找进程"), settings.findProcess, busy, "general_find_process") { save(settings.copy(findProcess = it)) }
+            GeneralToggle(tr("切换时关闭旧连接"), settings.closeConnections, busy, "general_close_connections") { save(settings.copy(closeConnections = it)) }
+            GeneralToggle(tr("仅统计代理流量"), settings.onlyStatisticsProxy, busy, "general_only_proxy") { save(settings.copy(onlyStatisticsProxy = it)) }
         }
-        GeneralSection("核心") {
-            GeneralOpenRow("Hosts", "${settings.hosts.size} 项", "general_hosts", busy) { hosts = true }
-            GeneralToggle("追加系统 DNS", settings.appendSystemDns, busy, "general_system_dns") { save(settings.copy(appendSystemDns = it)) }
+        GeneralSection(tr("核心")) {
+            GeneralOpenRow("Hosts", tr("{0} 项", settings.hosts.size), "general_hosts", busy) { hosts = true }
+            GeneralToggle(tr("追加系统 DNS"), settings.appendSystemDns, busy, "general_system_dns") { save(settings.copy(appendSystemDns = it)) }
         }
-        GeneralSection("日志") {
-            GeneralOpenRow("日志等级", settings.logLevel, "general_log_level", busy) { editing = "logLevel" }
-            GeneralToggle("收集核心日志", settings.openLogs, busy, "general_logs") { save(settings.copy(openLogs = it)) }
-            GeneralOpenRow("查看日志", null, "general_show_logs", busy, onShowLogs)
+        GeneralSection(tr("日志")) {
+            GeneralOpenRow(tr("日志等级"), settings.logLevel, "general_log_level", busy) { editing = "logLevel" }
+            GeneralToggle(tr("收集核心日志"), settings.openLogs, busy, "general_logs") { save(settings.copy(openLogs = it)) }
         }
     }
     if (ua) GeneralUserAgentsPage(settings, busy, saving, { ua = false }, onSave)
@@ -82,7 +81,7 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
         if (field == "ports") GeneralPortsEditor(settings, busy, saving, { editing = null }, onSave)
         else if (field == "timeout" || field == "logLevel") {
             val options = if (field == "timeout") listOf("500", "1000", "2000", "5000", "8000") else listOf("debug", "info", "warning", "error", "silent")
-            GeneralOptionsEditor(if (field == "timeout") "测速超时" else "日志等级", options,
+            GeneralOptionsEditor(if (field == "timeout") tr("测速超时") else tr("日志等级"), options,
                 if (field == "timeout") settings.delayTestTimeout.toString() else settings.logLevel, busy, saving, { editing = null }) { value, done ->
                 onSave(if (field == "timeout") settings.copy(delayTestTimeout = value.toInt()) else settings.copy(logLevel = value), done)
             }
@@ -98,7 +97,7 @@ private fun GeneralSaveProgress(message: String) {
     Row(Modifier.fillMaxWidth().testTag("general_settings_saving"), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-        Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(tr(message), color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -131,13 +130,13 @@ private fun GeneralOptionsEditor(title: String, options: List<String>, selected:
     onSave: (String, (Boolean) -> Unit) -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(title) }, text = {
-        Column { if (saving) GeneralSaveProgress("正在保存并应用常规设置…")
+        Column { if (saving) GeneralSaveProgress(tr("正在保存并应用常规设置…"))
             options.forEach { option -> Row(Modifier.fillMaxWidth().clickable(enabled = !busy) {
             onSave(option) { if (it) onDismiss() else error = "保存失败，请重试" }
         }.testTag("general_option_$option").padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             RadioButton(selected == option, null, enabled = !busy); Text(option, Modifier.padding(start = 12.dp))
-        } }; error?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
-    }, confirmButton = { TextButton(onDismiss, enabled = !busy) { Text("取消") } })
+        } }; error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) } }
+    }, confirmButton = { TextButton(onDismiss, enabled = !busy) { Text(tr("取消")) } })
 }
 
 @Composable
@@ -151,49 +150,49 @@ private fun GeneralPortsEditor(settings: GeneralSettings, busy: Boolean, saving:
         }
     }
     // 作者 long：上游端口使用整页表单；保存固定在顶栏，数字键盘弹出时只压缩字段滚动区。
-    ProfileEditorPage({ if (!busy) onDismiss() }, { Text("入站端口") }, {
+    ProfileEditorPage({ if (!busy) onDismiss() }, { Text(tr("入站端口")) }, {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("general_ports_editor"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (saving) GeneralSaveProgress("正在保存并应用常规设置…")
-            Text("1024–49151；除 Mixed 外可填 0 关闭", style = MaterialTheme.typography.bodySmall)
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_editor_error")) }
+            if (saving) GeneralSaveProgress(tr("正在保存并应用常规设置…"))
+            Text(tr("1024–49151；除 Mixed 外可填 0 关闭"), style = MaterialTheme.typography.bodySmall)
+            error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_editor_error")) }
             listOf("Mixed", "HTTP", "SOCKS", "Redir", "TProxy").forEachIndexed { index, title ->
                 OutlinedTextField(values[index], { text -> if (text.length <= 5 && text.all { it in '0'..'9' }) values = values.toMutableList().apply { this[index] = text } },
                     label = { Text(title) }, singleLine = true, enabled = !busy, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth().testTag("general_port_$index"))
             }
-            TextButton({ resetting = true }, enabled = !busy) { Text("恢复默认") }
+            TextButton({ resetting = true }, enabled = !busy) { Text(tr("恢复默认")) }
         }
     }, confirmButton = { TextButton({
         val ports = values.map { it.toIntOrNull() ?: -1 }
         save(settings.copy(mixedPort = ports[0], port = ports[1], socksPort = ports[2], redirPort = ports[3], tproxyPort = ports[4]))
-    }, enabled = !busy, modifier = Modifier.testTag("general_ports_save")) { Text("保存") } }, backTag = "general_ports_back")
-    if (resetting) AlertDialog(onDismissRequest = { if (!busy) resetting = false }, title = { Text("恢复默认端口") },
-        text = { Text("Mixed 恢复为 7890，关闭其他入站端口。") }, confirmButton = { TextButton({
+    }, enabled = !busy, modifier = Modifier.testTag("general_ports_save")) { Text(tr("保存")) } }, backTag = "general_ports_back")
+    if (resetting) AlertDialog(onDismissRequest = { if (!busy) resetting = false }, title = { Text(tr("恢复默认端口")) },
+        text = { Text(tr("Mixed 恢复为 7890，关闭其他入站端口。")) }, confirmButton = { TextButton({
             resetting = false
             save(settings.copy(mixedPort = 7890, port = 0, socksPort = 0, redirPort = 0, tproxyPort = 0))
-        }, enabled = !busy) { Text("恢复默认") } }, dismissButton = { TextButton({ resetting = false }, enabled = !busy) { Text("取消") } })
+        }, enabled = !busy) { Text(tr("恢复默认")) } }, dismissButton = { TextButton({ resetting = false }, enabled = !busy) { Text(tr("取消")) } })
 }
 
 @Composable
 private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, saving: Boolean, onDismiss: () -> Unit,
     onSave: (String, (Boolean) -> Unit) -> Unit) {
-    val label = when (field) { "secret" -> "控制器密钥"; "username" -> "账号"; "password" -> "密码"; else -> "User-Agent" }
+    val label = when (field) { "secret" -> tr("控制器密钥"); "username" -> tr("账号"); "password" -> tr("密码"); else -> "User-Agent" }
     var value by rememberSaveable(field) { mutableStateOf(initial) }
     var revealed by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(label) }, text = {
-        Column { if (saving) GeneralSaveProgress("正在保存并应用常规设置…")
+        Column { if (saving) GeneralSaveProgress(tr("正在保存并应用常规设置…"))
             OutlinedTextField(value, { if (it.length <= 1024 && it.none(Char::isISOControl)) value = it }, enabled = !busy, singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = if (field in listOf("secret", "password")) KeyboardType.Password else KeyboardType.Text),
             visualTransformation = if (field in listOf("secret", "password") && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = { if (field in listOf("secret", "password")) IconButton({ revealed = !revealed }) { Icon(Icons.Outlined.Visibility, null) } },
             modifier = Modifier.fillMaxWidth().testTag("general_text_input"))
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_editor_error")) }
+            error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_editor_error")) }
         }
     }, confirmButton = { TextButton({
         if (field == "ua" && value.isBlank()) { error = "请输入 User-Agent"; return@TextButton }
         onSave(value.trim()) { if (it) onDismiss() else error = "保存失败，输入已保留，请重试" }
-    }, enabled = !busy, modifier = Modifier.testTag("general_text_save")) { Text("保存") } }, dismissButton = { TextButton(onDismiss, enabled = !busy) { Text("取消") } })
+    }, enabled = !busy, modifier = Modifier.testTag("general_text_save")) { Text(tr("保存")) } }, dismissButton = { TextButton(onDismiss, enabled = !busy) { Text(tr("取消")) } })
 }
 
 @Composable
@@ -205,16 +204,16 @@ private fun GeneralUserAgentsPage(settings: GeneralSettings, busy: Boolean, savi
     fun save(next: GeneralSettings, done: (Boolean) -> Unit = {}) { onSave(next) { if (!it) error = "保存失败，请重试"; done(it) } }
     ProfileEditorPage({ if (!busy) { if (sorting) sorting = false else onDismiss() } }, { Text("User-Agent") }, {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (saving) GeneralSaveProgress("正在保存并应用 User-Agent…")
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            if (saving) GeneralSaveProgress(tr("正在保存并应用 User-Agent…"))
+            error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
             Row {
-                TextButton({ editing = "" }, enabled = !busy, modifier = Modifier.testTag("general_ua_add")) { Text("添加") }
-                TextButton({ sorting = !sorting }, enabled = !busy && entries.size > 1) { Text(if (sorting) "完成" else "排序") }
+                TextButton({ editing = "" }, enabled = !busy, modifier = Modifier.testTag("general_ua_add")) { Text(tr("添加")) }
+                TextButton({ sorting = !sorting }, enabled = !busy && entries.size > 1) { Text(if (sorting) tr("完成") else tr("排序")) }
             }
             if (sorting) ResourceOrderList(entries.map { ResourceOrderItem(it, it, "User-Agent") }, busy, "general_ua", { save(settings.copy(userAgents = it)) }, Modifier.weight(1f))
             else Column(Modifier.verticalScroll(rememberScrollState())) {
                 Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { save(settings.copy(userAgent = null)) }.padding(vertical = 12.dp).testTag("general_ua_default"), verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(settings.userAgent == null, null); Text("默认", Modifier.padding(start = 12.dp))
+                    RadioButton(settings.userAgent == null, null); Text(tr("默认"), Modifier.padding(start = 12.dp))
                 }
                 entries.forEachIndexed { index, value ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { save(settings.copy(userAgent = value)) }.padding(vertical = 8.dp).testTag("general_ua_$index"), verticalAlignment = Alignment.CenterVertically) {
@@ -240,10 +239,10 @@ private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, saving: B
     var error by remember { mutableStateOf<String?>(null) }
     ProfileEditorPage({ if (!busy) onDismiss() }, { Text("Hosts") }, {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (saving) GeneralSaveProgress("正在保存并应用 Hosts…")
-            OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索域名或地址") }, modifier = Modifier.fillMaxWidth())
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            TextButton({ editing = "" }, enabled = !busy, modifier = Modifier.testTag("general_host_add")) { Text("添加") }
+            if (saving) GeneralSaveProgress(tr("正在保存并应用 Hosts…"))
+            OutlinedTextField(query, { query = it }, singleLine = true, label = { Text(tr("搜索域名或地址")) }, modifier = Modifier.fillMaxWidth())
+            error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
+            TextButton({ editing = "" }, enabled = !busy, modifier = Modifier.testTag("general_host_add")) { Text(tr("添加")) }
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 settings.hosts.filter { (k, v) -> k.contains(query, true) || v.contains(query, true) }.forEach { (name, value) ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { editing = name }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -258,12 +257,12 @@ private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, saving: B
         var name by rememberSaveable(original) { mutableStateOf(original) }
         var value by rememberSaveable(original) { mutableStateOf(settings.hosts[original].orEmpty()) }
         var formError by remember { mutableStateOf<String?>(null) }
-        AlertDialog(onDismissRequest = { if (!busy) editing = null }, title = { Text(if (original.isEmpty()) "添加 Hosts" else "编辑 Hosts") }, text = {
+        AlertDialog(onDismissRequest = { if (!busy) editing = null }, title = { Text(if (original.isEmpty()) tr("添加 Hosts") else tr("编辑 Hosts")) }, text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (saving) GeneralSaveProgress("正在保存并应用 Hosts…")
-                OutlinedTextField(name, { if (it.length <= 253) name = it }, label = { Text("域名") }, singleLine = true, enabled = !busy, modifier = Modifier.testTag("general_host_name"))
-                OutlinedTextField(value, { if (it.length <= 4096) value = it }, label = { Text("地址，多个地址以空格分隔") }, enabled = !busy, modifier = Modifier.testTag("general_host_value"))
-                formError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                if (saving) GeneralSaveProgress(tr("正在保存并应用 Hosts…"))
+                OutlinedTextField(name, { if (it.length <= 253) name = it }, label = { Text(tr("域名")) }, singleLine = true, enabled = !busy, modifier = Modifier.testTag("general_host_name"))
+                OutlinedTextField(value, { if (it.length <= 4096) value = it }, label = { Text(tr("地址，多个地址以空格分隔")) }, enabled = !busy, modifier = Modifier.testTag("general_host_value"))
+                formError?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
             }
         }, confirmButton = { TextButton({
             if (name.trim() != original && name.trim() in settings.hosts) { formError = "域名已存在"; return@TextButton }
@@ -271,6 +270,6 @@ private fun GeneralHostsPage(settings: GeneralSettings, busy: Boolean, saving: B
             runCatching { next.validated() }.onFailure { formError = it.message }.onSuccess {
                 onSave(next) { if (it) editing = null else formError = "保存失败，输入已保留，请重试" }
             }
-        }, enabled = !busy, modifier = Modifier.testTag("general_host_save")) { Text("保存") } }, dismissButton = { TextButton({ editing = null }, enabled = !busy) { Text("取消") } })
+        }, enabled = !busy, modifier = Modifier.testTag("general_host_save")) { Text(tr("保存")) } }, dismissButton = { TextButton({ editing = null }, enabled = !busy) { Text(tr("取消")) } })
     }
 }

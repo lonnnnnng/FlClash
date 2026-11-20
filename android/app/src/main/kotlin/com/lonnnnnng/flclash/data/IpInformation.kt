@@ -5,13 +5,17 @@ import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.core.CoreIpResponse
 import java.net.InetAddress
 
-enum class IpType(val label: String) {
+enum class IpType(private val labelText: String) {
     RESIDENTIAL("住宅"), MOBILE("移动网络"), BUSINESS("企业"), HOSTING("数据中心");
+    val label get() = com.lonnnnnng.flclash.common.AppText.text(labelText)
+
 }
 
-enum class IpQualitySource(val label: String) {
+enum class IpQualitySource(private val labelText: String) {
     IDENT_ME("ident.me"), IP_API_COM("ip-api.com"), IP_QUERY("ipquery.io"),
     IP_LOCATE("iplocate.io"), IP_API_IS("ipapi.is"), PROXY_CHECK("proxycheck.io");
+    val label get() = com.lonnnnnng.flclash.common.AppText.text(labelText)
+
 
     fun url(ip: String): String {
         require(isPublicIpLiteral(ip)) { "IP 地址无效" }
@@ -27,9 +31,11 @@ enum class IpQualitySource(val label: String) {
     }
 }
 
-enum class IpSourceFailure(val label: String) {
+enum class IpSourceFailure(private val labelText: String) {
     NO_TYPE("未返回类型"), TIMEOUT("查询超时"), RATE_LIMITED("请求受限"),
     FAILED("查询失败"), IP_MISMATCH("IP 不一致");
+    val label get() = com.lonnnnnng.flclash.common.AppText.text(labelText)
+
 }
 
 data class OutboundIpInfo(val ip: String, val countryCode: String)

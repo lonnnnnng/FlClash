@@ -110,9 +110,9 @@ internal fun ProfileEditorDialog(
                     Icon(Icons.Outlined.ArrowDropDown, null)
                 }
                 DropdownMenu(showTitleActions, { showTitleActions = false }) {
-                    DropdownMenuItem(text = { Text("重命名") }, onClick = { showTitleActions = false; showRename = true },
+                    DropdownMenuItem(text = { Text(tr("重命名")) }, onClick = { showTitleActions = false; showRename = true },
                         modifier = Modifier.testTag("custom_profile_rename"))
-                    DropdownMenuItem(text = { Text("运行配置") }, onClick = { showTitleActions = false; openSection { onPreview(profile.id) } },
+                    DropdownMenuItem(text = { Text(tr("运行配置")) }, onClick = { showTitleActions = false; openSection { onPreview(profile.id) } },
                         modifier = Modifier.testTag("custom_profile_preview"))
                 }
             }
@@ -143,11 +143,11 @@ internal fun ProfileEditorDialog(
                         onGroup = onOpenSingleProxyGroupEditor?.let { open -> { index -> openSection { open(profile, index) } } },
                     )
                     TextButton(onClick = { showYaml = !showYaml }, modifier = Modifier.testTag("custom_profile_toggle_yaml")) {
-                        Text(if (showYaml) "收起原始 YAML" else "编辑原始 YAML")
+                        Text(if (showYaml) tr("收起原始 YAML") else tr("编辑原始 YAML"))
                     }
                 } else {
                     Text(
-                        "保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。",
+                        tr("保存后会替换 KClash 本地配置文件，核心启动时仍会再次校验 YAML。"),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -167,8 +167,8 @@ internal fun ProfileEditorDialog(
                         IconButton(onClick = { showImportMenu = true }, enabled = !saving && !customImportState.isLoading,
                             modifier = Modifier.testTag("custom_profile_import")) { Icon(Icons.Outlined.FileDownload, null) }
                         DropdownMenu(showImportMenu, { showImportMenu = false }) {
-                            DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { showImportMenu = false; openSection { showCustomImport = true } })
-                            DropdownMenuItem(text = { Text("从文件导入") }, onClick = {
+                            DropdownMenuItem(text = { Text(tr("从 URL 导入")) }, onClick = { showImportMenu = false; openSection { showCustomImport = true } })
+                            DropdownMenuItem(text = { Text(tr("从文件导入")) }, onClick = {
                                 showImportMenu = false; openSection { onPickCustomImportFile() }
                             })
                         }
@@ -180,29 +180,29 @@ internal fun ProfileEditorDialog(
                 },
                 enabled = !saving && content.isNotBlank(),
             ) {
-                if (saving) CircularProgressIndicator() else Text("保存")
+                if (saving) CircularProgressIndicator() else Text(tr("保存"))
             }
         },
     )
 
     if (showMore) ProfileEditorPage(
-        onDismissRequest = { showMore = false }, backTag = "custom_profile_more_back", title = { Text("更多") }, text = {
+        onDismissRequest = { showMore = false }, backTag = "custom_profile_more_back", title = { Text(tr("更多")) }, text = {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
                     Column {
-                        ProfileSectionRow("Dialers", overview?.let { if (it.dialers > 0) "${it.dialers} 个代理" else "无" },
+                        ProfileSectionRow("Dialers", overview?.let { if (it.dialers > 0) tr("{0} 个代理", it.dialers) else tr("无") },
                             Icons.Outlined.SwapVert, !saving, Modifier.testTag("custom_profile_dialers")) {
                             openSection { onOpenDialersEditor(profile) }
                         }
-                        ProfileSectionRow("NTP", overview?.let { if (it.ntpEnabled) "已启用" else "未启用" },
+                        ProfileSectionRow("NTP", overview?.let { if (it.ntpEnabled) tr("已启用") else tr("未启用") },
                             Icons.Outlined.Schedule, !saving, Modifier.testTag("custom_profile_ntp")) {
                             moreSection = "ntp"; onOpenMoreEditor(profile)
                         }
-                        ProfileSectionRow("域名嗅探", overview?.let { if (it.snifferEnabled) "已启用" else "未启用" },
+                        ProfileSectionRow(tr("域名嗅探"), overview?.let { if (it.snifferEnabled) tr("已启用") else tr("未启用") },
                             Icons.Outlined.Radar, !saving, Modifier.testTag("custom_profile_sniffer")) {
                             moreSection = "sniffer"; onOpenMoreEditor(profile)
                         }
-                        ProfileSectionRow("脚本", if (profile.scriptId == null) "未绑定" else "已绑定", Icons.Outlined.Code,
+                        ProfileSectionRow(tr("脚本"), if (profile.scriptId == null) tr("未绑定") else tr("已绑定"), Icons.Outlined.Code,
                             !saving, Modifier.testTag("custom_profile_script")) { openSection { onOpenScriptBinding(profile) } }
                     }
                 }
@@ -213,12 +213,12 @@ internal fun ProfileEditorDialog(
         initialContent, onCloseMoreEditor, onSaveMoreEditor)
 
     if (customImportState.isLoading) AlertDialog(onDismissRequest = onCancelCustomImport,
-        title = { Text("正在读取配置") }, text = { LinearProgressIndicator(Modifier.fillMaxWidth()) },
-        confirmButton = { TextButton(onClick = onCancelCustomImport) { Text("取消") } })
+        title = { Text(tr("正在读取配置")) }, text = { LinearProgressIndicator(Modifier.fillMaxWidth()) },
+        confirmButton = { TextButton(onClick = onCancelCustomImport) { Text(tr("取消")) } })
 
     if (showCustomImport) AlertDialog(
         onDismissRequest = { if (!customImportState.isLoading) showCustomImport = false },
-        title = { Text("从 URL 导入") },
+        title = { Text(tr("从 URL 导入")) },
         text = {
             val focus = androidx.compose.ui.platform.LocalFocusManager.current
             val keyboard = LocalSoftwareKeyboardController.current
@@ -227,7 +227,7 @@ internal fun ProfileEditorDialog(
                 onDispose { clearImportFocus[0] = null }
             }
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(importUrl, { importUrl = it }, label = { Text("HTTP/HTTPS 链接") }, singleLine = true,
+                OutlinedTextField(importUrl, { importUrl = it }, label = { Text(tr("HTTP/HTTPS 链接")) }, singleLine = true,
                     enabled = !customImportState.isLoading, modifier = Modifier.fillMaxWidth().testTag("custom_import_url"))
                 AgeSecretKeyField(importAgeKey, { importAgeKey = it }, !customImportState.isLoading, "custom_import_age_key")
                 if (customImportState.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -235,24 +235,24 @@ internal fun ProfileEditorDialog(
         },
         confirmButton = { TextButton(enabled = importUrl.isNotBlank() && !customImportState.isLoading,
             modifier = Modifier.testTag("custom_import_url_confirm"),
-            onClick = { clearImportFocus[0]?.invoke(); showCustomImport = false; onImportCustomUrl(importUrl.trim(), importAgeKey.trim()); importAgeKey = "" }) { Text("读取") } },
-        dismissButton = { TextButton(enabled = !customImportState.isLoading, onClick = { showCustomImport = false; importAgeKey = "" }) { Text("取消") } },
+            onClick = { clearImportFocus[0]?.invoke(); showCustomImport = false; onImportCustomUrl(importUrl.trim(), importAgeKey.trim()); importAgeKey = "" }) { Text(tr("读取")) } },
+        dismissButton = { TextButton(enabled = !customImportState.isLoading, onClick = { showCustomImport = false; importAgeKey = "" }) { Text(tr("取消")) } },
     )
     if (customImportState.name != null) AlertDialog(
         onDismissRequest = { if (!saving) onCancelCustomImport() },
-        title = { Text("替换自定义配置？") },
+        title = { Text(tr("替换自定义配置？")) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(customImportState.name, style = MaterialTheme.typography.titleSmall)
                 val summary = customImportState.summary
-                Text("代理 " + (summary?.proxies ?: 0) + " · 策略组 " + (summary?.groups?.size ?: 0) + " · 规则 " + (summary?.rules ?: 0))
-                Text("确认后将替换当前代理、规则及 DNS、NTP、Sniffer 设置。配置名称和绑定脚本保留。")
-                if (customImportState.droppedSubRules > 0) Text("已忽略 " + customImportState.droppedSubRules + " 条 SUB-RULE 子规则引用，其余规则将继续导入。",
+                Text(tr("代理 ") + (summary?.proxies ?: 0) + tr(" · 策略组 ") + (summary?.groups?.size ?: 0) + tr(" · 规则 ") + (summary?.rules ?: 0))
+                Text(tr("确认后将替换当前代理、规则及 DNS、NTP、Sniffer 设置。配置名称和绑定脚本保留。"))
+                if (customImportState.droppedSubRules > 0) Text(tr("已忽略 ") + customImportState.droppedSubRules + tr(" 条 SUB-RULE 子规则引用，其余规则将继续导入。"),
                     color = MaterialTheme.colorScheme.error)
             }
         },
-        confirmButton = { TextButton(onClick = onConfirmCustomImport, enabled = !saving, modifier = Modifier.testTag("custom_import_replace_confirm")) { Text("替换") } },
-        dismissButton = { TextButton(onClick = onCancelCustomImport, enabled = !saving) { Text("取消") } },
+        confirmButton = { TextButton(onClick = onConfirmCustomImport, enabled = !saving, modifier = Modifier.testTag("custom_import_replace_confirm")) { Text(tr("替换")) } },
+        dismissButton = { TextButton(onClick = onCancelCustomImport, enabled = !saving) { Text(tr("取消")) } },
     )
 
     if (showRename) ProfileRenameDialog(profile, saving, { showRename = false }) { label ->
@@ -263,13 +263,13 @@ internal fun ProfileEditorDialog(
     if (showDiscardConfirmation) {
         AlertDialog(
             onDismissRequest = { showDiscardConfirmation = false },
-            title = { Text("放弃未保存的修改？") },
-            text = { Text("退出后，本次编辑内容不会写入配置。") },
+            title = { Text(tr("放弃未保存的修改？")) },
+            text = { Text(tr("退出后，本次编辑内容不会写入配置。")) },
             confirmButton = {
-                TextButton(onClick = { showDiscardConfirmation = false; clearEditorFocus[0]?.invoke(); finishExit() }) { Text("放弃") }
+                TextButton(onClick = { showDiscardConfirmation = false; clearEditorFocus[0]?.invoke(); finishExit() }) { Text(tr("放弃")) }
             },
             dismissButton = {
-                TextButton(onClick = { showDiscardConfirmation = false }) { Text("继续编辑") }
+                TextButton(onClick = { showDiscardConfirmation = false }) { Text(tr("继续编辑")) }
             },
         )
     }
@@ -280,8 +280,8 @@ internal fun ProfileEditorDialog(
                 showSectionDiscardConfirmation = false
                 pendingSectionAction = null
             },
-            title = { Text("原始 YAML 尚未保存") },
-            text = { Text("进入分区编辑会放弃当前 YAML 修改，继续吗？") },
+            title = { Text(tr("原始 YAML 尚未保存")) },
+            text = { Text(tr("进入分区编辑会放弃当前 YAML 修改，继续吗？")) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -292,7 +292,7 @@ internal fun ProfileEditorDialog(
                         pendingSectionAction = null
                         action?.invoke()
                     },
-                ) { Text("放弃并继续") }
+                ) { Text(tr("放弃并继续")) }
             },
             dismissButton = {
                 TextButton(
@@ -300,7 +300,7 @@ internal fun ProfileEditorDialog(
                         showSectionDiscardConfirmation = false
                         pendingSectionAction = null
                     },
-                ) { Text("继续编辑") }
+                ) { Text(tr("继续编辑")) }
             },
         )
     }
@@ -308,13 +308,13 @@ internal fun ProfileEditorDialog(
     if (showDraftNameDialog) {
         AlertDialog(
             onDismissRequest = { onFinishNewDraft(null) },
-            title = { Text("为配置命名") },
+            title = { Text(tr("为配置命名")) },
             text = {
                 OutlinedTextField(
                     value = draftName,
                     onValueChange = { draftName = it },
                     enabled = !saving,
-                    label = { Text("配置名称") },
+                    label = { Text(tr("配置名称")) },
                     modifier = Modifier.testTag("new_profile_name"),
                     singleLine = true,
                 )
@@ -324,14 +324,14 @@ internal fun ProfileEditorDialog(
                     onClick = { onFinishNewDraft(draftName) },
                     enabled = !saving && draftName.isNotBlank(),
                 ) {
-                    if (saving) CircularProgressIndicator() else Text("保存名称")
+                    if (saving) CircularProgressIndicator() else Text(tr("保存名称"))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { onFinishNewDraft(null) },
                     enabled = !saving,
-                ) { Text("保留默认名称") }
+                ) { Text(tr("保留默认名称")) }
             },
         )
     }

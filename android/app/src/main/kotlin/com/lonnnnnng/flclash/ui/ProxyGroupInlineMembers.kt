@@ -121,7 +121,7 @@ internal fun ProxyGroupInlineMembers(group: ProxyGroupDraft, groups: List<ProxyG
             })
     }, state = list, userScrollEnabled = dragged == null, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
         item("identity") { Column { before() } }
-        item("members-heading") { Text("节点", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 12.dp),
+        item("members-heading") { Text(tr("节点"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 12.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.titleMedium) }
         itemsIndexed(preview, key = { _, id -> id }) { index, id ->
             val member = rows.firstOrNull { it.key == id }?.member ?: return@itemsIndexed
@@ -138,9 +138,9 @@ internal fun ProxyGroupInlineMembers(group: ProxyGroupDraft, groups: List<ProxyG
                             Modifier.testTag("group_member_remove_$index")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                         Column(Modifier.weight(1f).then(if (member.kind.isFilter) Modifier.clickable { onEdit(member) } else Modifier)
                             .padding(start = 8.dp, top = 12.dp, bottom = 12.dp)) {
-                            Text(ProxyGroupMembers.title(member, LocalFilterPresets.current), Modifier.testTag("group_member_label_$index"),
+                            Text(if (member.kind in setOf(GroupMemberKind.ALL_PROXIES, GroupMemberKind.ALL_PROVIDERS)) tr(ProxyGroupMembers.title(member, LocalFilterPresets.current)) else ProxyGroupMembers.title(member, LocalFilterPresets.current), Modifier.testTag("group_member_label_$index"),
                                 maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            val label = if (member.kind == GroupMemberKind.PROXY) types[member.name] ?: "基础策略" else ProxyGroupMembers.subtitle(member)
+                            val label = if (member.kind == GroupMemberKind.PROXY) types[member.name] ?: tr("基础策略") else tr(ProxyGroupMembers.subtitle(member))
                             GroupMemberProtocolBadge(label, member.kind, Modifier.padding(top = 4.dp, bottom = 2.dp).testTag("group_member_protocol_$index"))
                         }
                         Icon(Icons.Outlined.DragHandle, null, Modifier.size(48.dp).padding(12.dp).testTag("group_member_handle_${member.id}"),
@@ -154,7 +154,7 @@ internal fun ProxyGroupInlineMembers(group: ProxyGroupDraft, groups: List<ProxyG
             Surface(color = dashboardCardColor(), shape = AppSuperellipseShape(topStart = if (members.isEmpty()) 24.dp else 0.dp,
                 topEnd = if (members.isEmpty()) 24.dp else 0.dp, bottomStart = 24.dp, bottomEnd = 24.dp)) {
                 TextButton(onAdd, Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("group_members_add"), contentPadding = PaddingValues(horizontal = 20.dp)) {
-                    Icon(Icons.Outlined.AddCircleOutline, null); Text("添加节点", Modifier.weight(1f).padding(start = 20.dp))
+                    Icon(Icons.Outlined.AddCircleOutline, null); Text(tr("添加节点"), Modifier.weight(1f).padding(start = 20.dp))
                 }
             }
         }

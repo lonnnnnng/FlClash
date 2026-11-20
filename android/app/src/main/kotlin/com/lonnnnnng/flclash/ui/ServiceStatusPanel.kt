@@ -15,23 +15,23 @@ import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.core.*
 
 internal fun ServiceStatus.label(): String = when (this) {
-    ServiceStatus.AVAILABLE -> "可用"
-    ServiceStatus.UNAVAILABLE -> "不可用"
-    ServiceStatus.RESTRICTED -> "访问受限"
-    ServiceStatus.DISALLOWED_ISP -> "运营商不受支持"
-    ServiceStatus.BLOCKED -> "已阻止"
-    ServiceStatus.UNSUPPORTED_REGION -> "地区不受支持"
-    ServiceStatus.ORIGINALS_ONLY -> "仅限原创内容"
-    ServiceStatus.COMING_SOON -> "即将推出"
-    ServiceStatus.TIMEOUT -> "超时"
-    ServiceStatus.FAILED -> "检测失败"
+    ServiceStatus.AVAILABLE -> tr("可用")
+    ServiceStatus.UNAVAILABLE -> tr("不可用")
+    ServiceStatus.RESTRICTED -> tr("访问受限")
+    ServiceStatus.DISALLOWED_ISP -> tr("运营商不受支持")
+    ServiceStatus.BLOCKED -> tr("已阻止")
+    ServiceStatus.UNSUPPORTED_REGION -> tr("地区不受支持")
+    ServiceStatus.ORIGINALS_ONLY -> tr("仅限原创内容")
+    ServiceStatus.COMING_SOON -> tr("即将推出")
+    ServiceStatus.TIMEOUT -> tr("超时")
+    ServiceStatus.FAILED -> tr("检测失败")
 }
 
 internal fun ServiceEntry.statusText(): String = when {
-    loading -> "检测中…"
+    loading -> tr("检测中…")
     result != null -> if (result.status == ServiceStatus.AVAILABLE && result.delayMillis != null) "${result.delayMillis} ms" else result.status.label()
-    failed -> "检测失败"
-    else -> "待检测"
+    failed -> tr("检测失败")
+    else -> tr("待检测")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +65,7 @@ internal fun DashboardServiceStatusCard(
     DashboardSurface(modifier = Modifier.testTag("dashboard_service_card"), onClick = { detail = true }) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Verified, null)
-            Text("服务状态", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text(tr("服务状态"), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             Icon(Icons.Outlined.ChevronRight, null)
         }
         Spacer(Modifier.height(12.dp))
@@ -81,12 +81,12 @@ internal fun DashboardServiceStatusCard(
         val entries = shown.mapNotNull { state.entries[it] }
         val abnormal = entries.count { it.failed || it.result?.status?.let { value -> value != ServiceStatus.AVAILABLE } == true }
         val verdict = when {
-            abnormal > 0 -> "$abnormal 项异常"
-            entries.size == shown.size && entries.all { it.result != null && !it.loading } -> "全部可用"
+            abnormal > 0 -> tr("{0} 项异常", abnormal)
+            entries.size == shown.size && entries.all { it.result != null && !it.loading } -> tr("全部可用")
             else -> null
         }
         verdict?.let { Text(it, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 10.dp)) }
-        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
+        state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
     }
     // 作者 long：把页种类固定到本次内容快照，退场正文不能读取已经切换的 manage 状态。
     val showingManagement = manage
@@ -97,19 +97,19 @@ internal fun DashboardServiceStatusCard(
         val quality = if (page == "quality") qualitySnapshot else null
         key(page) {
         { _ ->
-            state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("service_error")) }
+            state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("service_error")) }
             if (quality != null) {
                 Column(Modifier.testTag("service_quality_details"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     IpQualityContent(quality, hiddenIp, { hiddenIp = it })
                 }
-            } else if (state.settingsLoading) TextButton(onClick = onRetrySettings) { Text("重新读取设置") }
+            } else if (state.settingsLoading) TextButton(onClick = onRetrySettings) { Text(tr("重新读取设置")) }
             else if (showingManagement) {
                 ServiceOrderEditor(state.settings, state.saving, onToggle, onMove, onReorder, Modifier.weight(1f),
                     onContentAtTopChanged = { managementAtTop = it })
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TextButton(onClick = { onCheck(state.settings.enabled) }, enabled = state.entries.values.none { it.loading }, modifier = Modifier.testTag("service_check_all")) { Text("检测全部") }
-                    TextButton(onClick = { manage = true }, modifier = Modifier.testTag("service_manage")) { Text("管理服务") }
+                    TextButton(onClick = { onCheck(state.settings.enabled) }, enabled = state.entries.values.none { it.loading }, modifier = Modifier.testTag("service_check_all")) { Text(tr("检测全部")) }
+                    TextButton(onClick = { manage = true }, modifier = Modifier.testTag("service_manage")) { Text(tr("管理服务")) }
                 }
                 state.settings.enabled.forEach { target ->
                     val entry = state.entries[target] ?: ServiceEntry()
@@ -124,17 +124,17 @@ internal fun DashboardServiceStatusCard(
                                 val country = exit?.info?.countryCode ?: result.region
                                 val value = when {
                                     exit?.info != null -> if (hiddenIp) "*****" else exit.info.ip
-                                    exit?.isLoading == true -> "正在查询出口…"
+                                    exit?.isLoading == true -> tr("正在查询出口…")
                                     else -> node ?: "—"
                                 }
                                 Text(listOfNotNull(country, value).joinToString(" · "),
                                     modifier = Modifier.testTag("service_exit_${target.id}").then(if (exit?.info != null)
                                         Modifier.clickable { onOpenQuality(checkNotNull(node)) } else Modifier),
                                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                if (exit?.error != null) TextButton(onClick = { onRefreshExit(checkNotNull(node)) }, modifier = Modifier.testTag("service_exit_retry_${target.id}")) { Text("出口 IP 查询失败，重试") }
+                                if (exit?.error != null) TextButton(onClick = { onRefreshExit(checkNotNull(node)) }, modifier = Modifier.testTag("service_exit_retry_${target.id}")) { Text(tr("出口 IP 查询失败，重试")) }
                             }
                         }
-                        TextButton(onClick = { onCheck(listOf(target)) }, enabled = !entry.loading, modifier = Modifier.testTag("service_check_${target.id}")) { Text(if (entry.loading) "检测中…" else "检测") }
+                        TextButton(onClick = { onCheck(listOf(target)) }, enabled = !entry.loading, modifier = Modifier.testTag("service_check_${target.id}")) { Text(if (entry.loading) tr("检测中…") else tr("检测")) }
                     }
                 }
             }
@@ -148,7 +148,7 @@ internal fun DashboardServiceStatusCard(
         }
     }
     if (detail) DashboardModalSheet(
-        title = if (quality != null) "IP 质量" else if (showingManagement) "管理服务" else "服务状态",
+        title = if (quality != null) tr("IP 质量") else if (showingManagement) tr("管理服务") else tr("服务状态"),
         sheetTag = "service_detail_sheet", closeTag = "service_detail_close", scrollTag = "service_detail_scroll",
         pageKey = sheetPage,
         pageDepth = if (quality != null || showingManagement) 1 else 0,
@@ -159,7 +159,7 @@ internal fun DashboardServiceStatusCard(
         // 作者 long：系统返回与标题返回遵循同一层级，质量详情和管理页先回服务列表，不直接丢弃整个面板。
         onNavigateBack = if (quality != null || showingManagement) ({ if (quality != null) onCloseQuality() else manage = false }) else null,
         backTag = "service_manage_back", actions = sheetActions,
-        backPage = if (sheetPage == "detail") null else DashboardSheetPage("detail", 0, "服务状态", detailScroll,
+        backPage = if (sheetPage == "detail") null else DashboardSheetPage("detail", 0, tr("服务状态"), detailScroll,
             true, true, null, {}, sheetBodies.getValue("detail")),
         content = sheetBodies.getValue(sheetPage),
     )

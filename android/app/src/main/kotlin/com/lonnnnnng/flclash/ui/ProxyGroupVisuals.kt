@@ -43,9 +43,9 @@ internal fun GroupIssueButton(issues: List<ProxyGroupIssue>, tag: String) {
     IconButton(onClick = { open = true }, modifier = Modifier.testTag(tag)) {
         Icon(Icons.Outlined.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
     }
-    if (open) EditorAlertDialog(onDismissRequest = { open = false }, title = { Text("策略组问题") },
+    if (open) EditorAlertDialog(onDismissRequest = { open = false }, title = { Text(tr("策略组问题")) },
         text = { GroupIssuesBanner(issues, "${tag}_details") },
-        confirmButton = { TextButton(onClick = { open = false }) { Text("关闭") } })
+        confirmButton = { TextButton(onClick = { open = false }) { Text(tr("关闭")) } })
 }
 
 @Composable
@@ -54,7 +54,7 @@ internal fun GroupIssuesBanner(issues: List<ProxyGroupIssue>, tag: String) {
     Surface(color = MaterialTheme.colorScheme.errorContainer, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().testTag(tag)) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             issues.forEach { issue ->
-                Text(issue.message + if (issue.blocking) "" else "（可保留，运行前请修复）",
+                Text(tr(issue.message) + if (issue.blocking) "" else tr("（可保留，运行前请修复）"),
                     color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -102,7 +102,7 @@ internal val LocalPersistGroupImageParent = staticCompositionLocalOf<suspend () 
 
 @Composable
 internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: List<String>,
-    onRecord: (String, Boolean) -> Unit, onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
+    onRecord: (String, Boolean) -> Unit, onReadIcon: suspend (String) -> String = { error(tr("图片读取不可用")) },
     onDismiss: () -> Unit, onSelect: (String) -> Unit,
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -165,8 +165,8 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     val dismiss = { scope.launch { if (durable == null || durable.cancel()) onDismiss() }; Unit }
     val resourceIcons = LocalResourceIcons.current
     val namedSets = LocalResourceIconSets.current
-    val sets = remember(namedSets, resourceIcons) { namedSets.ifEmpty {
-        if (resourceIcons.isEmpty()) emptyList() else listOf(ResourceIconSet("gallery", "图标集", icons = resourceIcons, updatedAt = 0))
+    val sets = remember(namedSets, resourceIcons, UiLanguage.english) { namedSets.ifEmpty {
+        if (resourceIcons.isEmpty()) emptyList() else listOf(ResourceIconSet("gallery", tr("图标集"), icons = resourceIcons, updatedAt = 0))
     } }
     // 作者 long：完整图库的匹配放到后台，输入或资源变化会取消旧计算，迟到结果不能覆盖新来源。
     val loadedSources by produceState<List<GroupIconSource>?>(null, sets, recent, groupName) {
@@ -195,15 +195,15 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
         if (measured && (shown.isEmpty() || (!gridState.canScrollForward && !gridState.canScrollBackward))) natural else null
     } }
     SideEffect { report?.invoke(naturalHeight) }
-    ProfileEditorPage(onDismissRequest = dismiss, title = { Text("图标") }, backTag = "group_icon_back",
-        bottomBar = { DockedProfileSearch(query, { query = it }, "group_icon_search", "搜索图标", enabled = !imageBusy) },
+    ProfileEditorPage(onDismissRequest = dismiss, title = { Text(tr("图标")) }, backTag = "group_icon_back",
+        bottomBar = { DockedProfileSearch(query, { query = it }, "group_icon_search", tr("搜索图标"), enabled = !imageBusy) },
         confirmButton = {
             IconButton(onClick = ::launchImage, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, null) }
             IconButton(onClick = { link = true }, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
         }, text = {
             Column(Modifier.fillMaxWidth().onSizeChanged { bodyHeight = it.height }, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
-                if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text("重试恢复") }
+                (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
+                if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text(tr("重试恢复")) }
                 if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
                 if (sources.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     sources.forEach { item ->
@@ -222,12 +222,12 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                         ProfileGroupIcon(value, groupName, Modifier.size(40.dp))
                         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
                             Text(label(value), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(sets.firstOrNull { set -> set.icons.any { it.url == value } }?.name ?: "当前图标", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(sets.firstOrNull { set -> set.icons.any { it.url == value } }?.name ?: tr("当前图标"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         IconButton(onClick = { onSelect("") }, modifier = Modifier.testTag("group_icon_remove")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     }
                 }
-                if (shown.isEmpty() && loadedSources != null) Text(if (query.isBlank()) "暂无图标，可添加图标地址或选择本地图片" else "没有匹配的图标",
+                if (shown.isEmpty() && loadedSources != null) Text(if (query.isBlank()) tr("暂无图标，可添加图标地址或选择本地图片") else tr("没有匹配的图标"),
                     Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else {
                     LazyVerticalGrid(GridCells.Adaptive(72.dp), state = gridState, modifier = Modifier.weight(1f, fill = false)
@@ -252,15 +252,15 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                 }
             }
         })
-    if (link) EditorAlertDialog(onDismissRequest = { link = false }, title = { Text("图标地址") }, text = {
+    if (link) EditorAlertDialog(onDismissRequest = { link = false }, title = { Text(tr("图标地址")) }, text = {
         OutlinedTextField(draft, { draft = it; error = null }, Modifier.fillMaxWidth().testTag("group_icon_url"), singleLine = true,
-            isError = error != null, supportingText = { error?.let { Text(it) } })
+            isError = error != null, supportingText = { error?.let { Text(tr(it)) } })
     }, confirmButton = { TextButton(onClick = {
         val url = draft.trim(); val uri = url.toUri()
         if (url.length <= 8192 && uri.scheme in listOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null) choose(url)
         else error = "请输入有效的 HTTP 或 HTTPS 图标地址"
-    }, modifier = Modifier.testTag("group_icon_url_confirm")) { Text("确认") } }, dismissButton = { TextButton(onClick = { link = false; error = null }) { Text("取消") } })
-    deleteRecord?.let { icon -> EditorAlertDialog(onDismissRequest = { deleteRecord = null }, title = { Text("删除最近图标记录？") },
-        text = { Text("已应用到配置的图标会保留。") }, confirmButton = { TextButton(onClick = { onRecord(icon, true); deleteRecord = null }) { Text("删除") } },
-        dismissButton = { TextButton(onClick = { deleteRecord = null }) { Text("取消") } }) }
+    }, modifier = Modifier.testTag("group_icon_url_confirm")) { Text(tr("确认")) } }, dismissButton = { TextButton(onClick = { link = false; error = null }) { Text(tr("取消")) } })
+    deleteRecord?.let { icon -> EditorAlertDialog(onDismissRequest = { deleteRecord = null }, title = { Text(tr("删除最近图标记录？")) },
+        text = { Text(tr("已应用到配置的图标会保留。")) }, confirmButton = { TextButton(onClick = { onRecord(icon, true); deleteRecord = null }) { Text(tr("删除")) } },
+        dismissButton = { TextButton(onClick = { deleteRecord = null }) { Text(tr("取消")) } }) }
 }

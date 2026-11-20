@@ -8,6 +8,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -235,27 +236,20 @@ class MainActivityInstrumentedTest {
 
     @Test
     fun mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools() {
-        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_profiles").performClick()
         composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
-        composeRule.onNodeWithTag("nav_dashboard").performClick()
-        composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
-        composeRule.onNodeWithText("状态").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithTag("page_tools").assertIsDisplayed()
-        composeRule.onNodeWithTag("tools_item_connections").performClick()
-        composeRule.onNodeWithTag("page_connections").assertIsDisplayed()
-        composeRule.onNodeWithText("活动连接").assertIsDisplayed()
-        composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithTag("tools_item_requests").performClick()
-        composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
-        composeRule.onNodeWithTag("page_requests").assertIsDisplayed()
-        composeRule.onNodeWithText("DNS").performClick()
-        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
-        composeRule.onNodeWithText("DNS 查询").assertIsDisplayed()
-        composeRule.onNodeWithText("日志").performClick()
-        composeRule.onNodeWithTag("page_logs").assertIsDisplayed()
-        composeRule.onNodeWithText("核心日志").assertIsDisplayed()
+        composeRule.onNodeWithTag("tools_item_connections").assertDoesNotExist()
+        composeRule.onNodeWithTag("tools_item_requests").assertDoesNotExist()
+        composeRule.onNodeWithTag("tools_item_dns").assertDoesNotExist()
+        composeRule.onNodeWithTag("tools_item_observations").performClick()
+        listOf("requests", "connections", "dns", "logs").forEach { tab ->
+            composeRule.onNodeWithTag("observation_tab_$tab").performClick()
+            composeRule.onNodeWithTag("page_$tab").assertIsDisplayed()
+            composeRule.onNodeWithTag("observation_search_toggle").assertIsDisplayed()
+        }
+        composeRule.onNodeWithTag("observation_list_back").performClick()
+        composeRule.onNodeWithTag("tools_item_observations").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
@@ -263,24 +257,11 @@ class MainActivityInstrumentedTest {
     @Test
     fun mainActivityRendersObservationEmptyStatesFromEachTab() {
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithTag("tools_item_requests").performClick()
-        composeRule.onNodeWithTag("page_observations").assertIsDisplayed()
-        composeRule.onNodeWithTag("page_requests").assertIsDisplayed()
-        composeRule.onNodeWithText("请求记录").assertIsDisplayed()
-        // 作者 long：停止态必须明确告诉用户数据何时产生，避免空列表被误解为加载失败或数据丢失。
-        composeRule.onNodeWithText("启动核心后显示请求、目标和规则命中信息。").assertIsDisplayed()
-
-        composeRule.onNodeWithText("DNS").performClick()
-        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
-        composeRule.onNodeWithText("DNS 查询").assertIsDisplayed()
-        composeRule.onNodeWithText("启动核心后显示 DNS 查询记录。").assertIsDisplayed()
-
-        composeRule.onNodeWithText("日志").performClick()
-        composeRule.onNodeWithTag("page_logs").assertIsDisplayed()
-        composeRule.onNodeWithText("核心日志").assertIsDisplayed()
-        composeRule.onNodeWithText("启动核心后显示 Mihomo 日志。").assertIsDisplayed()
-
-        // 作者 long：真实宿主完成页签切换后仍能回到首页，保证空态回归不会破坏主导航状态。
+        composeRule.onNodeWithTag("tools_item_observations").performClick()
+        listOf("requests", "connections", "dns", "logs").forEach { tab ->
+            composeRule.onNodeWithTag("observation_tab_$tab").performClick()
+            composeRule.onNodeWithTag("${tab}_empty_state").assertIsDisplayed()
+        }
         composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
     }
@@ -288,23 +269,19 @@ class MainActivityInstrumentedTest {
     @Test
     fun mainActivityRetainsObservationTabAcrossPrimaryNavigationAndRecreation() {
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithTag("tools_item_requests").performClick()
-        composeRule.onNodeWithText("DNS").performClick()
-        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
-
-        // 作者 long：代理 Tab 仅在存在可用配置/代理组时展示；此回归不依赖设备是否已有有效配置。
+        composeRule.onNodeWithTag("tools_item_observations").performClick()
+        composeRule.onNodeWithTag("observation_tab_dns").performClick()
+        composeRule.onNodeWithTag("observation_search_toggle").performClick()
+        composeRule.onNodeWithTag("observation_search_field").performTextInput("retained-query")
+        androidx.test.espresso.Espresso.closeSoftKeyboard()
         composeRule.onNodeWithTag("nav_profiles").performClick()
-        composeRule.onNodeWithTag("page_profiles").assertIsDisplayed()
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithTag("tools_item_dns").performClick()
+        composeRule.onNodeWithTag("tools_item_observations").performClick()
         composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
-
-        // 作者 long：Activity 重建会重新创建页面组合，只有主页面的可保存导航状态才能恢复用户正在查看的页签。
+        composeRule.onNodeWithTag("observation_search_field").assertTextEquals("retained-query")
         composeRule.activityRule.scenario.recreate()
-        composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithTag("page_dns").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithTag("page_dns").assertIsDisplayed()
+        composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("page_dns").fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithTag("observation_search_field").assertTextEquals("retained-query")
     }
 
     @Test

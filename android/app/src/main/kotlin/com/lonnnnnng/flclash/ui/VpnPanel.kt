@@ -27,16 +27,16 @@ internal fun DashboardVpnCard(
                 modifier = Modifier.size(36.dp))
             Column(Modifier.weight(1f)) {
                 Text("VPN", style = MaterialTheme.typography.titleMedium)
-                Text(if (state.enabled) "已启用" else "已停用", style = MaterialTheme.typography.bodyMedium,
+                Text(if (state.enabled) tr("已启用") else tr("已停用"), style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Switch(state.enabled, onCheckedChange = null, enabled = !busy)
         }
         if (state.restartRequired) {
-            Text(if (state.appliedEnabled == true) "重启后停用 VPN，当前仍在接管流量" else "重启后启用 VPN，当前仅运行本地代理",
+            Text(if (state.appliedEnabled == true) tr("重启后停用 VPN，当前仍在接管流量") else tr("重启后启用 VPN，当前仅运行本地代理"),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.testTag("vpn_restart_hint"))
-            TextButton(onClick = onRestart, enabled = !busy, modifier = Modifier.testTag("vpn_restart")) { Text("重启生效") }
+            TextButton(onClick = onRestart, enabled = !busy, modifier = Modifier.testTag("vpn_restart")) { Text(tr("重启生效")) }
         }
     }
 }

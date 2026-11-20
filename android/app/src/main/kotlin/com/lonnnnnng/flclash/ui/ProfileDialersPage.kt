@@ -27,16 +27,16 @@ internal fun ProfileDialersPage(state: ProfileDialersEditorUiState, onDismiss: (
     var selecting by remember(profile.id) { mutableStateOf<String?>(null) }
     var quick by remember(profile.id) { mutableStateOf(false) }
     ProfileEditorPage(onDismissRequest = { if (!state.isSaving) onDismiss() }, backTag = "profile_dialers_back",
-        title = { Text("链式代理") }, contentPadding = PaddingValues(0.dp), confirmButton = {
+        title = { Text(tr("链式代理")) }, contentPadding = PaddingValues(0.dp), confirmButton = {
             IconButton(onClick = { quick = true }, enabled = !state.isSaving, modifier = Modifier.testTag("profile_dialers_quick")) {
                 Icon(Icons.Outlined.EditNote, null)
             }
         }, text = {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
                 if (catalog.nodes.isEmpty()) Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("暂无引用的本地代理，请先在策略组中添加节点。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(tr("暂无引用的本地代理，请先在策略组中添加节点。"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 LazyColumn(Modifier.weight(1f).testTag("profile_dialers_list")) {
                     items(catalog.nodes, key = { it.name }) { node ->
@@ -49,21 +49,21 @@ internal fun ProfileDialersPage(state: ProfileDialersEditorUiState, onDismiss: (
             }
             selecting?.let { proxy ->
                 var query by remember(proxy) { mutableStateOf("") }
-                ProfileEditorPage(onDismissRequest = { selecting = null }, title = { Text("链式代理 · $proxy") }, backTag = "profile_dialer_targets_back", contentPadding = PaddingValues(0.dp), text = {
+                ProfileEditorPage(onDismissRequest = { selecting = null }, title = { Text(tr("链式代理 · {0}", proxy)) }, backTag = "profile_dialer_targets_back", contentPadding = PaddingValues(0.dp), text = {
                     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("profile_dialer_search"), singleLine = true,
-                            label = { Text("搜索节点或策略组") }, leadingIcon = { Icon(Icons.Outlined.Search, null) })
+                            label = { Text(tr("搜索节点或策略组")) }, leadingIcon = { Icon(Icons.Outlined.Search, null) })
                         LazyColumn(contentPadding = PaddingValues(bottom = 20.dp)) {
-                            item { DialerTarget("无", null, mapping[proxy] == null, "profile_dialer_none") {
+                            item { DialerTarget(tr("无"), null, mapping[proxy] == null, "profile_dialer_none") {
                                 onSetTarget(proxy, null); selecting = null
                             } }
                             val nodes = catalog.nodes.filter { it.name.contains(query, true) && catalog.selectable(proxy, it.name, mapping) }
-                            if (nodes.isNotEmpty()) item { Text("本地代理", Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            if (nodes.isNotEmpty()) item { Text(tr("本地代理"), Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             items(nodes, key = { "node:${it.name}" }) { node -> DialerTarget(node.name, node.type, mapping[proxy] == node.name, "profile_dialer_target_${node.name}") {
                                 onSetTarget(proxy, node.name); selecting = null
                             } }
                             val groups = catalog.groups.filter { it.name.contains(query, true) && catalog.selectable(proxy, it.name, mapping) }
-                            if (groups.isNotEmpty()) item { Text("策略组", Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            if (groups.isNotEmpty()) item { Text(tr("策略组"), Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             items(groups, key = { "group:${it.name}" }) { group -> DialerTarget(group.name, group.text("type"), mapping[proxy] == group.name, "profile_dialer_target_${group.name}") {
                                 onSetTarget(proxy, group.name); selecting = null
                             } }

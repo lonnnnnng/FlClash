@@ -82,7 +82,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     fun change(field: MoreField, value: JsonElement?, child: String? = null) {
         val next = root.deepCopy(); setMoreField(next, field, value); submit(next, child)
     }
-    ProfileEditorPage({ if (!state.isSaving) onDismiss() }, title = { Text(if (ntp) "NTP" else "域名嗅探") }, backTag = "profile_more_editor_back", navigationButtonSurface = true, confirmButton = {
+    ProfileEditorPage({ if (!state.isSaving) onDismiss() }, title = { Text(if (ntp) "NTP" else tr("域名嗅探")) }, backTag = "profile_more_editor_back", navigationButtonSurface = true, confirmButton = {
         Surface(Modifier.padding(end = 12.dp), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
             Row {
                 if (listed.isNotEmpty()) IconButton(onClick = { adding = true }, enabled = !state.isSaving && remaining.isNotEmpty(), modifier = Modifier.size(44.dp).testTag("profile_more_add")) { AppGlyphIcon(AppGlyphs.addCircle) }
@@ -92,7 +92,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     }, text = {
         Column(Modifier.fillMaxSize().testTag("profile_more_editor_scroll")) {
             if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("profile_more_saving"))
-            (error ?: state.error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_more_editor_error")) }
+            (error ?: state.error)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_more_editor_error")) }
             AnimatedContent(
                 targetState = root,
                 contentKey = { snapshot -> fields.none { moreFieldValue(snapshot, it) != null } },
@@ -115,13 +115,13 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                         Column(Modifier.offset(y = -(maxHeight * .14f)).padding(horizontal = 16.dp, vertical = 24.dp).widthIn(max = 320.dp).verticalScroll(rememberScrollState()).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
                             ProfileEmptyIllustration(if (ntp) AppGlyphs.clock else AppGlyphs.eye,
                                 extent = if (compact) 120.dp else 160.dp, flutterPalette = true)
-                            Text("暂无设置项", Modifier.padding(top = if (compact) 12.dp else 16.dp), style = MaterialTheme.typography.titleMedium)
-                            Text("仅作用于当前配置，未添加的项使用默认值。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
+                            Text(tr("暂无设置项"), Modifier.padding(top = if (compact) 12.dp else 16.dp), style = MaterialTheme.typography.titleMedium)
+                            Text(tr("仅作用于当前配置，未添加的项使用默认值。"), Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
                                 textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FilledTonalButton(onClick = { adding = true }, enabled = !state.isSaving && currentContent,
                                 colors = ButtonDefaults.filledTonalButtonColors(containerColor = dashboardCardColor(), contentColor = MaterialTheme.colorScheme.onSurface),
                                 modifier = Modifier.padding(top = 24.dp).testTag("profile_more_empty_add")) {
-                                AppGlyphIcon(AppGlyphs.addCircle); Spacer(Modifier.width(8.dp)); Text("添加设置项")
+                                AppGlyphIcon(AppGlyphs.addCircle); Spacer(Modifier.width(8.dp)); Text(tr("添加设置项"))
                             }
                         }
                     }
@@ -130,7 +130,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                         listOf(false, true).forEach { protocols ->
                             val entries = visibleFields.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
                             if (entries.isNotEmpty()) {
-                                Text(if (protocols) "协议" else "选项", Modifier.padding(start = 16.dp, top = 12.dp),
+                                Text(if (protocols) tr("协议") else tr("选项"), Modifier.padding(start = 16.dp, top = 12.dp),
                                     style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                                     Column {
@@ -147,9 +147,9 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                             }
                         }
                         val dialer = if (ntp) snapshot.get("dialer-proxy")?.asString.orEmpty() else ""
-                        if (dialer.isNotBlank() && targets.isNotEmpty() && dialer !in targets) Text("出站代理已不在配置中，请检查节点或策略组名称", color = MaterialTheme.colorScheme.error)
-                        Text("仅作用于当前配置，未添加的项使用默认值。", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        TextButton(onClick = { clear = true }, enabled = !state.isSaving && currentContent, modifier = Modifier.testTag("profile_more_reset")) { Text("清除本分区覆盖") }
+                        if (dialer.isNotBlank() && targets.isNotEmpty() && dialer !in targets) Text(tr("出站代理已不在配置中，请检查节点或策略组名称"), color = MaterialTheme.colorScheme.error)
+                        Text(tr("仅作用于当前配置，未添加的项使用默认值。"), Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        TextButton(onClick = { clear = true }, enabled = !state.isSaving && currentContent, modifier = Modifier.testTag("profile_more_reset")) { Text(tr("清除本分区覆盖")) }
                         Spacer(Modifier.height(16.dp))
                     }
                 }
@@ -193,15 +193,15 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                             AppGlyphIcon(AppGlyphs.close, Modifier.size(22.dp))
                         }
                     }
-                    Text("添加设置项", Modifier.align(Alignment.Center), style = MaterialTheme.typography.titleMedium)
+                    Text(tr("添加设置项"), Modifier.align(Alignment.Center), style = MaterialTheme.typography.titleMedium)
                 }
                 if (state.isSaving) LinearProgressIndicator(Modifier.fillMaxWidth())
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
                 val matching = shownChoices.filter(::matchesQuery)
                 if (matching.isEmpty() && remaining.isNotEmpty()) {
                     MoreSearchEmptyState(Modifier.weight(1f).fillMaxWidth().testTag("profile_more_available_fields"), addScrollState)
                 } else Column(Modifier.weight(1f).verticalScroll(addScrollState).testTag("profile_more_available_fields")) {
-                    if (remaining.isEmpty()) Text("所有设置项均已添加", Modifier.padding(vertical = 24.dp))
+                    if (remaining.isEmpty()) Text(tr("所有设置项均已添加"), Modifier.padding(vertical = 24.dp))
                     listOf(false, true).forEach { protocols ->
                         key(protocols) {
                             val entries = matching.filter { (it.kind == MoreFieldKind.PROTOCOL) == protocols }
@@ -209,7 +209,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                                 // 作者 long：分组最后一条开始退场时标题同步收起，不能等条目结束后突然跳掉整块标题高度。
                                 SelectionEntryTransition(entries.any { it.key in remainingKeys }, Modifier.testTag("more_add_header_$protocols")) {
                                     // 作者 long：紧凑面板的标题和分组共享顶部留白，不能再次叠加整页分组的间距。
-                                    Text(if (protocols) "协议" else "选项", Modifier.padding(start = 16.dp,
+                                    Text(if (protocols) tr("协议") else tr("选项"), Modifier.padding(start = 16.dp,
                                         top = 10.dp, bottom = 13.dp),
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -273,10 +273,10 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
             MoreListEditor(field, value, root, state.isSaving, state.error, { editing = null }) { change(field, it, "value") }
         } }
     }
-    if (yaml) MoreYamlEditor(if (ntp) "NTP" else "域名嗅探", root, ntp, state.isSaving, state.error, state.revision, { yaml = false }) { submit(it, "yaml") }
-    if (clear) AlertDialog(onDismissRequest = { if (!state.isSaving) clear = false }, title = { Text("清除本分区覆盖？") }, text = { Text("清除后所有字段将恢复继承原配置。") },
-        confirmButton = { TextButton(enabled = !state.isSaving, onClick = { submit(JsonObject()); clear = false }) { Text("清除") } },
-        dismissButton = { TextButton(enabled = !state.isSaving, onClick = { clear = false }) { Text("取消") } })
+    if (yaml) MoreYamlEditor(if (ntp) "NTP" else tr("域名嗅探"), root, ntp, state.isSaving, state.error, state.revision, { yaml = false }) { submit(it, "yaml") }
+    if (clear) AlertDialog(onDismissRequest = { if (!state.isSaving) clear = false }, title = { Text(tr("清除本分区覆盖？")) }, text = { Text(tr("清除后所有字段将恢复继承原配置。")) },
+        confirmButton = { TextButton(enabled = !state.isSaving, onClick = { submit(JsonObject()); clear = false }) { Text(tr("清除")) } },
+        dismissButton = { TextButton(enabled = !state.isSaving, onClick = { clear = false }) { Text(tr("取消")) } })
 }
 
 /** 作者 long：协议页没有总确认；端口子页确认和独立目标选择各自持久化，失败只保留对应子页。 */
@@ -301,11 +301,11 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
     ProfileEditorPage({ if (!saving) onDismiss() }, title = { Text(field.label) }, backTag = "more_protocol_back", navigationButtonSurface = true, text = {
         Column(Modifier.fillMaxWidth().padding(top = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (saving) LinearProgressIndicator(Modifier.fillMaxWidth())
-            saveError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            saveError?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
             Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                 Column {
                     Box {
-                        MoreProtocolRow("端口", if (portCount == 0) "默认" else "$portCount 项",
+                        MoreProtocolRow(tr("端口"), if (portCount == 0) tr("默认") else tr("{0} 项", portCount),
                             Modifier.testTag("more_protocol_ports"), enabled = !saving, onClick = { ports = true })
                         // 作者 long：分隔线覆盖行底，不额外增加整页高度；右端沿Flutter列表装饰留14dp。
                         HorizontalDivider(Modifier.align(Alignment.BottomCenter).padding(start = 16.dp, end = 14.dp),
@@ -315,21 +315,21 @@ private fun MoreProtocolEditor(field: MoreField, value: JsonObject, root: JsonOb
                         AppMenuSourceContent(destinationSource) {
                             Row(Modifier.fillMaxWidth().clickable(enabled = !saving) { destination = true }
                                 .heightIn(min = 56.dp).padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp).testTag("more_protocol_destination"), verticalAlignment = Alignment.CenterVertically) {
-                                Text("覆盖目标地址", Modifier.weight(1f))
+                                Text(tr("覆盖目标地址"), Modifier.weight(1f))
                                 Spacer(Modifier.width(12.dp))
                                 // 作者 long：源快照只接管行尾picker；菜单打开后标签仍是页面的稳定定位信息，不能把整行一并隐藏。
                                 Row(Modifier.appMenuSource(destinationSource, dashboardCardColor()).height(40.dp)
                                     .padding(horizontal = 8.dp).testTag("more_protocol_destination_picker"), verticalAlignment = Alignment.CenterVertically) {
-                                Text(when (currentDestination) { true -> "已开启"; false -> "已关闭"; null -> "默认" },
+                                Text(when (currentDestination) { true -> tr("已开启"); false -> tr("已关闭"); null -> tr("默认") },
                                     style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 AppGlyphIcon(AppGlyphs.picker, Modifier.padding(start = 4.dp).size(24.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
                         AppDropdownMenu(destination, { if (!saving) destination = false }, source = destinationSource, dismissEnabled = !saving) {
-                            saveError?.let { Text(it, color = MaterialTheme.colorScheme.error,
+                            saveError?.let { Text(tr(it), color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(12.dp).testTag("more_protocol_error")) }
-                            listOf(null to "默认", true to "已开启", false to "已关闭").forEach { (selected, label) ->
+                            listOf(null to tr("默认"), true to tr("已开启"), false to tr("已关闭")).forEach { (selected, label) ->
                                 AppDropdownMenuItem(text = { Text(label) }, enabled = !saving, dismissOnClick = false, compact = true,
                                     modifier = Modifier.testTag("more_protocol_destination_${selected ?: "default"}"),
                                     trailingIcon = if (selected == currentDestination) ({ AppGlyphIcon(AppGlyphs.check) }) else null,
@@ -374,9 +374,9 @@ private fun MoreSettingRow(field: MoreField, value: JsonElement, enabled: Boolea
             Text(field.label)
             val detail = when {
                 toggle -> ""
-                field.kind == MoreFieldKind.PROTOCOL -> value.asJsonObject.get("ports")?.asJsonArray?.let { if (it.size() == 0) "默认" else "${it.size()} 项" } ?: "默认"
-                value.isJsonArray -> "${value.asJsonArray.size()} 项" + if (value.asJsonArray.size() == 0) " · 空列表" else ""
-                value.asString.isEmpty() -> "空值"
+                field.kind == MoreFieldKind.PROTOCOL -> value.asJsonObject.get("ports")?.asJsonArray?.let { if (it.size() == 0) tr("默认") else tr("{0} 项", it.size()) } ?: tr("默认")
+                value.isJsonArray -> tr("{0} 项", value.asJsonArray.size()) + if (value.asJsonArray.size() == 0) tr(" · 空列表") else ""
+                value.asString.isEmpty() -> tr("空值")
                 else -> value.asString
             }
             if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -422,15 +422,15 @@ private fun MoreYamlEditor(title: String, initial: JsonObject, ntp: Boolean, sav
     MoreCodeEditor(title, content, "more_yaml_content", { content = it; error = null; awaitingReceipt = false }, ::exit,
         enabled = !checking && !saving, highlightYaml = true, backTag = "more_yaml_back", header = {
             if (checking || saving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("more_yaml_saving"))
-            (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error,
+            (error ?: saveError)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag("more_yaml_error")) }
         })
-    if (discard) MoreDiscardDialog("放弃 YAML 修改？", { discard = false }, onDismiss)
+    if (discard) MoreDiscardDialog(tr("放弃 YAML 修改？"), { discard = false }, onDismiss)
 }
 
 @Composable
 private fun MoreDiscardDialog(title: String, onDismiss: () -> Unit, onDiscard: () -> Unit) {
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, confirmButton = { TextButton(onClick = onDiscard) { Text("放弃") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("继续编辑") } })
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, confirmButton = { TextButton(onClick = onDiscard) { Text(tr("放弃")) } }, dismissButton = { TextButton(onClick = onDismiss) { Text(tr("继续编辑")) } })
 }
 
 /** 作者 long：无结果占据候选视口，不挤走下沿搜索；键盘缩小高度时仍可滚动查看插图和说明。 */
@@ -442,7 +442,7 @@ private fun MoreSearchEmptyState(modifier: Modifier, scroll: androidx.compose.fo
             contentAlignment = BiasAlignment(0f, -.2f)) {
             Column(Modifier.widthIn(max = 320.dp).testTag("profile_more_add_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
                 ProfileEmptyIllustration(AppGlyphs.search, extent = if (compact) 120.dp else 160.dp, flutterPalette = true)
-                Text("没有匹配的结果", Modifier.padding(top = if (compact) 12.dp else 16.dp),
+                Text(tr("没有匹配的结果"), Modifier.padding(top = if (compact) 12.dp else 16.dp),
                     style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
             }
         }

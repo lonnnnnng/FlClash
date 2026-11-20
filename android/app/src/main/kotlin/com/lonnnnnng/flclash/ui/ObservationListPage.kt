@@ -37,6 +37,9 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +83,9 @@ internal fun ObservationListPage(
     clearEnabled: Boolean = true,
     onExport: (() -> Unit)? = null,
     pageOverlay: @Composable () -> Unit = {},
+    embedded: Boolean = false,
+    tabs: @Composable () -> Unit = {},
+    onClearHistory: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val toolbarSurfaceColor = if (LocalKClashDarkTheme.current) {
@@ -88,11 +94,9 @@ internal fun ObservationListPage(
         MaterialTheme.colorScheme.surfaceBright
     }
     val searchFocusRequester = remember { FocusRequester() }
+    var requestSearchFocus by remember { androidx.compose.runtime.mutableStateOf(false) }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
-    ) {
+    val page: @Composable () -> Unit = {
         BackHandler(enabled = searchExpanded) {
             onSearchQueryChange("")
             onSearchExpandedChange(false)
@@ -121,7 +125,7 @@ internal fun ObservationListPage(
                                 fadeIn(tween(180)) togetherWith fadeOut(tween(80))
                             }, label = "observationSearchTitle") { searching ->
                             if (searching) {
-                                LaunchedEffect(Unit) { searchFocusRequester.requestFocus() }
+                                LaunchedEffect(requestSearchFocus) { if (requestSearchFocus) { searchFocusRequester.requestFocus(); requestSearchFocus = false } }
                                 Surface(
                                     modifier = Modifier.fillMaxWidth().padding(end = 12.dp).height(44.dp)
                                         .testTag("observation_search_capsule"),
@@ -212,7 +216,7 @@ internal fun ObservationListPage(
                                 }
                             } else {
                                 IconButton(
-                                    onClick = { onSearchExpandedChange(true) },
+                                    onClick = { requestSearchFocus = true; onSearchExpandedChange(true) },
                                     modifier = Modifier
                                         .background(toolbarSurfaceColor, CircleShape)
                                         .testTag("observation_search_toggle")
@@ -232,6 +236,18 @@ internal fun ObservationListPage(
                                         Icon(Icons.Outlined.DeleteSweep, contentDescription = null)
                                     }
                                 }
+                                if (onClearHistory != null) {
+                                    var showActions by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                                    Box {
+                                        IconButton(onClick = { showActions = true }, modifier = Modifier.testTag("observation_more")) {
+                                            Icon(Icons.Outlined.MoreVert, contentDescription = null)
+                                        }
+                                        androidx.compose.material3.DropdownMenu(expanded = showActions, onDismissRequest = { showActions = false }) {
+                                            androidx.compose.material3.DropdownMenuItem(text = { Text(tr("清空查询历史")) },
+                                                onClick = { showActions = false; onClearHistory() }, modifier = Modifier.testTag("observation_clear_history"))
+                                        }
+                                    }
+                                }
                                 if (onExport != null) {
                                     IconButton(
                                         onClick = onExport,
@@ -247,6 +263,7 @@ internal fun ObservationListPage(
                         },
                         colors = TopAppBarDefaults.topAppBarColors(containerColor = recordPageColor()),
                     )
+                    tabs()
                     if (keywords.isNotEmpty()) {
                         BoxWithConstraints(
                             Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 16.dp),
@@ -277,7 +294,7 @@ internal fun ObservationListPage(
                                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                                         ) {
                                             Text(
-                                                keyword,
+                                                if (keyword == "缓存") tr(keyword) else keyword,
                                                 modifier = Modifier.weight(1f, fill = false),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
@@ -313,4 +330,10 @@ internal fun ObservationListPage(
             }
         }
     }
+    // 作者 long：工具页直接嵌入完整列表，独立详情入口仍复用同一套搜索与动作，避免两层全屏窗口。
+    if (embedded) page() else Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        content = page,
+    )
 }

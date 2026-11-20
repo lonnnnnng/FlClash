@@ -76,31 +76,31 @@ internal fun RemoteProfileEditorDialog(
     }
     // 作者 long：后台保留编辑会话供进程回收恢复，敏感正文/密钥由VM加密暂存，不进入SavedState。
 
-    ProfileEditorPage(::exit, { Text("编辑订阅") }, {
+    ProfileEditorPage(::exit, { Text(tr("编辑订阅")) }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("remote_profile_editor_form"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ProfileFormSection {
                 OutlinedTextField(draft.label, { change(draft.copy(label = it.take(64))) }, Modifier.fillMaxWidth().testTag("remote_profile_editor_label"),
-                    enabled = !locked, label = { Text("名称") }, singleLine = true)
+                    enabled = !locked, label = { Text(tr("名称")) }, singleLine = true)
                 OutlinedTextField(draft.url, { change(draft.copy(url = it)) }, Modifier.fillMaxWidth().testTag("remote_profile_editor_url"),
-                    enabled = !locked, label = { Text("订阅链接") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri))
+                    enabled = !locked, label = { Text(tr("订阅链接")) }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri))
                 AgeSecretKeyField(draft.ageKey, { change(draft.copy(ageKey = it)) }, !locked, "remote_profile_editor_age_key")
             }
             ProfileFormSection {
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(draft.autoUpdate, enabled = !locked, onValueChange = { change(draft.copy(autoUpdate = it)) }).testTag("remote_profile_editor_auto_update"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("自动更新")
+                    Text(tr("自动更新"))
                     Switch(draft.autoUpdate, null, enabled = !locked)
                 }
                 if (draft.autoUpdate) OutlinedTextField(draft.intervalMinutes, { change(draft.copy(intervalMinutes = it.filter(Char::isDigit).take(7))) },
                     Modifier.fillMaxWidth().testTag("remote_profile_editor_interval"), enabled = !locked,
-                    label = { Text("自动更新间隔（分钟）") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                    label = { Text(tr("自动更新间隔（分钟）")) }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
             }
             ProfileFormSection {
-                Text("本地副本", style = MaterialTheme.typography.titleSmall)
-                Text(if (hasBody) "正文已修改，尚未保存" else "编辑或从本机文件替换本地缓存。手动同步仍会覆盖本地修改。", style = MaterialTheme.typography.bodySmall)
-                ProfileSectionRow("编辑正文", icon = Icons.Outlined.Description,
+                Text(tr("本地副本"), style = MaterialTheme.typography.titleSmall)
+                Text(if (hasBody) tr("正文已修改，尚未保存") else tr("编辑或从本机文件替换本地缓存。手动同步仍会覆盖本地修改。"), style = MaterialTheme.typography.bodySmall)
+                ProfileSectionRow(tr("编辑正文"), icon = Icons.Outlined.Description,
                     enabled = !locked && state?.document != null && state.replacement?.isEncrypted != true,
                     modifier = Modifier.testTag("remote_profile_document_edit"), onClick = onOpenDocument)
-                ProfileSectionRow("从文件替换", state?.replacement?.name, Icons.Outlined.UploadFile,
+                ProfileSectionRow(tr("从文件替换"), state?.replacement?.name, Icons.Outlined.UploadFile,
                     !locked && state?.document != null, Modifier.testTag("remote_profile_replace_pick")) {
                     onBeginPick()?.let { token ->
                         if (onLaunchPick != null) { onLaunchPick(token); return@let }
@@ -118,23 +118,23 @@ internal fun RemoteProfileEditorDialog(
                     }
                 }
                 state?.replacement?.let {
-                    Text(if (it.isEncrypted) "age 加密文件，外层保存时使用上方密钥解密并校验。" else "已读取 ${it.sizeBytes} 字节，YAML 校验通过。")
+                    Text(if (it.isEncrypted) tr("age 加密文件，外层保存时使用上方密钥解密并校验。") else tr("已读取 {0} 字节，YAML 校验通过。", it.sizeBytes))
                 }
-                if (hasBody) TextButton(onClearReplacement, enabled = !locked, modifier = Modifier.testTag("remote_profile_replacement_clear")) { Text("放弃正文替换") }
-                if (state?.document == null && state?.isLoading == false) TextButton(onRetryRead, enabled = !locked) { Text("重新读取本地副本") }
+                if (hasBody) TextButton(onClearReplacement, enabled = !locked, modifier = Modifier.testTag("remote_profile_replacement_clear")) { Text(tr("放弃正文替换")) }
+                if (state?.document == null && state?.isLoading == false) TextButton(onRetryRead, enabled = !locked) { Text(tr("重新读取本地副本")) }
             }
             if (state?.isLoading == true || state?.isReadingFile == true) LinearProgressIndicator(Modifier.fillMaxWidth())
-            state?.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("remote_profile_editor_error")) }
+            state?.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("remote_profile_editor_error")) }
         }
     }, confirmButton = {
         TextButton({ focus.clearFocus(force = true); keyboard?.hide(); if (hasBody && draft.autoUpdate) warnUpdate = true else save() },
-            enabled = valid, modifier = Modifier.testTag("remote_profile_editor_save")) { Text(if (saving) "正在保存" else "保存") }
-    }, dismissButton = { TextButton(::exit, enabled = !locked) { Text("取消") } })
-    if (warnUpdate) AlertDialog(onDismissRequest = { warnUpdate = false }, title = { Text("自动同步可能覆盖本地修改") },
-        text = { Text("本次只修改手机上的本地副本。可以关闭自动更新，或保留自动更新后保存。手动同步仍会替换本地正文。") },
-        confirmButton = { TextButton({ warnUpdate = false; change(draft.copy(autoUpdate = false)); save(false) }, modifier = Modifier.testTag("remote_profile_disable_auto_save")) { Text("关闭自动更新并保存") } },
-        dismissButton = { TextButton({ warnUpdate = false; save(true) }, modifier = Modifier.testTag("remote_profile_keep_auto_save")) { Text("保留自动更新") } })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存的修改？") }, text = { Text("订阅设置和正文草稿都不会写入。") },
-        confirmButton = { TextButton({ discard = false; onDismiss() }, modifier = Modifier.testTag("remote_profile_discard")) { Text("放弃") } },
-        dismissButton = { TextButton({ discard = false }) { Text("继续编辑") } })
+            enabled = valid, modifier = Modifier.testTag("remote_profile_editor_save")) { Text(if (saving) tr("正在保存") else tr("保存")) }
+    }, dismissButton = { TextButton(::exit, enabled = !locked) { Text(tr("取消")) } })
+    if (warnUpdate) AlertDialog(onDismissRequest = { warnUpdate = false }, title = { Text(tr("自动同步可能覆盖本地修改")) },
+        text = { Text(tr("本次只修改手机上的本地副本。可以关闭自动更新，或保留自动更新后保存。手动同步仍会替换本地正文。")) },
+        confirmButton = { TextButton({ warnUpdate = false; change(draft.copy(autoUpdate = false)); save(false) }, modifier = Modifier.testTag("remote_profile_disable_auto_save")) { Text(tr("关闭自动更新并保存")) } },
+        dismissButton = { TextButton({ warnUpdate = false; save(true) }, modifier = Modifier.testTag("remote_profile_keep_auto_save")) { Text(tr("保留自动更新")) } })
+    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃未保存的修改？")) }, text = { Text(tr("订阅设置和正文草稿都不会写入。")) },
+        confirmButton = { TextButton({ discard = false; onDismiss() }, modifier = Modifier.testTag("remote_profile_discard")) { Text(tr("放弃")) } },
+        dismissButton = { TextButton({ discard = false }) { Text(tr("继续编辑")) } })
 }

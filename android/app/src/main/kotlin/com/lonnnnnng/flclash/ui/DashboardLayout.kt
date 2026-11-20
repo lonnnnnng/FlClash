@@ -3,8 +3,8 @@ package com.lonnnnnng.flclash.ui
 import android.content.Context
 
 internal enum class DashboardSection(
-    val title: String,
-    val description: String? = null,
+    private val titleText: String,
+    private val descriptionText: String? = null,
     val visibleByDefault: Boolean = true,
     val removable: Boolean = true,
 ) {
@@ -18,7 +18,10 @@ internal enum class DashboardSection(
     MEMORY_INFO("内存信息", "应用与核心的内存占用", visibleByDefault = false),
     SERVICE_STATUS("服务状态", "常用服务可用性检测", visibleByDefault = false),
     VPN("VPN", "VPN 流量接管开关", visibleByDefault = false),
-    INTRANET_IP("内网 IP", "本机地址与局域网共享", visibleByDefault = false),
+    INTRANET_IP("内网 IP", "本机地址与局域网共享", visibleByDefault = false);
+
+    val title get() = tr(titleText)
+    val description get() = descriptionText?.let { tr(it) }
 }
 
 internal data class DashboardLayoutState(

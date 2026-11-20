@@ -18,7 +18,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 data class ProfileDocumentEditorState(val ownerId: Long? = null, val session: Long = 0, val remote: Boolean = false,
-    val title: String = "配置正文", val original: String = "", val content: String = "", val saving: Boolean = false,
+    val title: String = tr("配置正文"), val original: String = "", val content: String = "", val saving: Boolean = false,
     val error: String? = null, val errorLocation: YamlErrorLocation? = null) {
     override fun toString() = "ProfileDocumentEditorState(id=$ownerId, saving=$saving)"
 }
@@ -80,31 +80,31 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
     fun back() { if (!state.saving) { if (value.text != state.original) exiting = true else onDismiss() } }
     ProfileEditorPage(::back, { Text(state.title) }, {
         Column(Modifier.fillMaxSize().testTag("profile_document_editor"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("保存仅返回配置草稿，外层保存后才替换本地副本。", Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.bodySmall)
+            Text(tr("保存仅返回配置草稿，外层保存后才替换本地副本。"), Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.bodySmall)
             state.error?.let { message ->
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text(message, color = MaterialTheme.colorScheme.error,
+                    Text(tr(message), color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.weight(1f).testTag("profile_document_error"))
-                    if (state.errorLocation != null) TextButton(::locateError, Modifier.testTag("profile_document_locate_error")) { Text("定位") }
+                    if (state.errorLocation != null) TextButton(::locateError, Modifier.testTag("profile_document_locate_error")) { Text(tr("定位")) }
                 }
             }
             SearchOptionsTransition(search) {
-                OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("profile_document_query"), label = { Text("查找") }, singleLine = true)
+                OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("profile_document_query"), label = { Text(tr("查找")) }, singleLine = true)
                 Row(Modifier.padding(horizontal = 16.dp)) {
-                    TextButton({ find(false) }, enabled = query.isNotEmpty()) { Text("上一处") }
-                    TextButton({ find(true) }, enabled = query.isNotEmpty(), modifier = Modifier.testTag("profile_document_next")) { Text("下一处") }
-                    Text(if (query.isEmpty()) "" else matches?.let { "$it 处匹配" } ?: "正在查找…", style = MaterialTheme.typography.bodySmall)
+                    TextButton({ find(false) }, enabled = query.isNotEmpty()) { Text(tr("上一处")) }
+                    TextButton({ find(true) }, enabled = query.isNotEmpty(), modifier = Modifier.testTag("profile_document_next")) { Text(tr("下一处")) }
+                    Text(if (query.isEmpty()) "" else matches?.let { tr("{0} 处匹配", it) } ?: tr("正在查找…"), style = MaterialTheme.typography.bodySmall)
                 }
                 Row(Modifier.padding(horizontal = 16.dp)) {
-                    OutlinedTextField(replacement, { replacement = it }, Modifier.weight(1f).testTag("profile_document_replacement"), label = { Text("替换为") }, singleLine = true)
+                    OutlinedTextField(replacement, { replacement = it }, Modifier.weight(1f).testTag("profile_document_replacement"), label = { Text(tr("替换为")) }, singleLine = true)
                     TextButton({
                         if (!value.selection.collapsed && value.text.substring(value.selection.min, value.selection.max).equals(query, true)) {
                             val start = value.selection.min
                             change(TextFieldValue(value.text.replaceRange(value.selection.min, value.selection.max, replacement), TextRange(start + replacement.length)))
                         } else find(true)
-                    }, enabled = query.isNotEmpty() && !state.saving) { Text("替换") }
+                    }, enabled = query.isNotEmpty() && !state.saving) { Text(tr("替换")) }
                     TextButton({ change(TextFieldValue(value.text.replace(query, replacement, ignoreCase = true))) },
-                        enabled = query.isNotEmpty() && !state.saving, modifier = Modifier.testTag("profile_document_replace_all")) { Text("全部") }
+                        enabled = query.isNotEmpty() && !state.saving, modifier = Modifier.testTag("profile_document_replace_all")) { Text(tr("全部")) }
                 }
             }
             ProfileCodeField(value, ::change, !state.saving, Modifier.fillMaxWidth().weight(1f))
@@ -115,22 +115,22 @@ internal fun ProfileDocumentEditor(state: ProfileDocumentEditorState, onChange: 
                 IconButton({ history = true }, modifier = Modifier.appMenuSource(historySource).testTag("profile_document_history")) { AppGlyphIcon(AppGlyphs.more) }
             }
             AppDropdownMenu(history, { history = false }, source = historySource) {
-                AppDropdownMenuItem({ Text("撤销") }, {
+                AppDropdownMenuItem({ Text(tr("撤销")) }, {
                     history = false; value = TextFieldValue(edits.undo(value.text)); onChange(value.text)
                 }, enabled = !state.saving && edits.canUndo, modifier = Modifier.testTag("profile_document_undo"))
-                AppDropdownMenuItem({ Text("重做") }, {
+                AppDropdownMenuItem({ Text(tr("重做")) }, {
                     history = false; value = TextFieldValue(edits.redo(value.text)); onChange(value.text)
                 }, enabled = !state.saving && edits.canRedo, modifier = Modifier.testTag("profile_document_redo"))
             }
         }
         IconButton({ search = !search }, enabled = !state.saving, modifier = Modifier.testTag("profile_document_find")) { Icon(Icons.Outlined.Search, null) }
-        TextButton(onSave, enabled = !state.saving && value.text.isNotBlank(), modifier = Modifier.testTag("profile_document_save")) { Text("保存") }
+        TextButton(onSave, enabled = !state.saving && value.text.isNotBlank(), modifier = Modifier.testTag("profile_document_save")) { Text(tr("保存")) }
     }, backTag = "profile_document_back", contentPadding = PaddingValues())
-    if (exiting) AlertDialog(onDismissRequest = { exiting = false }, title = { Text("保存正文修改？") },
-        text = { Text("保存后返回配置草稿，仍需在外层确认。") },
-        confirmButton = { TextButton({ exiting = false; onSave() }, enabled = !state.saving) { Text("保存并返回") } },
+    if (exiting) AlertDialog(onDismissRequest = { exiting = false }, title = { Text(tr("保存正文修改？")) },
+        text = { Text(tr("保存后返回配置草稿，仍需在外层确认。")) },
+        confirmButton = { TextButton({ exiting = false; onSave() }, enabled = !state.saving) { Text(tr("保存并返回")) } },
         dismissButton = { Row {
-            TextButton({ exiting = false; onDismiss() }, modifier = Modifier.testTag("profile_document_discard")) { Text("放弃") }
-            TextButton({ exiting = false }) { Text("继续编辑") }
+            TextButton({ exiting = false; onDismiss() }, modifier = Modifier.testTag("profile_document_discard")) { Text(tr("放弃")) }
+            TextButton({ exiting = false }) { Text(tr("继续编辑")) }
         } })
 }

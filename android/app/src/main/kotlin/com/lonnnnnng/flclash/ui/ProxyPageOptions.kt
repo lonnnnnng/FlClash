@@ -5,33 +5,43 @@ import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import kotlin.math.ceil
 
-internal enum class ProxySortOption(val label: String) {
+internal enum class ProxySortOption(private val labelText: String) {
     DEFAULT("默认"),
     DELAY("延迟"),
-    NAME("名称"),
+    NAME("名称");
+
+    val label get() = com.lonnnnnng.flclash.ui.tr(labelText)
 }
 
-internal enum class ProxyGridDensity(val label: String) {
+internal enum class ProxyGridDensity(private val labelText: String) {
     COMPACT("紧凑"),
     STANDARD("标准"),
-    LOOSE("宽松"),
+    LOOSE("宽松");
+
+    val label get() = com.lonnnnnng.flclash.ui.tr(labelText)
 }
 
-internal enum class ProxyNodeCardSize(val label: String) {
+internal enum class ProxyNodeCardSize(private val labelText: String) {
     COMPACT("紧凑"),
     STANDARD("标准"),
-    LOOSE("宽松"),
+    LOOSE("宽松");
+
+    val label get() = com.lonnnnnng.flclash.ui.tr(labelText)
 }
 
-internal enum class ProxyDisplayMode(val label: String) {
+internal enum class ProxyDisplayMode(private val labelText: String) {
     TAB("标签"),
-    LIST("列表"),
+    LIST("列表");
+
+    val label get() = com.lonnnnnng.flclash.ui.tr(labelText)
 }
 
-internal enum class ProxyGroupIconStyle(val label: String) {
+internal enum class ProxyGroupIconStyle(private val labelText: String) {
     FILLED("填充"),
     PLAIN("简洁"),
-    HIDDEN("隐藏"),
+    HIDDEN("隐藏");
+
+    val label get() = com.lonnnnnng.flclash.ui.tr(labelText)
 }
 
 internal data class ProxyPageOptions(

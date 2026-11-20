@@ -61,7 +61,7 @@ private fun LocalProxiesPageContent(state: LocalProxiesUiState, onDismiss: () ->
     val visibleIds = shown.map { it.id }.toSet()
     val keptSelected = selected.intersect(state.rows.map { it.id }.toSet())
     fun exit() { if (!state.busy) when { keptSelected.isNotEmpty() -> selected = emptySet(); sorting -> sorting = false; else -> onDismiss() } }
-    ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxies_back", title = { Text(if (keptSelected.isEmpty()) "本地代理" else "已选择 ${keptSelected.size} 项") },
+    ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxies_back", title = { Text(if (keptSelected.isEmpty()) tr("本地代理") else tr("已选择 {0} 项", keptSelected.size)) },
         confirmButton = { Row {
             if (keptSelected.isNotEmpty()) {
                 IconButton(onClick = { selected = if (keptSelected.containsAll(visibleIds)) keptSelected - visibleIds else keptSelected + visibleIds }, enabled = !state.busy) { Icon(Icons.Outlined.SelectAll, null) }
@@ -74,17 +74,17 @@ private fun LocalProxiesPageContent(state: LocalProxiesUiState, onDismiss: () ->
         } }, text = {
             Column(Modifier.fillMaxSize().testTag("local_proxies_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(query, { query = it; sorting = false }, Modifier.fillMaxWidth().testTag("local_proxies_search"), singleLine = true,
-                    label = { Text("搜索名称、类型或服务器") }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                    label = { Text(tr("搜索名称、类型或服务器")) }, leadingIcon = { Icon(Icons.Outlined.Search, null) },
                     trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Outlined.Close, null, modifier = Modifier.testTag("action:清空搜索")) } })
                 if (state.loading || state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxies_error")) }
-                state.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
-                if (sorting) Text("长按拖动节点调整顺序", style = MaterialTheme.typography.bodyMedium)
+                state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxies_error")) }
+                state.message?.let { Text(tr(it), color = MaterialTheme.colorScheme.primary) }
+                if (sorting) Text(tr("长按拖动节点调整顺序"), style = MaterialTheme.typography.bodyMedium)
                 if (!state.loading && shown.isEmpty()) Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Icon(Icons.Outlined.Hub, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(if (query.isEmpty()) "暂无本地代理" else "没有匹配的节点")
-                        if (query.isEmpty()) FilledTonalButton(onClick = { onEdit(null) }, enabled = !state.busy) { Text("添加节点") }
+                        Text(if (query.isEmpty()) tr("暂无本地代理") else tr("没有匹配的节点"))
+                        if (query.isEmpty()) FilledTonalButton(onClick = { onEdit(null) }, enabled = !state.busy) { Text(tr("添加节点")) }
                     }
                 }
                 if (sorting) ResourceOrderList(state.rows.map { ResourceOrderItem(it.id, it.name, it.type) }, state.busy,
@@ -115,13 +115,13 @@ private fun LocalProxiesPageContent(state: LocalProxiesUiState, onDismiss: () ->
         var text by rememberSaveable(draft.session) { mutableStateOf(draft.text) }
         var discard by rememberSaveable { mutableStateOf(false) }
         fun exitLinks() { if (!state.busy) { if (text != draft.text) discard = true else onCancelLinks() } }
-        ProfileEditorPage(onDismissRequest = ::exitLinks, title = { Text("分享链接快捷编辑") }, backTag = "local_proxy_links_back",
-            confirmButton = { TextButton(onClick = { if (checkpoint()) onApplyLinks(text) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_save")) { Text("确认") } }, text = {
+        ProfileEditorPage(onDismissRequest = ::exitLinks, title = { Text(tr("分享链接快捷编辑")) }, backTag = "local_proxy_links_back",
+            confirmButton = { TextButton(onClick = { if (checkpoint()) onApplyLinks(text) }, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_save")) { Text(tr("确认")) } }, text = {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(if (draft.single) "输入一个分享链接" else "每行一个分享链接。无法转换为链接的节点会保留。")
-                    state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxy_links_error")) }
+                    Text(if (draft.single) tr("输入一个分享链接") else tr("每行一个分享链接。无法转换为链接的节点会保留。"))
+                    state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxy_links_error")) }
                     if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                    OutlinedTextField(text, { text = it }, Modifier.fillMaxWidth().weight(1f).testTag("local_proxy_links_content"), enabled = !state.busy, label = { Text("分享链接") })
+                    OutlinedTextField(text, { text = it }, Modifier.fillMaxWidth().weight(1f).testTag("local_proxy_links_content"), enabled = !state.busy, label = { Text(tr("分享链接")) })
                 }
                 LocalProxyConfirmations(state, onCancelDelete, onDelete, onConfirmReplacement)
             })
@@ -133,27 +133,27 @@ private fun LocalProxiesPageContent(state: LocalProxiesUiState, onDismiss: () ->
 /** 作者 long：确认窗口必须依附当前整页编辑窗口，否则 Android 会把父页面的弹窗遮在子编辑器下面。 */
 @Composable
 private fun LocalProxyConfirmations(state: LocalProxiesUiState, onCancelDelete: () -> Unit, onDelete: () -> Unit, onConfirmReplacement: () -> Unit) {
-    if (state.deleting.isNotEmpty()) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text("删除 ${state.deleting.size} 个节点？") },
+    if (state.deleting.isNotEmpty()) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text(tr("删除 {0} 个节点？", state.deleting.size)) },
         text = { LocalProxyConfirmationBody(state, "local_proxy_delete") {
-            if (state.users.isEmpty()) Text("删除后可重新添加。") else {
-                Text("以下配置正在引用节点，删除后引用会保留为缺失状态：")
+            if (state.users.isEmpty()) Text(tr("删除后可重新添加。")) else {
+                Text(tr("以下配置正在引用节点，删除后引用会保留为缺失状态："))
                 state.users.forEach { Text(it) }
             }
         } },
-        confirmButton = { TextButton(onClick = onDelete, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_delete_confirm")) { Text("删除") } },
-        dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_delete_cancel")) { Text("取消") } })
-    if (state.replacement != null) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text("确认替换节点？") },
+        confirmButton = { TextButton(onClick = onDelete, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_delete_confirm")) { Text(tr("删除")) } },
+        dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_delete_cancel")) { Text(tr("取消")) } })
+    if (state.replacement != null) EditorAlertDialog(onDismissRequest = onCancelDelete, title = { Text(tr("确认替换节点？")) },
         text = {
             val existed = state.rows.map { it.id }.toSet()
             val added = state.replacement.filter { it.id !in existed }.map { it.name }
             LocalProxyConfirmationBody(state, "local_proxy_replace") {
-                Text("将移除：${state.removed.joinToString("、")}。" +
-                    (if (added.isEmpty()) "" else "将添加：${added.joinToString("、")}。") +
-                    "快捷编辑中的改名按新节点处理，原名称引用将保留为缺失。")
+                Text(tr("将移除：{0}。", state.removed.joinToString("、")) +
+                    (if (added.isEmpty()) "" else tr("将添加：{0}。", added.joinToString("、"))) +
+                    tr("快捷编辑中的改名按新节点处理，原名称引用将保留为缺失。"))
             }
         },
-        confirmButton = { TextButton(onClick = onConfirmReplacement, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_replace")) { Text("确认替换") } },
-        dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy) { Text("继续编辑") } })
+        confirmButton = { TextButton(onClick = onConfirmReplacement, enabled = !state.busy, modifier = Modifier.testTag("local_proxy_links_replace")) { Text(tr("确认替换")) } },
+        dismissButton = { TextButton(onClick = onCancelDelete, enabled = !state.busy) { Text(tr("继续编辑")) } })
 }
 
 @Composable
@@ -161,7 +161,7 @@ private fun LocalProxyConfirmationBody(state: LocalProxiesUiState, tag: String, 
     // 作者 long：引用数量不受单屏限制；失败与等待状态固定在当前确认层，避免被父页或长正文遮住。
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("${tag}_pending"))
-        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("${tag}_error")) }
+        state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("${tag}_error")) }
         Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()).testTag("${tag}_body"),
             verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
     }
@@ -187,31 +187,31 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
     val fields = LocalProxies.catalog.filter { LocalProxyFields.offered(row, it) }
     val credentialIds = setOf("username", "password", "uuid", "privateKey", "token")
     fun update(field: ProxyField, value: JsonElement?) { change(LocalProxyFields.change(row, field, value)) }
-    ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxy_editor_back", title = { Text(if (draft.original == null) "添加本地代理" else "编辑代理") },
+    ProfileEditorPage(onDismissRequest = ::exit, backTag = "local_proxy_editor_back", title = { Text(if (draft.original == null) tr("添加本地代理") else tr("编辑代理")) },
         confirmButton = { Row {
             IconButton(onClick = { onLinks(row) }, enabled = !busy) { Icon(Icons.Outlined.EditNote, null, modifier = Modifier.testTag("action:从分享链接填写")) }
-            TextButton(onClick = { onSave(row) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_save")) { Text("保存") }
+            TextButton(onClick = { onSave(row) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_save")) { Text(tr("保存")) }
         } }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text("基本信息", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                Text(tr("基本信息"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                ProxyTextField("名称", "name", row, busy) { change(LocalProxies.withValue(row, "name", JsonPrimitive(it))) }
-                ProfileFormRow("代理类型", Modifier.clickable(!busy) { choose("type") }) { Text(row.type); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow() }
+                ProxyTextField(tr("名称"), "name", row, busy) { change(LocalProxies.withValue(row, "name", JsonPrimitive(it))) }
+                ProfileFormRow(tr("代理类型"), Modifier.clickable(!busy) { choose("type") }) { Text(row.type); Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow() }
                 if (row.type != "easytier") {
-                    ProxyTextField("服务器", "server", row, busy) { change(LocalProxies.withValue(row, "server", JsonPrimitive(it))) }
-                    ProxyTextField("端口", "port", row, busy, number = true) { change(LocalProxies.withValue(row, "port", it.toLongOrNull()?.let(::JsonPrimitive))) }
+                    ProxyTextField(tr("服务器"), "server", row, busy) { change(LocalProxies.withValue(row, "server", JsonPrimitive(it))) }
+                    ProxyTextField(tr("端口"), "port", row, busy, number = true) { change(LocalProxies.withValue(row, "port", it.toLongOrNull()?.let(::JsonPrimitive))) }
                 }
                 fields.filter { it.id in required && it.id !in credentialIds }.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choose(field.id) }, { collection(field) }, {}) }
                 ProfileFormRow("UDP") { Switch(LocalProxies.value(row.fields, "udp")?.asBoolean == true,
                     { change(LocalProxies.withValue(row, "udp", JsonPrimitive(it))) }, enabled = !busy) }
                 if (row.type == "easytier") {
-                    listOf("network-name" to "网络名称", "network-secret" to "网络密钥", "ipv4" to "虚拟 IPv4", "hostname" to "主机名").forEach { (path, label) ->
+                    listOf("network-name" to tr("网络名称"), "network-secret" to tr("网络密钥"), "ipv4" to tr("虚拟 IPv4"), "hostname" to tr("主机名")).forEach { (path, label) ->
                         ProxyTextField(label, path, row, busy, secret = path == "network-secret") { change(LocalProxies.withValue(row, path, JsonPrimitive(it))) }
                     }
                     listOf("peers", "exit-nodes").forEach { path ->
-                        val field = ProxyField(path, path, if (path == "peers") "对等节点" else "出口节点", ProxyFieldKind.LIST)
+                        val field = ProxyField(path, path, if (path == "peers") tr("对等节点") else tr("出口节点"), ProxyFieldKind.LIST)
                         ProxyFieldRow(row, field, busy, false, {}, {}, { collection(field) }, {})
                     }
                 }
@@ -219,19 +219,19 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
                 // 作者 long：认证字段按上游独立成组，协议参数与UDP仍留在基本信息，密码显隐和未保存确认沿用原草稿。
                 val credentials = fields.filter { it.id in required && it.id in credentialIds }
                 if (credentials.isNotEmpty()) {
-                    Text("身份验证", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                    Text(tr("身份验证"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                     ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     credentials.forEach { field -> ProxyFieldRow(row, field, busy, false, { update(field, it) }, { choose(field.id) }, { collection(field) }, {}) }
                     }
                 }
-                Text("可选设置", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                Text(tr("可选设置"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                 fields.filter { it.id !in required && (it.id in shown || LocalProxies.value(row.fields, it.path) != null) }.forEach { field ->
                     ProxyFieldRow(row, field, busy, true, { update(field, it) }, { choose(field.id) }, { collection(field) }, { onUpdate(draft.copy(shown = shown - field.id, value = LocalProxyFields.change(row, field, null))) })
                 }
-                TextButton(onClick = { choose("option") }, enabled = !busy, modifier = Modifier.testTag("local_proxy_add_option")) { Icon(Icons.Outlined.AddCircleOutline, null); Spacer(Modifier.width(8.dp)); Text("添加设置项") }
+                TextButton(onClick = { choose("option") }, enabled = !busy, modifier = Modifier.testTag("local_proxy_add_option")) { Icon(Icons.Outlined.AddCircleOutline, null); Spacer(Modifier.width(8.dp)); Text(tr("添加设置项")) }
                 }
-                if (draft.original != null) TextButton(onClick = { onDelete(draft.original) }, enabled = !busy) { Text("删除节点", color = MaterialTheme.colorScheme.error) }
+                if (draft.original != null) TextButton(onClick = { onDelete(draft.original) }, enabled = !busy) { Text(tr("删除节点"), color = MaterialTheme.colorScheme.error) }
                 Spacer(Modifier.height(24.dp))
             }
             confirmations()
@@ -242,7 +242,7 @@ private fun LocalProxyEditor(draft: LocalProxyDraft, busy: Boolean, error: Strin
             "option" -> fields.filter { it.id !in required && it.id !in shown && LocalProxies.value(row.fields, it.path) == null }.map { it.id to it.label }
             else -> LocalProxies.catalog.first { it.id == kind }.let { field -> LocalProxyFields.choices(row, field).map { it to it } }
         }
-        ProfileEditorPage(onDismissRequest = { choose(null) }, backTag = "local_proxy_choices_back", title = { Text(if (kind == "type") "代理类型" else if (kind == "option") "添加设置项" else "选择设置值") }, text = {
+        ProfileEditorPage(onDismissRequest = { choose(null) }, backTag = "local_proxy_choices_back", title = { Text(if (kind == "type") tr("代理类型") else if (kind == "option") tr("添加设置项") else tr("选择设置值")) }, text = {
             LazyColumn(Modifier.testTag("local_proxy_choices_$kind")) { itemsIndexed(choices) { _, (id, label) -> ListItem(headlineContent = { Text(label) }, modifier = Modifier.testTag("local_proxy_choice_$id").clickable {
                 val next = when (kind) {
                     "type" -> draft.copy(value = LocalProxyFields.changeType(row, id), shown = emptySet())
@@ -296,8 +296,8 @@ private fun ProxyFieldRow(row: LocalProxy, field: ProxyField, busy: Boolean, rem
                 ProxyFieldKind.TOGGLE -> ProfileFormRow(field.label) { Switch(LocalProxies.value(row.fields, field.path)?.asBoolean == true, { onValue(JsonPrimitive(it)) }, enabled = !busy) }
                 else -> ProfileFormRow(field.label, Modifier.clickable(!busy) { if (field.kind == ProxyFieldKind.CHOICE) onChoice() else onCollection() }) {
                     Text(LocalProxies.value(row.fields, field.path)?.let {
-                        when { it.isJsonArray -> "${it.asJsonArray.size()} 项"; it.isJsonObject -> "${it.asJsonObject.size()} 项"; else -> it.asString }
-                    } ?: "未设置", maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+                        when { it.isJsonArray -> tr("{0} 项", it.asJsonArray.size()); it.isJsonObject -> tr("{0} 项", it.asJsonObject.size()); else -> it.asString }
+                    } ?: tr("未设置"), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
                         textAlign = androidx.compose.ui.text.style.TextAlign.End, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.width(2.dp)); AppMenuSubmenuArrow()
                 }
@@ -324,8 +324,8 @@ private fun ProxyCollectionEditor(row: LocalProxy, draft: LocalProxyCollectionDr
         val incomplete = field.kind == ProxyFieldKind.MAP && values.any { it.first.isBlank() && it.second.isNotBlank() }
         val keys = values.filter { it.first.isNotBlank() }.map { it.first.lowercase() }
         val error = when {
-            incomplete -> "请填写条目名称，或删除未完成的条目"
-            field.kind == ProxyFieldKind.MAP && keys.distinct().size != keys.size -> "条目名称重复，请修改后重试"
+            incomplete -> tr("请填写条目名称，或删除未完成的条目")
+            field.kind == ProxyFieldKind.MAP && keys.distinct().size != keys.size -> tr("条目名称重复，请修改后重试")
             else -> null
         }
         if (error != null) { onUpdate(draft.copy(error = error, discarding = leaving)); return }
@@ -340,22 +340,22 @@ private fun ProxyCollectionEditor(row: LocalProxy, draft: LocalProxyCollectionDr
         } else onSave(JsonArray().apply { values.filter { it.second.isNotBlank() }.forEach { add(it.second) } }.takeIf { it.size() > 0 })
     }
     ProfileEditorPage(onDismissRequest = { apply(true) }, title = { Text(field.label) }, backTag = "local_proxy_collection_back",
-        confirmButton = { TextButton(onClick = { apply(false) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_collection_confirm")) { Text("确认") } }, text = {
+        confirmButton = { TextButton(onClick = { apply(false) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_collection_confirm")) { Text(tr("确认")) } }, text = {
         LazyColumn(state = list, modifier = Modifier.testTag("local_proxy_collection_list"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            draft.error?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxy_collection_error")) } }
+            draft.error?.let { error -> item { Text(tr(error), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("local_proxy_collection_error")) } }
             itemsIndexed(values) { i, (key, value) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { change(values.toMutableList().apply { removeAt(i) }) }, enabled = !busy,
                         modifier = Modifier.testTag("local_proxy_collection_remove_$i")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (field.kind == ProxyFieldKind.MAP) OutlinedTextField(key, { change(values.toMutableList().apply { set(i, it to value) }) },
-                            Modifier.fillMaxWidth().testTag("local_proxy_collection_key_$i"), label = { Text("名称") }, singleLine = true, enabled = !busy)
+                            Modifier.fillMaxWidth().testTag("local_proxy_collection_key_$i"), label = { Text(tr("名称")) }, singleLine = true, enabled = !busy)
                         OutlinedTextField(value, { change(values.toMutableList().apply { set(i, key to it) }) },
-                            Modifier.fillMaxWidth().testTag("local_proxy_collection_value_$i"), label = { Text("值") }, singleLine = true, enabled = !busy)
+                            Modifier.fillMaxWidth().testTag("local_proxy_collection_value_$i"), label = { Text(tr("值")) }, singleLine = true, enabled = !busy)
                     }
                 }
             }
-            item { TextButton(onClick = { change(values + ("" to "")) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_collection_add")) { Text("添加条目") } }
+            item { TextButton(onClick = { change(values + ("" to "")) }, enabled = !busy, modifier = Modifier.testTag("local_proxy_collection_add")) { Text(tr("添加条目")) } }
         }
         if (draft.discarding) DiscardLocalProxyDialog({ onUpdate(draft.copy(discarding = false)) }, onDismiss)
     })
@@ -363,6 +363,6 @@ private fun ProxyCollectionEditor(row: LocalProxy, draft: LocalProxyCollectionDr
 
 @Composable
 private fun DiscardLocalProxyDialog(onCancel: () -> Unit, onDiscard: () -> Unit) {
-    EditorAlertDialog(onDismissRequest = onCancel, title = { Text("放弃修改？") }, text = { Text("尚未保存的节点修改会丢失。") },
-        confirmButton = { TextButton(onClick = onDiscard) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = onCancel) { Text("继续编辑") } })
+    EditorAlertDialog(onDismissRequest = onCancel, title = { Text(tr("放弃修改？")) }, text = { Text(tr("尚未保存的节点修改会丢失。")) },
+        confirmButton = { TextButton(onClick = onDiscard) { Text(tr("放弃修改")) } }, dismissButton = { TextButton(onClick = onCancel) { Text(tr("继续编辑")) } })
 }

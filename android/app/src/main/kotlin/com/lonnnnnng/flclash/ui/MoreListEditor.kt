@@ -46,7 +46,7 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
             else if (saveError != null) awaitingReceipt = false
         }
     }
-    val title = if (protocol) "端口" else field.label
+    val title = if (protocol) tr("端口") else field.label
     val dirty = items != original
     fun valueOf(values: List<String>): JsonElement? = if (protocol) initial.asJsonObject.deepCopy().apply {
         add("ports", Gson().toJsonTree(values))
@@ -92,11 +92,11 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
                             }
                         }
                         AppDropdownMenu(addMenu, { addMenu = false }, source = addSource) {
-                            AppDropdownMenuItem(text = { Text("添加") }, leadingIcon = { Icon(Icons.Outlined.Add, null) },
+                            AppDropdownMenuItem(text = { Text(tr("添加")) }, leadingIcon = { Icon(Icons.Outlined.Add, null) },
                                 modifier = Modifier.testTag("more_list_add"), onClick = {
                                     addMenu = false; input = ""; inputError = null; entry = ""
                                 })
-                            AppDropdownMenuItem(text = { Text("快速编辑") }, leadingIcon = { AppGlyphIcon(AppGlyphs.compose) },
+                            AppDropdownMenuItem(text = { Text(tr("快速编辑")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.compose) },
                                 modifier = Modifier.testTag("more_list_quick"), onClick = {
                                     addMenu = false; quickText = items.joinToString("\n"); inputError = null; quick = true
                                 })
@@ -107,11 +107,11 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
         }, text = {
             Column(Modifier.fillMaxSize().padding(top = 20.dp)) {
                 if (saving) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("more_list_saving"))
-                (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_value_error")) }
+                (error ?: saveError)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("more_value_error")) }
                 if (items.isEmpty()) BoxWithConstraints(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Column(Modifier.offset(y = -(maxHeight * .14f)), horizontalAlignment = Alignment.CenterHorizontally) {
                         ProfileEmptyIllustration(AppGlyphs.resources, flutterPalette = true)
-                        Text("暂无数据", Modifier.padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
+                        Text(tr("暂无数据"), Modifier.padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
                     }
                 } else ResourceOrderList(items.mapIndexed { index, text -> ResourceOrderItem(index.toString(), text, "") }, saving || selected.isNotEmpty(), "more_list",
                     onReorder = { order -> items = order.map { items[it.toInt()] }; error = null }, modifier = Modifier.weight(1f), compactRows = true,
@@ -134,16 +134,16 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
         })
     fun entryValues(): List<String> {
         val parsed = input.lines().map(String::trim).filter(String::isNotEmpty)
-        require(parsed.isNotEmpty()) { "值不能为空" }
-        require(parsed.size == 1) { "值只能是一项" }
+        require(parsed.isNotEmpty()) { tr("值不能为空") }
+        require(parsed.size == 1) { tr("值只能是一项") }
         val next = parsed.single()
-        require(items.getOrNull(entry?.toIntOrNull() ?: -1) == next || next !in items) { "值当前已存在" }
+        require(items.getOrNull(entry?.toIntOrNull() ?: -1) == next || next !in items) { tr("值当前已存在") }
         return (if (entry.isNullOrEmpty()) items + next else items.mapIndexed { index, value ->
             if (index.toString() == entry) next else value
         }).also(::validate)
     }
     if (entry != null) MoreListEntryDialog(
-        title = if (entry.isNullOrEmpty()) "添加" else "编辑", input = input, error = inputError,
+        title = tr(if (entry.isNullOrEmpty()) "添加" else "编辑"), input = input, error = inputError,
         onInput = {
             input = it
             // 作者 long：首个错误出现后随输入重新校验，用户修正空值、重复或端口错误时不必反复试按确定。
@@ -159,18 +159,18 @@ internal fun MoreListEditor(field: MoreField, initial: JsonElement, root: JsonOb
             val values = splitMoreList(text); validate(values)
             items = values; selected = emptyList(); error = null
         })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("保存修改？") },
-        confirmButton = { TextButton({ discard = false; save() }) { Text("保存") } },
+    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("保存修改？")) },
+        confirmButton = { TextButton({ discard = false; save() }) { Text(tr("保存")) } },
         dismissButton = { Row {
-            TextButton({ discard = false; onDismiss() }) { Text("放弃") }
-            TextButton({ discard = false }) { Text("继续编辑") }
+            TextButton({ discard = false; onDismiss() }) { Text(tr("放弃")) }
+            TextButton({ discard = false }) { Text(tr("继续编辑")) }
         } })
     if (delete || reset) AlertDialog(onDismissRequest = { delete = false; reset = false },
-        title = { Text(if (delete) "删除所选项？" else "重置本页修改？") },
+        title = { Text(if (delete) tr("删除所选项？") else tr("重置本页修改？")) },
         confirmButton = { TextButton({
             // 作者 long：确认删除/重置只改变本页列表，父分区的已保存协议和目标设置必须等明确保存后才更新。
             items = if (delete) items.filterIndexed { index, _ -> index.toString() !in selected } else original
             selected = emptyList(); error = null; delete = false; reset = false
-        }, modifier = Modifier.testTag("more_list_action_confirm")) { Text(if (delete) "删除" else "重置") } },
-        dismissButton = { TextButton({ delete = false; reset = false }) { Text("取消") } })
+        }, modifier = Modifier.testTag("more_list_action_confirm")) { Text(if (delete) tr("删除") else tr("重置")) } },
+        dismissButton = { TextButton({ delete = false; reset = false }) { Text(tr("取消")) } })
 }

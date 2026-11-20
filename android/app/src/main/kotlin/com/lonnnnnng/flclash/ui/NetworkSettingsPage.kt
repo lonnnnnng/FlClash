@@ -17,8 +17,10 @@ import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.service.NetworkSettings
 import com.lonnnnnng.flclash.service.VpnSettingsState
 
-private enum class NetworkField(val title: String) {
-    DOMAINS("绕过域名"), STACK("协议栈"), MTU("MTU"), CONGESTION("拥塞控制"), ROUTES("路由地址"), EXCLUDED("排除路由地址")
+private enum class NetworkField(private val titleText: String) {
+    DOMAINS("绕过域名"), STACK("协议栈"), MTU("MTU"), CONGESTION("拥塞控制"), ROUTES("路由地址"), EXCLUDED("排除路由地址");
+
+    val title get() = com.lonnnnnng.flclash.ui.tr(titleText)
 }
 
 /** 作者 long：网络页逐项保存，只有输入确认后才改变接管路径；应用失败时保留原草稿供修正。 */
@@ -39,35 +41,35 @@ internal fun NetworkSettingsPanel(
     }
     Column(Modifier.fillMaxWidth().testTag("page_network"), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         NetworkSection {
-            NetworkToggle("VPN", "启用后接管此设备的网络流量", "network_vpn", vpn.enabled, busy, onVpnEnabled)
+            NetworkToggle("VPN", tr("启用后接管此设备的网络流量"), "network_vpn", vpn.enabled, busy, onVpnEnabled)
             if (vpn.restartRequired) {
-                Text("VPN 接管方式已保存，重启服务后生效", Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
-                TextButton(onRestart, Modifier.padding(horizontal = 8.dp).testTag("network_restart"), enabled = !busy) { Text("重启生效") }
+                Text(tr("VPN 接管方式已保存，重启服务后生效"), Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
+                TextButton(onRestart, Modifier.padding(horizontal = 8.dp).testTag("network_restart"), enabled = !busy) { Text(tr("重启生效")) }
             }
         }
         NetworkSection("VPN") {
-            NetworkToggle("系统代理", "向支持系统代理的应用提供本地 HTTP 代理", "network_system_proxy", settings.systemProxy, busy) { save(settings.copy(systemProxy = it)) }
-            NetworkOpenRow("绕过域名", "${settings.bypassDomain.size} 项", "network_domains", busy) { editing = NetworkField.DOMAINS }
-            NetworkToggle("允许绕过 VPN", "允许应用选择其他网络绕过代理，通常保持关闭", "network_allow_bypass", settings.allowBypass, busy) { save(settings.copy(allowBypass = it)) }
+            NetworkToggle(tr("系统代理"), tr("向支持系统代理的应用提供本地 HTTP 代理"), "network_system_proxy", settings.systemProxy, busy) { save(settings.copy(systemProxy = it)) }
+            NetworkOpenRow(tr("绕过域名"), tr("{0} 项", settings.bypassDomain.size), "network_domains", busy) { editing = NetworkField.DOMAINS }
+            NetworkToggle(tr("允许绕过 VPN"), tr("允许应用选择其他网络绕过代理，通常保持关闭"), "network_allow_bypass", settings.allowBypass, busy) { save(settings.copy(allowBypass = it)) }
             NetworkToggle("IPv6", null, "network_ipv6", settings.ipv6, busy) { save(settings.copy(ipv6 = it)) }
-            NetworkToggle("DNS 劫持", null, "network_dns_hijacking", settings.dnsHijacking, busy) { save(settings.copy(dnsHijacking = it)) }
+            NetworkToggle(tr("DNS 劫持"), null, "network_dns_hijacking", settings.dnsHijacking, busy) { save(settings.copy(dnsHijacking = it)) }
         }
-        Text("绕过域名只影响系统 HTTP 代理；端口认证开启时不会发布系统代理。IPv6 控制 VPN 的 IPv6 接管。",
+        Text(tr("绕过域名只影响系统 HTTP 代理；端口认证开启时不会发布系统代理。IPv6 控制 VPN 的 IPv6 接管。"),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
-        NetworkSection("选项") {
-            NetworkOpenRow("协议栈", settings.stack, "network_stack", busy) { editing = NetworkField.STACK }
+        NetworkSection(tr("选项")) {
+            NetworkOpenRow(tr("协议栈"), settings.stack, "network_stack", busy) { editing = NetworkField.STACK }
         }
         NetworkSection("TUN") {
             NetworkOpenRow("MTU", settings.mtu.toString(), "network_mtu", busy) { editing = NetworkField.MTU }
-            if (settings.stack == "mips") NetworkOpenRow("拥塞控制", settings.congestionController, "network_congestion", busy) { editing = NetworkField.CONGESTION }
-            NetworkToggle("绕过私有路由地址", null, "network_bypass_private", settings.bypassPrivateRoute, busy) { save(settings.copy(bypassPrivateRoute = it)) }
-            NetworkOpenRow("路由地址", if (settings.routeAddress.isEmpty()) "全部地址" else "${settings.routeAddress.size} 项", "network_routes", busy) { editing = NetworkField.ROUTES }
-            NetworkOpenRow("排除路由地址", "${settings.routeExcludeAddress.size} 项", "network_excluded", busy) { editing = NetworkField.EXCLUDED }
+            if (settings.stack == "mips") NetworkOpenRow(tr("拥塞控制"), settings.congestionController, "network_congestion", busy) { editing = NetworkField.CONGESTION }
+            NetworkToggle(tr("绕过私有路由地址"), null, "network_bypass_private", settings.bypassPrivateRoute, busy) { save(settings.copy(bypassPrivateRoute = it)) }
+            NetworkOpenRow(tr("路由地址"), if (settings.routeAddress.isEmpty()) tr("全部地址") else tr("{0} 项", settings.routeAddress.size), "network_routes", busy) { editing = NetworkField.ROUTES }
+            NetworkOpenRow(tr("排除路由地址"), tr("{0} 项", settings.routeExcludeAddress.size), "network_excluded", busy) { editing = NetworkField.EXCLUDED }
         }
-        Text("私有地址和排除的路由不进入 VPN；留空路由地址时接管全部其余地址。",
+        Text(tr("私有地址和排除的路由不进入 VPN；留空路由地址时接管全部其余地址。"),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
         if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().testTag("network_saving"))
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("network_error")) }
+        error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("network_error")) }
     }
     editing?.let { field ->
         NetworkSettingDialog(field, settings, busy, onClose = { editing = null }, onSave = onSave)
@@ -159,18 +161,18 @@ private fun NetworkSettingDialog(field: NetworkField, settings: NetworkSettings,
                     minLines = if (list) 5 else 1, maxLines = if (list) 9 else 1, singleLine = !list,
                     keyboardOptions = KeyboardOptions(keyboardType = if (field == NetworkField.MTU) KeyboardType.Number else KeyboardType.Text),
                     supportingText = { Text(when {
-                        field == NetworkField.DOMAINS -> "每行一项，可使用 * 通配符"
-                        list -> "每行一项，使用 IP/前缀长度"
+                        field == NetworkField.DOMAINS -> tr("每行一项，可使用 * 通配符")
+                        list -> tr("每行一项，使用 IP/前缀长度")
                         else -> "1280–65535"
                     }) }, isError = error != null)
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("network_editor_error")) }
+                error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("network_editor_error")) }
             }
         },
-        confirmButton = { if (options.isEmpty()) TextButton({ commit(value.trim()) }, enabled = !busy, modifier = Modifier.testTag("network_editor_save")) { Text("保存") } },
+        confirmButton = { if (options.isEmpty()) TextButton({ commit(value.trim()) }, enabled = !busy, modifier = Modifier.testTag("network_editor_save")) { Text(tr("保存")) } },
         dismissButton = {
             Row {
-                if (options.isEmpty()) TextButton({ value = field.value(NetworkSettings()); error = null }, enabled = !busy, modifier = Modifier.testTag("network_editor_reset")) { Text("恢复默认") }
-                TextButton(onClose, enabled = !busy) { Text("取消") }
+                if (options.isEmpty()) TextButton({ value = field.value(NetworkSettings()); error = null }, enabled = !busy, modifier = Modifier.testTag("network_editor_reset")) { Text(tr("恢复默认")) }
+                TextButton(onClose, enabled = !busy) { Text(tr("取消")) }
             }
         },
     )

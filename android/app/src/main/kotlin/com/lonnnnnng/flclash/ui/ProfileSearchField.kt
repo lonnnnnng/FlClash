@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 /** 作者 long：沿用固定Prism搜索框的41dp文本起点与胶囊底，清空只恢复候选，不能触发保存或退出当前选择层。 */
 @Composable
 internal fun ProfileSearchField(value: String, onChange: (String) -> Unit, tag: String,
-    placeholder: String = "搜索", enabled: Boolean = true, modifier: Modifier = Modifier,
+    placeholder: String = tr("搜索"), enabled: Boolean = true, modifier: Modifier = Modifier,
     height: Dp = 56.dp, onFocusChange: (Boolean) -> Unit = {},
     containerColor: androidx.compose.ui.graphics.Color = dashboardCardColor()) {
     val keyboard = LocalSoftwareKeyboardController.current
@@ -69,7 +69,7 @@ internal val DockedSearchEasing = Easing { fraction ->
 /** 作者 long：下沿搜索在本窗口持有焦点；清空保留输入，取消只结束搜索，不触发选择、保存或退出父页。 */
 @Composable
 internal fun DockedProfileSearch(value: String, onChange: (String) -> Unit, tag: String,
-    placeholder: String = "搜索", enabled: Boolean = true, modifier: Modifier = Modifier,
+    placeholder: String = tr("搜索"), enabled: Boolean = true, modifier: Modifier = Modifier,
     containerColor: androidx.compose.ui.graphics.Color = dashboardCardColor()) {
     var focused by remember { mutableStateOf(false) }
     val active = focused || value.isNotEmpty()

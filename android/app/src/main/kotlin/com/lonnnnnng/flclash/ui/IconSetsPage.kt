@@ -47,24 +47,24 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
     var sorting by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(sets.size) { if (sets.size < 2) sorting = false }
     LaunchedEffect(completed) { if (completed > 0 && error == null) { importing = false; editing = null } }
-    ProfileEditorPage(onDismissRequest = { if (!busy) { if (sorting) sorting = false else onDismiss() } }, title = { Text("图标集") }, backTag = "icon_sets_back",
+    ProfileEditorPage(onDismissRequest = { if (!busy) { if (sorting) sorting = false else onDismiss() } }, title = { Text(tr("图标集")) }, backTag = "icon_sets_back",
         confirmButton = {
-        if (sorting) TextButton(onClick = { sorting = false }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort_done")) { Text("完成") }
+        if (sorting) TextButton(onClick = { sorting = false }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort_done")) { Text(tr("完成")) }
         else {
         if (sets.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort")) { Icon(Icons.Outlined.Sort, null) }
         Box {
             IconButton(onClick = { addMenu = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
             DropdownMenu(addMenu, { addMenu = false }) {
-                DropdownMenuItem(text = { Text("从 URL 导入") }, onClick = { addMenu = false; if (onImportUrls != null) onImportUrls() else importing = true })
-                DropdownMenuItem(text = { Text("从文件导入") }, onClick = { addMenu = false; onPickFile() })
+                DropdownMenuItem(text = { Text(tr("从 URL 导入")) }, onClick = { addMenu = false; if (onImportUrls != null) onImportUrls() else importing = true })
+                DropdownMenuItem(text = { Text(tr("从文件导入")) }, onClick = { addMenu = false; onPickFile() })
             }
         } } }, text = {
             Column(Modifier.fillMaxSize().testTag("icon_sets_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                onRetryRecovery?.let { retry -> TextButton(retry, modifier = Modifier.testTag("icon_file_recovery_retry")) { Text("重试恢复") } }
+                error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
+                onRetryRecovery?.let { retry -> TextButton(retry, modifier = Modifier.testTag("icon_file_recovery_retry")) { Text(tr("重试恢复")) } }
                 if (sorting && onReorder != null) ResourceOrderList(sets.map {
-                    ResourceOrderItem(it.id, it.name, "${it.icons.size} 个图标", it.icons.firstOrNull()?.url.orEmpty())
+                    ResourceOrderItem(it.id, it.name, tr("{0} 个图标", it.icons.size), it.icons.firstOrNull()?.url.orEmpty())
                 }, busy, "icon_sets", onReorder, Modifier.fillMaxWidth().weight(1f))
                 else {
                 if (sets.isEmpty()) {
@@ -76,7 +76,7 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
                                 ProfileEmptyIllustration(AppGlyphs.iconTile, ProfileIllustrationPaths.cookie7, 160.dp, flutterPalette = true)
                             }
                             Spacer(Modifier.height(16.dp))
-                            Text("暂无图标集", color = MaterialTheme.colorScheme.onSurface,
+                            Text(tr("暂无图标集"), color = MaterialTheme.colorScheme.onSurface,
                                 style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("icon_sets_empty_label"))
                         }
                     }
@@ -84,18 +84,18 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
                     itemsIndexed(sets, key = { _, item -> item.id }) { index, item ->
                         Box {
                             ListItem(headlineContent = { Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                supportingContent = { Text(if (item.url.isEmpty()) "本地 · ${item.icons.size} 个图标" else "远程 · ${item.icons.size} 个图标") },
+                                supportingContent = { Text(if (item.url.isEmpty()) tr("本地 · {0} 个图标", item.icons.size) else tr("远程 · {0} 个图标", item.icons.size)) },
                                 leadingContent = { ProfileGroupIcon(item.icons.firstOrNull()?.url.orEmpty(), item.name, Modifier.size(32.dp)) },
                                 trailingContent = { Icon(Icons.Outlined.ChevronRight, null) },
                                 modifier = Modifier.fillMaxWidth().testTag("icon_set_${item.id}").combinedClickable(enabled = !busy,
                                     onClick = { previewId = item.id; query = "" }, onLongClick = { menuId = item.id }),
                                 colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow))
                             DropdownMenu(menuId == item.id, { menuId = null }) {
-                                if (item.url.isNotEmpty()) DropdownMenuItem(text = { Text("同步") }, onClick = { menuId = null; onSync(item) })
-                                DropdownMenuItem(text = { Text("选项") }, onClick = { menuId = null; editing = item })
-                                if (index > 0) DropdownMenuItem(text = { Text("上移") }, onClick = { menuId = null; onMove(item.id, -1) })
-                                if (index < sets.lastIndex) DropdownMenuItem(text = { Text("下移") }, onClick = { menuId = null; onMove(item.id, 1) })
-                                DropdownMenuItem(text = { Text("删除", color = MaterialTheme.colorScheme.error) }, onClick = { menuId = null; deleting = item })
+                                if (item.url.isNotEmpty()) DropdownMenuItem(text = { Text(tr("同步")) }, onClick = { menuId = null; onSync(item) })
+                                DropdownMenuItem(text = { Text(tr("选项")) }, onClick = { menuId = null; editing = item })
+                                if (index > 0) DropdownMenuItem(text = { Text(tr("上移")) }, onClick = { menuId = null; onMove(item.id, -1) })
+                                if (index < sets.lastIndex) DropdownMenuItem(text = { Text(tr("下移")) }, onClick = { menuId = null; onMove(item.id, 1) })
+                                DropdownMenuItem(text = { Text(tr("删除"), color = MaterialTheme.colorScheme.error) }, onClick = { menuId = null; deleting = item })
                             }
                         }
                     }
@@ -105,9 +105,9 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         })
     if (importing) IconSetOptionsDialog(null, busy, error, { importing = false }, onImportUrl)
     editing?.let { original -> IconSetOptionsDialog(original, busy, error, { editing = null }, { name, url -> onOptions(original, name, url) }) }
-    deleting?.let { item -> AlertDialog(onDismissRequest = { deleting = null }, title = { Text("删除 ${item.name}？") },
-        text = { Text("配置中已经使用的图标链接会保留。") }, confirmButton = { TextButton(onClick = { onDelete(item.id); deleting = null }) { Text("删除") } },
-        dismissButton = { TextButton(onClick = { deleting = null }) { Text("取消") } }) }
+    deleting?.let { item -> AlertDialog(onDismissRequest = { deleting = null }, title = { Text(tr("删除 {0}？", item.name)) },
+        text = { Text(tr("配置中已经使用的图标链接会保留。")) }, confirmButton = { TextButton(onClick = { onDelete(item.id); deleting = null }) { Text(tr("删除")) } },
+        dismissButton = { TextButton(onClick = { deleting = null }) { Text(tr("取消")) } }) }
     previewId?.let { id ->
         val item = sets.firstOrNull { it.id == id }
         val icons = item?.icons.orEmpty()
@@ -139,11 +139,11 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         fun backPreview() {
             if (query.isNotEmpty()) changeQuery("") else previewId = null
         }
-        ProfileEditorPage(onDismissRequest = ::backPreview, title = { Text(item?.name ?: "图标集") },
+        ProfileEditorPage(onDismissRequest = ::backPreview, title = { Text(item?.name ?: tr("图标集")) },
             backTag = "icon_set_preview_back", contentPadding = PaddingValues(0.dp), navigationButtonSurface = true,
             bottomBar = {
                 DockedProfileSearch(query, ::changeQuery, "icon_set_preview_search",
-                    placeholder = "搜索图标", modifier = Modifier.padding(horizontal = 16.dp))
+                    placeholder = tr("搜索图标"), modifier = Modifier.padding(horizontal = 16.dp))
             }, text = {
             Box(Modifier.fillMaxSize()) {
                 if (shown.isEmpty()) {
@@ -199,11 +199,11 @@ private fun IconSetPreviewEmpty(query: String, onClearQuery: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally) {
             ProfileEmptyIllustration(AppGlyphs.iconTile, ProfileIllustrationPaths.cookie7, illustrationSize)
             Spacer(Modifier.height(16.dp))
-            Text(if (searching) "没有匹配的图标" else "暂无图标", color = MaterialTheme.colorScheme.onSurface,
+            Text(if (searching) tr("没有匹配的图标") else tr("暂无图标"), color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("icon_set_preview_empty"))
             if (searching) {
                 Spacer(Modifier.height(16.dp))
-                TextButton(onClick = onClearQuery, modifier = Modifier.testTag("icon_set_search_clear")) { Text("清除搜索") }
+                TextButton(onClick = onClearQuery, modifier = Modifier.testTag("icon_set_search_clear")) { Text(tr("清除搜索")) }
             }
         }
     }
@@ -214,17 +214,17 @@ private fun IconSetOptionsDialog(original: ResourceIconSet?, busy: Boolean, erro
     var name by rememberSaveable(original?.id) { mutableStateOf(original?.name.orEmpty()) }
     var url by rememberSaveable(original?.id) { mutableStateOf(original?.url.orEmpty()) }
     var invalid by remember { mutableStateOf<String?>(null) }
-    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(if (original == null) "从 URL 导入" else "选项") }, text = {
+    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(if (original == null) tr("从 URL 导入") else tr("选项")) }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(name, { name = it; invalid = null }, Modifier.fillMaxWidth().testTag("icon_set_name"), label = { Text(if (original == null) "名称（可选）" else "名称") }, enabled = !busy, singleLine = true)
-            if (original == null || original.url.isNotEmpty()) OutlinedTextField(url, { url = it; invalid = null }, Modifier.fillMaxWidth().testTag("icon_set_url"), label = { Text("图标集地址") }, enabled = !busy, singleLine = true)
-            (invalid ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            OutlinedTextField(name, { name = it; invalid = null }, Modifier.fillMaxWidth().testTag("icon_set_name"), label = { Text(if (original == null) tr("名称（可选）") else tr("名称")) }, enabled = !busy, singleLine = true)
+            if (original == null || original.url.isNotEmpty()) OutlinedTextField(url, { url = it; invalid = null }, Modifier.fillMaxWidth().testTag("icon_set_url"), label = { Text(tr("图标集地址")) }, enabled = !busy, singleLine = true)
+            (invalid ?: error)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         }
     }, confirmButton = { TextButton(onClick = {
-        if (original != null && (name.trim().isEmpty() || name.length > 128)) invalid = "名称须为 1 至 128 字符"
-        else if ((original == null || original.url.isNotEmpty()) && !IconSetCodec.validUrl(url.trim())) invalid = "请输入有效 HTTP/HTTPS 地址"
+        if (original != null && (name.trim().isEmpty() || name.length > 128)) invalid = tr("名称须为 1 至 128 字符")
+        else if ((original == null || original.url.isNotEmpty()) && !IconSetCodec.validUrl(url.trim())) invalid = tr("请输入有效 HTTP/HTTPS 地址")
         else onSave(name.trim(), url.trim())
-    }, enabled = !busy, modifier = Modifier.testTag("icon_set_save")) { Text("保存") } },
-        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") } })
+    }, enabled = !busy, modifier = Modifier.testTag("icon_set_save")) { Text(tr("保存")) } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("取消")) } })
 }

@@ -80,7 +80,7 @@ internal fun ProfileQrScannerPage(onClose: () -> Unit, onImport: (DeepLinkProfil
         if (leaving || disposed || pendingImport != null) return
         val result = DeepLinkProfileParser.fromQrCodes(values)
         if (result == null) {
-            if (values.isNotEmpty()) hint = "二维码中没有可导入的配置链接"
+            if (values.isNotEmpty()) hint = tr("二维码中没有可导入的配置链接")
         } else {
             // 作者 long：连续帧和相册返回只能交付一次，后续帧不能重复打开表单。
             pendingImport = result
@@ -94,12 +94,12 @@ internal fun ProfileQrScannerPage(onClose: () -> Unit, onImport: (DeepLinkProfil
             scope.launch {
                 try {
                     val values = withContext(Dispatchers.IO) { QrCodeImageImporter.decode(context, uri) }
-                    if (values.isEmpty()) hint = "图片中没有可识别的二维码" else accept(values)
+                    if (values.isEmpty()) hint = tr("图片中没有可识别的二维码") else accept(values)
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
                     // 作者 long：解析异常可能携带原始 URI 或内容，只展示固定提示，避免泄漏订阅信息。
-                    hint = "无法识别这张图片，请换一张清晰的二维码图片"
+                    hint = tr("无法识别这张图片，请换一张清晰的二维码图片")
                 } finally { decoding = false }
             }
         }
@@ -168,7 +168,7 @@ internal fun ProfileQrScannerPage(onClose: () -> Unit, onImport: (DeepLinkProfil
                 onAlbum = {
                     if (!picking && !decoding && !leaving) {
                         picking = true
-                        try { album.launch("image/*") } catch (_: Exception) { picking = false; hint = "无法打开相册" }
+                        try { album.launch("image/*") } catch (_: Exception) { picking = false; hint = tr("无法打开相册") }
                     }
                 },
                 onRetry = {
@@ -178,13 +178,13 @@ internal fun ProfileQrScannerPage(onClose: () -> Unit, onImport: (DeepLinkProfil
                 },
                 onSettings = {
                     runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))) }
-                        .onFailure { hint = "无法打开设置，请在系统设置中允许相机权限" }
+                        .onFailure { hint = tr("无法打开设置，请在系统设置中允许相机权限") }
                 },
                 onTorch = {
                     val enabled = !torch
                     camera?.cameraControl?.enableTorch(enabled)?.let { task ->
                         task.addListener({ runCatching { task.get() }.onSuccess { if (camera != null) torch = enabled }
-                            .onFailure { hint = "无法切换手电筒，请重试" } }, ContextCompat.getMainExecutor(context))
+                            .onFailure { hint = tr("无法切换手电筒，请重试") } }, ContextCompat.getMainExecutor(context))
                     }
                 },
             )
@@ -230,13 +230,13 @@ internal fun ProfileQrScannerOverlay(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(if (denied) "允许相机权限后即可扫描配置二维码" else "相机不可用，请重试或从相册选择", color = Color.White, textAlign = TextAlign.Center,
+                Text(if (denied) tr("允许相机权限后即可扫描配置二维码") else tr("相机不可用，请重试或从相册选择"), color = Color.White, textAlign = TextAlign.Center,
                     modifier = Modifier.testTag("profile_qr_error"))
-                Button(onRetry, Modifier.testTag("profile_qr_retry")) { Text(if (denied) "允许使用相机" else "重试") }
-                if (denied) TextButton(onSettings, Modifier.testTag("profile_qr_settings")) { Text("前往设置") }
+                Button(onRetry, Modifier.testTag("profile_qr_retry")) { Text(if (denied) tr("允许使用相机") else tr("重试")) }
+                if (denied) TextButton(onSettings, Modifier.testTag("profile_qr_settings")) { Text(tr("前往设置")) }
             } else if (!cameraReady || decoding) CircularProgressIndicator(Modifier.testTag("profile_qr_loading"))
         }
-        Text(hint ?: if (decoding) "正在识别图片…" else "将配置二维码放入框内，识别后确认导入", color = Color.White, textAlign = TextAlign.Center,
+        Text(hint ?: if (decoding) tr("正在识别图片…") else tr("将配置二维码放入框内，识别后确认导入"), color = Color.White, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp).testTag("profile_qr_hint"))
         FilledTonalIconButton(onTorch, Modifier.size(64.dp).testTag("profile_qr_torch"), enabled = hasFlash && cameraReady && !decoding, shape = CircleShape) {
             Icon(if (torch) Icons.Outlined.FlashlightOff else Icons.Outlined.FlashlightOn, null, Modifier.size(30.dp).testTag("action:" + (if (torch) "关闭手电筒" else "打开手电筒")))

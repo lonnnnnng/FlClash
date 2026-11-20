@@ -84,7 +84,7 @@ internal fun ProxySearchToolbar(
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(geometry.primary.height / 2))
             }
             Layout(content = {
-                Text("代理", Modifier.searchFade { motion.frame.title },
+                Text(tr("代理"), Modifier.searchFade { motion.frame.title },
                     style = TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface)
                 IconButton(onClick = { onExpandedChange(true) }, enabled = !expanded,
@@ -109,7 +109,7 @@ internal fun ProxySearchToolbar(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
                             decorationBox = { input -> Box(contentAlignment = Alignment.CenterStart) {
-                                if (query.isEmpty()) Text("搜索节点", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                if (query.isEmpty()) Text(tr("搜索节点"), color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = TextStyle(fontSize = 16.sp, lineHeight = 22.sp))
                                 input()
                             } })

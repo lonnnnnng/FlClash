@@ -11,8 +11,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun ProfileStatisticsPanel(state: ProfileStatisticsUiState, onRetry: () -> Unit) {
     val counts = state.counts
-    val items = listOf("代理组" to counts?.groups, "节点" to counts?.proxies,
-        "规则" to counts?.rules, "Providers" to counts?.providers)
+    val items = listOf(tr("代理组") to counts?.groups, tr("节点") to counts?.proxies,
+        tr("规则") to counts?.rules, "Providers" to counts?.providers)
     Column(Modifier.fillMaxWidth().testTag("profile_statistics"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items.chunked(2).forEachIndexed { row, pair ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -30,9 +30,9 @@ internal fun ProfileStatisticsPanel(state: ProfileStatisticsUiState, onRetry: ()
             }
         }
         if (state.error != null) {
-            Text(state.error, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error,
+            Text(tr(state.error), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.testTag("profile_statistics_error"))
-            TextButton(onClick = onRetry, enabled = !state.isLoading, modifier = Modifier.testTag("profile_statistics_retry")) { Text("重试") }
+            TextButton(onClick = onRetry, enabled = !state.isLoading, modifier = Modifier.testTag("profile_statistics_retry")) { Text(tr("重试")) }
         }
     }
 }

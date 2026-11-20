@@ -32,7 +32,7 @@ internal fun AgeSecretKeyField(value: String, onValueChange: (String) -> Unit, e
         value = value,
         onValueChange = onValueChange,
         enabled = enabled,
-        label = { Text(if (optional) "age 解密密钥（可选）" else "age 解密密钥") },
+        label = { Text(if (optional) tr("age 解密密钥（可选）") else tr("age 解密密钥")) },
         visualTransformation = PasswordVisualTransformation(),
         singleLine = singleLine,
         keyboardOptions = keyboardOptions,
@@ -75,14 +75,14 @@ internal fun AgeSecretKeyDialog(onSubmit: (String) -> Unit, onDismiss: () -> Uni
     }
     AlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text("age 加密配置") },
+        title = { Text(tr("age 加密配置")) },
         text = { androidx.compose.foundation.layout.Column {
             AgeSecretKeyField(key, { key = it }, !busy, "profile_age_required_key", optional = false)
-            error?.let { Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_age_required_error")) }
+            error?.let { Text(tr(it), color = androidx.compose.material3.MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_age_required_error")) }
         } },
         confirmButton = {
-            TextButton(onClick = { onSubmit(key.trim()); key = "" }, enabled = !busy && key.isNotBlank()) { Text(if (busy) "解密中…" else "解密并导入") }
+            TextButton(onClick = { onSubmit(key.trim()); key = "" }, enabled = !busy && key.isNotBlank()) { Text(if (busy) tr("解密中…") else tr("解密并导入")) }
         },
-        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text("取消") } },
+        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("取消")) } },
     )
 }

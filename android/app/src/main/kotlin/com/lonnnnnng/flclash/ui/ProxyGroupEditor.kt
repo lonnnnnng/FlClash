@@ -35,7 +35,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-private data class GroupOption(val key: String, val label: String, val default: String, val kind: String = "text")
+private data class GroupOption(val key: String, private val labelText: String, val default: String, val kind: String = "text") {
+    val label get() = tr(labelText)
+}
 private data class GroupTargetSection(val key: String, val title: String?, val choices: List<String>)
 // 作者 long：Flutter SelectionSheet 在十项起显示搜索，短列表保持一眼可扫。
 private const val GROUP_SELECTION_SEARCH_MIN_ITEM_COUNT = 10
@@ -77,10 +79,10 @@ internal fun VisualProxyGroupsEditor(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit,
     onSaveDraft: ((ProxyGroupsSave) -> Unit)? = null,
-    onValidateFilters: suspend (List<String>) -> List<String> = { error("过滤表达式校验不可用") },
+    onValidateFilters: suspend (List<String>) -> List<String> = { error(tr("过滤表达式校验不可用")) },
     recentIcons: List<String> = emptyList(),
     onRecordIcon: (String, Boolean) -> Unit = { _, _ -> },
-    onReadIcon: suspend (String) -> String = { error("图片读取不可用") },
+    onReadIcon: suspend (String) -> String = { error(tr("图片读取不可用")) },
     resourceProfiles: List<Profile> = emptyList(),
     saveError: String? = null,
 ) {
@@ -131,11 +133,11 @@ internal fun VisualProxyGroupsEditor(
             try {
                 val errors = onValidateFilters(filters)
                 listFilterIssues = groups.mapIndexed { index, group -> group.key to
-                    errors.drop(index * 2).take(2).filter(String::isNotEmpty).map { ProxyGroupIssue("过滤表达式无效：$it") } }.toMap()
+                    errors.drop(index * 2).take(2).filter(String::isNotEmpty).map { ProxyGroupIssue(tr("过滤表达式无效：{0}", it)) } }.toMap()
             } catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) {
                 listFilterIssues = groups.associate { it.key to if (it.text("filter").isNotBlank() || it.text("exclude-filter").isNotBlank())
-                    listOf(ProxyGroupIssue("无法校验过滤表达式，请重试")) else emptyList() }
+                    listOf(ProxyGroupIssue(tr("无法校验过滤表达式，请重试"))) else emptyList() }
             }
         }
     }
@@ -164,17 +166,17 @@ internal fun VisualProxyGroupsEditor(
     }
     ProfileEditorPage(
         onDismissRequest = ::exit, backTag = "proxy_group_list_back",
-        title = { Text("代理组 · " + profile.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        title = { Text(tr("代理组 · ") + profile.realLabel, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         confirmButton = {
             TextButton(onClick = ::commit, enabled = !saving && parsed.isSuccess, modifier = Modifier.testTag("proxy_group_list_save")) {
-                if (saving) CircularProgressIndicator(Modifier.size(20.dp)) else Text("保存")
+                if (saving) CircularProgressIndicator(Modifier.size(20.dp)) else Text(tr("保存"))
             }
         },
         text = {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                (error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_error")) }
+                (error ?: saveError)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_error")) }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (selecting) "已选择 ${selected.size} 项" else "策略组 · ${groups.size}", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                    Text(if (selecting) tr("已选择 {0} 项", selected.size) else tr("策略组 · {0}", groups.size), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                     if (selecting) {
                         IconButton(onClick = { groups = ProxyGroupIssues.duplicate(groups, selected.toSet(), source); selected = emptyList(); selecting = false },
                             enabled = !saving && selected.isNotEmpty(), modifier = Modifier.testTag("proxy_group_batch_copy")) { Icon(Icons.Outlined.ContentCopy, null) }
@@ -190,8 +192,8 @@ internal fun VisualProxyGroupsEditor(
                         IconButton(onClick = ::add, enabled = !saving && parsed.isSuccess, modifier = Modifier.testTag("proxy_group_add")) { Icon(Icons.Outlined.Add, null) }
                     }
                 }
-                if (sorting) Text("长按拖动调整顺序", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (groups.isEmpty()) Text("暂无策略组", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (sorting) Text(tr("长按拖动调整顺序"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (groups.isEmpty()) Text(tr("暂无策略组"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 groups.forEachIndexed { index, group ->
                     key(group.key) {
                         GroupOrderRow(index, groups.size, group.key, sorting, !saving,
@@ -201,8 +203,8 @@ internal fun VisualProxyGroupsEditor(
                                 .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                                 ProfileGroupIcon(group.text("icon"), group.name, Modifier.padding(end = 12.dp).size(32.dp))
                                 Column(Modifier.weight(1f)) {
-                                    Text(group.name.ifBlank { "未命名策略组" }, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Text(group.text("type") + " · " + ProxyGroupMembers.read(group).size + " 个成员",
+                                    Text(group.name.ifBlank { tr("未命名策略组") }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Text(group.text("type") + " · " + ProxyGroupMembers.read(group).size + tr(" 个成员"),
                                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
@@ -221,10 +223,10 @@ internal fun VisualProxyGroupsEditor(
                                     AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                                         placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                                         modifier = Modifier.testTag("proxy_group_actions_$index")) {
-                                        AppDropdownMenuItem(text = { Text("复制") }, onClick = {
+                                        AppDropdownMenuItem(text = { Text(tr("复制")) }, onClick = {
                                             groups = ProxyGroupIssues.duplicate(groups, setOf(group.key), source); menu = false
                                         }, modifier = Modifier.testTag("proxy_group_copy_$index"))
-                                        AppDropdownMenuItem(text = { Text("删除") }, danger = true,
+                                        AppDropdownMenuItem(text = { Text(tr("删除")) }, danger = true,
                                             onClick = { menu = false; deleteKeys = setOf(group.key) },
                                             modifier = Modifier.testTag("proxy_group_delete_$index"))
                                     }
@@ -236,7 +238,7 @@ internal fun VisualProxyGroupsEditor(
                 TextButton(onClick = { yaml = ProfileProxyGroupsEditor.extractGroups(
                     com.lonnnnnng.flclash.service.YamlConfigCodec.toYaml(com.google.gson.JsonObject().apply {
                         add("proxy-groups", com.google.gson.JsonArray().apply { groups.forEach { add(it.fields) } })
-                    }.toString())) }, enabled = !saving, modifier = Modifier.testTag("proxy_groups_yaml")) { Text("编辑原始 YAML") }
+                    }.toString())) }, enabled = !saving, modifier = Modifier.testTag("proxy_groups_yaml")) { Text(tr("编辑原始 YAML")) }
             }
         },
     )
@@ -256,21 +258,21 @@ internal fun VisualProxyGroupsEditor(
             groups = values; yaml = null; error = null
         }
     }
-    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃策略组修改？") }, text = { Text("尚未保存的策略组修改会丢失。") },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃策略组修改？")) }, text = { Text(tr("尚未保存的策略组修改会丢失。")) },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(tr("放弃修改")) } }, dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
     if (deleteKeys.isNotEmpty()) {
         val targets = groups.filter { it.key in deleteKeys }
         val inUse = ProxyGroupIssues.referencedNames(groups, deleteKeys, source)
-        EditorAlertDialog(onDismissRequest = { deleteKeys = emptySet() }, title = { Text("删除策略组？") },
-            text = { Text(if (inUse.isNotEmpty()) "以下策略组仍被引用：${inUse.joinToString("、")}。删除后需要修复规则或节点引用。"
-                else "将删除 ${targets.size} 个策略组：${targets.joinToString("、") { it.name }}") },
+        EditorAlertDialog(onDismissRequest = { deleteKeys = emptySet() }, title = { Text(tr("删除策略组？")) },
+            text = { Text(if (inUse.isNotEmpty()) tr("以下策略组仍被引用：{0}。删除后需要修复规则或节点引用。", inUse.joinToString("、"))
+                else tr("将删除 {0} 个策略组：{1}", targets.size, targets.joinToString("、") { it.name })) },
             confirmButton = { TextButton(onClick = {
                 val values = groups.filterNot { it.key in deleteKeys }
                 groups = values; if (selectedKey in deleteKeys) selectedKey = null
                 deleteKeys = emptySet(); selected = emptyList(); selecting = false
                 if (initialGroupIndex != null && onSaveDraft != null) onSaveDraft(saveDraft(values))
-            }, enabled = !saving, modifier = Modifier.testTag("proxy_group_delete_confirm")) { Text("删除") } },
-            dismissButton = { TextButton(onClick = { deleteKeys = emptySet() }) { Text("取消") } })
+            }, enabled = !saving, modifier = Modifier.testTag("proxy_group_delete_confirm")) { Text(tr("删除")) } },
+            dismissButton = { TextButton(onClick = { deleteKeys = emptySet() }) { Text(tr("取消")) } })
     }
 }
 
@@ -328,11 +330,11 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             delay(300)
             try { filterErrors = validateFilters(filters) }
             catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { filterErrors = listOf("无法校验过滤表达式，请重试") }
+            catch (_: Exception) { filterErrors = listOf(tr("无法校验过滤表达式，请重试")) }
         }
     }
     val issues = remember(json, groups, source) { runCatching { ProxyGroupIssues.inspect(group, groups.map { if (it.key == group.key) group else it }, source) }.getOrDefault(emptyList()) } +
-        filterErrors.filter(String::isNotEmpty).map { ProxyGroupIssue("过滤表达式无效：$it") }
+        filterErrors.filter(String::isNotEmpty).map { ProxyGroupIssue(tr("过滤表达式无效：{0}", it)) }
     // 作者 long：只保存选项身份，重建时从同一字段目录恢复子页，避免父草稿还在而未确认的值窗口已丢失。
     var editingKey by rememberSaveable(initial.key) { mutableStateOf<String?>(null) }
     val editing = (groupIdentityOptions + groupOptions).firstOrNull { it.key == editingKey }
@@ -370,7 +372,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                 require(blocking.isEmpty()) { blocking.joinToString("\n") { it.message } }
                 val values = listOf(candidate.text("filter"), candidate.text("exclude-filter"))
                 val errors = if (values.all(String::isBlank)) emptyList() else validateFilters(values).filter(String::isNotEmpty)
-                require(errors.isEmpty()) { "过滤表达式无效：" + errors.joinToString("\n") }
+                require(errors.isEmpty()) { tr("过滤表达式无效：") + errors.joinToString("\n") }
                 // 作者 long：放弃/退出已开始时，旧核心校验即使成功也不能把被丢弃的草稿改成待提交结果。
                 if (closing || discard || revision != confirmRevision) return@launch
                 if (json != frozen || memberLayout != frozenLayout) { error = "表单已更新，请再次确认"; return@launch }
@@ -420,7 +422,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         } },
         onClosed = { acceptedJson?.let { onConfirm(initial.copy(json = it, memberLayout = acceptedLayout.takeIf(List<String>::isNotEmpty))) } ?: onDismiss() }) { shown ->
     when (shown) {
-    "root" -> ProfileEditorPage(onDismissRequest = ::exit, title = { Text(if (creating) "添加策略组" else "编辑策略组") }, backTag = "proxy_group_form_back", contentPadding = PaddingValues(0.dp),
+    "root" -> ProfileEditorPage(onDismissRequest = ::exit, title = { Text(if (creating) tr("添加策略组") else tr("编辑策略组")) }, backTag = "proxy_group_form_back", contentPadding = PaddingValues(0.dp),
         confirmButton = {
             IconButton(onClick = { clearFocus[0]?.invoke(); yaml = true }, modifier = Modifier.testTag("proxy_group_quick_yaml")) { Icon(Icons.Outlined.Code, null) }
             IconButton(onClick = ::confirm, enabled = !confirming && !closing, modifier = Modifier.testTag("proxy_group_form_confirm")) {
@@ -433,35 +435,35 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             ProxyGroupInlineMembers(group, groups, source, formList,
                 onChange = { json = it.json; memberLayout = it.memberLayout.orEmpty(); error = null }, onAdd = { members = true },
                 onEdit = { editingKey = it.kind.field }, before = {
-                error?.takeUnless { message -> issues.any { it.message == message } }?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_form_error")) }
+                error?.takeUnless { message -> issues.any { it.message == message } }?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("proxy_group_form_error")) }
                 GroupIssuesBanner(issues, "proxy_group_form_issues")
-                GroupSectionHeading("常规")
+                GroupSectionHeading(tr("常规"))
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                    GroupFieldRow("名称", group.name.ifBlank { "未命名" }, "proxy_group_name") { editingKey = "name" }
+                    GroupFieldRow(tr("名称"), group.name.ifBlank { tr("未命名") }, "proxy_group_name") { editingKey = "name" }
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
-                    GroupFieldRow("代理类型", when (val type = group.text("type")) {
+                    GroupFieldRow(tr("代理类型"), when (val type = group.text("type")) {
                         "select" -> "Selector"; "url-test" -> "URLTest"; "fallback" -> "Fallback"; "load-balance" -> "LoadBalance"; else -> type
                     }, "proxy_group_type") { editingKey = "type" }
                     HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
-                    GroupFieldRow("图标", if (group.text("icon").isBlank()) "可选" else "已设置", "proxy_group_icon") { clearFocus[0]?.invoke(); iconPicker = true }
+                    GroupFieldRow(tr("图标"), if (group.text("icon").isBlank()) tr("可选") else tr("已设置"), "proxy_group_icon") { clearFocus[0]?.invoke(); iconPicker = true }
                 }
             }, after = {
-                GroupSectionHeading("选项")
+                GroupSectionHeading(tr("选项"))
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     applicable.filter { group.fields.has(it.key) }.forEach { option ->
                         Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                             if (option.kind == "boolean") {
                                 Text(option.label, Modifier.weight(1f).padding(start = 16.dp)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
-                    } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { "默认" }, "group_option_" + option.key) {
+                    } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { tr("默认") }, "group_option_" + option.key) {
                         if (option.kind == "target") { targetQuery = ""; targetSearchExpanded = false }
                         editingKey = option.key
                     } }
                         }
                     }
-                    TextButton(onClick = { optionQuery = ""; optionSearchExpanded = false; addOption = true }, modifier = Modifier.testTag("proxy_group_add_option")) { Icon(Icons.Outlined.Add, null); Text("添加设置项") }
+                    TextButton(onClick = { optionQuery = ""; optionSearchExpanded = false; addOption = true }, modifier = Modifier.testTag("proxy_group_add_option")) { Icon(Icons.Outlined.Add, null); Text(tr("添加设置项")) }
                 }
-                if (!creating) TextButton(onClick = onDelete, modifier = Modifier.testTag("proxy_group_delete")) { Text("删除策略组", color = MaterialTheme.colorScheme.error) }
+                if (!creating) TextButton(onClick = onDelete, modifier = Modifier.testTag("proxy_group_delete")) { Text(tr("删除策略组"), color = MaterialTheme.colorScheme.error) }
                 Spacer(Modifier.height(16.dp))
             })
         })
@@ -473,7 +475,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     "target" -> editing?.takeIf { it.kind == "target" }?.let { option ->
         val terms = targetQuery.lowercase().trim().split(Regex("\\s+")).filter(String::isNotEmpty)
         val matchingSections = targetSections.map { section -> section.copy(choices = section.choices.filter { choice ->
-            val label = choice.ifBlank { "默认" }.lowercase()
+            val label = choice.ifBlank { tr("默认") }.lowercase()
             terms.all(label::contains)
         }) }.filter { it.choices.isNotEmpty() }
         val searchable = targetQuery.isNotEmpty() || targetSections.sumOf { it.choices.size } >= GROUP_SELECTION_SEARCH_MIN_ITEM_COUNT
@@ -495,12 +497,12 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         }
         ProfileEditorPage(onDismissRequest = { editingKey = null; targetQuery = ""; targetSearchExpanded = false }, title = { Text(option.label) },
             backTag = "group_target_back",
-            topBarSearch = if (searchable) ProfileEditorSearchState(targetSearchExpanded, targetQuery, "搜索目标",
+            topBarSearch = if (searchable) ProfileEditorSearchState(targetSearchExpanded, targetQuery, tr("搜索目标"),
                 onQueryChange = { targetQuery = it }, onExpandedChange = { targetSearchExpanded = it }) else null,
             text = {
                 if (matchingSections.isEmpty() && terms.isNotEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    ProxyPageEmptyState("无搜索结果", "试试其他关键词，或清除搜索查看全部目标。", "group_target_empty",
-                        searching = true, actionLabel = "清除搜索", actionTag = "group_target_clear_search", onAction = { targetQuery = "" })
+                    ProxyPageEmptyState(tr("无搜索结果"), tr("试试其他关键词，或清除搜索查看全部目标。"), "group_target_empty",
+                        searching = true, actionLabel = tr("清除搜索"), actionTag = "group_target_clear_search", onAction = { targetQuery = "" })
                 } else Box(Modifier.fillMaxSize().onSizeChanged { viewportHeight = it.height }.testTag("group_target_viewport")) {
                     Column(Modifier.fillMaxWidth().verticalScroll(targetScroll).onGloballyPositioned { contentCoordinates = it }) {
                     matchingSections.forEach { section ->
@@ -519,7 +521,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                                     if (selectedChoice) selectedCoordinates = it
                                 },
                                     verticalAlignment = Alignment.CenterVertically) {
-                                    Text(choice.ifBlank { "默认" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge,
+                                    Text(choice.ifBlank { tr("默认") }, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge,
                                         maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     if (selectedChoice) Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
                                 }
@@ -532,9 +534,9 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     }
     "options" -> ProfileEditorPage(onDismissRequest = {
         collapseOptionSearch(); addOption = false
-    }, title = { Text("添加设置项") },
+    }, title = { Text(tr("添加设置项")) },
         backTag = "proxy_group_add_option_back", contentPadding = PaddingValues(0.dp),
-        topBarSearch = if (optionSearchable) ProfileEditorSearchState(optionSearchExpanded, optionQuery, "搜索设置项",
+        topBarSearch = if (optionSearchable) ProfileEditorSearchState(optionSearchExpanded, optionQuery, tr("搜索设置项"),
             onQueryChange = { optionQuery = it }, onExpandedChange = { expanded ->
                 optionSearchExpanded = expanded
                 if (!expanded) collapseOptionSearch()
@@ -542,11 +544,11 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         text = {
         val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
         if (matchingOptions.isEmpty() && optionTerms.isNotEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            ProxyPageEmptyState("无搜索结果", "试试其他关键词，或清除搜索查看全部设置项。", "group_option_empty",
-                searching = true, actionLabel = "清除搜索", actionTag = "group_option_clear_search", onAction = { optionQuery = "" })
+            ProxyPageEmptyState(tr("无搜索结果"), tr("试试其他关键词，或清除搜索查看全部设置项。"), "group_option_empty",
+                searching = true, actionLabel = tr("清除搜索"), actionTag = "group_option_clear_search", onAction = { optionQuery = "" })
         } else Column(Modifier.fillMaxWidth().verticalScroll(optionScroll).then(Modifier.onSizeChanged { report?.invoke(it.height) })) {
             val healthKeys = setOf("url", "interval", "timeout", "max-failed-times", "lazy", "expected-status", "tolerance")
-            listOf("健康检查" to true, "其他" to false).forEach { (heading, health) ->
+            listOf(tr("健康检查") to true, tr("其他") to false).forEach { (heading, health) ->
                 val options = matchingOptions.filter { (it.key in healthKeys) == health }
                 if (options.isNotEmpty()) {
                     GroupSectionHeading(heading)
@@ -568,7 +570,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                     }
                 }
             }
-            if (applicable.all { group.fields.has(it.key) }) Text("已添加全部设置项", Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (applicable.all { group.fields.has(it.key) }) Text(tr("已添加全部设置项"), Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
         }
     })
@@ -587,14 +589,14 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             editingKey = null
         })
     }
-    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃此策略组修改？") },
-        confirmButton = { TextButton(onClick = { acceptedJson = null; discard = false; closing = true }) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃此策略组修改？")) },
+        confirmButton = { TextButton(onClick = { acceptedJson = null; discard = false; closing = true }) { Text(tr("放弃修改")) } }, dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
 }
 
 @Composable
 private fun GroupsQuickYaml(original: String, groups: List<ProxyGroupDraft>,
     onDismiss: () -> Unit, onApply: (List<ProxyGroupDraft>) -> Unit) {
-    GroupYamlPage(original, "策略组 YAML", "proxy_groups_yaml", onDismiss,
+    GroupYamlPage(original, tr("策略组 YAML"), "proxy_groups_yaml", onDismiss,
         parse = { value -> ProxyGroupDrafts.readEditorYaml(value).map { next ->
             groups.firstOrNull { it.name == next.name }?.let { next.copy(key = it.key, originalName = it.originalName, memberLayout = it.memberLayout) }
                 ?: next.copy(originalName = null)
@@ -604,7 +606,7 @@ private fun GroupsQuickYaml(original: String, groups: List<ProxyGroupDraft>,
 @Composable
 private fun GroupQuickYaml(group: ProxyGroupDraft, onDismiss: () -> Unit, onApply: (ProxyGroupDraft) -> Unit) {
     val original = remember(group.key) { ProxyGroupDrafts.definitionYaml(group) }
-    GroupYamlPage(original, "快捷 YAML", "proxy_group_yaml", onDismiss,
+    GroupYamlPage(original, tr("快捷 YAML"), "proxy_group_yaml", onDismiss,
         parse = { ProxyGroupDrafts.definition(it, group) },
         locate = com.lonnnnnng.flclash.service.YamlConfigCodec::errorLocation, onApply = onApply)
 }
@@ -633,18 +635,18 @@ private fun <T> GroupYamlPage(original: String, title: String, tag: String, onDi
             errorOffset = position?.offset
             // 作者 long：解析器异常包含原文片段，界面只显示安全行列和修复提示，不能回显潜在凭据。
             failure = if (position == null) "策略组 YAML 格式无效，请检查列表、名称和类型"
-                else "第 ${position.line} 行，第 ${position.column} 列格式无效，请检查缩进和括号"
+                else tr("第 {0} 行，第 {1} 列格式无效，请检查缩进和括号", position.line, position.column)
             locateError()
             if (leaving) discard = true
         }
     }
     ProfileEditorPage(onDismissRequest = { apply(true) }, title = { Text(title) }, backTag = "${tag}_back",
-        confirmButton = { TextButton(onClick = { apply(false) }, Modifier.testTag("${tag}_confirm")) { Text("确认") } },
+        confirmButton = { TextButton(onClick = { apply(false) }, Modifier.testTag("${tag}_confirm")) { Text(tr("确认")) } },
         contentPadding = PaddingValues(), text = {
             Column(Modifier.fillMaxSize().testTag("${tag}_scroll")) {
                 failure?.let { message -> Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(message, color = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f).testTag("${tag}_error"))
-                    if (errorOffset != null) TextButton(::locateError, Modifier.testTag("${tag}_locate_error")) { Text("定位") }
+                    Text(tr(message), color = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f).testTag("${tag}_error"))
+                    if (errorOffset != null) TextButton(::locateError, Modifier.testTag("${tag}_locate_error")) { Text(tr("定位")) }
                 } }
                 ProfileCodeField(value, { next ->
                     if (next.text != value.text) { failure = null; errorOffset = null }
@@ -653,9 +655,9 @@ private fun <T> GroupYamlPage(original: String, title: String, tag: String, onDi
                     scrollState = LocalEmbeddedProfilePage.current?.scroll ?: rememberScrollState())
             }
         })
-    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") },
-        text = { Text(failure.orEmpty()) }, confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } },
-        dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃 YAML 修改？")) },
+        text = { Text(tr(failure.orEmpty())) }, confirmButton = { TextButton(onClick = onDismiss) { Text(tr("放弃修改")) } },
+        dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
 }
 
 // 作者 long：Fallback 的内置目标与普通代理来自不同命名域，分组呈现可避免用户把回退策略看成代理节点。
@@ -663,13 +665,13 @@ private fun groupTargetSections(option: GroupOption, group: ProxyGroupDraft, sou
     if (option.key == "empty-fallback") {
         val basic = ProxyGroupDrafts.builtins.toList()
         listOf(
-            GroupTargetSection("basic", "基础策略", basic),
-            GroupTargetSection("proxies", "代理", ProxyGroupDrafts.proxyNames(source).filterNot { it in basic }),
+            GroupTargetSection("basic", tr("基础策略"), basic),
+            GroupTargetSection("proxies", tr("代理"), ProxyGroupDrafts.proxyNames(source).filterNot { it in basic }),
         )
     } else {
         listOf(
             GroupTargetSection("default", null, listOf("")),
-            GroupTargetSection("proxies", "代理", ProxyGroupDrafts.members(group).filterNot { it.provider }.map { it.name }),
+            GroupTargetSection("proxies", tr("代理"), ProxyGroupDrafts.members(group).filterNot { it.provider }.map { it.name }),
         )
     }
 
@@ -694,15 +696,15 @@ private fun GroupValueDialog(option: GroupOption, initial: String, choices: List
     var error by rememberSaveable(option.key) { mutableStateOf<String?>(null) }
     EditorAlertDialog(onDismissRequest = onDismiss, title = { Text(option.label) }, text = {
         if (choices.isNotEmpty()) Column(Modifier.verticalScroll(rememberScrollState())) {
-            choices.distinct().forEach { choice -> TextButton(onClick = { onSave(choice) }, Modifier.fillMaxWidth()) { Text(choice.ifBlank { "默认" }) } }
+            choices.distinct().forEach { choice -> TextButton(onClick = { onSave(choice) }, Modifier.fillMaxWidth()) { Text(choice.ifBlank { tr("默认") }) } }
         } else Column(Modifier.verticalScroll(rememberScrollState())) {
             OutlinedTextField(value, { value = it; error = null }, Modifier.fillMaxWidth().testTag("group_value_input"), isError = error != null,
-                supportingText = { error?.let { Text(it) } }, minLines = 1, maxLines = 4)
+                supportingText = { error?.let { Text(tr(it)) } }, minLines = 1, maxLines = 4)
             if (option.key in setOf("filter", "exclude-filter")) FilterPresetChoices(value) { value = it; error = null }
         }
     }, confirmButton = { if (choices.isEmpty()) TextButton(onClick = {
         if (option.kind == "number" && value.toLongOrNull()?.let { it >= 0 } != true) error = "请输入非负整数"
         else if (option.key == "name" && value.isBlank()) error = "名称不能为空"
         else onSave(if (option.key == "name") value.trim() else value)
-    }, modifier = Modifier.testTag("group_value_confirm")) { Text("确认") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } })
+    }, modifier = Modifier.testTag("group_value_confirm")) { Text(tr("确认")) } }, dismissButton = { TextButton(onClick = onDismiss) { Text(tr("取消")) } })
 }

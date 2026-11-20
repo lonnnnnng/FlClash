@@ -30,8 +30,8 @@ internal fun RuleResourceBindings(section: String, source: String, resources: Li
         definitions?.keySet()?.let { names.addAll(it) }
         names.toList()
     }
-    Text("规则资源引用", style = MaterialTheme.typography.titleMedium)
-    if (referenced.isEmpty()) Text("当前配置尚未引用规则资源", style = MaterialTheme.typography.bodySmall)
+    Text(tr("规则资源引用"), style = MaterialTheme.typography.titleMedium)
+    if (referenced.isEmpty()) Text(tr("当前配置尚未引用规则资源"), style = MaterialTheme.typography.bodySmall)
     referenced.forEach { name ->
         val definition = definitions?.get(name)
         val id = RuleResources.idOf(definition)
@@ -40,27 +40,27 @@ internal fun RuleResourceBindings(section: String, source: String, resources: Li
         Row(Modifier.fillMaxWidth().testTag("resource_binding_$name"), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(name)
-                Text(if (missing) "资源缺失，请重新选择" else if (resource != null) "全局资源 · ${resource.label}" else "配置自有资源", style = MaterialTheme.typography.bodySmall,
+                Text(if (missing) tr("资源缺失，请重新选择") else if (resource != null) tr("全局资源 · {0}", resource.label) else tr("配置自有资源"), style = MaterialTheme.typography.bodySmall,
                     color = if (missing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (missing) Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error)
-            TextButton(onClick = { alias = name; choosing = true }, enabled = enabled) { Text("选择") }
+            TextButton(onClick = { alias = name; choosing = true }, enabled = enabled) { Text(tr("选择")) }
         }
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        TextButton(onClick = { alias = null; choosing = true }, enabled = enabled, modifier = Modifier.testTag("resource_binding_add")) { Text("选择规则资源") }
-        TextButton(onClick = onManage, enabled = enabled) { Text("管理资源") }
+        TextButton(onClick = { alias = null; choosing = true }, enabled = enabled, modifier = Modifier.testTag("resource_binding_add")) { Text(tr("选择规则资源")) }
+        TextButton(onClick = onManage, enabled = enabled) { Text(tr("管理资源")) }
     }
-    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-    if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; search = "" }, title = { Text("选择规则资源") }, backTag = "resource_picker_back", bottomBar = { DockedProfileSearch(search, { search = it }, "rule_resource_binding_search", enabled = enabled) }, text = {
+    error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
+    if (choosing) ProfileEditorPage(onDismissRequest = { choosing = false; search = "" }, title = { Text(tr("选择规则资源")) }, backTag = "resource_picker_back", bottomBar = { DockedProfileSearch(search, { search = it }, "rule_resource_binding_search", enabled = enabled) }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val matches = resources.filter { it.label.contains(search.trim(), true) }
             val listState = rememberResourcePickerListState(matches.map { it.id },
                 alias?.let { RuleResources.idOf(definitions?.get(it)) })
-            if (resources.isEmpty()) { Text("暂无全局规则资源，请先添加资源。"); TextButton(onClick = { choosing = false; onManage() }) { Text("管理资源") } }
+            if (resources.isEmpty()) { Text(tr("暂无全局规则资源，请先添加资源。")); TextButton(onClick = { choosing = false; onManage() }) { Text(tr("管理资源")) } }
             else if (matches.isEmpty()) Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                ProxyPageEmptyState("无搜索结果", "试试其他关键词，或清除搜索查看全部规则资源。", "rule_resource_binding_empty",
-                    searching = true, actionLabel = "清除搜索", actionTag = "rule_resource_binding_clear", onAction = { search = "" })
+                ProxyPageEmptyState(tr("无搜索结果"), tr("试试其他关键词，或清除搜索查看全部规则资源。"), "rule_resource_binding_empty",
+                    searching = true, actionLabel = tr("清除搜索"), actionTag = "rule_resource_binding_clear", onAction = { search = "" })
             } else Surface(Modifier.fillMaxWidth().weight(1f, fill = false), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
             LazyColumn(state = listState) {
                 items(matches, key = { it.id }) { resource ->

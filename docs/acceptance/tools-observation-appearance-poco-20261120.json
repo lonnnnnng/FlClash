@@ -1,0 +1,437 @@
+{
+  "id": "KUI-VIS-062",
+  "date": "2026-11-20",
+  "scope": [
+    "工具单入口四个完整可搜索Tab",
+    "全应用中文/英文/跟随系统",
+    "深色/浅色/跟随系统"
+  ],
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "package": "com.lonnnnnng.flclash.motion",
+    "glassDefault": false
+  },
+  "implementation": {
+    "tabs": [
+      "REQUESTS",
+      "CONNECTIONS",
+      "DNS",
+      "LOGS"
+    ],
+    "oneToolsEntry": "tools_item_observations",
+    "independentQueryKeywordsScrollAndDetails": true,
+    "connectionListLimitRemoved": true,
+    "dnsCacheAndHistorySeparate": true,
+    "logClearAndExportPreserved": true,
+    "duplicateGeneralLogsEntryRemoved": true,
+    "languageOptions": [
+      "SYSTEM",
+      "CHINESE",
+      "ENGLISH"
+    ],
+    "themeOptions": [
+      "SYSTEM",
+      "LIGHT",
+      "DARK"
+    ],
+    "resourcePairs": 2178,
+    "preserveOriginalDataAndLogs": true
+  },
+  "build": {
+    "app": {
+      "tests": 624,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 220,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "core": {
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "common": {
+      "tests": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "motionBenchmark": {
+        "Warning": 75,
+        "Hint": 15
+      },
+      "release": {
+        "Warning": 71,
+        "Hint": 14
+      }
+    },
+    "release": {
+      "sha256": "7f8595ced58b49c48b5cd7684569d72fa182798ca2174deace10505094aa0630",
+      "bytes": 49547805,
+      "signed": false,
+      "installed": false
+    },
+    "unitExecution": "build7 App624实际执行；其余293在build1实际执行，后续复用；总917，非全部再次执行。",
+    "sourceSnapshotMatchesInstalled4": true
+  },
+  "installed": {
+    "com.lonnnnnng.flclash.motion": {
+      "sha256": "1e7bf800b1e2b7a07aa31230ead0c7a5e5e5cfbf7a6efccf7ea6f1493efbd634",
+      "bytes": 67457097,
+      "installedMatched": true
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "sha256": "4574d7dbcd92be5bda37ec16f8a1c21daa2889ec4929b671588dec9022f54f47",
+      "bytes": 3174154,
+      "installedMatched": true
+    }
+  },
+  "sourceManifestSha256": "aea4be509fbf8c400672c889a88d7f5bbe2b59b4428a45cee8c6b138880578e5",
+  "tests": {
+    "final4": {
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+          "test": "clearsCacheHistoryAndLogsIndependentlyAndExports",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+          "test": "fourTabsSearchCompleteListsAndKeepIndependentQueries",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+          "test": "connectionDetailsKeepSnapshotAfterPollingRemovesRow",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+          "test": "scrollingAndSearchSurviveTabAndSavedStateRestoration",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+          "test": "mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+          "test": "mainActivityRetainsObservationTabAcrossPrimaryNavigationAndRecreation",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+          "test": "mainActivityRendersObservationEmptyStatesFromEachTab",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.AppearanceHostInstrumentedTest",
+          "test": "translatedMessagesPreserveParametersAndAllCatalogEntriesResolve",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.AppearanceHostInstrumentedTest",
+          "test": "languageSwitchKeepsUnsubmittedTextDraft",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.AppearanceHostInstrumentedTest",
+          "test": "languageThemePersistenceAndFourTabsKeepProfileAndRuntime",
+          "code": 0
+        }
+      ],
+      "seconds": 44.256,
+      "screenshots": {
+        "tools_draft_en_dark": {
+          "count": 3,
+          "bytes": 81898,
+          "sha256": "8d6fb47d29a6be46b4b0e2654824287186f9ec435e2f5ee608f0b449f1c7cf64",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_language_zh": {
+          "count": 3,
+          "bytes": 108682,
+          "sha256": "50ffdd3715f641d4d58842e5681d97888390c53b8beedea35896aeb8bc9fabbe",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_theme_en": {
+          "count": 4,
+          "bytes": 113341,
+          "sha256": "1a5292c7cc17a664a72c4da0eb3545e7d8145b4c107260e98178b8d8b8f46dec",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_en_dark": {
+          "count": 4,
+          "bytes": 128070,
+          "sha256": "dcbd7d217e74ffceb49f596ad294ac5bb512255002fc9901edafec2be9f70878",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_general_en": {
+          "count": 5,
+          "bytes": 178379,
+          "sha256": "598dbeaa76f899ec66e601e569836d31b178c440240ba0a5ff99c5f494fadd47",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_network_en": {
+          "count": 6,
+          "bytes": 189036,
+          "sha256": "d3d6d00e091c44705aae3aa9b0e92e8b178f840d19f2c7fd0e177197846e9a61",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_global_dns_en": {
+          "count": 3,
+          "bytes": 84408,
+          "sha256": "b5beee17480f3559ec1c18d3adf27d0771a171f8076dc093cf1c5409dc99179c",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_en_requests": {
+          "count": 3,
+          "bytes": 90083,
+          "sha256": "f4726f5255621f9931492f9d9f42a29bfea9c4aa112b5f4428f2f85917438229",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_en_connections": {
+          "count": 3,
+          "bytes": 90081,
+          "sha256": "f52ab991246899a8b7878bffb9c468994ffe908892df54e542e6c4140b3cb74d",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_en_dns": {
+          "count": 3,
+          "bytes": 90081,
+          "sha256": "3389330e917907692d7195f0cb26c648e6134b6643c195e7cca3dc6c5cc4e143",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_en_logs": {
+          "count": 3,
+          "bytes": 81330,
+          "sha256": "9d22b7712add8709a0f929239067b277ef38e6d81abf89ffaa7bbbe0f3303fb4",
+          "width": 1080,
+          "height": 2400
+        },
+        "tools_zh_light": {
+          "count": 4,
+          "bytes": 120137,
+          "sha256": "351d2fdf7d9f664a9c58adf399d3d6333f4926ed9c5145bacaa705242c9913b4",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "logSha256": "ab5ca962f86a0c442dd30d3bde9bc71300bb879f29822a06cec265eb0daf2133"
+    },
+    "regression2": {
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationListInstrumentedTest",
+          "test": "expandedSearchReplacesToolbarActionsAndClearKeepsSearchOpen",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ObservationListInstrumentedTest",
+          "test": "dnsDetailSnapshotAndSearchRestoreAfterActivityRecreation",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GeneralSettingsInstrumentedTest",
+          "test": "portValidationAndSaveFailureKeepDraftAndUserAgentUsesIndependentPage",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis061ClearSaveRetainsWindowUntilFadeAndClosingRestoreDoesNotReplay",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060NormalizedNumbersAndClearedFieldCanBeReadded",
+          "code": 0
+        }
+      ],
+      "seconds": 14.822,
+      "screenshots": {
+        "general_ports_failure": {
+          "count": 4,
+          "bytes": 118204,
+          "sha256": "d563a5434f5cdc8976a7dfc401cbb33dcc091d3d73c68b0774f70c24695ad219",
+          "width": 1080,
+          "height": 2400
+        },
+        "general_user_agents_light": {
+          "count": 2,
+          "bytes": 71860,
+          "sha256": "f8e8778a8b07340b8cdc656542d28128bdbbf3d06517b384182cc5fcdf7ea92d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_clear_fading": {
+          "count": 3,
+          "bytes": 103408,
+          "sha256": "4f571a2b712d27806d2228e8025a22539327cceefed7eef7352c1e9dfa84332e",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "logSha256": "ae64e2181956ffc61628da1f799871cce4e009bb456aa758a96c4891acfd93bd"
+    },
+    "cold-prepare1": {
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.AppearanceHostInstrumentedTest",
+          "test": "coldPrepareAppearance",
+          "code": 0
+        }
+      ],
+      "seconds": 1.224,
+      "screenshots": {},
+      "logSha256": "b08c2308385f3371f0a0d1bf1c0412e620e39855f15f615eb8fac0a207ef6b63"
+    },
+    "cold-verify1": {
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.AppearanceHostInstrumentedTest",
+          "test": "coldVerifyAppearanceAndRestore",
+          "code": 0
+        }
+      ],
+      "seconds": 2.378,
+      "screenshots": {
+        "tools_cold_en_dark": {
+          "count": 4,
+          "bytes": 128670,
+          "sha256": "e7c0313d503c5bb2c18b7fd129ff41951c31b38982aa121414e3c4122388eca0",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "logSha256": "e24dde78961fbcfc807a0ec5273db5ce0b9dd6790ffafebb6bdda3ffdbaed97c"
+    }
+  },
+  "cold": {
+    "preparePid": "24772",
+    "absentBeforeVerify": true,
+    "verifyPid": "25008",
+    "passed": true,
+    "boundary": "Instrumentation结束后旧进程已退出；未执行force-stop，不宣称杀死存活进程。"
+  },
+  "protection": {
+    "packages": {
+      "com.lonnnnnng.flclash.motion.test": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      }
+    },
+    "sourceAndSettingsPreserved": true,
+    "packageListPreserved": true,
+    "originalFlutterIdentityPreserved": true,
+    "originalFlutterIdentity": [
+      "versionCode=2026112401 minSdk=24 targetSdk=37",
+      "versionName=0.9.3",
+      "lastUpdateTime=2026-11-07 02:44:08",
+      "firstInstallTime=2026-11-07 02:44:08"
+    ]
+  },
+  "resourceCheck": {
+    "command": "python3 tool/check_app_text.py",
+    "pairs": 2178,
+    "passed": true,
+    "androidResourceReadback": true
+  },
+  "failuresPreserved": [
+    {
+      "batch": "compile1",
+      "reason": "旧ObservationPage回调测试未适配，产品编译通过"
+    },
+    {
+      "batch": "build1",
+      "reason": "测试assertTextEquals导入遗漏"
+    },
+    {
+      "batch": "build2",
+      "reason": "Lint读取Hilt Release生成文件竞争"
+    },
+    {
+      "batch": "final1",
+      "reason": "Android ICU拒绝未转义右花括号，启动崩溃，0项执行"
+    },
+    {
+      "batch": "lint3",
+      "reason": "GroupMemberChoice误用entry属性，改为member"
+    },
+    {
+      "batch": "build4",
+      "reason": "StateRestorationTester误用新实验API包名"
+    },
+    {
+      "batch": "final2",
+      "reason": "attachBaseContext内applicationContext未就绪，启动崩溃，0项执行"
+    },
+    {
+      "batch": "cold-driver1",
+      "reason": "prepare结束后进程已退出，pidof返回1；改为先证明缺席，再验证新PID。不声称force-stop。"
+    }
+  ],
+  "earlierPassingBatches": [
+    {
+      "batch": "final3",
+      "tests": 9,
+      "screenshots": 11,
+      "limitation": "部分截图为过渡帧，不计最终稳定视觉；后续final4补等过渡完成和精确页面断言"
+    },
+    {
+      "batch": "regression1",
+      "tests": 5,
+      "limitation": "中间build6包回归，最终同套build7回归见regression2"
+    }
+  ],
+  "visualReview": {
+    "final4": 12,
+    "regression2": 3,
+    "coldVerify": 1,
+    "reviewed": true,
+    "boundary": "组件淡出中间帧保留其原意；其他工具/设置图为稳定帧。未作全应用逐页像素验收或Flutter同态对照。部分截图保留空配置下常规LAN读取失败提示。"
+  },
+  "limitations": [
+    "未启动核心/VPN或使用真实网络与订阅；本轮无配置导入",
+    "原正式包及Flutter未启动/修改；MainActivity保护断言发生在独立motion包",
+    "系统跟随映射有JVM覆盖，未在本轮改手机系统语种/深色设置",
+    "旧API语言及通知/磁贴/Launcher的实机显示未单独验收",
+    "未签名Release仅构建/R8/DEX核验，未安装或发布",
+    "AppBundleLocaleChanges警告保留；当前发布为包含双语的完整APK，未验AAB语言拆包",
+    "917项是App624本轮最终执行加其余293同任务前批执行/复用，非最终全量重执行",
+    "完整Flutter视觉、连续转场、菜单慢帧仍按原清单推进"
+  ],
+  "evidenceRoot": "../acceptance-artifacts/tools-language-theme-poco-20261120",
+  "releasePublished": false
+}

@@ -33,7 +33,7 @@ internal fun ProfileExtensionRoute(id: Long, controller: ProfileExtensionControl
     LaunchedEffect(scripts) { controller.refreshApplied() }
     if (!state.ready || state.loading) {
         // 作者 long：首次读库结束前不能让空profile消费已恢复的保存树，否则子页与批选会被初始空快照重置。
-        ProfileEditorPage({}, { Text("扩展") }, { CircularProgressIndicator(Modifier.padding(24.dp)) })
+        ProfileEditorPage({}, { Text(tr("扩展")) }, { CircularProgressIndicator(Modifier.padding(24.dp)) })
         return
     }
     val draft = state.draft ?: return
@@ -122,36 +122,36 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
         }
     }
     ProfileEditorPage(onDismissRequest = ::back, backTag = "profile_extension_back",
-        title = { Text(when (subpage) { 1 -> "管理全局附加规则"; 2 -> "全局附加规则"; else -> "扩展" }) },
+        title = { Text(when (subpage) { 1 -> tr("管理全局附加规则"); 2 -> tr("全局附加规则"); else -> tr("扩展") }) },
         confirmButton = {
             if (subpage == 0 && state.isCurrent && (!state.applied || state.applying)) TextButton(onClick = onApply, enabled = canChange,
                 modifier = Modifier.testTag("profile_extension_apply")) {
-                if (state.applying) CircularProgressIndicator(Modifier.size(20.dp)) else Text("立即应用")
+                if (state.applying) CircularProgressIndicator(Modifier.size(20.dp)) else Text(tr("立即应用"))
             }
         }, text = {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 state.error?.let { error ->
-                    Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_extension_error"))
+                    Text(tr(error), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_extension_error"))
                     Row {
                         TextButton(onClick = when { state.draft?.pending != null -> onRetryPending; state.profile == null -> onRetry; else -> onApply },
-                            enabled = !busy && !state.blocked) { Text(if (state.draft?.pending?.committed == true) "继续编辑" else "重试") }
-                        if (state.draft?.pending != null) TextButton(onClick = onDiscardPending, enabled = !busy) { Text("放弃这次保存") }
-                        TextButton(onClick = onSkipApply, enabled = !busy) { Text("暂不应用并退出") }
+                            enabled = !busy && !state.blocked) { Text(if (state.draft?.pending?.committed == true) tr("继续编辑") else tr("重试")) }
+                        if (state.draft?.pending != null) TextButton(onClick = onDiscardPending, enabled = !busy) { Text(tr("放弃这次保存")) }
+                        TextButton(onClick = onSkipApply, enabled = !busy) { Text(tr("暂不应用并退出")) }
                     }
                 }
                 if (state.loading) CircularProgressIndicator(Modifier.padding(24.dp))
                 state.profile?.let { profile ->
                     if (subpage == 0) {
                         Text(profile.realLabel, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(if (state.saving) "保存中…" else if (state.draft?.pending != null) "上次保存待处理" else if (!state.isCurrent) "已保存，选用此配置时应用" else if (state.applied) "已应用" else "已保存，返回时自动应用",
+                        Text(if (state.saving) tr("保存中…") else if (state.draft?.pending != null) tr("上次保存待处理") else if (!state.isCurrent) tr("已保存，选用此配置时应用") else if (state.applied) tr("已应用") else tr("已保存，返回时自动应用"),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         ProfileFormSection {
-                            listOf("standard" to "标准", "script" to "脚本").forEach { (mode, label) ->
+                            listOf("standard" to tr("标准"), "script" to tr("脚本")).forEach { (mode, label) ->
                                 Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(enabled = canChange) { onMode(mode) }.testTag("profile_extension_mode_$mode"), verticalAlignment = Alignment.CenterVertically) {
                                     RadioButton(selected = state.mode == mode, onClick = null)
                                     Column(Modifier.padding(start = 12.dp).weight(1f)) {
                                         Text(label, style = MaterialTheme.typography.titleSmall)
-                                        Text(if (mode == "standard") "附加规则并设置默认目标" else "通过 JavaScript 修改配置", style = MaterialTheme.typography.bodySmall,
+                                        Text(if (mode == "standard") tr("附加规则并设置默认目标") else tr("通过 JavaScript 修改配置"), style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
@@ -159,7 +159,7 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                         }
                     }
                     if (subpage == 1) {
-                        OutlinedTextField(query, { query = it }, label = { Text("搜索全局规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_global_search"), singleLine = true)
+                        OutlinedTextField(query, { query = it }, label = { Text(tr("搜索全局规则")) }, modifier = Modifier.fillMaxWidth().testTag("extension_global_search"), singleLine = true)
                         state.globalRules.filter { it.value.contains(query, true) }.forEach { rule ->
                             Row(Modifier.fillMaxWidth().clickable(canChange) { onDisabled(state.settings.disabledGlobalRuleIds.let { if (rule.id in it) it - rule.id else it + rule.id }) }, verticalAlignment = Alignment.CenterVertically) {
                                 Text(rule.value, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
@@ -168,12 +168,12 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                                 }, enabled = canChange, modifier = Modifier.testTag("extension_global_toggle_${rule.id}"))
                             }
                         }
-                        if (state.globalRules.isEmpty()) Text("暂无全局附加规则", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        TextButton(onClick = { subpage = 2; query = "" }, modifier = Modifier.testTag("extension_global_edit")) { Text("前往配置全局附加规则") }
+                        if (state.globalRules.isEmpty()) Text(tr("暂无全局附加规则"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        TextButton(onClick = { subpage = 2; query = "" }, modifier = Modifier.testTag("extension_global_edit")) { Text(tr("前往配置全局附加规则")) }
                     } else if (global || state.mode == "standard") {
-                        if (global) OutlinedTextField(query, { query = it }, label = { Text("搜索规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_rules_search"), singleLine = true)
+                        if (global) OutlinedTextField(query, { query = it }, label = { Text(tr("搜索规则")) }, modifier = Modifier.fillMaxWidth().testTag("extension_rules_search"), singleLine = true)
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text(if (selected.isEmpty()) "附加规则 · ${rules.size}" else "已选 ${selected.size} 项", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                            Text(if (selected.isEmpty()) tr("附加规则 · {0}", rules.size) else tr("已选 {0} 项", selected.size), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                             if (selected.isNotEmpty()) {
                                 IconButton(onClick = { selected = if (visible.all { it.id in selected }) emptySet() else visible.map { it.id }.toSet() }, enabled = canChange,
                                     modifier = Modifier.testTag("extension_select_all")) { Icon(Icons.Outlined.SelectAll, null) }
@@ -184,8 +184,8 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                                 IconButton(onClick = { formOriginalValue = null; formId = "new" }, enabled = canChange, modifier = Modifier.testTag("extension_rule_add")) { Icon(Icons.Outlined.Add, null) }
                             }
                         }
-                        if (sorting) Text("长按拖动调整顺序，或使用上下移动按钮", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        if (rules.isEmpty()) Text("暂无附加规则", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (sorting) Text(tr("长按拖动调整顺序，或使用上下移动按钮"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (rules.isEmpty()) Text(tr("暂无附加规则"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         visible.forEach { rule -> key(rule.id) {
                             ExtensionRuleRow(rule, ordered.indexOf(rule), ordered.size, sorting, canChange, rule.id in selected,
                                 onSelected = { selected = if (rule.id in selected) selected - rule.id else selected + rule.id },
@@ -196,14 +196,14 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                                 }, onDrop = { persist(ordered) }, onCancel = { ordered = rules })
                         } }
                         if (!global) {
-                            ProfileSectionRow("默认目标", profile.matchTarget ?: "跟随配置", Icons.Outlined.Route, canChange,
+                            ProfileSectionRow(tr("默认目标"), profile.matchTarget ?: tr("跟随配置"), Icons.Outlined.Route, canChange,
                                 Modifier.testTag("extension_match_target")) { showTarget = true }
-                            if (profile.matchTarget != null && profile.matchTarget !in state.targets) Text("默认目标已不在配置中，请重新选择", color = MaterialTheme.colorScheme.error)
-                            TextButton(onClick = { subpage = 1; selected = emptySet(); sorting = false }, modifier = Modifier.testTag("extension_global_control")) { Text("管理全局附加规则") }
+                            if (profile.matchTarget != null && profile.matchTarget !in state.targets) Text(tr("默认目标已不在配置中，请重新选择"), color = MaterialTheme.colorScheme.error)
+                            TextButton(onClick = { subpage = 1; selected = emptySet(); sorting = false }, modifier = Modifier.testTag("extension_global_control")) { Text(tr("管理全局附加规则")) }
                         }
                     } else {
-                        Text("脚本", style = MaterialTheme.typography.titleSmall)
-                        if (scripts.isEmpty()) Text("暂无脚本，请先前往配置脚本", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(tr("脚本"), style = MaterialTheme.typography.titleSmall)
+                        if (scripts.isEmpty()) Text(tr("暂无脚本，请先前往配置脚本"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         scripts.forEach { script ->
                             Row(Modifier.fillMaxWidth().clickable(enabled = canChange) { onScript(if (profile.scriptId == script.id) null else script.id) }
                                 .padding(vertical = 8.dp).testTag("extension_script_${script.id}"), verticalAlignment = Alignment.CenterVertically) {
@@ -212,12 +212,12 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                                 Checkbox(profile.scriptId == script.id, onCheckedChange = null)
                             }
                         }
-                        TextButton(onClick = onOpenScripts, enabled = canChange, modifier = Modifier.testTag("extension_manage_scripts")) { Text("前往配置脚本") }
+                        TextButton(onClick = onOpenScripts, enabled = canChange, modifier = Modifier.testTag("extension_manage_scripts")) { Text(tr("前往配置脚本")) }
                     }
                     if (subpage == 0) {
                         HorizontalDivider(Modifier.padding(top = 12.dp))
-                        ProfileSectionRow("DNS", "覆盖当前配置的 DNS 设置", Icons.Outlined.Dns, canEditSource && canChange, Modifier.testTag("profile_extension_dns"), onDns)
-                        ProfileSectionRow("Provider", "代理和规则资源", Icons.Outlined.Cloud, canEditSource && canChange, Modifier.testTag("profile_extension_providers"), onProviders)
+                        ProfileSectionRow("DNS", tr("覆盖当前配置的 DNS 设置"), Icons.Outlined.Dns, canEditSource && canChange, Modifier.testTag("profile_extension_dns"), onDns)
+                        ProfileSectionRow("Provider", tr("代理和规则资源"), Icons.Outlined.Cloud, canEditSource && canChange, Modifier.testTag("profile_extension_providers"), onProviders)
                     }
                     Spacer(Modifier.height(16.dp))
                 }
@@ -232,8 +232,8 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
         val actual = rules.firstOrNull { it.id == id }
         val ownResult = pendingRuleId == id && actual?.value == pendingRuleValue
         val conflict = when {
-            state.blocked -> "配置或规则已变化，草稿已保留，请返回后重新打开"
-            id != "new" && !ownResult && actual != initial -> "原规则已被修改或删除，草稿已保留，请返回后重新打开"
+            state.blocked -> tr("配置或规则已变化，草稿已保留，请返回后重新打开")
+            id != "new" && !ownResult && actual != initial -> tr("原规则已被修改或删除，草稿已保留，请返回后重新打开")
             else -> null
         }
         ExtensionRuleForm(initial, state.targets, state.saving, state.error,
@@ -248,16 +248,16 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
             }
         }
     }
-    if (confirmDelete) EditorAlertDialog(onDismissRequest = { if (!busy) confirmDelete = false }, title = { Text("删除规则") }, text = {
+    if (confirmDelete) EditorAlertDialog(onDismissRequest = { if (!busy) confirmDelete = false }, title = { Text(tr("删除规则")) }, text = {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text("删除所选 ${selectedVisibleIds.size} 条规则？")
+            Text(tr("删除所选 {0} 条规则？", selectedVisibleIds.size))
             if (deleteAttempted && pendingDeleteVersion == null) state.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_delete_error"))
+                Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_delete_error"))
             }
             if (state.interrupted) Row {
                 TextButton(onClick = onRetryPending, enabled = !busy && !state.blocked,
-                    modifier = Modifier.testTag("extension_delete_retry")) { Text(if (state.draft?.pending?.committed == true) "继续编辑" else "重试删除") }
-                TextButton(onClick = { confirmDelete = false; onDiscardPending() }, enabled = !busy) { Text("放弃这次保存") }
+                    modifier = Modifier.testTag("extension_delete_retry")) { Text(if (state.draft?.pending?.committed == true) tr("继续编辑") else tr("重试删除")) }
+                TextButton(onClick = { confirmDelete = false; onDiscardPending() }, enabled = !busy) { Text(tr("放弃这次保存")) }
             }
         }
     }, confirmButton = { TextButton(onClick = {
@@ -269,9 +269,9 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
             persist(rules.filterNot { it.id in selectedVisibleIds })
         }
     }, enabled = canChange && selectedVisibleIds.isNotEmpty(), modifier = Modifier.testTag("extension_delete_confirm")) {
-        Text(if (pendingDeleteVersion != null) "删除中…" else "删除")
+        Text(if (pendingDeleteVersion != null) tr("删除中…") else tr("删除"))
     } }, dismissButton = { TextButton(onClick = { confirmDelete = false; if (state.draft?.pending != null) onDiscardPending() }, enabled = !busy,
-        modifier = Modifier.testTag("extension_delete_cancel")) { Text("取消") } })
+        modifier = Modifier.testTag("extension_delete_cancel")) { Text(tr("取消")) } })
 }
 
 @Composable
@@ -308,10 +308,10 @@ private fun ExtensionRuleRow(rule: ExtensionRule, index: Int, count: Int, sortin
 @Composable
 private fun ExtensionTargetPicker(selected: String?, targets: List<String>, follow: Boolean, onDismiss: () -> Unit, onSelect: (String?) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    ProfileEditorPage(onDismiss, { Text("选择目标") }, {
+    ProfileEditorPage(onDismiss, { Text(tr("选择目标")) }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(query, { query = it }, label = { Text("搜索目标") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-            if (follow && query.isBlank()) TextButton(onClick = { onSelect(null) }, modifier = Modifier.testTag("extension_follow_profile")) { Text("跟随配置") }
+            OutlinedTextField(query, { query = it }, label = { Text(tr("搜索目标")) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+            if (follow && query.isBlank()) TextButton(onClick = { onSelect(null) }, modifier = Modifier.testTag("extension_follow_profile")) { Text(tr("跟随配置")) }
             targets.filter { it.contains(query, true) }.forEach { target ->
                 Row(Modifier.fillMaxWidth().clickable { onSelect(target) }.padding(vertical = 12.dp).testTag("extension_target_$target"), verticalAlignment = Alignment.CenterVertically) {
                     Text(target, Modifier.weight(1f)); if (target == selected) Icon(Icons.Outlined.Check, null)
@@ -347,14 +347,14 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
             type != "DOMAIN-SUFFIX" || target != "DIRECT" || noResolve || content.text.isNotEmpty() || raw.text.isNotEmpty()
         if (changed) discard = true else onDismiss()
     }
-    ProfileEditorPage(::back, { Text(if (initial == null) "添加规则" else "编辑规则") }, {
+    ProfileEditorPage(::back, { Text(if (initial == null) tr("添加规则") else tr("编辑规则")) }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            (blockedMessage ?: error ?: saveError)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_rule_error")) }
+            (blockedMessage ?: error ?: saveError)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_rule_error")) }
             if (onRetryPending != null) Row {
                 TextButton(onClick = onRetryPending, enabled = !saving && blockedMessage == null,
-                    modifier = Modifier.testTag("extension_rule_retry")) { Text(if (committed) "继续编辑" else "重试保存") }
+                    modifier = Modifier.testTag("extension_rule_retry")) { Text(if (committed) tr("继续编辑") else tr("重试保存")) }
                 if (onDiscardPending != null) TextButton(onClick = onDiscardPending, enabled = !saving,
-                    modifier = Modifier.testTag("extension_rule_discard_pending")) { Text("放弃这次保存") }
+                    modifier = Modifier.testTag("extension_rule_discard_pending")) { Text(tr("放弃这次保存")) }
             }
             TextButton(onClick = {
                 if (!rawMode) { raw = TextFieldValue(value); rawMode = true } else runCatching {
@@ -365,19 +365,19 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
                     target = parsed[if (noResolve) parsed.lastIndex - 1 else parsed.lastIndex]
                     rawMode = false; error = null
                 }.onFailure { error = it.message }
-            }, enabled = editable, modifier = Modifier.testTag("extension_rule_raw_mode")) { Text(if (rawMode) "表单编辑" else "原始规则") }
-            if (rawMode) OutlinedTextField(raw, { raw = it }, readOnly = !editable, label = { Text("规则") }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_raw"))
+            }, enabled = editable, modifier = Modifier.testTag("extension_rule_raw_mode")) { Text(if (rawMode) tr("表单编辑") else tr("原始规则")) }
+            if (rawMode) OutlinedTextField(raw, { raw = it }, readOnly = !editable, label = { Text(tr("规则")) }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_raw"))
             else {
                 Box {
-                    OutlinedButton(onClick = { typeMenu = true }, enabled = editable) { Text("类型：$type") }
+                    OutlinedButton(onClick = { typeMenu = true }, enabled = editable) { Text(tr("类型：{0}", type)) }
                     DropdownMenu(typeMenu, { typeMenu = false }) {
                         listOf("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-REGEX", "GEOSITE", "GEOIP", "IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "DST-PORT", "SRC-PORT", "PROCESS-NAME", "PROCESS-PATH", "NETWORK", "UID", "AND", "OR", "NOT", "MATCH").forEach { action ->
                             DropdownMenuItem({ Text(action) }, onClick = { type = action; typeMenu = false })
                         }
                     }
                 }
-                if (type !in setOf("MATCH", "FINAL")) OutlinedTextField(content, { content = it }, readOnly = !editable, label = { Text("匹配内容") }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_content"))
-                ProfileSectionRow("目标", target, Icons.Outlined.Route, editable, Modifier.testTag("extension_rule_target")) { selectTarget = true }
+                if (type !in setOf("MATCH", "FINAL")) OutlinedTextField(content, { content = it }, readOnly = !editable, label = { Text(tr("匹配内容")) }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_content"))
+                ProfileSectionRow(tr("目标"), target, Icons.Outlined.Route, editable, Modifier.testTag("extension_rule_target")) { selectTarget = true }
                 Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(noResolve, { noResolve = it }, enabled = editable); Text("no-resolve") }
             }
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -386,26 +386,26 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
         if (saving || blockedMessage != null || onRetryPending != null) return@TextButton
         val rule = ExtensionRule(ruleId, value)
         runCatching { ExtensionRules.validate(listOf(rule)) }.onSuccess { onSave(rule) }.onFailure { error = it.message }
-    }, enabled = !saving && blockedMessage == null && onRetryPending == null, modifier = Modifier.testTag("extension_rule_confirm")) { Text(if (saving) "保存中…" else "确认") } })
+    }, enabled = !saving && blockedMessage == null && onRetryPending == null, modifier = Modifier.testTag("extension_rule_confirm")) { Text(if (saving) tr("保存中…") else tr("确认")) } })
     if (selectTarget) ExtensionTargetPicker(target, (listOf("MATCH") + targets).distinct(), false, { selectTarget = false }) { target = it ?: "DIRECT"; selectTarget = false }
-    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃未保存修改？") },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("放弃") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃未保存修改？")) },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(tr("放弃")) } }, dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
 }
 
-private val extensionPresets = listOf(
-    "阻止 QUIC" to listOf("AND,((NETWORK,UDP),(DST-PORT,443)),REJECT-DROP"),
-    "阻止 STUN" to listOf("AND,((NETWORK,UDP),(DST-PORT,3478/19302)),REJECT-DROP"),
-    "阻止 DNS over TLS" to listOf("DST-PORT,853,REJECT"),
-    "阻止回环连接" to listOf("IP-CIDR,127.0.0.0/8,REJECT,no-resolve", "IP-CIDR,0.0.0.0/32,REJECT,no-resolve", "IP-CIDR6,::1/128,REJECT,no-resolve", "IP-CIDR6,::/128,REJECT,no-resolve", "AND,((IN-TYPE,TUN),(DST-PORT,853)),REJECT"),
-    "局域网直连" to listOf("GEOSITE,private,DIRECT", "GEOIP,LAN,DIRECT,no-resolve"),
-    "系统服务直连" to listOf("GEOSITE,apple,DIRECT", "GEOSITE,microsoft,DIRECT"),
-    "BitTorrent 直连" to listOf("GEOSITE,category-public-tracker,DIRECT", "GEOSITE,category-pt,DIRECT", "PROCESS-NAME-REGEX,(?i)^(qbittorrent|transmission.*|deluge.*|aria2c|motrix|utorrent|bitcomet)(\\.exe)?$,DIRECT"),
+private val extensionPresets get() = listOf(
+    tr("阻止 QUIC") to listOf("AND,((NETWORK,UDP),(DST-PORT,443)),REJECT-DROP"),
+    tr("阻止 STUN") to listOf("AND,((NETWORK,UDP),(DST-PORT,3478/19302)),REJECT-DROP"),
+    tr("阻止 DNS over TLS") to listOf("DST-PORT,853,REJECT"),
+    tr("阻止回环连接") to listOf("IP-CIDR,127.0.0.0/8,REJECT,no-resolve", "IP-CIDR,0.0.0.0/32,REJECT,no-resolve", "IP-CIDR6,::1/128,REJECT,no-resolve", "IP-CIDR6,::/128,REJECT,no-resolve", "AND,((IN-TYPE,TUN),(DST-PORT,853)),REJECT"),
+    tr("局域网直连") to listOf("GEOSITE,private,DIRECT", "GEOIP,LAN,DIRECT,no-resolve"),
+    tr("系统服务直连") to listOf("GEOSITE,apple,DIRECT", "GEOSITE,microsoft,DIRECT"),
+    tr("BitTorrent 直连") to listOf("GEOSITE,category-public-tracker,DIRECT", "GEOSITE,category-pt,DIRECT", "PROCESS-NAME-REGEX,(?i)^(qbittorrent|transmission.*|deluge.*|aria2c|motrix|utorrent|bitcomet)(\\.exe)?$,DIRECT"),
 )
 
 @Composable
 internal fun ExtensionPresets(onDismiss: () -> Unit, onAdd: (List<String>) -> Unit) {
     var selected by rememberSaveable { mutableStateOf(listOf<Int>()) }
-    ProfileEditorPage(onDismiss, { Text("规则预设") }, {
+    ProfileEditorPage(onDismiss, { Text(tr("规则预设")) }, {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             extensionPresets.forEachIndexed { index, (label, rules) ->
                 Row(Modifier.fillMaxWidth().clickable { selected = if (index in selected) selected - index else selected + index }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -415,5 +415,5 @@ internal fun ExtensionPresets(onDismiss: () -> Unit, onAdd: (List<String>) -> Un
             }
         }
     }, confirmButton = { TextButton(onClick = { onAdd(extensionPresets.filterIndexed { index, _ -> index in selected }.flatMap { it.second }) }, enabled = selected.isNotEmpty(),
-        modifier = Modifier.testTag("extension_preset_confirm")) { Text("添加") } })
+        modifier = Modifier.testTag("extension_preset_confirm")) { Text(tr("添加")) } })
 }

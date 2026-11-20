@@ -89,14 +89,14 @@ internal fun ProfileQrDialog(state: ProfileQrUiState, onCopy: () -> Unit, onClos
                         }
                     }
                 } ?: if (state.error != null) {
-                    Text(state.error, color = MaterialTheme.colorScheme.error)
+                    Text(tr(state.error), color = MaterialTheme.colorScheme.error)
                 } else {
                     CircularProgressIndicator()
-                    Text("正在生成二维码…")
+                    Text(tr("正在生成二维码…"))
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onClose, modifier = Modifier.testTag("profile_qr_close")) { Text("关闭") } },
-        dismissButton = { TextButton(onClick = onCopy) { Text("复制链接") } },
+        confirmButton = { TextButton(onClick = onClose, modifier = Modifier.testTag("profile_qr_close")) { Text(tr("关闭")) } },
+        dismissButton = { TextButton(onClick = onCopy) { Text(tr("复制链接")) } },
     )
 }

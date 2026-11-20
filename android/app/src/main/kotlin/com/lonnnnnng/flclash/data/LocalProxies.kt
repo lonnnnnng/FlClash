@@ -11,7 +11,9 @@ data class LocalProxy(val id: String = UUID.randomUUID().toString(), val json: S
     val type: String get() = fields.get("type")?.asString.orEmpty()
 }
 enum class ProxyFieldKind { TEXT, SECRET, NUMBER, TOGGLE, CHOICE, LIST, MAP }
-data class ProxyField(val id: String, val path: String, val label: String, val kind: ProxyFieldKind = ProxyFieldKind.TEXT)
+data class ProxyField(val id: String, val path: String, private val labelText: String, val kind: ProxyFieldKind = ProxyFieldKind.TEXT) {
+    val label get() = com.lonnnnnng.flclash.common.AppText.text(labelText)
+}
 
 /** 作者 long：全局节点保留核心原始定义，表单只改已知字段，避免导入后丢失协议扩展参数。 */
 object LocalProxies {

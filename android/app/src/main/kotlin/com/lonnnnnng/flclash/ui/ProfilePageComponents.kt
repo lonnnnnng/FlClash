@@ -238,14 +238,14 @@ internal fun ProfileSourceMenu(
 ) {
     AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor, source = source,
         modifier = Modifier.testTag("profile_add_source_menu")) {
-        AppDropdownMenuItem(text = { Text("扫描二维码导入") }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
+        AppDropdownMenuItem(text = { Text(tr("扫描二维码导入")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
             onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
-        AppDropdownMenuItem(text = { Text("从文件导入 YAML") }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles) },
+        AppDropdownMenuItem(text = { Text(tr("从文件导入 YAML")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles) },
             onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))
-        AppDropdownMenuItem(text = { Text("添加订阅链接") }, leadingIcon = { AppGlyphIcon(AppGlyphs.link) },
+        AppDropdownMenuItem(text = { Text(tr("添加订阅链接")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.link) },
             onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote"))
         HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
-        AppDropdownMenuItem(text = { Text("创建自定义配置") }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
+        AppDropdownMenuItem(text = { Text(tr("创建自定义配置")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
             onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom"))
     }
 }
@@ -282,16 +282,16 @@ internal fun ProfileExtensionPage(
     onProviders: () -> Unit,
     onScript: () -> Unit,
 ) {
-    ProfileEditorPage(onDismissRequest = onDismiss, title = { Text("扩展") }, text = {
+    ProfileEditorPage(onDismissRequest = onDismiss, title = { Text(tr("扩展")) }, text = {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(label, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleMedium)
             Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                 Column {
-                    ProfileSectionRow("DNS", "覆盖当前配置的 DNS 设置", Icons.Outlined.Dns, canMutate,
+                    ProfileSectionRow("DNS", tr("覆盖当前配置的 DNS 设置"), Icons.Outlined.Dns, canMutate,
                         Modifier.testTag("profile_extension_dns"), onDns)
-                    ProfileSectionRow("Provider", "代理和规则资源", Icons.Outlined.Cloud, canMutate,
+                    ProfileSectionRow("Provider", tr("代理和规则资源"), Icons.Outlined.Cloud, canMutate,
                         Modifier.testTag("profile_extension_providers"), onProviders)
-                    ProfileSectionRow("脚本", "选择绑定的 JavaScript", Icons.Outlined.Code, canMutate,
+                    ProfileSectionRow(tr("脚本"), tr("选择绑定的 JavaScript"), Icons.Outlined.Code, canMutate,
                         Modifier.testTag("profile_extension_script"), onScript)
                 }
             }

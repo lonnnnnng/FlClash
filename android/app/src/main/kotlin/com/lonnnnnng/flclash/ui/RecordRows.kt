@@ -199,7 +199,7 @@ internal fun ConnectionRow(
     val title = when {
         metadata.host.isNotBlank() -> connectionEndpoint(metadata.host, metadata.destinationPort)
         metadata.destinationIp.isNotBlank() -> connectionEndpoint(metadata.destinationIp, metadata.destinationPort)
-        else -> metadata.remoteDestination.ifBlank { "未知目标" }
+        else -> metadata.remoteDestination.ifBlank { tr("未知目标") }
     }
     val colors = MaterialTheme.colorScheme
     val startedAt = remember(connection.start) { formatConnectionStart(connection.start) }
@@ -251,7 +251,7 @@ internal fun ConnectionRow(
             Text(source, style = RecordStyle.secondary, color = colors.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Text(
-            "累计 ↑ ${formatBytes(connection.upload)} · ↓ ${formatBytes(connection.download)}",
+            tr("累计 ↑ {0} · ↓ {1}", formatBytes(connection.upload), formatBytes(connection.download)),
             style = RecordStyle.caption,
             color = colors.onSurfaceVariant,
         )
@@ -276,7 +276,7 @@ internal fun DnsQueryRow(
             }
         }
     }) {
-        Text(query.domain.ifBlank { "未知域名" }, style = RecordStyle.title, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(query.domain.ifBlank { tr("未知域名") }, style = RecordStyle.title, maxLines = 2, overflow = TextOverflow.Ellipsis)
         val summary = query.error.ifBlank { query.answers.joinToString(", ") }
         if (summary.isNotBlank()) {
             Text(summary, style = RecordStyle.secondary, color = if (failed) colors.error else colors.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -285,9 +285,9 @@ internal fun DnsQueryRow(
             if (query.initiator.isNotBlank()) {
                 RecordKeywordLabel(query.initiator, onClick = onClickKeyword?.let { callback -> ({ callback(query.initiator) }) })
             }
-            if (query.cached) RecordKeywordLabel("缓存", onClick = onClickKeyword?.let { callback -> ({ callback("缓存") }) })
+            if (query.cached) RecordKeywordLabel(tr("缓存"), onClick = onClickKeyword?.let { callback -> ({ callback("缓存") }) })
             if (failureCode) RecordKeywordLabel(query.rcode, RecordTone.ERROR, onClickKeyword?.let { callback -> ({ callback(query.rcode) }) })
-            if (query.error.isNotBlank() && !failureCode) RecordLabel("失败", RecordTone.ERROR)
+            if (query.error.isNotBlank() && !failureCode) RecordLabel(tr("失败"), RecordTone.ERROR)
             if (query.upstream.isNotBlank()) Text(query.upstream, style = RecordStyle.secondary, color = colors.onSurfaceVariant)
         }
     }
@@ -315,6 +315,6 @@ internal fun LogRow(entry: CoreEvent.Log, onClickKeyword: ((String) -> Unit)? = 
             )
         }
     }) {
-        Text(entry.payload.ifBlank { "（空日志）" }, style = RecordStyle.primary, maxLines = 3, overflow = TextOverflow.Ellipsis)
+        Text(entry.payload.ifBlank { tr("（空日志）") }, style = RecordStyle.primary, maxLines = 3, overflow = TextOverflow.Ellipsis)
     }
 }

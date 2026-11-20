@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash
 
 import android.app.Application
 import android.content.Context
+import com.lonnnnnng.flclash.common.ensureNotificationChannel
 import android.net.VpnService
 import com.lonnnnnng.flclash.common.GlobalState
 import com.lonnnnnng.flclash.data.SubscriptionAutoUpdateScheduler
@@ -24,6 +25,7 @@ class KClashApplication : Application() {
     @Inject
     lateinit var runtimeResumeStore: RuntimeResumeStore
 
+    @Inject lateinit var appearanceSettings: com.lonnnnnng.flclash.data.AppearanceSettingsStore
     @Inject lateinit var onDemandCoordinator: com.lonnnnnng.flclash.data.OnDemandCoordinator
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -38,6 +40,37 @@ class KClashApplication : Application() {
         if(!ValidationProcess.isCurrent())com.lonnnnnng.flclash.data.StateAuditPlatform.initialize(this)
         // 作者 long：服务进程也依赖同一个应用上下文，必须在任何前台服务启动前初始化共享状态。
         GlobalState.init(this)
+        // 作者 long：隔离语义预检UID不能读取主应用偏好，语言初始化仅发生在正常应用进程。
+        if (ValidationProcess.isCurrent()) return
+        com.lonnnnnng.flclash.common.AppText.initialize(this)
+        val appearance = getSharedPreferences("appearance", Context.MODE_PRIVATE)
+        val language = appearance.getString("language", "SYSTEM")
+        com.lonnnnnng.flclash.common.AppText.useEnglish = language == "ENGLISH" || language == "SYSTEM" && resources.configuration.locales[0].language != "zh"
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (!ValidationProcess.isCurrent()) applyAppearanceLanguage(appearanceSettings.state.value.language)
+    }
+
+    private fun applyAppearanceLanguage(language: com.lonnnnnng.flclash.data.AppLanguage) {
+        val systemLanguage = if (android.os.Build.VERSION.SDK_INT >= 33)
+            getSystemService(android.app.LocaleManager::class.java).systemLocales[0].language else resources.configuration.locales[0].language
+        val english = language.english(systemLanguage)
+        com.lonnnnnng.flclash.common.AppText.useEnglish = english
+        com.lonnnnnng.flclash.ui.UiLanguage.english = english
+        // 作者 long：Android 13起由平台同步快捷方式和应用资源；旧系统由Compose局部资源上下文呈现相同语种。
+        if (android.os.Build.VERSION.SDK_INT >= 33) {
+            val locales = android.os.LocaleList.forLanguageTags(when (language) {
+                com.lonnnnnng.flclash.data.AppLanguage.SYSTEM -> ""
+                com.lonnnnnng.flclash.data.AppLanguage.CHINESE -> "zh-CN"
+                com.lonnnnnng.flclash.data.AppLanguage.ENGLISH -> "en"
+            })
+            val manager = getSystemService(android.app.LocaleManager::class.java)
+            if (manager.applicationLocales != locales) manager.applicationLocales = locales
+        }
+        ensureNotificationChannel()
+        android.service.quicksettings.TileService.requestListeningState(this, android.content.ComponentName(this, KClashTileService::class.java))
     }
 
     @android.annotation.SuppressLint("MissingSuperCall")
@@ -45,6 +78,9 @@ class KClashApplication : Application() {
         // 作者 long：Hilt生成的super.onCreate先构建数据库和核心；隔离校验必须在这一步之前分流，避免无权限进程执行恢复。
         if(ValidationProcess.isCurrent())return
         super.onCreate()
+        applicationScope.launch(Dispatchers.Main) {
+            appearanceSettings.state.collect { applyAppearanceLanguage(it.language) }
+        }
         // 作者 long：与Flutter初始化顺序一致，停止态的Provider/DNS和进程恢复加载也需要底层DNS。
         // 观察器属于应用进程，不能等前台服务创建后才注册，更不能由任一服务销毁时清空。
         NetworkObserver.start()

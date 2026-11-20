@@ -69,8 +69,8 @@ internal fun OutboundIpPanel(
             Text(
                 when {
                     info != null -> if (hidden) "*****" else info.ip
-                    state.error != null -> "查询失败"
-                    else -> "正在查询出口…"
+                    state.error != null -> tr("查询失败")
+                    else -> tr("正在查询出口…")
                 },
                 Modifier.testTag("dashboard_outbound_ip").then(
                     if (info != null) Modifier.clickable { detailIp = info.ip }
@@ -81,11 +81,11 @@ internal fun OutboundIpPanel(
             )
             Text(
                 when {
-                    state.error != null -> "点击图标重试"
-                    info == null -> "出口 IP"
-                    state.quality != null -> "${state.quality.type.label} · ${state.quality.levelLabel}"
-                    state.qualityLoading -> "正在查询 IP 类型…"
-                    else -> "IP 类型查询失败"
+                    state.error != null -> tr("点击图标重试")
+                    info == null -> tr("出口 IP")
+                    state.quality != null -> "${state.quality.type.label} · ${tr(state.quality.levelLabel)}"
+                    state.qualityLoading -> tr("正在查询 IP 类型…")
+                    else -> tr("IP 类型查询失败")
                 },
                 style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -97,7 +97,7 @@ internal fun OutboundIpPanel(
     }
     // 作者 long：详情只跟随点击时的 IP；停止或出口已变化时关闭，禁止把新出口数据填进旧 IP 面板。
     if (info != null && detailIp != null && detailIp == info.ip) {
-        DashboardModalSheet(title = "IP 质量", sheetTag = "ip_quality_sheet", closeTag = "ip_quality_close",
+        DashboardModalSheet(title = tr("IP 质量"), sheetTag = "ip_quality_sheet", closeTag = "ip_quality_close",
             onDismiss = { detailIp = null }, actions = {
                 IconButton(onClick = onRefreshQuality, enabled = !state.qualityLoading && !state.isLoading,
                     modifier = Modifier.testTag("ip_quality_refresh")) {
@@ -114,33 +114,33 @@ internal fun OutboundIpPanel(
 @Composable
 internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHiddenChange: (Boolean) -> Unit) {
     val info = state.info ?: return
-    Text("检测结果仅供参考", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(tr("检测结果仅供参考"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     val quality = state.quality
-    DashboardDetailSection("基本信息") {
-        IpDetailRow("IP 地址", if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address")
+    DashboardDetailSection(tr("基本信息")) {
+        IpDetailRow(tr("IP 地址"), if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address")
         if (quality != null || state.qualityLoading) {
             // 作者 long：加载占位只替换值，不插入额外进度行；旧结果刷新保留原值，面板不会因spinner增删而跳动。
-            IpDetailRow("质量等级", quality?.levelLabel.orEmpty(), tag = "ip_quality_level", loading = quality == null, placeholderWidth = 40,
+            IpDetailRow(tr("质量等级"), tr(quality?.levelLabel.orEmpty()), tag = "ip_quality_level", loading = quality == null, placeholderWidth = 40,
                 loadingTag = "ip_quality_loading")
-            IpDetailRow("IP 类型", quality?.type?.label.orEmpty(), tag = "ip_quality_type", loading = quality == null, placeholderWidth = 64)
-            IpDetailRow("风险标记", quality?.flags?.joinToString(" · ")?.ifBlank { "无" }.orEmpty(), tag = "ip_quality_flags", loading = quality == null)
-        } else Text("IP 类型查询失败", Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.error)
+            IpDetailRow(tr("IP 类型"), quality?.type?.label.orEmpty(), tag = "ip_quality_type", loading = quality == null, placeholderWidth = 64)
+            IpDetailRow(tr("风险标记"), quality?.flags?.joinToString(" · ") { tr(it) }?.ifBlank { tr("无") }.orEmpty(), tag = "ip_quality_flags", loading = quality == null)
+        } else Text(tr("IP 类型查询失败"), Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.error)
     }
-    if (quality != null || state.qualityLoading) DashboardDetailSection("网络") {
-        IpDetailRow("组织", quality?.organization ?: "—", quality?.organization, tag = "ip_quality_organization", loading = quality == null, placeholderWidth = 120)
+    if (quality != null || state.qualityLoading) DashboardDetailSection(tr("网络")) {
+        IpDetailRow(tr("组织"), quality?.organization ?: "—", quality?.organization, tag = "ip_quality_organization", loading = quality == null, placeholderWidth = 120)
         IpDetailRow("ASN", quality?.asn?.let { "AS$it" } ?: "—", quality?.asn?.let { "AS$it" }, tag = "ip_quality_asn", loading = quality == null, placeholderWidth = 56)
-        IpDetailRow("查询来源", quality?.source?.label.orEmpty(), tag = "ip_quality_source", loading = quality == null, placeholderWidth = 72)
+        IpDetailRow(tr("查询来源"), quality?.source?.label.orEmpty(), tag = "ip_quality_source", loading = quality == null, placeholderWidth = 72)
     }
     if (state.qualityFailures.isNotEmpty()) {
-        DashboardDetailSection("查询来源") {
+        DashboardDetailSection(tr("查询来源")) {
             state.qualityFailures.forEach { (source, failure) -> IpDetailRow(source.label, failure.label) }
         }
     }
-    state.qualityError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-    DashboardDetailSection("其他") {
+    state.qualityError?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
+    DashboardDetailSection(tr("其他")) {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).toggleable(hidden, onValueChange = onHiddenChange)
             .testTag("ip_quality_hide"), verticalAlignment = Alignment.CenterVertically) {
-            Text("隐藏 IP", Modifier.weight(1f))
+            Text(tr("隐藏 IP"), Modifier.weight(1f))
             Switch(checked = hidden, onCheckedChange = null)
         }
     }

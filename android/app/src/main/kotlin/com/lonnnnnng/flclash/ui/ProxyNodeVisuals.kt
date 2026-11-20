@@ -111,12 +111,12 @@ internal fun ProxyNodeCard(
             AppDropdownMenu(menu && menuEnabled && hasMenu, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                 placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds) {
                 // 作者 long：菜单复用卡片选择回调，computed组再次优选仍清除固定，内建/组节点也可选择但不能导入。
-                if (selectable) AppDropdownMenuItem(text = { Text(if (computed) "优选" else "选择") },
+                if (selectable) AppDropdownMenuItem(text = { Text(if (computed) tr("优选") else tr("选择")) },
                     leadingIcon = { Icon(if (computed) Icons.Outlined.PushPin else Icons.Outlined.RadioButtonChecked, null) },
                     trailingIcon = { if (if (computed) preferred else inUse) Icon(Icons.Filled.Check, null, modifier = Modifier.testTag("action:已选中")) },
                     enabled = enabled,
                     onClick = { menu = false; onSelect() }, modifier = Modifier.testTag("${selectionTag}_menu_select"))
-                if (canAdd) AppDropdownMenuItem(text = { Text("添加到本地代理") },
+                if (canAdd) AppDropdownMenuItem(text = { Text(tr("添加到本地代理")) },
                     leadingIcon = { Icon(Icons.AutoMirrored.Outlined.PlaylistAdd, null) },
                     onClick = { menu = false; addLocal.invoke(profileId, name) }, modifier = Modifier.testTag("${selectionTag}_menu_add_local"))
             }
@@ -273,11 +273,11 @@ private fun proxyDelayAnimationKey(delay: ProxyDelayUiState?): ProxyDelayAnimati
 }
 
 private fun proxyDelayLabel(delay: ProxyDelayUiState?): String = when {
-    delay == null -> "测速"
-    delay.isTesting -> "测速中"
-    delay.value == null -> "无结果"
+    delay == null -> tr("测速")
+    delay.isTesting -> tr("测速中")
+    delay.value == null -> tr("无结果")
     delay.value > 0 -> "${delay.value} ms"
     // 作者 long：保留 Mihomo 的超时/失败语义，用户重测前仍可区分错误原因。
-    delay.value == CoreBridge.DELAY_TIMED_OUT -> "超时"
-    else -> "失败"
+    delay.value == CoreBridge.DELAY_TIMED_OUT -> tr("超时")
+    else -> tr("失败")
 }

@@ -67,13 +67,10 @@ fun Context.ensureNotificationChannel() {
         return
     }
     val manager = getSystemService(NotificationManager::class.java) ?: return
-    if (manager.getNotificationChannel(GlobalState.NOTIFICATION_CHANNEL) != null) {
-        return
-    }
     manager.createNotificationChannel(
         NotificationChannel(
             GlobalState.NOTIFICATION_CHANNEL,
-            getString(R.string.service_channel_name),
+            if (AppText.useEnglish) "KClash service" else "KClash 服务",
             NotificationManager.IMPORTANCE_LOW,
         ),
     )

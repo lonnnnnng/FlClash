@@ -41,7 +41,7 @@ private data class ExtendedNotificationParams(
 private val NotificationParams.extended: ExtendedNotificationParams
     get() = ExtendedNotificationParams(
         title,
-        stopText,
+        if (stopText == "STOP") com.lonnnnnng.flclash.common.AppText.text("停止核心") else stopText,
         showStopAction,
         Core.getSpeedTrafficText(onlyStatisticsProxy),
     )

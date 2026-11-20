@@ -22,16 +22,16 @@ internal fun GlobalRulesRoute(controller: GlobalRulesController, onDismiss: () -
     val state by controller.state.collectAsState()
     LaunchedEffect(Unit) { controller.open() }
     if (state.recoveryFailed) {
-        ProfileEditorPage({}, { Text("附加规则") }, {
-            Text(state.error.orEmpty())
-            TextButton(controller::retryRecovery, modifier = Modifier.testTag("global_rules_recovery_retry")) { Text("重试恢复") }
+        ProfileEditorPage({}, { Text(tr("附加规则")) }, {
+            Text(tr(state.error.orEmpty()))
+            TextButton(controller::retryRecovery, modifier = Modifier.testTag("global_rules_recovery_retry")) { Text(tr("重试恢复")) }
         })
         return
     }
     if (!state.ready || !state.loaded) {
-        ProfileEditorPage({}, { Text("附加规则") }, {
+        ProfileEditorPage({}, { Text(tr("附加规则")) }, {
             if (state.loading || !state.ready) CircularProgressIndicator()
-            else { Text(state.error.orEmpty()); TextButton(controller::reload) { Text("重新读取") } }
+            else { Text(tr(state.error.orEmpty())); TextButton(controller::reload) { Text(tr("重新读取")) } }
         })
         return
     }
@@ -91,19 +91,19 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
         else if (query.isNotEmpty()) query = ""
         else onDismiss()
     }
-    ProfileEditorPage(::back, { Text("附加规则") }, {
+    ProfileEditorPage(::back, { Text(tr("附加规则")) }, {
         Column(Modifier.fillMaxWidth().testTag("page_global_rules"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (!sorting) OutlinedTextField(query, { query = it }, singleLine = true, enabled = !busy,
-                label = { Text("搜索规则") }, modifier = Modifier.fillMaxWidth().testTag("global_rules_search"))
+                label = { Text(tr("搜索规则")) }, modifier = Modifier.fillMaxWidth().testTag("global_rules_search"))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (selecting) "已选 ${selected.size} 项" else "共 ${state.rules.size} 条规则", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                Text(if (selecting) tr("已选 {0} 项", selected.size) else tr("共 {0} 条规则", state.rules.size), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 if (selecting) {
                     IconButton({ selected = if (visible.all { it.id in selected }) emptyList() else visible.map { it.id } }, enabled = canChange,
                         modifier = Modifier.testTag("global_rules_all")) { Icon(Icons.Outlined.SelectAll, null) }
                     IconButton({ delete = selected.filter { id -> visible.any { it.id == id } } }, enabled = canChange && visible.any { it.id in selected },
                         modifier = Modifier.testTag("global_rules_delete")) { Icon(Icons.Outlined.Delete, null) }
                     IconButton({ selecting = false; selected = emptyList() }, enabled = !busy, modifier = Modifier.testTag("global_rules_cancel_selection")) { Icon(Icons.Outlined.Close, null) }
-                } else if (sorting) TextButton({ sorting = false; sortSnapshot = emptyList() }, enabled = !busy, modifier = Modifier.testTag("global_rules_sort_done")) { Text("完成") }
+                } else if (sorting) TextButton({ sorting = false; sortSnapshot = emptyList() }, enabled = !busy, modifier = Modifier.testTag("global_rules_sort_done")) { Text(tr("完成")) }
                 else {
                     IconButton({ selecting = true }, enabled = canChange && visible.isNotEmpty(), modifier = Modifier.testTag("global_rules_select")) { Icon(Icons.Outlined.Checklist, null) }
                     IconButton({ sorting = true; sortVersion = state.saveResultVersion; sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) } }, enabled = canChange && query.isBlank() && state.rules.size > 1, modifier = Modifier.testTag("global_rules_sort")) { Icon(Icons.Outlined.SwapVert, null) }
@@ -112,23 +112,23 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                 }
             }
             state.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_rules_error"))
+                Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_rules_error"))
                 Row {
                     if (state.interrupted) {
-                        TextButton(onRetryPending, enabled = !busy && !state.blocked, modifier = Modifier.testTag("global_rules_retry")) { Text(if (state.draft?.pending?.committed == true) "继续编辑" else "重试保存") }
-                        TextButton(onDiscardPending, enabled = !busy, modifier = Modifier.testTag("global_rules_discard_pending")) { Text("放弃这次保存") }
+                        TextButton(onRetryPending, enabled = !busy && !state.blocked, modifier = Modifier.testTag("global_rules_retry")) { Text(if (state.draft?.pending?.committed == true) tr("继续编辑") else tr("重试保存")) }
+                        TextButton(onDiscardPending, enabled = !busy, modifier = Modifier.testTag("global_rules_discard_pending")) { Text(tr("放弃这次保存")) }
                     } else {
-                        TextButton(onReload, enabled = !busy, modifier = Modifier.testTag("global_rules_reload")) { Text("重新读取") }
+                        TextButton(onReload, enabled = !busy, modifier = Modifier.testTag("global_rules_reload")) { Text(tr("重新读取")) }
                     }
                 }
             }
             if (state.draft?.applyPending == true && !state.interrupted) TextButton(onApply, enabled = !busy,
-                modifier = Modifier.testTag("global_rules_apply")) { Text("应用到原配置") }
+                modifier = Modifier.testTag("global_rules_apply")) { Text(tr("应用到原配置")) }
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-            if (!busy && visible.isEmpty()) Text(if (query.isBlank()) "暂无附加规则" else "没有匹配的规则", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (!busy && visible.isEmpty()) Text(if (query.isBlank()) tr("暂无附加规则") else tr("没有匹配的规则"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (sorting) {
                 val ordered = sortSnapshot.chunked(2).map { ExtensionRule(it[0], it[1]) }
-                ResourceOrderList(ordered.map { ResourceOrderItem(it.id, it.value, "长按调整顺序") }, !canChange, "global_rules", { ids ->
+                ResourceOrderList(ordered.map { ResourceOrderItem(it.id, it.value, tr("长按调整顺序")) }, !canChange, "global_rules", { ids ->
                     val byId = ordered.associateBy { it.id }
                     save(ordered, ids.map { byId.getValue(it) })
                 }, Modifier.fillMaxWidth().weight(1f))
@@ -157,7 +157,7 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
         val actual = state.rules.firstOrNull { it.id == id }
         val ownResult = pendingId == id && actual?.value == pendingValue
         val conflict = if (state.blocked || id != "new" && !ownResult && actual != initial)
-            "原规则已被修改或删除，草稿已保留，请返回后重新打开" else null
+            tr("原规则已被修改或删除，草稿已保留，请返回后重新打开") else null
         ExtensionRuleForm(initial, listOf("DIRECT", "REJECT", "REJECT-DROP", "PASS"), busy, state.error,
             blockedMessage = conflict, onRetryPending = onRetryPending.takeIf { state.interrupted },
             onDiscardPending = onDiscardPending.takeIf { state.interrupted }, committed = state.draft?.pending?.committed == true,
@@ -173,12 +173,12 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
         save(state.rules, state.rules + values.filterNot { value -> state.rules.any { it.value == value } }.distinct().map { ExtensionRule(UUID.randomUUID().toString(), it) })
     }
     if (delete.isNotEmpty()) EditorAlertDialog(onDismissRequest = { if (!busy) { delete = emptyList(); if (state.interrupted) onDiscardPending() } },
-        title = { Text("删除 ${delete.size} 条规则？") }, text = {
+        title = { Text(tr("删除 {0} 条规则？", delete.size)) }, text = {
             Column {
-                Text("配置中引用这些全局规则的记录将不再生效。")
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_rules_delete_error")) }
+                Text(tr("配置中引用这些全局规则的记录将不再生效。"))
+                state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_rules_delete_error")) }
                 if (state.interrupted) TextButton(onRetryPending, enabled = !busy && !state.blocked, modifier = Modifier.testTag("global_rules_delete_retry")) {
-                    Text(if (state.draft?.pending?.committed == true) "继续编辑" else "重试删除")
+                    Text(if (state.draft?.pending?.committed == true) tr("继续编辑") else tr("重试删除"))
                 }
             }
         }, confirmButton = {
@@ -186,9 +186,9 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                 // 作者 long：确认保持到事务成功；失败不清选择，取消不会再触发删除。
                 deleteVersion = state.saveResultVersion
                 save(state.rules, state.rules.filterNot { it.id in delete })
-            }, enabled = canChange, modifier = Modifier.testTag("global_rules_delete_confirm")) { Text(if (busy) "删除中…" else "删除") }
+            }, enabled = canChange, modifier = Modifier.testTag("global_rules_delete_confirm")) { Text(if (busy) tr("删除中…") else tr("删除")) }
         }, dismissButton = {
             TextButton({ delete = emptyList(); deleteVersion = null; if (state.interrupted) onDiscardPending() }, enabled = !busy,
-                modifier = Modifier.testTag("global_rules_delete_cancel")) { Text("取消") }
+                modifier = Modifier.testTag("global_rules_delete_cancel")) { Text(tr("取消")) }
         })
 }

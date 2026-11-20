@@ -59,16 +59,16 @@ internal fun MoreListEntryDialog(title: String, input: String, error: String?, o
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary), minLines = 1, maxLines = 5,
                                 decorationBox = { inner -> Box {
-                                    if (input.isEmpty()) Text("值", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    if (input.isEmpty()) Text(tr("值"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     inner()
                                 } })
                         }
-                        error?.let { Text(it, Modifier.padding(top = 8.dp).testTag("more_list_input_error"),
+                        error?.let { Text(tr(it), Modifier.padding(top = 8.dp).testTag("more_list_input_error"),
                             color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
                     }
                     Button(onClick = onConfirm, shape = AppSuperellipseShape(24.dp),
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp).fillMaxWidth().height(48.dp)
-                            .testTag("more_list_entry_confirm")) { Text("确定") }
+                            .testTag("more_list_entry_confirm")) { Text(tr("确定")) }
                 }
             }
         }
@@ -93,10 +93,10 @@ internal fun MoreListQuickEditor(title: String, text: String, contentTag: String
         else runCatching { onApply(text); onDismiss() }.onFailure { failure = it.message ?: "列表无效" }
     })
     failure?.let { message ->
-        AlertDialog(onDismissRequest = { failure = null }, title = { Text("放弃修改？") },
-            text = { Text(message, Modifier.testTag("more_list_input_error")) },
-            confirmButton = { TextButton({ failure = null; onDismiss() }) { Text("放弃") } },
-            dismissButton = { TextButton({ failure = null }) { Text("继续编辑") } })
+        AlertDialog(onDismissRequest = { failure = null }, title = { Text(tr("放弃修改？")) },
+            text = { Text(tr(message), Modifier.testTag("more_list_input_error")) },
+            confirmButton = { TextButton({ failure = null; onDismiss() }) { Text(tr("放弃")) } },
+            dismissButton = { TextButton({ failure = null }) { Text(tr("继续编辑")) } })
     }
 }
 
@@ -139,7 +139,7 @@ internal fun MoreCodeEditor(title: String, text: String, contentTag: String,
     ProfileEditorPage(::exit, title = { Text(title) }, backTag = backTag, navigationButtonSurface = true,
         contentPadding = PaddingValues(0.dp), searchActionFirst = true,
         containerColor = MaterialTheme.colorScheme.surface,
-        topBarSearch = ProfileEditorSearchState(searching, query, "查找", {
+        topBarSearch = ProfileEditorSearchState(searching, query, tr("查找"), {
             query = it; findNext(0)
         }, { searching = it }), confirmButton = {
             Row(Modifier.padding(end = 8.dp)) {
@@ -156,15 +156,15 @@ internal fun MoreCodeEditor(title: String, text: String, contentTag: String,
                         onNavigateBack = if (sizeMenu) ({ sizeMenu = false }) else null) { level ->
                         // 作者 long：父卡在子菜单展开时仍参与过渡，按该卡自身level渲染，避免父卡内容瞬间变成字号列表。
                         if (level == true) {
-                            AppDropdownMenuItem(text = { Text("大小") }, isBack = true, dismissOnClick = false,
+                            AppDropdownMenuItem(text = { Text(tr("大小")) }, isBack = true, dismissOnClick = false,
                                 modifier = Modifier.testTag("more_list_quick_size_back"), onClick = { sizeMenu = false })
-                            listOf(16 to "标准", 18 to "大", 20 to "超大").forEach { (size, label) ->
+                            listOf(16 to tr("标准"), 18 to tr("大"), 20 to tr("超大")).forEach { (size, label) ->
                                 AppDropdownMenuItem(text = { Text(label) },
                                     trailingIcon = if (fontSize == size) ({ AppGlyphIcon(AppGlyphs.check) }) else null,
                                     modifier = Modifier.testTag("more_list_quick_size_$size"), onClick = { fontSize = size; menu = false })
                             }
                         } else {
-                            AppDropdownMenuItem(text = { Text("撤销") }, enabled = enabled && undo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_undo"),
+                            AppDropdownMenuItem(text = { Text(tr("撤销")) }, enabled = enabled && undo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_undo"),
                                 leadingIcon = { AppGlyphIcon(AppGlyphs.undo) }, onClick = {
                                     // 作者 long：回源期间输入法仍可能交付迟到编辑；历史动作仅作用于点击时正文，不能覆盖新输入。
                                     val previous = undo.lastOrNull()
@@ -173,7 +173,7 @@ internal fun MoreCodeEditor(title: String, text: String, contentTag: String,
                                     }
                                     menu = false
                                 })
-                            AppDropdownMenuItem(text = { Text("重做") }, enabled = enabled && redo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_redo"),
+                            AppDropdownMenuItem(text = { Text(tr("重做")) }, enabled = enabled && redo.isNotEmpty(), modifier = Modifier.testTag("more_list_quick_redo"),
                                 leadingIcon = { AppGlyphIcon(AppGlyphs.redo) }, onClick = {
                                     val next = redo.lastOrNull()
                                     if (latestEnabled && latestText == text && next != null) {
@@ -181,10 +181,10 @@ internal fun MoreCodeEditor(title: String, text: String, contentTag: String,
                                     }
                                     menu = false
                                 })
-                            AppDropdownMenuItem(text = { Text("大小") }, leadingIcon = { AppGlyphIcon(AppGlyphs.textSize) },
+                            AppDropdownMenuItem(text = { Text(tr("大小")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.textSize) },
                                 trailingIcon = { AppMenuSubmenuArrow() }, opensSubmenu = true, dismissOnClick = false,
                                 modifier = Modifier.testTag("more_list_quick_sizes"), onClick = { sizeMenu = true })
-                            AppDropdownMenuItem(text = { Text("自动换行") }, leadingIcon = { AppGlyphIcon(AppGlyphs.wrap) },
+                            AppDropdownMenuItem(text = { Text(tr("自动换行")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.wrap) },
                                 trailingIcon = if (wrap) ({ AppGlyphIcon(AppGlyphs.check) }) else null,
                                 modifier = Modifier.testTag("more_list_quick_wrap"), onClick = { wrap = !wrap; menu = false })
                         }
@@ -195,7 +195,7 @@ internal fun MoreCodeEditor(title: String, text: String, contentTag: String,
             Column(Modifier.fillMaxSize()) {
                 header()
                 if (searching && query.isNotEmpty() && !text.contains(query, ignoreCase = true)) {
-                    Text("无匹配结果", Modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag("more_list_quick_no_match"),
+                    Text(tr("无匹配结果"), Modifier.padding(horizontal = 16.dp, vertical = 8.dp).testTag("more_list_quick_no_match"),
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 ProfileCodeField(TextFieldValue(text, TextRange(selectionStart.coerceIn(0, text.length), selectionEnd.coerceIn(0, text.length)), composition),

@@ -67,13 +67,13 @@ class KClashTileService : android.service.quicksettings.TileService() {
                 -> Tile.STATE_INACTIVE
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                subtitle = when (status) {
+                subtitle = com.lonnnnnng.flclash.common.AppText.text(when (status) {
                     CoreRuntimeStatus.RUNNING -> "运行中"
                     CoreRuntimeStatus.STARTING -> "启动中"
                     CoreRuntimeStatus.STOPPING -> "停止中"
                     CoreRuntimeStatus.STOPPED -> "已停止"
                     CoreRuntimeStatus.FAILED -> "启动失败"
-                }
+                })
             }
             updateTile()
         }

@@ -520,7 +520,7 @@ internal fun filterDnsQueries(
         val tags = buildList {
             add(dns.type)
             if (dns.initiator.isNotBlank()) add(dns.initiator)
-            if (dns.cached) add("缓存")
+            if (dns.cached) { add("缓存"); add("Cached") }
             if (failureCode) add(dns.rcode)
         }
         val fields = listOf(

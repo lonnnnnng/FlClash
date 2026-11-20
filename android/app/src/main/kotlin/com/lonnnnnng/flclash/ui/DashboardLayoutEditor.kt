@@ -165,7 +165,7 @@ internal fun DashboardEditableSection(
 @Composable
 internal fun DashboardAddableSectionHeader() {
     Text(
-        text = "可添加",
+        text = tr("可添加"),
         modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 18.dp, bottom = 10.dp),
         style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold),
         color = MaterialTheme.colorScheme.onSurfaceVariant,

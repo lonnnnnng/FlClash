@@ -22,25 +22,25 @@ internal fun ProfileSyncResults(state: ProfileSyncUiState, onDismiss: () -> Unit
     val finished = state.items.count { it.status == ProfileSyncStatus.SUCCEEDED || it.status == ProfileSyncStatus.FAILED }
     val failed = state.items.count { it.status == ProfileSyncStatus.FAILED }
     AlertDialog(onDismissRequest = { if (!state.running) onDismiss() },
-        title = { Text(if (state.items.isEmpty()) "应用配置" else if (state.running) "正在同步配置" else "同步结果") },
+        title = { Text(if (state.items.isEmpty()) tr("应用配置") else if (state.running) tr("正在同步配置") else tr("同步结果")) },
         text = {
             Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("profile_sync_results"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (state.items.isNotEmpty()) Text(if (state.running) "已完成 $finished / ${state.items.size}" else "成功 ${state.items.size - failed}，失败 $failed")
+                if (state.items.isNotEmpty()) Text(if (state.running) tr("已完成 {0} / {1}", finished, state.items.size) else tr("成功 {0}，失败 {1}", state.items.size - failed, failed))
                 if (state.running) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.items.forEach { row ->
                     Text("${row.label}：${when (row.status) {
-                        ProfileSyncStatus.WAITING -> "等待中"
-                        ProfileSyncStatus.RUNNING -> "正在下载"
-                        ProfileSyncStatus.SUCCEEDED -> "已保存"
-                        ProfileSyncStatus.FAILED -> "同步失败，请检查网络、地址或解密密钥"
+                        ProfileSyncStatus.WAITING -> tr("等待中")
+                        ProfileSyncStatus.RUNNING -> tr("正在下载")
+                        ProfileSyncStatus.SUCCEEDED -> tr("已保存")
+                        ProfileSyncStatus.FAILED -> tr("同步失败，请检查网络、地址或解密密钥")
                     }}", color = if (row.status == ProfileSyncStatus.FAILED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.testTag("profile_sync_result_${row.id}"))
                 }
-                state.applyError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                state.applyError?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss, enabled = !state.running, modifier = Modifier.testTag("profile_sync_done")) { Text("完成") } },
+        confirmButton = { TextButton(onClick = onDismiss, enabled = !state.running, modifier = Modifier.testTag("profile_sync_done")) { Text(tr("完成")) } },
         dismissButton = { if (failed > 0 || state.applyError != null) TextButton(onClick = onRetry, enabled = !state.running,
-            modifier = Modifier.testTag("profile_sync_retry")) { Text(if (failed > 0) "重试失败项" else "重试应用") } },
+            modifier = Modifier.testTag("profile_sync_retry")) { Text(if (failed > 0) tr("重试失败项") else tr("重试应用")) } },
     )
 }

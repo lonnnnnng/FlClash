@@ -18,8 +18,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 
-internal enum class MainDestination(val label: String) {
+internal enum class MainDestination(private val labelText: String) {
     DASHBOARD("首页"), PROXY("代理"), PROFILES("配置"), TOOLS("工具");
+    val label get() = com.lonnnnnng.flclash.ui.tr(labelText)
+
 
     // 作者 long：路由枚举也用于纯JVM业务校验，只有实际绘制入口才创建依赖Android的图形路径。
     val icon: AppGlyph get() = when (this) {
@@ -65,7 +67,7 @@ internal fun MainPageScaffold(
         containerColor = pageColor,
         topBar = {
             if (showTopBar) TopAppBar(
-                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) "仪表盘" else selectedDestination.label,
+                title = { Text(topBarTitle ?: if (selectedDestination == MainDestination.DASHBOARD) tr("仪表盘") else selectedDestination.label,
                     style = if (selectedDestination == MainDestination.PROFILES || selectedDestination == MainDestination.DASHBOARD) TextStyle(fontSize = 24.sp, lineHeight = 30.sp, fontWeight = FontWeight.SemiBold)
                     else MaterialTheme.typography.titleLarge) },
                 // 作者 long：首页与配置共用Flutter pageTitle/72dp节奏，切页时标题基线不再上下跳动。

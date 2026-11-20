@@ -52,13 +52,13 @@ internal fun ProxyGroupMemberPicker(initial: ProxyGroupDraft, groups: List<Proxy
         selected = if (choice.member.id in selected) selected - choice.member.id else selected + choice.member.id
         onChange(ProxyGroupMembers.select(origin, selected.mapNotNull { choices[it]?.member }))
     }
-    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "group_member_picker_back", title = { Text("添加节点") },
+    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "group_member_picker_back", title = { Text(tr("添加节点")) },
         bottomBar = { DockedProfileSearch(query, { query = it }, "group_member_search") },
-        confirmButton = { if (LocalEmbeddedProfilePage.current == null) TextButton(onDismiss, Modifier.testTag("group_member_picker_done")) { Text("完成") } }, text = {
+        confirmButton = { if (LocalEmbeddedProfilePage.current == null) TextButton(onDismiss, Modifier.testTag("group_member_picker_done")) { Text(tr("完成")) } }, text = {
             val scroll = LocalEmbeddedProfilePage.current?.scroll ?: rememberScrollState()
             val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
             Column(Modifier.fillMaxWidth().verticalScroll(scroll).onSizeChanged { report?.invoke(it.height) }.testTag("group_member_categories")) {
-                if (matching.isEmpty()) Text(if (searching) "无搜索结果" else "暂无可添加的节点", Modifier.padding(24.dp).testTag("group_member_empty"),
+                if (matching.isEmpty()) Text(if (searching) tr("无搜索结果") else tr("暂无可添加的节点"), Modifier.padding(24.dp).testTag("group_member_empty"),
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                 matching.forEach { section -> key(section.id) {
                     val opened = searching || section.id in expanded
@@ -66,7 +66,7 @@ internal fun ProxyGroupMemberPicker(initial: ProxyGroupDraft, groups: List<Proxy
                     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("group_member_category_${section.id}")
                         .clickable(enabled = !searching) { expanded = if (section.id in expanded) expanded - section.id else expanded + section.id }
                         .padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text(section.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                        Text(tr(section.title), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                         Text(" (${section.choices.size})", style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(Modifier.weight(1f))
@@ -86,7 +86,7 @@ internal fun ProxyGroupMemberPicker(initial: ProxyGroupDraft, groups: List<Proxy
                                     .background(color).clickable(enabled = opened) { toggle(choice) }.padding(horizontal = 16.dp, vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically) {
                                     Column(Modifier.weight(1f)) {
-                                        Text(choice.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(if (choice.member.kind in setOf(GroupMemberKind.ALL_PROXIES, GroupMemberKind.ALL_PROVIDERS)) tr(choice.title) else choice.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                         choice.subtitle?.let { Text(it, Modifier.padding(top = 2.dp), maxLines = 1, overflow = TextOverflow.Ellipsis,
                                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                                     }

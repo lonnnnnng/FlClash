@@ -11,9 +11,9 @@ internal data class ProfileUrlImportPreview(
 /** 作者 long：单条导入也在离开表单前校验，错误只描述格式，避免把订阅凭据带入提示或日志。 */
 internal fun profileUrlInputError(value: String): String? {
     val url = value.trim()
-    if (url.isEmpty()) return "请输入订阅链接"
-    if (url.length > MAX_PROFILE_URL_LENGTH) return "订阅链接不能超过 $MAX_PROFILE_URL_LENGTH 个字符"
-    return if (runCatching { normalizeSubscriptionUrl(url) }.isSuccess) null else "请输入有效的 HTTP/HTTPS 订阅链接"
+    if (url.isEmpty()) return tr("请输入订阅链接")
+    if (url.length > MAX_PROFILE_URL_LENGTH) return tr("订阅链接不能超过 {0} 个字符", MAX_PROFILE_URL_LENGTH)
+    return if (runCatching { normalizeSubscriptionUrl(url) }.isSuccess) null else tr("请输入有效的 HTTP/HTTPS 订阅链接")
 }
 
 /**

@@ -90,13 +90,13 @@ internal fun RuntimeConfigPreviewSheet(
         backTag = "runtime_config_preview_close",
         title = {
             Column {
-                Text("运行配置", style = MaterialTheme.typography.titleLarge)
+                Text(tr("运行配置"), style = MaterialTheme.typography.titleLarge)
                 state.preview?.let { Text(it.label, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis) }
             }
         },
         confirmButton = {
                 TextButton(onClick = onRetry, enabled = !state.isLoading, modifier = Modifier.testTag("runtime_config_preview_retry")) {
-                    Text(if (state.error != null) "重试" else "刷新")
+                    Text(if (state.error != null) tr("重试") else tr("刷新"))
                 }
                 IconButton({ searching = !searching }, enabled = state.preview != null,
                     modifier = Modifier.testTag("runtime_config_preview_find")) { Icon(Icons.Outlined.Search, null) }
@@ -109,13 +109,13 @@ internal fun RuntimeConfigPreviewSheet(
                     CircularProgressIndicator(Modifier.testTag("runtime_config_preview_loading"))
                 }
                 state.error != null -> Column(Modifier.padding(vertical = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("runtime_config_preview_error"))
-                    Text("请确认这份配置及绑定脚本可用后重试。", style = MaterialTheme.typography.bodyMedium)
+                    Text(tr(state.error), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("runtime_config_preview_error"))
+                    Text(tr("请确认这份配置及绑定脚本可用后重试。"), style = MaterialTheme.typography.bodyMedium)
                 }
                 state.preview != null -> {
                     Text(
-                        if (state.preview.isApplied) "当前核心加载的配置，只读。模式和节点以当前选择为准。"
-                        else "由这份配置生成的预览，只读；尚未经过核心校验。",
+                        if (state.preview.isApplied) tr("当前核心加载的配置，只读。模式和节点以当前选择为准。")
+                        else tr("由这份配置生成的预览，只读；尚未经过核心校验。"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).testTag("runtime_config_preview_origin"),
@@ -124,14 +124,14 @@ internal fun RuntimeConfigPreviewSheet(
                     val matches = remember(lines, query) { if (query.isEmpty()) emptyList() else lines.indices.filter { lines[it].contains(query, true) } }
                     SearchOptionsTransition(searching) {
                         OutlinedTextField(query, { query = it; match = 0 }, Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("runtime_config_preview_query"),
-                            label = { Text("查找") }, singleLine = true)
+                            label = { Text(tr("查找")) }, singleLine = true)
                         Row {
-                            Text("${matches.size} 行匹配", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                            Text(tr("{0} 行匹配", matches.size), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
                             for (offset in listOf(-1, 1)) TextButton({
                                 match = (match + offset).mod(matches.size)
                                 scope.launch { list.animateScrollToItem(matches[match]) }
                             }, enabled = matches.isNotEmpty(), modifier = Modifier.testTag(if (offset > 0) "runtime_config_preview_next" else "runtime_config_preview_previous")) {
-                                Text(if (offset > 0) "下一处" else "上一处")
+                                Text(if (offset > 0) tr("下一处") else tr("上一处"))
                             }
                         }
                     }

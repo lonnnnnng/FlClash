@@ -133,13 +133,13 @@ private fun WindowedProfileCodeField(value: TextFieldValue, onChange: (TextField
         onChange(value.copy(selection = TextRange(target), composition = null))
     }
     Column(modifier.testTag("profile_code_window")) {
-        Text("大正文分段编辑 · 字符 ${safeStart + 1}–$end / ${value.text.length}（段内行号）",
+        Text(tr("大正文分段编辑 · 字符 {0}–{1} / {2}（段内行号）", safeStart + 1, end, value.text.length),
             Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            TextButton({ move(0) }, enabled = enabled && safeStart > 0, modifier = Modifier.testTag("profile_code_first")) { Text("开头") }
-            TextButton({ move(profileCodeWindowBefore(value.text, safeStart)) }, enabled = enabled && safeStart > 0, modifier = Modifier.testTag("profile_code_previous")) { Text("上一段") }
-            TextButton({ move(end) }, enabled = enabled && end < value.text.length, modifier = Modifier.testTag("profile_code_next")) { Text("下一段") }
-            TextButton({ move(profileCodeWindowBefore(value.text, value.text.length)) }, enabled = enabled && end < value.text.length, modifier = Modifier.testTag("profile_code_last")) { Text("末尾") }
+            TextButton({ move(0) }, enabled = enabled && safeStart > 0, modifier = Modifier.testTag("profile_code_first")) { Text(tr("开头")) }
+            TextButton({ move(profileCodeWindowBefore(value.text, safeStart)) }, enabled = enabled && safeStart > 0, modifier = Modifier.testTag("profile_code_previous")) { Text(tr("上一段")) }
+            TextButton({ move(end) }, enabled = enabled && end < value.text.length, modifier = Modifier.testTag("profile_code_next")) { Text(tr("下一段")) }
+            TextButton({ move(profileCodeWindowBefore(value.text, value.text.length)) }, enabled = enabled && end < value.text.length, modifier = Modifier.testTag("profile_code_last")) { Text(tr("末尾")) }
         }
         val local = TextFieldValue(value.text.substring(safeStart, end), TextRange(
             (value.selection.start - safeStart).coerceIn(0, end - safeStart),

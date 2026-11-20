@@ -21,8 +21,8 @@ import com.lonnnnnng.flclash.data.Profile
 internal fun ProfileManagementHost(controller: ProfileManagementController, profiles: List<Profile>, users: Map<Long, List<String>>) {
     val state by controller.state.collectAsState()
     if (state.recoveryFailed) {
-        AlertDialog(onDismissRequest = {}, title = { Text("配置管理草稿") }, text = { Text(state.error.orEmpty()) },
-            confirmButton = { TextButton(controller::retryRecovery, enabled = !state.busy) { Text("重试恢复") } })
+        AlertDialog(onDismissRequest = {}, title = { Text(tr("配置管理草稿")) }, text = { Text(tr(state.error.orEmpty())) },
+            confirmButton = { TextButton(controller::retryRecovery, enabled = !state.busy) { Text(tr("重试恢复")) } })
         return
     }
     val draft = state.draft ?: return
@@ -39,43 +39,43 @@ internal fun ProfileManagementHost(controller: ProfileManagementController, prof
                 val value = TextFieldValue(draft.label, TextRange(start.coerceIn(0, draft.label.length), end.coerceIn(0, draft.label.length)), composition)
                 EditorAlertDialog(
                     onDismissRequest = controller::close,
-                    title = { Text("重命名配置") },
+                    title = { Text(tr("重命名配置")) },
                     text = {
                         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(value, {
                                 start = it.selection.start; end = it.selection.end; composition = it.composition
                                 controller.label(draft.session, it.text)
                             }, enabled = !state.busy && !draft.committed, singleLine = true,
-                                modifier = Modifier.fillMaxWidth().testTag("profile_rename_label"), label = { Text("名称") },
-                                supportingText = { Text("名称不能为空，最多 64 个字符") },
+                                modifier = Modifier.fillMaxWidth().testTag("profile_rename_label"), label = { Text(tr("名称")) },
+                                supportingText = { Text(tr("名称不能为空，最多 64 个字符")) },
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 keyboardActions = KeyboardActions(onDone = { if (canSave) submit() }))
-                            state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_management_error")) }
+                            state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_management_error")) }
                         }
                     },
                     confirmButton = {
                         TextButton(::submit, enabled = canSave && draft.label.trim().isNotEmpty() && draft.label.trim() != draft.originalLabel,
-                            modifier = Modifier.testTag("profile_rename_save")) { Text(if (state.busy) "正在保存" else "保存") }
+                            modifier = Modifier.testTag("profile_rename_save")) { Text(if (state.busy) tr("正在保存") else tr("保存")) }
                     },
-                    dismissButton = { TextButton(controller::close, enabled = !state.busy) { Text(if (draft.committed) "关闭" else "取消") } },
+                    dismissButton = { TextButton(controller::close, enabled = !state.busy) { Text(if (draft.committed) tr("关闭") else tr("取消")) } },
                 )
             }
             "delete" -> EditorAlertDialog(
                 onDismissRequest = controller::close,
-                title = { Text("删除配置") },
+                title = { Text(tr("删除配置")) },
                 text = {
                     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("确定删除“${draft.originalLabel}”吗？本地配置文件也会一并删除。")
+                        Text(tr("确定删除“{0}”吗？本地配置文件也会一并删除。", draft.originalLabel))
                         users[draft.profileId]?.takeIf { it.isNotEmpty() }?.let {
-                            Text("以下配置仍引用此代理资源：${it.joinToString("、")}。删除后引用将显示缺失，可重新选择资源。", color = MaterialTheme.colorScheme.error)
+                            Text(tr("以下配置仍引用此代理资源：{0}。删除后引用将显示缺失，可重新选择资源。", it.joinToString("、")), color = MaterialTheme.colorScheme.error)
                         }
-                        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_management_error")) }
+                        state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_management_error")) }
                     }
                 },
                 confirmButton = { TextButton(::submit, enabled = canSave, modifier = Modifier.testTag("profile_delete_save")) {
-                    Text(if (state.busy) "正在删除" else "删除")
+                    Text(if (state.busy) tr("正在删除") else tr("删除"))
                 } },
-                dismissButton = { TextButton(controller::close, enabled = !state.busy) { Text(if (draft.committed) "关闭" else "取消") } },
+                dismissButton = { TextButton(controller::close, enabled = !state.busy) { Text(if (draft.committed) tr("关闭") else tr("取消")) } },
             )
             "order" -> {
                 val byId = profiles.associateBy(Profile::id)
@@ -85,22 +85,22 @@ internal fun ProfileManagementHost(controller: ProfileManagementController, prof
                     if (state.busy) return
                     if (!draft.committed && draft.order != profiles.map(Profile::id)) discard = true else controller.close()
                 }
-                ProfileEditorPage(::exit, { Text("排序配置") }, {
+                ProfileEditorPage(::exit, { Text(tr("排序配置")) }, {
                     Column(Modifier.fillMaxSize().testTag("profiles_order_page"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("长按拖动调整顺序，保存后生效。")
-                        state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profiles_order_error")) }
-                        if (ordered.isEmpty()) Text("暂无可排序配置")
+                        Text(tr("长按拖动调整顺序，保存后生效。"))
+                        state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profiles_order_error")) }
+                        if (ordered.isEmpty()) Text(tr("暂无可排序配置"))
                         ResourceOrderList(ordered.map { ResourceOrderItem(it.id.toString(), it.realLabel, it.type.name) },
                             !canSave, "profiles", { ids -> controller.order(draft.session, ids.map(String::toLong)) }, Modifier.weight(1f))
                     }
                 }, confirmButton = {
                     TextButton(::submit, enabled = canSave && ordered.isNotEmpty(), modifier = Modifier.testTag("profiles_order_save")) {
-                        Text(if (state.busy) "正在保存" else "保存排序")
+                        Text(if (state.busy) tr("正在保存") else tr("保存排序"))
                     }
-                }, dismissButton = { TextButton(::exit, enabled = !state.busy) { Text(if (draft.committed) "关闭" else "取消") } }, backTag = "profiles_order_back")
-                if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃排序修改？") },
-                    confirmButton = { TextButton(controller::close, enabled = !state.busy) { Text("放弃") } },
-                    dismissButton = { TextButton({ discard = false }, enabled = !state.busy) { Text("继续排序") } })
+                }, dismissButton = { TextButton(::exit, enabled = !state.busy) { Text(if (draft.committed) tr("关闭") else tr("取消")) } }, backTag = "profiles_order_back")
+                if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃排序修改？")) },
+                    confirmButton = { TextButton(controller::close, enabled = !state.busy) { Text(tr("放弃")) } },
+                    dismissButton = { TextButton({ discard = false }, enabled = !state.busy) { Text(tr("继续排序")) } })
             }
         }
     }

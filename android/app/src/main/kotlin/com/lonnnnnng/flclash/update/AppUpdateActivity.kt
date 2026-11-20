@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.update
 
+import com.lonnnnnng.flclash.ui.tr
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -25,12 +26,15 @@ import kotlinx.coroutines.launch
 /** 作者 long：只展示版本检查结果；下载交给浏览器的GitHub发布页，不申请应用安装权限。 */
 @AndroidEntryPoint
 class AppUpdateActivity : ComponentActivity() {
+    @Inject lateinit var appearanceSettings: com.lonnnnnng.flclash.data.AppearanceSettingsStore
     @Inject lateinit var repository: AppUpdateRepository
     private var browserError by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { KClashTheme {
+        setContent {
+            val appearance by appearanceSettings.state.collectAsState()
+            com.lonnnnnng.flclash.ui.AppAppearance(this, appearance) {
             val state by repository.state.collectAsState()
             LaunchedEffect(Unit) { if (state.phase == UpdatePhase.IDLE) repository.check() }
             UpdatePanel(state, repository.currentVersion, browserError, ::finish,
@@ -48,35 +52,35 @@ class AppUpdateActivity : ComponentActivity() {
 @Composable
 internal fun UpdatePanel(state: UpdateState, currentVersion: String, browserError: String?, back: () -> Unit,
     check: () -> Unit, openRelease: () -> Unit) {
-    Scaffold(topBar = { TopAppBar(title = { Text("应用更新") }, navigationIcon = {
-        IconButton(onClick = back) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回") }
+    Scaffold(topBar = { TopAppBar(title = { Text(tr("应用更新")) }, navigationIcon = {
+        IconButton(onClick = back) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, tr("返回")) }
     }) }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("KClash", style = MaterialTheme.typography.titleLarge)
-                    Text("当前版本 $currentVersion")
+                    Text(tr("当前版本 {0}", currentVersion))
                     Text(when (state.phase) {
-                        UpdatePhase.IDLE -> "检查可用的正式版本"
-                        UpdatePhase.CHECKING -> "正在检查更新"
-                        UpdatePhase.LATEST -> "已是最新正式版本"
-                        UpdatePhase.AVAILABLE -> "发现新版本 ${state.release?.version.orEmpty()}"
-                        UpdatePhase.FAILED -> "检查更新失败，请检查网络后重试"
+                        UpdatePhase.IDLE -> tr("检查可用的正式版本")
+                        UpdatePhase.CHECKING -> tr("正在检查更新")
+                        UpdatePhase.LATEST -> tr("已是最新正式版本")
+                        UpdatePhase.AVAILABLE -> tr("发现新版本 {0}", state.release?.version.orEmpty())
+                        UpdatePhase.FAILED -> tr("检查更新失败，请检查网络后重试")
                     }, modifier = Modifier.testTag("app_update_status"))
                     if (state.phase == UpdatePhase.CHECKING) LinearProgressIndicator(Modifier.fillMaxWidth())
-                    browserError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    browserError?.let { Text(com.lonnnnnng.flclash.ui.tr(it), color = MaterialTheme.colorScheme.error) }
                     if (state.phase == UpdatePhase.AVAILABLE) {
-                        Button(onClick = openRelease, modifier = Modifier.testTag("app_update_github")) { Text("前往 GitHub 下载") }
+                        Button(onClick = openRelease, modifier = Modifier.testTag("app_update_github")) { Text(tr("前往 GitHub 下载")) }
                     }
                     OutlinedButton(onClick = check, enabled = state.phase != UpdatePhase.CHECKING,
-                        modifier = Modifier.testTag("app_update_check")) { Text("检查更新") }
+                        modifier = Modifier.testTag("app_update_check")) { Text(tr("检查更新")) }
                 }
             }
             state.release?.notes?.takeIf { it.isNotBlank() }?.let { notes ->
                 Card(Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("版本说明", style = MaterialTheme.typography.titleMedium)
+                        Text(tr("版本说明"), style = MaterialTheme.typography.titleMedium)
                         Text(notes)
                     }
                 }

@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **062 工具页与双语外观（2026-11-20）**：工具页已合并为“网络活动”单入口，最近请求/活动连接/DNS/日志四个完整可搜索Tab；全应用2178组中英文案、语言三选项与深浅/系统主题已接入。POCO最终10/10、相邻回归5/5、冷进程准备与回读各1/1，16图已核对；917项JVM结果零失败，motion/Test、未签名Release-R8、双Lint/DEX通过。 此组按用户新要求推进，下一步仍为其余面板与精确排版/连续转场，再处理菜单慢帧。[证据](acceptance/tools-observation-appearance-poco-20261120.json)
+
 > **非空Flutter对照与菜单线程时间线（2026-11-10，KUI-033）**：已核对非空CUSTOM/资源、接入成员下沿搜索、录制DNS深浅自然过渡并取得菜单线程/Popup分窗数据；首开慢帧和原生函数归因未闭环。证据[验收JSON](acceptance/nonempty-motion-redmi-20261110.json)，余项与范围见[执行记录](nonempty-reference-menu-timeline.md)。
 
 > **下沿搜索与共享子页转场（2026-11-10，KUI-032）**：资源/Provider/图标与Sniffer添加候选的下沿搜索、共享编辑器与工具栏转场已完成本组17项Redmi验收；869项JVM、签名Release和双Lint零错误，手机保留`475e5a74…d7edcf2`候选。完整Flutter安全包已跑通部分真实页面，非空CUSTOM/资源矩阵、其余全页动效和菜单原生慢帧仍PARTIAL。证据[验收JSON](acceptance/docked-search-redmi-20261110.json)，实现与边界见[对齐记录](docked-search-alignment.md)。

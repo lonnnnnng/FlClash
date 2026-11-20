@@ -30,24 +30,24 @@ internal fun CustomProfileOverview(
     val readable = summary?.takeUnless { it.unreadable }
     fun count(value: Int?) = value?.toString() ?: "—"
     if (summary?.unreadable == true) {
-        Text("无法读取配置概览，请在原始 YAML 中修正配置。", color = MaterialTheme.colorScheme.error,
+        Text(tr("无法读取配置概览，请在原始 YAML 中修正配置。"), color = MaterialTheme.colorScheme.error,
             modifier = Modifier.padding(vertical = 8.dp).testTag("custom_profile_summary_error"))
     }
     Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor(), modifier = Modifier.padding(top = 8.dp)) {
         Column {
-            CustomOverviewRow("规则", count(readable?.rules), Icons.AutoMirrored.Outlined.Rule, enabled,
+            CustomOverviewRow(tr("规则"), count(readable?.rules), Icons.AutoMirrored.Outlined.Rule, enabled,
                 "custom_profile_rules", onClick = onRules)
-            val resources = readable?.let { if (it.missingProviders > 0) "${it.referencedProviders} · 缺失 ${it.missingProviders}" else it.referencedProviders.toString() } ?: "—"
-            CustomOverviewRow("资源", resources, Icons.Outlined.Cloud, enabled, "custom_profile_resources",
+            val resources = readable?.let { if (it.missingProviders > 0) tr("{0} · 缺失 {1}", it.referencedProviders, it.missingProviders) else it.referencedProviders.toString() } ?: "—"
+            CustomOverviewRow(tr("资源"), resources, Icons.Outlined.Cloud, enabled, "custom_profile_resources",
                 error = (readable?.missingProviders ?: 0) > 0, onClick = onResources)
-            CustomOverviewRow("DNS", readable?.let { if (it.dnsEnabled) "已启用" else "未启用" } ?: "—",
+            CustomOverviewRow("DNS", readable?.let { if (it.dnsEnabled) tr("已启用") else tr("未启用") } ?: "—",
                 Icons.Outlined.Dns, enabled, "custom_profile_dns", active = readable?.dnsEnabled == true, onClick = onDns)
-            CustomOverviewRow("更多", readable?.let { if (it.moreInEffect > 0) "${it.moreInEffect} 项生效" else "默认" } ?: "—",
+            CustomOverviewRow(tr("更多"), readable?.let { if (it.moreInEffect > 0) tr("{0} 项生效", it.moreInEffect) else tr("默认") } ?: "—",
                 Icons.Outlined.Tune, enabled, "custom_profile_more", active = (readable?.moreInEffect ?: 0) > 0, onClick = onMore)
         }
     }
     Row(Modifier.fillMaxWidth().padding(top = 18.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("策略组", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+        Text(tr("策略组"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
         if (!readable?.groups.isNullOrEmpty()) IconButton(onClick = onGroups, enabled = enabled,
             modifier = Modifier.testTag("custom_profile_manage_groups")) { Icon(Icons.Outlined.Settings, null) }
         IconButton(onClick = { onGroup?.invoke(-1) ?: onGroups() }, enabled = enabled, modifier = Modifier.testTag("custom_profile_add_group")) {
@@ -57,11 +57,11 @@ internal fun CustomProfileOverview(
     Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
         Column {
             if (readable?.groups.isNullOrEmpty()) {
-                ProfileSectionRow("添加策略组", "将代理和资源组合为可切换的出站策略", Icons.Outlined.Hub, enabled,
+                ProfileSectionRow(tr("添加策略组"), tr("将代理和资源组合为可切换的出站策略"), Icons.Outlined.Hub, enabled,
                     Modifier.testTag("custom_profile_groups"), { onGroup?.invoke(-1) ?: onGroups() })
             } else {
                 readable.groups.forEachIndexed { index, group ->
-                    ProfileSectionRow(group.name, "${group.type} · ${group.members} 个成员 · ${group.resources} 个资源", Icons.Outlined.Hub,
+                    ProfileSectionRow(group.name, tr("{0} · {1} 个成员 · {2} 个资源", group.type, group.members, group.resources), Icons.Outlined.Hub,
                         enabled, Modifier.testTag("custom_profile_group_$index"), { onGroup?.invoke(index) ?: onGroups() })
                 }
             }

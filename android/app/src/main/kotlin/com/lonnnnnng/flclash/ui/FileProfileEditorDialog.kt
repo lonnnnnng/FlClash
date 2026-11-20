@@ -66,17 +66,17 @@ internal fun FileProfileEditorDialog(
     }
     ProfileEditorPage(
         onDismissRequest = ::exit,
-        title = { Text("编辑 ${profile.realLabel}") },
+        title = { Text(tr("编辑 {0}", profile.realLabel)) },
         text = {
             Column(Modifier.fillMaxWidth().testTag("file_profile_editor_form")
                 .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 ProfileFormSection {
                     OutlinedTextField(label, { label = it.take(64); onMetadataChange(label, key) }, enabled = !locked, singleLine = true,
-                        label = { Text("名称") }, modifier = Modifier.fillMaxWidth().testTag("file_profile_editor_label"))
+                        label = { Text(tr("名称")) }, modifier = Modifier.fillMaxWidth().testTag("file_profile_editor_label"))
                     AgeSecretKeyField(key, { key = it; onMetadataChange(label, key) }, !locked, "file_profile_editor_age_key")
                 }
                 ProfileFormSection {
-                ProfileSectionRow(title = "从文件替换", detail = replacement?.name,
+                ProfileSectionRow(title = tr("从文件替换"), detail = replacement?.name,
                     icon = Icons.Outlined.UploadFile, enabled = !locked,
                     modifier = Modifier.testTag("file_profile_replace_pick"), onClick = {
                     onBeginPick()?.let { token ->
@@ -95,25 +95,25 @@ internal fun FileProfileEditorDialog(
                     }
                 })
                 if (state.isReadingFile) {
-                    Text("正在读取并检查文件…")
+                    Text(tr("正在读取并检查文件…"))
                     LinearProgressIndicator(Modifier.fillMaxWidth())
                 }
                 if (replacement != null) {
                     Text(replacement.name, maxLines = 2, modifier = Modifier.testTag("file_profile_replacement_name"))
-                    Text("文件大小：${replacement.sizeBytes} 字节")
+                    Text(tr("文件大小：{0} 字节", replacement.sizeBytes))
                     Text(when {
-                        replacement.isEncrypted -> "age 加密配置，保存时使用上方密钥解密并校验"
-                        replacement.isValidYaml -> "YAML 格式校验通过，保存后替换当前文件"
-                        else -> "无法读取 YAML 配置，请重新选择文件"
+                        replacement.isEncrypted -> tr("age 加密配置，保存时使用上方密钥解密并校验")
+                        replacement.isValidYaml -> tr("YAML 格式校验通过，保存后替换当前文件")
+                        else -> tr("无法读取 YAML 配置，请重新选择文件")
                     }, color = if (replacement.isEncrypted || replacement.isValidYaml) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error)
-                    TextButton(onClick = onClearReplacement, enabled = !locked, modifier = Modifier.testTag("file_profile_replacement_clear")) { Text("取消文件替换") }
+                    TextButton(onClick = onClearReplacement, enabled = !locked, modifier = Modifier.testTag("file_profile_replacement_clear")) { Text(tr("取消文件替换")) }
                 } else {
                     OutlinedButton(onClick = { if (onOpenDocument != null) onOpenDocument() else showYaml = !showYaml }, enabled = !locked,
-                        modifier = Modifier.testTag("file_profile_toggle_yaml")) { Text(if (showYaml) "收起原始 YAML" else "编辑原始 YAML") }
+                        modifier = Modifier.testTag("file_profile_toggle_yaml")) { Text(if (showYaml) tr("收起原始 YAML") else tr("编辑原始 YAML")) }
                     if (showYaml) OutlinedTextField(content, { content = it }, modifier = Modifier.fillMaxWidth().testTag("profile_editor_content"),
                         label = { Text("YAML") }, minLines = 5, maxLines = 10, enabled = !locked)
                 }
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("file_profile_editor_error")) }
+                state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("file_profile_editor_error")) }
                 }
             }
         },
@@ -124,15 +124,15 @@ internal fun FileProfileEditorDialog(
                 if (onSaveWithLabel != null) onSaveWithLabel(edited, key.trim(), label.trim()) else onSave(edited, key.trim())
             }, enabled = !locked && label.isNotBlank() && validReplacement && (replacement != null || content.isNotBlank() || content == state.content),
                 modifier = Modifier.testTag("file_profile_editor_save")) {
-                if (state.isSaving) CircularProgressIndicator() else Text("保存")
+                if (state.isSaving) CircularProgressIndicator() else Text(tr("保存"))
             }
         },
-        dismissButton = { TextButton(onClick = ::exit, enabled = !state.isSaving && !state.isReadingFile) { Text("取消") } },
+        dismissButton = { TextButton(onClick = ::exit, enabled = !state.isSaving && !state.isReadingFile) { Text(tr("取消")) } },
     )
     if (confirmDiscard) {
-        AlertDialog(onDismissRequest = { confirmDiscard = false }, title = { Text("放弃未保存的修改？") },
-            text = { Text("本次名称、密钥、文件选择和 YAML 修改都不会保存。") },
-            confirmButton = { TextButton(onClick = { confirmDiscard = false; onDismiss() }) { Text("放弃") } },
-            dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text("继续编辑") } })
+        AlertDialog(onDismissRequest = { confirmDiscard = false }, title = { Text(tr("放弃未保存的修改？")) },
+            text = { Text(tr("本次名称、密钥、文件选择和 YAML 修改都不会保存。")) },
+            confirmButton = { TextButton(onClick = { confirmDiscard = false; onDismiss() }) { Text(tr("放弃")) } },
+            dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text(tr("继续编辑")) } })
     }
 }

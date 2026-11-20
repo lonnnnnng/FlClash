@@ -17,8 +17,8 @@ import com.google.gson.JsonPrimitive
 import com.lonnnnnng.flclash.service.GlobalDnsSettings
 import com.lonnnnnng.flclash.service.ProfileDnsOverrides
 
-private val dnsLabels = mapOf("listen" to "监听地址", "ipv6" to "IPv6", "enhanced-mode" to "DNS 模式",
-    "fake-ip-filter" to "Fake-IP 过滤", "fake-ip-filter-mode" to "Fake-IP 过滤模式",
+private val dnsLabels get() = mapOf("listen" to tr("监听地址"), "ipv6" to "IPv6", "enhanced-mode" to tr("DNS 模式"),
+    "fake-ip-filter" to tr("Fake-IP 过滤"), "fake-ip-filter-mode" to tr("Fake-IP 过滤模式"),
     "default-nameserver" to "Default Nameserver", "nameserver" to "Nameserver", "fallback" to "Fallback",
     "proxy-server-nameserver" to "Proxy Server Nameserver", "direct-nameserver" to "Direct Nameserver")
 private fun dnsDefault(key: String): String = when (key) {
@@ -45,15 +45,15 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
     val fields = settings.toJson()
     fun remove(key: String) { onSave(settings.changed(key, null)) { if (!it) error = "移除失败，请重试" } }
     Column(Modifier.fillMaxWidth().testTag("page_global_dns"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("为普通配置设置 DNS 覆盖，未添加的字段沿用配置；自定义配置使用自己的 DNS。",
+        Text(tr("为普通配置设置 DNS 覆盖，未添加的字段沿用配置；自定义配置使用自己的 DNS。"),
             color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
         if (saving) Row(Modifier.fillMaxWidth().testTag("global_dns_saving"), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-            Text("正在保存并应用 DNS 设置…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(tr("正在保存并应用 DNS 设置…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        listOf("选项" to listOf("listen", "ipv6", "enhanced-mode"), "Fake-IP" to listOf("fake-ip-filter", "fake-ip-filter-mode"),
+        error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
+        listOf(tr("选项") to listOf("listen", "ipv6", "enhanced-mode"), "Fake-IP" to listOf("fake-ip-filter", "fake-ip-filter-mode"),
             "Nameserver" to GlobalDnsSettings.keys.filter { it in GlobalDnsSettings.listKeys && it != "fake-ip-filter" }).forEach { (section, keys) ->
             if (keys.any(fields::has)) {
                 Text(section, Modifier.padding(top = 12.dp), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleSmall)
@@ -62,7 +62,7 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
                         .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f).padding(end = 12.dp)) {
                             Text(dnsLabels.getValue(key))
-                            Text(fields.get(key).dnsText().ifEmpty { "空值覆盖" }, maxLines = 3,
+                            Text(fields.get(key).dnsText().ifEmpty { tr("空值覆盖") }, maxLines = 3,
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         if (key == "ipv6") Switch(fields.get(key).asBoolean, { enabled ->
@@ -76,15 +76,15 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
                 }
             }
         }
-        if (fields.size() == 0) Text("尚未添加 DNS 覆盖", Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (fields.size() == 0) Text(tr("尚未添加 DNS 覆盖"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
         OutlinedButton({ adding = true }, enabled = !busy && fields.size() < GlobalDnsSettings.keys.size,
-            modifier = Modifier.testTag("global_dns_add")) { Icon(Icons.Outlined.Add, null); Text("添加字段") }
+            modifier = Modifier.testTag("global_dns_add")) { Icon(Icons.Outlined.Add, null); Text(tr("添加字段")) }
     }
-    if (adding) AlertDialog(onDismissRequest = { if (!busy) adding = false }, title = { Text("添加 DNS 字段") }, text = {
+    if (adding) AlertDialog(onDismissRequest = { if (!busy) adding = false }, title = { Text(tr("添加 DNS 字段")) }, text = {
         Column { GlobalDnsSettings.keys.filterNot(fields::has).forEach { key ->
             TextButton({ adding = false; editing = key }, enabled = !busy, modifier = Modifier.testTag("global_dns_add_$key")) { Text(dnsLabels.getValue(key)) }
         } }
-    }, confirmButton = { TextButton({ adding = false }, enabled = !busy) { Text("取消") } })
+    }, confirmButton = { TextButton({ adding = false }, enabled = !busy) { Text(tr("取消")) } })
     editing?.let { key ->
         GlobalDnsFieldEditor(key, fields.get(key)?.dnsText() ?: dnsDefault(key), busy, saving,
             onDismiss = { editing = null }) { value, done ->
@@ -120,15 +120,15 @@ private fun GlobalDnsFieldEditor(key: String, initial: String, busy: Boolean, sa
             } else OutlinedTextField(text, { if (it.length <= 65536) text = it }, enabled = !busy,
                 modifier = Modifier.fillMaxWidth().testTag("global_dns_input"), minLines = if (key in GlobalDnsSettings.listKeys) 5 else 1,
                 maxLines = 9, singleLine = key == "listen", supportingText = {
-                    Text(if (key in GlobalDnsSettings.listKeys) "每行一项；留空保存为空列表，移除字段恢复继承" else "例如 127.0.0.1:1053，留空关闭监听")
+                    Text(if (key in GlobalDnsSettings.listKeys) tr("每行一项；留空保存为空列表，移除字段恢复继承") else tr("例如 127.0.0.1:1053，留空关闭监听"))
                 })
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_dns_error")) }
+            error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_dns_error")) }
             if (saving) Row(Modifier.fillMaxWidth().testTag("global_dns_editor_saving"), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                Text("正在保存并应用…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr("正在保存并应用…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-    }, confirmButton = { if (options.isEmpty()) TextButton({ save(text) }, enabled = !busy, modifier = Modifier.testTag("global_dns_save")) { Text("保存") } },
-        dismissButton = { TextButton(onDismiss, enabled = !busy) { Text("取消") } })
+    }, confirmButton = { if (options.isEmpty()) TextButton({ save(text) }, enabled = !busy, modifier = Modifier.testTag("global_dns_save")) { Text(tr("保存")) } },
+        dismissButton = { TextButton(onDismiss, enabled = !busy) { Text(tr("取消")) } })
 }

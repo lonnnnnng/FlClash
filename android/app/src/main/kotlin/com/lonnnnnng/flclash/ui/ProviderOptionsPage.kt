@@ -65,10 +65,10 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
         val frozen = runCatching {
             ProviderOption.entries.fold(filters) { model, option ->
                 val text = values[option.name]
-                if (option.number && !text.isNullOrEmpty()) require(text.toIntOrNull()?.let { it > 0 } == true) { "${option.title}必须是正整数" }
+                if (option.number && !text.isNullOrEmpty()) require(text.toIntOrNull()?.let { it > 0 } == true) { tr("{0}必须是正整数", option.title) }
                 if (option == ProviderOption.URL && !text.isNullOrBlank()) {
                     val uri = runCatching { URI(text.trim()) }.getOrNull()
-                    require(uri?.scheme?.lowercase() in setOf("http", "https") && !uri?.host.isNullOrBlank()) { "请输入有效的 HTTP/HTTPS 测速地址" }
+                    require(uri?.scheme?.lowercase() in setOf("http", "https") && !uri?.host.isNullOrBlank()) { tr("请输入有效的 HTTP/HTTPS 测速地址") }
                 }
                 option.apply(model, text?.takeIf(String::isNotEmpty)?.let { if (option in setOf(ProviderOption.URL, ProviderOption.EXPECTED_STATUS)) it.trim().takeIf(String::isNotEmpty) else it })
             }
@@ -78,7 +78,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
             try {
                 val errors = validateFilters(listOf(frozen.filter.orEmpty(), frozen.excludeFilter.orEmpty()))
                 ProviderValidationProbe.checkpoint()
-                require(errors.size == 2 && errors.all(String::isEmpty)) { "过滤表达式无效，请检查后重试" }
+                require(errors.size == 2 && errors.all(String::isEmpty)) { tr("过滤表达式无效，请检查后重试") }
                 onSave(frozen)
             } catch (cancelled: CancellationException) { throw cancelled }
             // 作者 long：校验器可能附带原始表达式或地址；只公布恢复办法，草稿仍保留在当前子页。
@@ -93,21 +93,21 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
             val keyboard = LocalSoftwareKeyboardController.current
             TextButton(onClick = {
                 if (!busy) { focus.clearFocus(force = true); keyboard?.hide(); save() }
-            }, enabled = !busy, modifier = Modifier.testTag("provider_options_save")) { Text(if (validating) "校验中…" else if (saving) "保存中…" else "保存") }
+            }, enabled = !busy, modifier = Modifier.testTag("provider_options_save")) { Text(if (validating) tr("校验中…") else if (saving) tr("保存中…") else tr("保存")) }
         }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(scroll).testTag("provider_options_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-                (localError ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("provider_options_error")) }
+                (localError ?: error)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("provider_options_error")) }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("过滤", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                    Text(tr("过滤"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                     Box {
                         val source = rememberAppMenuSource()
                         AppMenuSourceContent(source) {
                             IconButton(onClick = { menu = true }, enabled = !busy, modifier = Modifier.testTag("provider_filter_menu").appMenuSource(source)) { Icon(Icons.Outlined.MoreVert, null) }
                         }
                         AppDropdownMenu(menu && !busy, { menu = false }, source = source) {
-                            AppDropdownMenuItem(text = { Text("沿用源过滤") }, enabled = filters.filter != null, onClick = { menu = false; changeFilters(filters.copy(filter = null, memberLayout = null)) })
-                            AppDropdownMenuItem(text = { Text("沿用源排除过滤") }, enabled = filters.excludeFilter != null, onClick = { menu = false; changeFilters(filters.copy(excludeFilter = null, memberLayout = null)) })
+                            AppDropdownMenuItem(text = { Text(tr("沿用源过滤")) }, enabled = filters.filter != null, onClick = { menu = false; changeFilters(filters.copy(filter = null, memberLayout = null)) })
+                            AppDropdownMenuItem(text = { Text(tr("沿用源排除过滤")) }, enabled = filters.excludeFilter != null, onClick = { menu = false; changeFilters(filters.copy(excludeFilter = null, memberLayout = null)) })
                         }
                     }
                 }
@@ -126,10 +126,10 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                             }
                         }
                     } }
-                    if (rows.isEmpty()) Text(if (filters.filter == "" || filters.excludeFilter == "") "条件已清空；可从过滤选项恢复继承。" else "暂无过滤条件", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    ProfileSectionRow("添加过滤", icon = Icons.Outlined.AddCircleOutline, enabled = !busy, modifier = Modifier.testTag("provider_filters_add")) { pickingFilters = true }
+                    if (rows.isEmpty()) Text(if (filters.filter == "" || filters.excludeFilter == "") tr("条件已清空；可从过滤选项恢复继承。") else tr("暂无过滤条件"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    ProfileSectionRow(tr("添加过滤"), icon = Icons.Outlined.AddCircleOutline, enabled = !busy, modifier = Modifier.testTag("provider_filters_add")) { pickingFilters = true }
                 }
-                Text("选项", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                Text(tr("选项"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                     ProviderOption.entries.filter { it.name in values }.forEach { option -> key(option) {
                         // 作者 long：开关和IP选择沿用整行点击，右侧控件保留独立操作；删除按钮消费自己的触点，不触发整行。
@@ -157,7 +157,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                                         keyboardOptions = KeyboardOptions(keyboardType = if (option.number) KeyboardType.Number else KeyboardType.Text),
                                         modifier = Modifier.weight(1f).heightIn(min = 48.dp).wrapContentHeight().testTag("provider_option_${option.name}"),
                                         decorationBox = { field -> Box(contentAlignment = Alignment.CenterEnd) {
-                                            if (values[option.name].isNullOrEmpty()) Text("可选", style = MaterialTheme.typography.bodyLarge,
+                                            if (values[option.name].isNullOrEmpty()) Text(tr("可选"), style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             field()
                                         } })
@@ -166,7 +166,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
                             }
                         }
                     } }
-                    if (values.size < ProviderOption.entries.size) ProfileSectionRow("添加设置项", icon = Icons.Outlined.AddCircleOutline, enabled = !busy,
+                    if (values.size < ProviderOption.entries.size) ProfileSectionRow(tr("添加设置项"), icon = Icons.Outlined.AddCircleOutline, enabled = !busy,
                         modifier = Modifier.testTag("provider_option_add")) { adding = true }
                 }
                 Spacer(Modifier.height(20.dp))
@@ -174,19 +174,19 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
         })
     // 作者 long：最后一项添加后回到父表单；上游SelectionSheet也是最后选择自动关闭，不留下没有可操作项的空页。
     LaunchedEffect(adding, values.size) { if (adding && values.size == ProviderOption.entries.size) adding = false }
-    if (adding) ProfileEditorPage(onDismissRequest = { adding = false }, backTag = "provider_option_picker_back", title = { Text("添加设置项") }, text = {
+    if (adding) ProfileEditorPage(onDismissRequest = { adding = false }, backTag = "provider_option_picker_back", title = { Text(tr("添加设置项")) }, text = {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             ProviderOption.entries.filterNot { it.name in values }.groupBy { it.section }.forEach { (section, options) ->
                 Text(section, style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) { options.forEach { option -> ProfileSectionRow(option.title, icon = Icons.Outlined.Add, enabled = !busy,
                     modifier = Modifier.testTag("provider_option_pick_${option.name}")) { set(option, option.default) } } }
             }
-            if (values.size == ProviderOption.entries.size) Text("已添加全部设置项", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (values.size == ProviderOption.entries.size) Text(tr("已添加全部设置项"), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     })
-    if (choosingIp) ProfileEditorPage(onDismissRequest = { choosingIp = false }, backTag = "provider_ip_back", title = { Text("IP 版本") }, text = {
+    if (choosingIp) ProfileEditorPage(onDismissRequest = { choosingIp = false }, backTag = "provider_ip_back", title = { Text(tr("IP 版本")) }, text = {
         ProfileFormSection(modifier = Modifier.padding(top = 12.dp).selectableGroup(), contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-            listOf("dual" to "双栈", "ipv4" to "IPv4", "ipv6" to "IPv6").forEach { (value, title) ->
+            listOf("dual" to tr("双栈"), "ipv4" to "IPv4", "ipv6" to "IPv6").forEach { (value, title) ->
             Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).selectable(values[ProviderOption.IP_VERSION.name] == value, enabled = !busy, ) { set(ProviderOption.IP_VERSION, value); choosingIp = false }.padding(horizontal = 16.dp).testTag("provider_ip_$value"), verticalAlignment = Alignment.CenterVertically) {
                 Text(title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                 if (values[ProviderOption.IP_VERSION.name] == value) AppGlyphIcon(AppGlyphs.check, tint = MaterialTheme.colorScheme.primary)
@@ -194,8 +194,8 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
         } }
     })
     if (pickingFilters) ProviderFilterPicker(filters, !busy, onDismiss = { pickingFilters = false }, onChange = ::changeFilters)
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃选项修改？") }, text = { Text("尚未保存的过滤和设置项将丢失。") },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃选项修改？")) }, text = { Text(tr("尚未保存的过滤和设置项将丢失。")) },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(tr("放弃修改")) } }, dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
 }
 
 @Composable
@@ -221,10 +221,10 @@ private fun ProviderFilterPicker(initial: ProxyProviderOverride, enabled: Boolea
         }
         onChange(model)
     }
-    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_filter_picker_back", title = { Text("添加过滤") },
-        confirmButton = { TextButton(onDismiss, Modifier.testTag("provider_filter_picker_done")) { Text("完成") } }, text = {
+    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_filter_picker_back", title = { Text(tr("添加过滤")) },
+        confirmButton = { TextButton(onDismiss, Modifier.testTag("provider_filter_picker_done")) { Text(tr("完成")) } }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(query, { query = it }, singleLine = true, label = { Text("搜索名称或表达式") }, leadingIcon = { Icon(Icons.Outlined.Search, null) }, modifier = Modifier.fillMaxWidth().testTag("provider_filter_search"))
+                OutlinedTextField(query, { query = it }, singleLine = true, label = { Text(tr("搜索名称或表达式")) }, leadingIcon = { Icon(Icons.Outlined.Search, null) }, modifier = Modifier.fillMaxWidth().testTag("provider_filter_search"))
                 ProviderFilterKind.entries.forEach { category ->
                     var expanded by rememberSaveable(category) { mutableStateOf(false) }
                     val value = if (category == ProviderFilterKind.FILTER) base.filter.orEmpty() else base.excludeFilter.orEmpty()
@@ -244,13 +244,13 @@ private fun ProviderFilterPicker(initial: ProxyProviderOverride, enabled: Boolea
                         } }
                     }
                 }
-                Text("自定义表达式", style = MaterialTheme.typography.titleSmall)
+                Text(tr("自定义表达式"), style = MaterialTheme.typography.titleSmall)
                 ProfileFormSection {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { ProviderFilterKind.entries.forEach { category -> FilterChip(kind == category, { kind = category }, label = { Text(category.title) }, enabled = enabled,
                         modifier = Modifier.testTag("provider_filter_kind_${category.name}")) } }
-                    OutlinedTextField(custom, { if (it.length <= 8192) custom = it }, enabled = enabled, label = { Text("用反引号分隔多个表达式") }, modifier = Modifier.fillMaxWidth().testTag("provider_filter_custom"))
+                    OutlinedTextField(custom, { if (it.length <= 8192) custom = it }, enabled = enabled, label = { Text(tr("用反引号分隔多个表达式")) }, modifier = Modifier.fillMaxWidth().testTag("provider_filter_custom"))
                     TextButton(onClick = { selected = selected + "custom:${kind.name}:$custom"; custom = ""; publish() }, enabled = enabled && custom.isNotBlank(),
-                        modifier = Modifier.testTag("provider_filter_custom_add")) { Text("添加表达式") }
+                        modifier = Modifier.testTag("provider_filter_custom_add")) { Text(tr("添加表达式")) }
                 }
             }
         })

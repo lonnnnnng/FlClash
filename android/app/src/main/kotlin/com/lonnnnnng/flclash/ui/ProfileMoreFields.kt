@@ -6,7 +6,9 @@ import com.google.gson.JsonParser
 import com.lonnnnnng.flclash.service.YamlConfigCodec
 
 internal enum class MoreFieldKind { TOGGLE, TEXT, PORT, NUMBER, LIST, ADDRESSES, PROTOCOL }
-internal data class MoreField(val key: String, val label: String, val kind: MoreFieldKind, val defaultJson: String, val description: String = "") {
+internal data class MoreField(val key: String, private val labelText: String, val kind: MoreFieldKind, val defaultJson: String, private val descriptionText: String = "") {
+    val label get() = tr(labelText)
+    val description get() = tr(descriptionText)
     val protocol get() = key.substringAfter("sniff.")
     fun defaultValue(): JsonElement = JsonParser.parseString(defaultJson)
 }

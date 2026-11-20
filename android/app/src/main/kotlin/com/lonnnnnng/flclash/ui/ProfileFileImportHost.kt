@@ -28,19 +28,19 @@ internal fun rememberProfileFilePicker(controller: ProfileFileImportController):
         onDispose { lifecycle.removeObserver(observer) }
     }
     when {
-        state.reading -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text("读取配置") },
+        state.reading -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text(tr("读取配置")) },
             text = { Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
                 CircularProgressIndicator()
-                Text("正在读取并校验配置…")
-            } }, confirmButton = {}, dismissButton = { TextButton(onClick = controller::dismiss) { Text("取消") } })
-        state.completed -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text("导入完成") },
-            text = { Text("${state.fileName.orEmpty()} 已添加到配置列表。") },
-            confirmButton = { TextButton(onClick = controller::dismiss, modifier = Modifier.testTag("profile_file_import_done")) { Text("完成") } })
+                Text(tr("正在读取并校验配置…"))
+            } }, confirmButton = {}, dismissButton = { TextButton(onClick = controller::dismiss) { Text(tr("取消")) } })
+        state.completed -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text(tr("导入完成")) },
+            text = { Text(tr("{0} 已添加到配置列表。", state.fileName.orEmpty())) },
+            confirmButton = { TextButton(onClick = controller::dismiss, modifier = Modifier.testTag("profile_file_import_done")) { Text(tr("完成")) } })
         state.needsKey -> AgeSecretKeyDialog(controller::confirm, controller::dismiss, busy = state.saving, error = state.error)
         state.fileName != null -> ProfileFileImportPreviewDialog(state.fileName!!, state.size, state.validYaml, state.saving,
             { controller.confirm() }, controller::dismiss, isEncrypted = state.encrypted, error = state.error, validationNote = state.validationNote)
-        state.error != null -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text("导入配置") },
-            text = { Text(state.error!!) }, confirmButton = { TextButton(onClick = controller::dismiss) { Text("关闭") } })
+        state.error != null -> AlertDialog(onDismissRequest = controller::dismiss, title = { Text(tr("导入配置")) },
+            text = { Text(tr(state.error!!)) }, confirmButton = { TextButton(onClick = controller::dismiss) { Text(tr("关闭")) } })
     }
     return {
         controller.beginPick()?.let { pending ->

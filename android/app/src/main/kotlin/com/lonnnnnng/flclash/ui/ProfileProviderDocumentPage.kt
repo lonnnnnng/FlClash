@@ -73,16 +73,16 @@ internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose
         confirmButton = {
             if (state.saving) CircularProgressIndicator(Modifier.padding(12.dp).size(24.dp).testTag("profile_provider_document_saving"), strokeWidth = 2.dp)
             else if (canSave) TextButton(onSave, enabled = !state.loading,
-                modifier = Modifier.testTag("profile_provider_document_save")) { Text("保存") }
+                modifier = Modifier.testTag("profile_provider_document_save")) { Text(tr("保存")) }
         }, text = {
             Column(Modifier.fillMaxSize().testTag("profile_provider_document"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (state.loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-                state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_provider_document_error"))
-                    if (state.document == null || state.picking || state.committed || state.recoveryBlocked) TextButton(onRetry, enabled = !state.saving && !state.loading) { Text(if (state.committed) "重新读取确认" else "重试") } }
+                state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("profile_provider_document_error"))
+                    if (state.document == null || state.picking || state.committed || state.recoveryBlocked) TextButton(onRetry, enabled = !state.saving && !state.loading) { Text(if (state.committed) tr("重新读取确认") else tr("重试")) } }
                 val document = state.document?.document
                 when {
-                    state.picking -> Text(if (state.saving) "正在导入文件…" else "选择文件后将替换此 Provider 的缓存内容")
-                    (document?.kind ?: state.draft?.kind) == "binary" -> Text("此资源为二进制文件，无法预览或编辑；可返回后从文件导入")
+                    state.picking -> Text(if (state.saving) tr("正在导入文件…") else tr("选择文件后将替换此 Provider 的缓存内容"))
+                    (document?.kind ?: state.draft?.kind) == "binary" -> Text(tr("此资源为二进制文件，无法预览或编辑；可返回后从文件导入"))
                     state.editing && (document?.editable ?: state.draft?.editable) == true -> ProfileCodeField(value, { next ->
                         // 作者 long：缓存写入失败后保留正文和选区；选择文字不会触发新的草稿或擦掉失败提示。
                         if (owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
@@ -92,14 +92,14 @@ internal fun ProfileProviderDocumentPage(state: ProviderDocumentUiState, onClose
                     }, enabled = !state.loading && !state.saving && !state.committed && !(state.pendingSave && state.recoveryBlocked), modifier = Modifier.fillMaxSize(),
                         contentTag = "profile_provider_document_content")
                     document != null || state.draft != null -> {
-                        if ((document?.editable ?: state.draft?.editable) == false) Text("MRS 规则只读预览", style = MaterialTheme.typography.labelMedium)
+                        if ((document?.editable ?: state.draft?.editable) == false) Text(tr("MRS 规则只读预览"), style = MaterialTheme.typography.labelMedium)
                         SelectionContainer { Text(state.content, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
                             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_provider_document_content")) }
                     }
                 }
             }
         })
-    if (askDiscard) EditorAlertDialog(onDismissRequest = { askDiscard = false }, title = { Text(if (canSave) "保存更改？" else "放弃草稿？") },
-        text = { Text("未保存的更改将在退出后丢失") }, confirmButton = { if (canSave) TextButton({ askDiscard = false; onSave() }) { Text("保存") } },
-        dismissButton = { Row { TextButton({ askDiscard = false }) { Text("继续编辑") }; TextButton({ askDiscard = false; onClose() }) { Text("放弃") } } })
+    if (askDiscard) EditorAlertDialog(onDismissRequest = { askDiscard = false }, title = { Text(if (canSave) tr("保存更改？") else tr("放弃草稿？")) },
+        text = { Text(tr("未保存的更改将在退出后丢失")) }, confirmButton = { if (canSave) TextButton({ askDiscard = false; onSave() }) { Text(tr("保存")) } },
+        dismissButton = { Row { TextButton({ askDiscard = false }) { Text(tr("继续编辑")) }; TextButton({ askDiscard = false; onClose() }) { Text(tr("放弃")) } } })
 }

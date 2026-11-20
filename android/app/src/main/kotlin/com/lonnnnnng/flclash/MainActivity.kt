@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash
 
+import com.lonnnnnng.flclash.ui.tr
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
@@ -50,6 +51,7 @@ class MainActivity : ComponentActivity() {
         internal const val EXTRA_DEVELOPER_TOOLS = "kclash_developer_tools"
     }
 
+    @Inject lateinit var appearanceSettings: com.lonnnnnng.flclash.data.AppearanceSettingsStore
     @Inject lateinit var onDemandCoordinator: com.lonnnnnng.flclash.data.OnDemandCoordinator
     private val onDemandViewModel: com.lonnnnnng.flclash.ui.OnDemandViewModel by viewModels()
     private var showBackgroundLocationGuide by androidx.compose.runtime.mutableStateOf(false)
@@ -96,7 +98,7 @@ class MainActivity : ComponentActivity() {
             completeRuntimeRequest()
         } else {
             pendingVpnRestart = false
-            viewModel.reportError("VPN 权限未授予")
+            viewModel.reportError(tr("VPN 权限未授予"))
         }
     }
 
@@ -122,9 +124,9 @@ class MainActivity : ComponentActivity() {
         runCatching {
             contentResolver.openOutputStream(uri)?.use { output ->
                 output.write(formatLogsForExport(entries).toByteArray(Charsets.UTF_8))
-            } ?: error("无法打开导出文件")
+            } ?: error(tr("无法打开导出文件"))
         }.onFailure { error ->
-            viewModel.reportError(error.message ?: "导出核心日志失败")
+            viewModel.reportError(error.message ?: tr("导出核心日志失败"))
         }
     }
 
@@ -137,9 +139,9 @@ class MainActivity : ComponentActivity() {
         runCatching {
             contentResolver.openOutputStream(uri)?.use { output ->
                 output.write(formatDiagnosticForExport(session).toByteArray(Charsets.UTF_8))
-            } ?: error("无法打开诊断导出文件")
+            } ?: error(tr("无法打开诊断导出文件"))
         }.onFailure { error ->
-            viewModel.reportError(error.message ?: "导出诊断证据失败")
+            viewModel.reportError(error.message ?: tr("导出诊断证据失败"))
         }
     }
 
@@ -152,9 +154,9 @@ class MainActivity : ComponentActivity() {
         runCatching {
             contentResolver.openOutputStream(uri)?.use { output ->
                 output.write(formatRuntimeDiagnosticHistoryForExport(events).toByteArray(Charsets.UTF_8))
-            } ?: error("无法打开运行诊断历史导出文件")
+            } ?: error(tr("无法打开运行诊断历史导出文件"))
         }.onFailure { error ->
-            viewModel.reportError(error.message ?: "导出运行诊断历史失败")
+            viewModel.reportError(error.message ?: tr("导出运行诊断历史失败"))
         }
     }
 
@@ -168,10 +170,10 @@ class MainActivity : ComponentActivity() {
             try {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                     contentResolver.openOutputStream(uri)?.use { output -> output.write(archive) }
-                        ?: error("无法打开备份导出文件")
+                        ?: error(tr("无法打开备份导出文件"))
                 }
-                viewModel.reportError("备份导出完成")
-            } catch (error: Exception) { viewModel.reportError(error.message ?: "导出备份失败") }
+                viewModel.reportError(tr("备份导出完成"))
+            } catch (error: Exception) { viewModel.reportError(error.message ?: tr("导出备份失败")) }
             finally { webDavBusy = false }
         }
     }
@@ -186,15 +188,15 @@ class MainActivity : ComponentActivity() {
             runCatching {
                 val bytes = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                     contentResolver.openInputStream(uri)?.use { com.lonnnnnng.flclash.data.readBackupArchive(it) }
-                        ?: error("无法读取备份文件")
+                        ?: error(tr("无法读取备份文件"))
                 }
                 backupRepository.restore(bytes, request.first, request.second)
                 backupStrategy = backupUiPreferences.read()
                 profilesViewModel.refreshSelection()
             }.onSuccess {
-                viewModel.reportError("备份恢复完成")
+                viewModel.reportError(tr("备份恢复完成"))
             }.onFailure { error ->
-                viewModel.reportError(error.message ?: "恢复备份失败")
+                viewModel.reportError(error.message ?: tr("恢复备份失败"))
             }
             webDavBusy = false
         }
@@ -226,15 +228,17 @@ class MainActivity : ComponentActivity() {
         alwaysOnVpnState = AlwaysOnVpn.state(this)
         backupStrategy = backupUiPreferences.read()
         webDavCredentials = runCatching { webDavBackupRepository.readCredentials() }
-            .onFailure { error -> viewModel.reportError(error.message ?: "无法读取 WebDAV 凭据") }
+            .onFailure { error -> viewModel.reportError(error.message ?: tr("无法读取 WebDAV 凭据")) }
             .getOrNull()
         setContent {
-            KClashTheme {
+            val appearance by appearanceSettings.state.collectAsState()
+            com.lonnnnnng.flclash.ui.AppAppearance(this, appearance) {
                 val resources by resourcesViewModel.state.collectAsState()
                 val localProxies by localProxiesViewModel.state.collectAsState()
                 val filters by filterPresetsViewModel.state.collectAsState()
                 CompositionLocalProvider(com.lonnnnnng.flclash.ui.LocalFilterPresets provides filters.rows, com.lonnnnnng.flclash.ui.LocalAddToLocalProxy provides localProxiesViewModel::addFromRuntime, com.lonnnnnng.flclash.ui.LocalGlobalProxies provides localProxies.rows, com.lonnnnnng.flclash.ui.LocalResourceIcons provides resources.iconSets.flatMap { it.icons }, com.lonnnnnng.flclash.ui.LocalResourceIconSets provides resources.iconSets) {
                 KClashApp(
+                    appearanceSettings = appearanceSettings,
                     runtimeViewModel = viewModel,
                     filterPresetsViewModel = filterPresetsViewModel,
                     outboundIpViewModel = outboundIpViewModel,
@@ -282,15 +286,15 @@ class MainActivity : ComponentActivity() {
                 if (showBackgroundLocationGuide) {
                     androidx.compose.material3.AlertDialog(
                         onDismissRequest = { showBackgroundLocationGuide = false },
-                        title = { androidx.compose.material3.Text("允许后台读取 Wi-Fi 名称") },
-                        text = { androidx.compose.material3.Text("按需连接需要精确定位来读取 Wi-Fi 名称。请在定位权限中选择“始终允许”，以便应用退到后台后继续匹配排除 SSID；暂不授权时仍可手动启动和停止。") },
+                        title = { androidx.compose.material3.Text(tr("允许后台读取 Wi-Fi 名称")) },
+                        text = { androidx.compose.material3.Text(tr("按需连接需要精确定位来读取 Wi-Fi 名称。请在定位权限中选择“始终允许”，以便应用退到后台后继续匹配排除 SSID；暂不授权时仍可手动启动和停止。")) },
                         confirmButton = { androidx.compose.material3.TextButton(onClick = {
                             showBackgroundLocationGuide = false
                             // 作者 long：Android 10单独请求后台权限；Android 11起由系统设置提供“始终允许”。
                             if (Build.VERSION.SDK_INT == 29) backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             else openLocationAppSettings()
-                        }) { androidx.compose.material3.Text("前往授权") } },
-                        dismissButton = { androidx.compose.material3.TextButton(onClick = { showBackgroundLocationGuide = false }) { androidx.compose.material3.Text("暂不授权") } },
+                        }) { androidx.compose.material3.Text(tr("前往授权")) } },
+                        dismissButton = { androidx.compose.material3.TextButton(onClick = { showBackgroundLocationGuide = false }) { androidx.compose.material3.Text(tr("暂不授权")) } },
                     )
                 }
             }
@@ -301,7 +305,7 @@ class MainActivity : ComponentActivity() {
                 // 作者 long：隐藏只影响本应用任务，不删除其他任务；回读当前任务ID后更新，恢复开关也能重新出现在最近任务。
                 runCatching { getSystemService(android.app.ActivityManager::class.java).appTasks
                     .firstOrNull { it.taskInfo?.id == taskId }?.setExcludeFromRecents(settings.hidden) }
-                    .onFailure { viewModel.reportError("无法更新最近任务显示，请重新打开应用后重试") }
+                    .onFailure { viewModel.reportError(tr("无法更新最近任务显示，请重新打开应用后重试")) }
             }
         }
         window.decorView.post { if (viewModel.consumeAutoRunRequest()) requestRuntimeStart() }
@@ -403,24 +407,24 @@ class MainActivity : ComponentActivity() {
 
     private fun openLocationAppSettings() {
         runCatching { startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-            android.net.Uri.parse("package:$packageName"))) }.onFailure { viewModel.reportError("无法打开应用定位权限设置") }
+            android.net.Uri.parse("package:$packageName"))) }.onFailure { viewModel.reportError(tr("无法打开应用定位权限设置")) }
     }
 
     private fun requestBatteryOptimization() {
         if (!BatteryOptimization.openSettings(this)) {
-            viewModel.reportError("无法打开电池优化设置")
+            viewModel.reportError(tr("无法打开电池优化设置"))
         }
     }
 
     private fun requestAlwaysOnVpn() {
         if (!AlwaysOnVpn.openSettings(this)) {
-            viewModel.reportError("无法打开系统 VPN 设置")
+            viewModel.reportError(tr("无法打开系统 VPN 设置"))
         }
     }
 
     private fun requestLogExport(entries: List<CoreEvent.Log>) {
         if (entries.isEmpty()) {
-            viewModel.reportError("没有可导出的核心日志")
+            viewModel.reportError(tr("没有可导出的核心日志"))
             return
         }
         // 作者 long：先保存本次用户打开导出器时的快照，避免文件选择期间新日志改变导出内容。
@@ -430,7 +434,7 @@ class MainActivity : ComponentActivity() {
 
     private fun requestDiagnosticExport(session: DiagnosticSessionUiState) {
         if (session.status == DiagnosticSessionStatus.IDLE) {
-            viewModel.reportError("没有可导出的诊断会话")
+            viewModel.reportError(tr("没有可导出的诊断会话"))
             return
         }
         // 作者 long：保存一次诊断会话快照，文件选择期间继续到达的事件属于下一次会话，避免证据包边界漂移。
@@ -440,7 +444,7 @@ class MainActivity : ComponentActivity() {
 
     private fun requestDiagnosticHistoryExport(events: List<RuntimeDiagnosticEvent>) {
         if (events.isEmpty()) {
-            viewModel.reportError("没有可导出的运行诊断历史")
+            viewModel.reportError(tr("没有可导出的运行诊断历史"))
             return
         }
         // 作者 long：先冻结历史快照，文件选择期间新事件属于后续时间线，避免导出内容前后不一致。
@@ -457,7 +461,7 @@ class MainActivity : ComponentActivity() {
                     pendingBackupExport = archive
                     backupExportLauncher.launch("kclash-backup-${System.currentTimeMillis()}.zip")
                 }
-                .onFailure { error -> webDavBusy = false; viewModel.reportError(error.message ?: "导出备份失败") }
+                .onFailure { error -> webDavBusy = false; viewModel.reportError(error.message ?: tr("导出备份失败")) }
         }
     }
 
@@ -468,7 +472,7 @@ class MainActivity : ComponentActivity() {
             try {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { backupUiPreferences.write(value) }
                 backupStrategy = value
-            } catch (_: Exception) { viewModel.reportError("恢复策略保存失败，请重试") }
+            } catch (_: Exception) { viewModel.reportError(tr("恢复策略保存失败，请重试")) }
             finally { webDavBusy = false }
         }
     }
@@ -481,7 +485,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun saveWebDavCredentials(credentials: WebDavCredentials) {
-        launchWebDavOperation("WebDAV 凭据已保存") {
+        launchWebDavOperation(tr("WebDAV 凭据已保存")) {
             webDavBackupRepository.saveCredentials(credentials)
             webDavCredentials = credentials
             webDavConnection = com.lonnnnnng.flclash.ui.WebDavConnectionState.UNKNOWN
@@ -489,7 +493,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun clearWebDavCredentials() {
-        launchWebDavOperation("WebDAV 凭据已清除") {
+        launchWebDavOperation(tr("WebDAV 凭据已清除")) {
             webDavBackupRepository.clearCredentials()
             webDavCredentials = null
             webDavConnection = com.lonnnnnng.flclash.ui.WebDavConnectionState.UNKNOWN
@@ -499,7 +503,7 @@ class MainActivity : ComponentActivity() {
     private fun probeWebDav(credentials: WebDavCredentials) {
         if (webDavBusy) return
         webDavConnection = com.lonnnnnng.flclash.ui.WebDavConnectionState.CHECKING
-        launchWebDavOperation("WebDAV 连接成功") {
+        launchWebDavOperation(tr("WebDAV 连接成功")) {
             try {
                 webDavBackupRepository.probe(credentials)
                 webDavConnection = com.lonnnnnng.flclash.ui.WebDavConnectionState.CONNECTED
@@ -515,7 +519,7 @@ class MainActivity : ComponentActivity() {
 
     private fun uploadWebDav(credentials: WebDavCredentials, scope: BackupRestoreScope) {
         // 作者 long：上传只读取本地快照，不更换核心输入；与本地导出一致，运行时仍可备份。
-        launchWebDavOperation("WebDAV 备份已上传并覆盖远程文件") {
+        launchWebDavOperation(tr("WebDAV 备份已上传并覆盖远程文件")) {
             webDavBackupRepository.upload(credentials, scope)
             // 作者 long：远程覆盖成功后才保存新账号，避免认证失败把原本可用的凭据替换掉。
             webDavBackupRepository.saveCredentials(credentials)
@@ -529,10 +533,10 @@ class MainActivity : ComponentActivity() {
         strategy: BackupRestoreStrategy,
     ) {
         if (viewModel.runtimeState.value.isRunning) {
-            viewModel.reportError("核心运行中，请先停止核心后再恢复备份")
+            viewModel.reportError(tr("核心运行中，请先停止核心后再恢复备份"))
             return
         }
-        launchWebDavOperation("WebDAV 备份下载并恢复完成") {
+        launchWebDavOperation(tr("WebDAV 备份下载并恢复完成")) {
             webDavBackupRepository.downloadAndRestore(credentials, scope, strategy)
             backupStrategy = backupUiPreferences.read()
             // 作者 long：下载和本地恢复都成功后才提交新凭据，远程归档损坏时不改变本地登录配置。
@@ -548,7 +552,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             runCatching { action() }
                 .onSuccess { viewModel.reportError(successMessage) }
-                .onFailure { error -> viewModel.reportError(error.message ?: "WebDAV 操作失败") }
+                .onFailure { error -> viewModel.reportError(error.message ?: tr("WebDAV 操作失败")) }
                 .also { webDavBusy = false }
         }
     }
@@ -581,7 +585,7 @@ class MainActivity : ComponentActivity() {
         }
         val consentIntent = runCatching { VpnService.prepare(this) }.getOrElse { error ->
             pendingVpnRestart = false
-            viewModel.reportError(error.message ?: "无法申请 VPN 权限")
+            viewModel.reportError(error.message ?: tr("无法申请 VPN 权限"))
             return
         }
         if (consentIntent == null) completeRuntimeRequest() else vpnConsentLauncher.launch(consentIntent)
@@ -592,7 +596,7 @@ class MainActivity : ComponentActivity() {
         if (raw.isEmpty() || !DeepLinkProfileParser.isSupported(raw)) return
         val imported = DeepLinkProfileParser.parse(raw)
         if (imported == null) {
-            profilesViewModel.reportError("配置 Deep Link 无效")
+            profilesViewModel.reportError(tr("配置 Deep Link 无效"))
             return
         }
         profilesViewModel.addRemote(imported.url, imported.label.orEmpty())

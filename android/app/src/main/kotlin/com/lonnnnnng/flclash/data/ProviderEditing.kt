@@ -62,7 +62,7 @@ internal data class ProviderCatalog(val proxies: List<String>, val rules: List<S
     }
 }
 
-internal enum class ProviderOption(val title: String, val section: String, val default: String) {
+internal enum class ProviderOption(private val titleText: String, private val sectionText: String, val default: String) {
     URL("测速地址", "健康检查", CoreBridge.DEFAULT_TEST_URL),
     INTERVAL("测速间隔", "健康检查", "300"),
     TIMEOUT("超时", "健康检查", "5000"),
@@ -73,6 +73,9 @@ internal enum class ProviderOption(val title: String, val section: String, val d
     UDP("UDP", "连接", "true"),
     SKIP_CERT("跳过证书校验", "连接", "true"),
     IP_VERSION("IP 版本", "连接", "dual");
+    val title get() = com.lonnnnnng.flclash.common.AppText.text(titleText)
+    val section get() = com.lonnnnnng.flclash.common.AppText.text(sectionText)
+
 
     val boolean: Boolean get() = this in setOf(LAZY, UDP, SKIP_CERT)
     val number: Boolean get() = this in setOf(INTERVAL, TIMEOUT)
@@ -90,7 +93,10 @@ internal enum class ProviderOption(val title: String, val section: String, val d
     }
 }
 
-internal enum class ProviderFilterKind(val layout: String, val title: String) { FILTER("filter", "过滤"), EXCLUDE("excludeFilter", "排除过滤") }
+internal enum class ProviderFilterKind(val layout: String, private val titleText: String) { FILTER("filter", "过滤"), EXCLUDE("excludeFilter", "排除过滤");
+
+    val title get() = com.lonnnnnng.flclash.common.AppText.text(titleText)
+}
 internal data class ProviderFilterMember(val kind: ProviderFilterKind, val value: String) { val key: String get() = kind.layout + ":" + value }
 
 internal object ProviderFilters {

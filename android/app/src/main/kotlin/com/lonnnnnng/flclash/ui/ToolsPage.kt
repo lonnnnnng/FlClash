@@ -40,81 +40,70 @@ import androidx.compose.ui.unit.dp
 /** 作者 long：工具页沿用 Flutter ToolsView 的三段列表信息层级，二级页面只从这里进入。 */
 @Composable
 internal fun ToolsPanel(
-    onOpenConnections: () -> Unit,
-    onOpenObservation: (ObservationTab) -> Unit,
+    onOpenObservation: () -> Unit,
     onOpenAccessControl: () -> Unit,
     onOpenGeneral: () -> Unit,
+    onOpenLanguage: () -> Unit,
+    onOpenTheme: () -> Unit,
     onShowUnavailable: (String) -> Unit,
     onOpenDeveloper: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    onOpenBackup: () -> Unit = { onShowUnavailable("备份与恢复") },
-    onOpenScripts: () -> Unit = { onShowUnavailable("自定义资源") },
-    onOpenResources: () -> Unit = { onShowUnavailable("资源") },
-    onOpenAdvanced: () -> Unit = { onShowUnavailable("高级配置") },
+    onOpenBackup: () -> Unit = { onShowUnavailable(tr("备份与恢复")) },
+    onOpenScripts: () -> Unit = { onShowUnavailable(tr("自定义资源")) },
+    onOpenResources: () -> Unit = { onShowUnavailable(tr("资源")) },
+    onOpenAdvanced: () -> Unit = { onShowUnavailable(tr("高级配置")) },
 ) {
     val context = LocalContext.current
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        ToolSection(title = "导航") {
+        ToolSection(title = tr("导航")) {
             ToolMenuRow(
-                title = "最近请求",
-                icon = Icons.Outlined.Description,
-                tag = "tools_item_requests",
-                onClick = { onOpenObservation(ObservationTab.REQUESTS) },
-            )
-            ToolMenuRow(
-                title = "活动连接",
+                title = tr("网络活动"),
                 icon = Icons.Outlined.Hub,
-                tag = "tools_item_connections",
-                onClick = onOpenConnections,
+                tag = "tools_item_observations",
+                onClick = onOpenObservation,
             )
             ToolMenuRow(
-                title = "DNS 查询",
-                icon = Icons.Outlined.Dns,
-                tag = "tools_item_dns",
-                onClick = { onOpenObservation(ObservationTab.DNS) },
-            )
-            ToolMenuRow(
-                title = "资源",
+                title = tr("资源"),
                 icon = Icons.Outlined.Storage,
                 tag = "tools_item_resources",
                 onClick = onOpenResources,
             )
         }
 
-        ToolSection(title = "设置") {
-            ToolMenuRow("语言", Icons.Outlined.Language, "tools_item_language") {
-                onShowUnavailable("语言")
+        ToolSection(title = tr("设置")) {
+            ToolMenuRow(tr("语言"), Icons.Outlined.Language, "tools_item_language") {
+                onOpenLanguage()
             }
-            ToolMenuRow("主题", Icons.Outlined.Palette, "tools_item_theme") {
-                onShowUnavailable("主题")
+            ToolMenuRow(tr("主题"), Icons.Outlined.Palette, "tools_item_theme") {
+                onOpenTheme()
             }
-            ToolMenuRow("备份与恢复", Icons.Outlined.Backup, "tools_item_backup") {
+            ToolMenuRow(tr("备份与恢复"), Icons.Outlined.Backup, "tools_item_backup") {
                 onOpenBackup()
             }
-            ToolMenuRow("按应用代理", Icons.Outlined.Apps, "tools_item_access") {
+            ToolMenuRow(tr("按应用代理"), Icons.Outlined.Apps, "tools_item_access") {
                 onOpenAccessControl()
             }
-            ToolMenuRow("高级配置", Icons.Outlined.Tune, "tools_item_advanced") {
+            ToolMenuRow(tr("高级配置"), Icons.Outlined.Tune, "tools_item_advanced") {
                 onOpenAdvanced()
             }
-            ToolMenuRow("自定义资源", Icons.Outlined.Layers, "tools_item_resources_settings") {
+            ToolMenuRow(tr("自定义资源"), Icons.Outlined.Layers, "tools_item_resources_settings") {
                 onOpenScripts()
             }
-            ToolMenuRow("常规", Icons.Outlined.Settings, "tools_item_general") {
+            ToolMenuRow(tr("常规"), Icons.Outlined.Settings, "tools_item_general") {
                 onOpenGeneral()
             }
-            ToolMenuRow("应用更新", Icons.Outlined.SystemUpdate, "tools_item_app_update") {
+            ToolMenuRow(tr("应用更新"), Icons.Outlined.SystemUpdate, "tools_item_app_update") {
                 context.startActivity(android.content.Intent(context, com.lonnnnnng.flclash.update.AppUpdateActivity::class.java))
             }
         }
 
-        if (onOpenDeveloper != null) ToolSection(title = "其他") {
+        if (onOpenDeveloper != null) ToolSection(title = tr("其他")) {
             // 作者 long：额外验收工具仅在 Debug 显式入口下出现，普通启动保持 Flutter Tools 的页面清单。
             if (onOpenDeveloper != null) {
-                ToolMenuRow("开发者模式", Icons.Outlined.Code, "tools_item_developer", onOpenDeveloper)
+                ToolMenuRow(tr("开发者模式"), Icons.Outlined.Code, "tools_item_developer", onOpenDeveloper)
             }
         }
     }
@@ -124,11 +113,11 @@ internal fun ToolsPanel(
 internal fun AdvancedSettingsPanel(onOpenNetwork: () -> Unit, onOpenScripts: () -> Unit,
     onOpenDns: () -> Unit = {}, onOpenRules: () -> Unit = {}) {
     Column(Modifier.fillMaxWidth().testTag("page_advanced")) {
-        ToolSection(title = "高级配置") {
-            ToolMenuRow("网络", Icons.Outlined.Hub, "advanced_item_network", onOpenNetwork)
+        ToolSection(title = tr("高级配置")) {
+            ToolMenuRow(tr("网络"), Icons.Outlined.Hub, "advanced_item_network", onOpenNetwork)
             ToolMenuRow("DNS", Icons.Outlined.Dns, "advanced_item_dns", onOpenDns)
-            ToolMenuRow("附加规则", Icons.Outlined.Description, "advanced_item_rules", onOpenRules)
-            ToolMenuRow("脚本", Icons.Outlined.Code, "advanced_item_scripts", onOpenScripts)
+            ToolMenuRow(tr("附加规则"), Icons.Outlined.Description, "advanced_item_rules", onOpenRules)
+            ToolMenuRow(tr("脚本"), Icons.Outlined.Code, "advanced_item_scripts", onOpenScripts)
         }
     }
 }

@@ -52,7 +52,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
         if (submitted?.let { revision > it } == true) { editing = null; binding = null; quick = false; submitted = null }
     }
     LaunchedEffect(saving) { if (saving) menu = false }
-    ProfileEditorPage(onDismissRequest = { if (!saving) onDismiss() }, backTag = "profile_providers_back", title = { Text("资源") },
+    ProfileEditorPage(onDismissRequest = { if (!saving) onDismiss() }, backTag = "profile_providers_back", title = { Text(tr("资源")) },
         confirmButton = { if (profile.type == ProfileType.CUSTOM) Box {
             IconButton(onClick = { menuAnchor.open(); menu = true }, enabled = !saving,
                 modifier = Modifier.appContextMenuAnchor(menuAnchor, enabled = !saving) { menu = true }
@@ -60,29 +60,29 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
             AppDropdownMenu(menu && !saving, { menu = false }, anchor = menuAnchor.point, carriedPointer = menuAnchor.carry,
                 placement = AppMenuPlacement.BELOW_POINT, avoid = menuAnchor.bounds,
                 modifier = Modifier.testTag("profile_providers_actions")) {
-                AppDropdownMenuItem(text = { Text("快捷 YAML") }, onClick = { menu = false; quick = true })
-                AppDropdownMenuItem(text = { Text("管理规则资源") }, onClick = { menu = false; onManageRules() })
+                AppDropdownMenuItem(text = { Text(tr("快捷 YAML")) }, onClick = { menu = false; quick = true })
+                AppDropdownMenuItem(text = { Text(tr("管理规则资源")) }, onClick = { menu = false; onManageRules() })
             }
         } }, text = {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).testTag("profile_providers_page"), verticalArrangement = Arrangement.spacedBy(0.dp)) {
                 if (saving) LinearProgressIndicator(Modifier.fillMaxWidth())
                 (error?.takeIf { editing == null && binding == null && !quick }
-                    ?: parsed.exceptionOrNull()?.let { "无法解析资源引用，请通过快捷 YAML 检查配置。" })?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    ?: parsed.exceptionOrNull()?.let { tr("无法解析资源引用，请通过快捷 YAML 检查配置。") })?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
                 if (catalog != null && catalog.proxies.isEmpty() && catalog.rules.isEmpty()) Box(Modifier.heightIn(min = 240.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(if (profile.type == ProfileType.CUSTOM) "暂无引用的资源，请先在策略组或规则中选择资源。" else "这份配置没有 Provider。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (profile.type == ProfileType.CUSTOM) tr("暂无引用的资源，请先在策略组或规则中选择资源。") else tr("这份配置没有 Provider。"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 if (!catalog?.proxies.isNullOrEmpty()) {
-                    Text("代理", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                    Text(tr("代理"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                     ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                         catalog!!.proxies.forEachIndexed { index, name ->
                             val definition = proxyDefs?.get(name)
                             val id = ProfileProxyResources.idOf(definition)
                             val resource = profiles.firstOrNull { it.id == id && it.type != ProfileType.CUSTOM }
                             val missing = definition?.isJsonObject != true || ProfileProxyResources.isReference(definition) && resource == null
-                            ProviderResourceRow(name, if (missing) "资源缺失，请重新选择" else resource?.lastUpdateAt?.let { "更新于 " + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
-                                "profile_provider_proxy_$name", onClick = { if (missing) info = "代理资源“$name”不可用，请重新选择订阅或文件配置。" else editing = name },
+                            ProviderResourceRow(name, if (missing) tr("资源缺失，请重新选择") else resource?.lastUpdateAt?.let { tr("更新于 ") + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
+                                "profile_provider_proxy_$name", onClick = { if (missing) info = tr("代理资源“{0}”不可用，请重新选择订阅或文件配置。", name) else editing = name },
                                 enabled = !saving, trailing = {
-                                    if (missing) IconButton(onClick = { info = "代理资源“$name”不可用，请重新选择订阅或文件配置。" }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
+                                    if (missing) IconButton(onClick = { info = tr("代理资源“{0}”不可用，请重新选择订阅或文件配置。", name) }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
                                     else IconButton(onClick = { editing = name }, enabled = !saving, modifier = Modifier.testTag("profile_provider_edit_$name")) { Icon(Icons.Outlined.Edit, null) }
                                     if (profile.type == ProfileType.CUSTOM) IconButton(onClick = { bindingProxy = true; binding = name }, enabled = !saving,
                                         modifier = Modifier.testTag("profile_provider_bind_proxy_$name")) { Icon(Icons.Outlined.SwapHoriz, null) }
@@ -92,17 +92,17 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                     }
                 }
                 if (!catalog?.rules.isNullOrEmpty()) {
-                    Text("规则", Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
+                    Text(tr("规则"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                     ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
                         catalog!!.rules.forEachIndexed { index, name ->
                             val definition = ruleDefs?.get(name)
                             val id = RuleResources.idOf(definition)
                             val resource = rules.firstOrNull { it.id == id }
                             val missing = definition?.isJsonObject != true || id != null && resource == null
-                            ProviderResourceRow(name, if (missing) "资源缺失，请重新选择" else resource?.updatedAt?.let { "更新于 " + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
+                            ProviderResourceRow(name, if (missing) tr("资源缺失，请重新选择") else resource?.updatedAt?.let { tr("更新于 ") + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
                                 "profile_provider_rule_$name", enabled = !saving,
-                                onClick = if (missing) ({ info = "规则资源“$name”不可用，请重新选择规则资源。" }) else null, trailing = {
-                                    if (missing) IconButton(onClick = { info = "规则资源“$name”不可用，请重新选择规则资源。" }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
+                                onClick = if (missing) ({ info = tr("规则资源“{0}”不可用，请重新选择规则资源。", name) }) else null, trailing = {
+                                    if (missing) IconButton(onClick = { info = tr("规则资源“{0}”不可用，请重新选择规则资源。", name) }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
                                     if (profile.type == ProfileType.CUSTOM) IconButton(onClick = { bindingProxy = false; binding = name }, enabled = !saving,
                                         modifier = Modifier.testTag("profile_provider_bind_rule_$name")) { Icon(Icons.Outlined.SwapHoriz, null) }
                                 })
@@ -122,7 +122,7 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
         onRule = { resource -> submit(proxySection, RuleResources.bind(ruleSection, resource, alias), overrides) }) }
     if (quick) ProviderQuickYaml(proxySection, ruleSection, saving, error, onDismiss = { if (!saving) { quick = false; submitted = null } },
         onSave = { proxy, rule -> submit(proxy, rule, overrides.filterKeys(ProfileProxyResources.definitions(proxy).keySet()::contains)) })
-    info?.let { message -> AlertDialog(onDismissRequest = { info = null }, title = { Text("资源不可用") }, text = { Text(message) }, confirmButton = { TextButton(onClick = { info = null }) { Text("知道了") } }) }
+    info?.let { message -> AlertDialog(onDismissRequest = { info = null }, title = { Text(tr("资源不可用")) }, text = { Text(tr(message)) }, confirmButton = { TextButton(onClick = { info = null }) { Text(tr("知道了")) } }) }
 }
 
 @Composable
@@ -144,16 +144,16 @@ internal fun ProviderBindingPicker(proxy: Boolean, profiles: List<Profile>, rule
     var query by rememberSaveable { mutableStateOf("") }
     val terms = remember(query) { query.trim().split(Regex("\\s+")).filter(String::isNotEmpty) }
     fun matches(label: String, detail: String) = terms.all { term -> "$label $detail".contains(term, ignoreCase = true) }
-    fun proxyDetail(resource: Profile) = if (resource.type == ProfileType.URL) "订阅配置" else "文件配置"
-    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_binding_back", title = { Text(if (proxy) "选择代理资源" else "选择规则资源") },
+    fun proxyDetail(resource: Profile) = if (resource.type == ProfileType.URL) tr("订阅配置") else tr("文件配置")
+    ProfileEditorPage(onDismissRequest = onDismiss, backTag = "provider_binding_back", title = { Text(if (proxy) tr("选择代理资源") else tr("选择规则资源")) },
         navigationButtonSurface = true,
         bottomBar = { DockedProfileSearch(query, { query = it }, "provider_binding_search", enabled = !busy) }, text = {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-            error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
             val proxyChoices = profiles.filter { it.type != ProfileType.CUSTOM && matches(it.realLabel, proxyDetail(it)) }
             val ruleChoices = rules.filter { matches(it.label, it.behavior + " · " + it.format) }
-            if (if (proxy) proxyChoices.isEmpty() else ruleChoices.isEmpty()) Text(if (query.isNotEmpty()) "没有匹配的资源" else "暂无可选资源，请先在资源管理中添加。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (if (proxy) proxyChoices.isEmpty() else ruleChoices.isEmpty()) Text(if (query.isNotEmpty()) tr("没有匹配的资源") else tr("暂无可选资源，请先在资源管理中添加。"), color = MaterialTheme.colorScheme.onSurfaceVariant)
             val listState = rememberResourcePickerListState(
                 if (proxy) proxyChoices.map { it.id.toString() } else ruleChoices.map { it.id }, selectedKey)
             LazyColumn(Modifier.weight(1f).testTag("provider_binding_list"), state = listState,
@@ -209,7 +209,7 @@ private fun ProviderQuickYaml(initialProxy: String, initialRule: String, busy: B
     LaunchedEffect(failure, error, busy, attempts) { if (!busy && (failure ?: error) != null) scroll.animateScrollTo(0) }
     val dirty = proxy != initialProxy || rule != initialRule
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
-    ProfileEditorPage(onDismissRequest = close, backTag = "providers_yaml_back", title = { Text("快捷 YAML") }, confirmButton = {
+    ProfileEditorPage(onDismissRequest = close, backTag = "providers_yaml_back", title = { Text(tr("快捷 YAML")) }, confirmButton = {
         // 作者 long：快捷编辑同样使用独立Dialog，必须控制当前输入窗口，不能沿用资源父页的焦点管理器。
         val focus = LocalFocusManager.current
         val keyboard = LocalSoftwareKeyboardController.current
@@ -218,22 +218,22 @@ private fun ProviderQuickYaml(initialProxy: String, initialRule: String, busy: B
             runCatching {
                 fun definitions(key: String, text: String): com.google.gson.JsonObject {
                     val value = ProxyGroupDrafts.root("$key:\n" + text.lines().joinToString("\n") { "  $it" }).get(key)
-                    require(value == null || value.isJsonNull && text.isBlank() || value.isJsonObject) { "Provider 分区必须是 map" }
+                    require(value == null || value.isJsonNull && text.isBlank() || value.isJsonObject) { tr("Provider 分区必须是 map") }
                     return value?.takeIf { it.isJsonObject }?.asJsonObject ?: com.google.gson.JsonObject()
                 }
                 val proxies = definitions("proxy-providers", proxy)
                 val rules = definitions("rule-providers", rule)
-                require((proxies.entrySet() + rules.entrySet()).all { it.value.isJsonObject }) { "每个 Provider 必须是 map" }
+                require((proxies.entrySet() + rules.entrySet()).all { it.value.isJsonObject }) { tr("每个 Provider 必须是 map") }
                 fun normalized(value: com.google.gson.JsonObject) = if (value.size() == 0) "" else YamlConfigCodec.toYaml(value.toString()).trimEnd()
                 normalized(proxies) to normalized(rules)
             }.onSuccess { (p, r) -> failure = null; onSave(p, r) }.onFailure { failure = "Provider YAML 格式无效，请检查缩进和条目类型" }
-        }, enabled = !busy, modifier = Modifier.testTag("providers_yaml_save")) { Text(if (busy) "保存中…" else "保存") }
+        }, enabled = !busy, modifier = Modifier.testTag("providers_yaml_save")) { Text(if (busy) tr("保存中…") else tr("保存")) }
     }, text = {
         Column(Modifier.fillMaxSize().verticalScroll(scroll).testTag("providers_yaml_scroll"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            (failure ?: error)?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("providers_yaml_error")) }
+            (failure ?: error)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("providers_yaml_error")) }
             OutlinedTextField(proxy, { proxy = it; failure = null }, label = { Text("proxy-providers") }, minLines = 8, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("providers_yaml_proxy"))
             OutlinedTextField(rule, { rule = it; failure = null }, label = { Text("rule-providers") }, minLines = 8, enabled = !busy, modifier = Modifier.fillMaxWidth().testTag("providers_yaml_rule"))
         }
     })
-    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text("放弃 YAML 修改？") }, confirmButton = { TextButton(onDismiss) { Text("放弃修改") } }, dismissButton = { TextButton(onClick = { discard = false }) { Text("继续编辑") } })
+    if (discard) AlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃 YAML 修改？")) }, confirmButton = { TextButton(onDismiss) { Text(tr("放弃修改")) } }, dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
 }

@@ -22,7 +22,7 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
     DashboardSurface(modifier = Modifier.testTag("dashboard_intranet_card")) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(Icons.Outlined.Devices, contentDescription = null)
-            Text("内网 IP", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+            Text(tr("内网 IP"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
             IconButton(onClick = onCopy, enabled = state.copyText != null && !state.saving,
                 modifier = Modifier.testTag("intranet_copy")) {
                 Icon(Icons.Outlined.ContentCopy, null)
@@ -30,9 +30,9 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
         }
         Spacer(Modifier.height(8.dp))
         Text(when {
-            state.local.isLoading -> "读取中…"
-            state.local.error != null -> "读取失败"
-            state.local.address == null -> "无网络"
+            state.local.isLoading -> tr("读取中…")
+            state.local.error != null -> tr("读取失败")
+            state.local.address == null -> tr("无网络")
             else -> state.local.address
         }, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.testTag("intranet_address"))
         Spacer(Modifier.height(14.dp))
@@ -45,14 +45,14 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(Icons.Outlined.Wifi, null)
             Column(Modifier.weight(1f)) {
-                Text("允许局域网连接", style = MaterialTheme.typography.bodyLarge)
+                Text(tr("允许局域网连接"), style = MaterialTheme.typography.bodyLarge)
                 Text(when {
-                    state.saving -> "正在保存…"
-                    state.settingsLoading -> "读取设置…"
-                    !state.sharing.config.allowLan -> "已停用"
-                    !state.sharing.hasConfig -> "添加配置后使用"
-                    state.sharing.config.mixedPort == 0 -> "代理端口未启用"
-                    else -> "端口 " + state.sharing.config.mixedPort
+                    state.saving -> tr("正在保存…")
+                    state.settingsLoading -> tr("读取设置…")
+                    !state.sharing.config.allowLan -> tr("已停用")
+                    !state.sharing.hasConfig -> tr("添加配置后使用")
+                    state.sharing.config.mixedPort == 0 -> tr("代理端口未启用")
+                    else -> tr("端口 ") + state.sharing.config.mixedPort
                 }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.testTag("intranet_port"))
             }
@@ -60,9 +60,9 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
         }
         val error = state.local.error ?: state.error ?: state.settingsError
         error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall,
+            Text(tr(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 8.dp).testTag("intranet_error"))
-            TextButton(onClick = onRetry, enabled = !state.saving, modifier = Modifier.testTag("intranet_retry")) { Text("重试") }
+            TextButton(onClick = onRetry, enabled = !state.saving, modifier = Modifier.testTag("intranet_retry")) { Text(tr("重试")) }
         }
         state.feedback?.let {
             Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,

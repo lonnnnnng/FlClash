@@ -1,5 +1,9 @@
 # Project Context
 
+## 工具与外观当前决定（2026-11-20）
+
+用户取消此前语言/主题暂缓：仅中文、英文、跟随系统；主题仅浅色、深色、跟随系统。工具观测合为“网络活动”单入口四个完整可搜索Tab，原常规“查看日志”重复入口移除。062实现和POCO验收见`docs/tools-observation-appearance.md`及配套JSON；下文历史占位/暂缓描述不再作为当前规则。玻璃仍默认关闭，其余未验边界保持。
+
 ## 核心控制器源码修复与溯源（2026-11-05，当前）
 
 本组在Mihomo固定基线c5062921上修复KCORE-002重建竞态与KCORE-003坏TLS配置端口泄漏：公开入口同步关闭/绑定，Serve后台运行，显式持有listener覆盖未登记窗口，配置快照及路由构造同锁；TLS客户端CA/ECH准备先于Listen。修复提交f83e9b1032ed02831457d4da5a414e063e932694已推lonnnnnng/mihomo的kclash-fixes，父仓库gitlink固定，原始来源/失败/撤销条件见docs/upstream-source-defects.md与ADR0021。KCORE-001保留前组6ca697d1记录；未认定为旧Always-on TLS EOF根因。
