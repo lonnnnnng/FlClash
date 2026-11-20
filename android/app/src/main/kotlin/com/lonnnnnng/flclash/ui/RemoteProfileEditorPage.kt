@@ -78,21 +78,26 @@ internal fun RemoteProfileEditorDialog(
 
     ProfileEditorPage(::exit, { Text(tr("编辑订阅")) }, {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).testTag("remote_profile_editor_form"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            ProfileFormSection {
-                OutlinedTextField(draft.label, { change(draft.copy(label = it.take(64))) }, Modifier.fillMaxWidth().testTag("remote_profile_editor_label"),
-                    enabled = !locked, label = { Text(tr("名称")) }, singleLine = true)
-                OutlinedTextField(draft.url, { change(draft.copy(url = it)) }, Modifier.fillMaxWidth().testTag("remote_profile_editor_url"),
-                    enabled = !locked, label = { Text(tr("订阅链接")) }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri))
-                AgeSecretKeyField(draft.ageKey, { change(draft.copy(ageKey = it)) }, !locked, "remote_profile_editor_age_key")
+            ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
+                ProfileFormInput(tr("名称"), draft.label, { change(draft.copy(label = it.take(64))) }, "remote_profile_editor_label", enabled = !locked)
+                ProfileFormDivider()
+                ProfileFormInput(tr("订阅链接"), draft.url, { change(draft.copy(url = it)) }, "remote_profile_editor_url", enabled = !locked,
+                    placeholder = tr("必填"), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false))
+                ProfileFormDivider()
+                ProfileFormInput(tr("age 私钥"), draft.ageKey, { change(draft.copy(ageKey = it)) }, "remote_profile_editor_age_key", enabled = !locked,
+                    secret = true, placeholder = tr("可选"), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false))
             }
-            ProfileFormSection {
-                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(draft.autoUpdate, enabled = !locked, onValueChange = { change(draft.copy(autoUpdate = it)) }).testTag("remote_profile_editor_auto_update"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(tr("自动更新"))
+            ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
+                ProfileFormRow(tr("自动更新"), Modifier.toggleable(draft.autoUpdate, enabled = !locked,
+                    onValueChange = { change(draft.copy(autoUpdate = it)) }).testTag("remote_profile_editor_auto_update")) {
                     Switch(draft.autoUpdate, null, enabled = !locked)
                 }
-                if (draft.autoUpdate) OutlinedTextField(draft.intervalMinutes, { change(draft.copy(intervalMinutes = it.filter(Char::isDigit).take(7))) },
-                    Modifier.fillMaxWidth().testTag("remote_profile_editor_interval"), enabled = !locked,
-                    label = { Text(tr("自动更新间隔（分钟）")) }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                if (draft.autoUpdate) {
+                    ProfileFormDivider()
+                    ProfileFormInput(tr("自动更新间隔"), draft.intervalMinutes, { change(draft.copy(intervalMinutes = it.filter(Char::isDigit).take(7))) },
+                        "remote_profile_editor_interval", enabled = !locked, unit = tr("分钟"),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                }
             }
             ProfileFormSection {
                 Text(tr("本地副本"), style = MaterialTheme.typography.titleSmall)

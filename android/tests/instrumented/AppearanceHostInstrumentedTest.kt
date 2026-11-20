@@ -20,6 +20,42 @@ import java.io.ByteArrayOutputStream
 /** 作者 long：真实入口保存显示偏好并重建，核对配置与核心保持；只对独立motion包操作。 */
 class AppearanceHostInstrumentedTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @Test fun glassPreferencePersistsWithoutChangingProfileOrRuntime() = runBlocking {
+        assertPortraitDefaultFontConfiguration()
+        val context = compose.activity.applicationContext
+        check(context.packageName.endsWith(".motion"))
+        val store = compose.activity.appearanceSettings
+        val before = store.read()
+        val entry = EntryPointAccessors.fromApplication(context, ConnectionAcceptanceEntryPoint::class.java)
+        val profiles = entry.database().profiles().getAll()
+        val selected = entry.profileRepository().currentProfileId.value
+        assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
+        try {
+            store.write(before.copy(glass = false))
+            compose.onNodeWithTag("nav_tools").performClick()
+            compose.onNodeWithTag("tools_item_theme").performClick()
+            compose.onNodeWithTag("appearance_glass").performClick()
+            compose.waitUntil(5_000) { store.read().glass }
+            assertEquals(before.language, store.read().language)
+            assertEquals(before.theme, store.read().theme)
+            capture("glass_preference_enabled")
+            compose.activityRule.scenario.recreate()
+            compose.waitUntil(5_000) { compose.onAllNodesWithTag("main_navigation_dock").fetchSemanticsNodes().isNotEmpty() }
+            assertTrue(store.read().glass)
+            if (compose.onAllNodesWithTag("theme_picker").fetchSemanticsNodes().isNotEmpty()) {
+                InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+                compose.waitForIdle()
+            }
+            compose.onNodeWithTag("tools_item_app_update").performScrollTo().assertIsDisplayed()
+            val last = compose.onNodeWithTag("tools_item_app_update").fetchSemanticsNode().boundsInRoot
+            val dock = compose.onNodeWithTag("main_navigation_dock").fetchSemanticsNode().boundsInRoot
+            assertTrue("真实工具页末项不能被Dock遮挡", last.bottom <= dock.top)
+            capture("glass_tools_last_item")
+            assertEquals(profiles, entry.database().profiles().getAll())
+            assertEquals(selected, entry.profileRepository().currentProfileId.value)
+            assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
+        } finally { store.write(before) }
+    }
     @Test fun languageThemePersistenceAndFourTabsKeepProfileAndRuntime() = runBlocking {
         assertPortraitDefaultFontConfiguration()
         val context = compose.activity.applicationContext

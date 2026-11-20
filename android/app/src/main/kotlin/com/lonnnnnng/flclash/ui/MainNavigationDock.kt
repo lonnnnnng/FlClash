@@ -115,6 +115,8 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
     if (destinations.isEmpty()) return
     val index = destinations.indexOf(selected).coerceAtLeast(0)
     val motion = rememberDockMotion(index)
+    val liveGlass = LocalAppMenuGlass.current && LocalAppLiveBackdrop.current != null
+    val light = if (liveGlass) rememberAppTouchLight() else null
     val latestIndex by rememberUpdatedState(index)
     val latestSelection by rememberUpdatedState(onSelected)
     val density = LocalDensity.current
@@ -142,18 +144,20 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                 if (request > 0) { withFrameNanos { }; motion.sync(latestIndex) }
             }
             val hitInset = with(density) { hitSlop.toPx() }
-            Box(Modifier.fillMaxSize().pointerInput(destinations, geometry, rtl) {
+            Box(Modifier.fillMaxSize().pointerInput(destinations, geometry, rtl, liveGlass) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                         down.consume()
                         val tracker = VelocityTracker(); tracker.addPosition(down.uptimeMillis, down.position)
                         var drag = false; var committed = false
                         motion.press(geometry.index(geometry.position(down.position.x - hitInset, rtl)))
+                        light?.down(down.position - Offset(hitInset, hitInset))
                         try {
                             while (true) {
                                 val event = awaitPointerEvent(PointerEventPass.Initial)
                                 val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
                                 tracker.addPosition(pointer.uptimeMillis, pointer.position)
+                                light?.move(pointer.position - Offset(hitInset, hitInset))
                                 if (!pointer.pressed) {
                                     // 作者 long：系统取消会合成已消费的抬手；只有真实释放才提交导航，取消须退回当前入口。
                                     if (pointer.isConsumed) break
@@ -177,17 +181,19 @@ internal fun MainNavigationDock(selected: MainDestination, destinations: List<Ma
                                 }
                                 pointer.consume()
                             }
-                        } finally { if (!committed) motion.release(latestIndex) }
+                        } finally { light?.release(); if (!committed) motion.release(latestIndex) }
                     }
                 }) {
               Box(Modifier.fillMaxSize().padding(hitSlop).testTag("main_navigation_dock")
-                  .dockPaintTransform(motion).appDockShadow(shape)) {
+                  .dockPaintTransform(motion).appDockShadow(shape)
+                  .appLiveMaterial(shape, surface.copy(alpha = if (dark) .48f else .58f), blurDp = 15.6f, refractionDp = 5.5f)
+                  .then(if (light != null) Modifier.appTouchLight(light, shape, dock = true) else Modifier)) {
                 Canvas(Modifier.fillMaxSize()) {
-                    drawOutline(shape.createOutline(size, layoutDirection, this), surface)
+                    if (!liveGlass) drawOutline(shape.createOutline(size, layoutDirection, this), surface)
                     val rect = geometry.lens(motion.lens.value, motion.lift.value, motion.jelly.value, rtl)
                     val tone = lerp(platter, colors.onSurface, .08f * motion.lift.value.coerceIn(0f, 1f))
                     withTransform({ translate(rect.left, rect.top) }) {
-                        drawOutline(shape.createOutline(rect.size, layoutDirection, this), tone)
+                        drawOutline(shape.createOutline(rect.size, layoutDirection, this), if (liveGlass) tone.copy(alpha = .3f) else tone)
                     }
                 }
                 Row(Modifier.fillMaxSize().padding(horizontal = with(density) { (geometry.padding + geometry.inset).toDp() }, vertical = 4.dp)

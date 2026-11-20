@@ -752,7 +752,7 @@ private fun ProxyGroupsListPage(
         // 作者 long：List 的每行是独立懒加载项，组内定位使用真实行索引；不能把长组塞进一个 item 后只滚到组头。
         LazyColumn(
             modifier = Modifier.fillMaxSize().testTag("proxy_groups_list"), state = listState,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp + LocalMainDockInset.current),
         ) {
             groups.forEachIndexed { groupIndex, group ->
                 val visible = members.getValue(group.name)
@@ -1061,7 +1061,7 @@ private fun ProxyGroupNodesPage(
                 columns = GridCells.Fixed(columnCount),
                 state = gridState,
                 modifier = Modifier.fillMaxSize().testTag("proxy_group_members_${group.name}"),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp + LocalMainDockInset.current),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {

@@ -150,21 +150,36 @@ internal data class ConnectionSheetSuperellipseShape(val radius: Dp = Connection
     }
 }
 
-internal class ConnectionSheetGeometry(val availableHeight: Float, naturalContentHeight: Float? = null, minimumPartial: Boolean = false) {
+internal class ConnectionSheetGeometry(val availableHeight: Float, private val naturalContentHeight: Float? = null, minimumPartial: Boolean = false,
+    private val keyboardInset: Float = 0f, private val unit: Float = 1f, fitOverKeyboard: Boolean = false) {
     init {
         require(availableHeight > 0f && availableHeight.isFinite())
         require(naturalContentHeight == null || naturalContentHeight > 0f && naturalContentHeight.isFinite())
     }
 
     private val contentHeight = (naturalContentHeight ?: availableHeight).coerceAtLeast(if (minimumPartial) availableHeight * 9f / 16f else 0f)
-    val hasExpandedDetent = min(contentHeight, availableHeight * 0.9f) - min(contentHeight, availableHeight * 9f / 16f) > 0.5f
+    // 作者 long：短表单的空白先被键盘吃掉，再整体上移；不能直接对压缩后的窗口取90%，否则短表单会被拉成整页。
+    private fun formHeight(fraction: Float): Float {
+        val full = availableHeight + keyboardInset
+        val fit = naturalContentHeight ?: full
+        fun rounded(x: Float, width: Float) = when { x >= width -> x; x <= -width -> 0f; else -> (x + width) * (x + width) / (4f * width) }
+        val peak = (full - 10f * unit).coerceAtLeast(0f)
+        val tallest = .9f * full
+        val top = peak - rounded(peak - tallest - keyboardInset, (peak - tallest).coerceIn(0f, 120f * unit))
+        val rest = fit.coerceIn(full * 9f / 16f, full * fraction)
+        val blank = rest - min(fit, rest)
+        return (maxOf(keyboardInset, min(top, rest + rounded(keyboardInset - blank, blank / 2))) - keyboardInset).coerceAtLeast(1f)
+    }
+    private val partialHeight = if (fitOverKeyboard) formHeight(9f / 16f) else min(contentHeight, availableHeight * 9f / 16f)
+    private val expandedHeight = if (fitOverKeyboard) formHeight(.9f) else min(contentHeight, availableHeight * .9f)
+    val hasExpandedDetent = expandedHeight - partialHeight > .5f
     // 作者 long：短内容的两档高度重合时只登记一档，避免拖动归档到同坐标的另一个状态后不断跳动。
     val detents = if (hasExpandedDetent) ConnectionSheetDetent.entries.toList()
         else listOf(ConnectionSheetDetent.PARTIAL, ConnectionSheetDetent.HIDDEN)
 
     fun offset(detent: ConnectionSheetDetent): Float = availableHeight - when (detent) {
-        ConnectionSheetDetent.EXPANDED -> min(contentHeight, availableHeight * 0.9f)
-        ConnectionSheetDetent.PARTIAL -> min(contentHeight, availableHeight * 9f / 16f)
+        ConnectionSheetDetent.EXPANDED -> expandedHeight
+        ConnectionSheetDetent.PARTIAL -> partialHeight
         ConnectionSheetDetent.HIDDEN -> 0f
     }
 
@@ -193,6 +208,7 @@ internal fun ConnectionModalSheet(
     handleWidth: Dp = 32.dp,
     handleVerticalOffset: Dp = 0.dp,
     floatingForm: Boolean = false,
+    fitFormOverKeyboard: Boolean = false,
     content: @Composable ColumnScope.(onDismissRequest: () -> Unit) -> Unit,
 ) {
     // 作者 long：编辑器的加密注册表只接受明确值类型，停靠档位保存名称，避免枚举对象阻断正式草稿恢复。
@@ -227,7 +243,8 @@ internal fun ConnectionModalSheet(
         Box(Modifier.fillMaxSize()) {
             Box(
                 Modifier.fillMaxSize().testTag("connection_detail_scrim")
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f * presentation.value * scrimFade))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha =
+                        (if (floatingForm) { if (com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current) .48f else .2f } else .32f) * presentation.value * scrimFade))
                     .clickable(
                         remember { MutableInteractionSource() },
                         indication = null,
@@ -244,7 +261,8 @@ internal fun ConnectionModalSheet(
                     .testTag("connection_sheet_viewport"),
             ) {
                 val density = LocalDensity.current
-                val imeVisible = WindowInsets.ime.getBottom(density) > 0
+                val keyboardInset = WindowInsets.ime.getBottom(density)
+                val imeVisible = keyboardInset > 0
                 val latestImeVisible by rememberUpdatedState(imeVisible)
                 var detentBeforeIme by remember { mutableStateOf<ConnectionSheetDetent?>(null) }
                 val settleSpec = remember { ConnectionSheetMotion.settleSpec() }
@@ -253,8 +271,9 @@ internal fun ConnectionModalSheet(
                     naturalContentHeight?.toFloat() ?: constraints.maxHeight.toFloat(),
                     animationSpec = settleSpec, label = "sheetContentHeight",
                 )
-                val geometry = remember(constraints.maxHeight, fitHeight, naturalContentHeight == null, floatingForm) {
-                    ConnectionSheetGeometry(constraints.maxHeight.toFloat(), if (naturalContentHeight == null) null else fitHeight, floatingForm)
+                val geometry = remember(constraints.maxHeight, fitHeight, naturalContentHeight == null, floatingForm, fitFormOverKeyboard, keyboardInset) {
+                    ConnectionSheetGeometry(constraints.maxHeight.toFloat(), if (naturalContentHeight == null) null else fitHeight, floatingForm,
+                        if (avoidIme) keyboardInset.toFloat() else 0f, density.density, fitFormOverKeyboard)
                 }
                 val latestGeometry by rememberUpdatedState(geometry)
                 val sidePanel = maxWidth > 600.dp

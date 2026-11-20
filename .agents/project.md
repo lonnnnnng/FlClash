@@ -1,5 +1,9 @@
 # Project Context
 
+## 表单Sheet与实时材质当前组（2026-11-20）
+
+067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 原版包未启动/修改，原1.yaml未上传，独立四包清理；当前公开版仍0.1.10。详见`docs/forms-live-material-flutter-alignment.md`。旧组下一步仅作历史。
+
 ## 首次建窗与反向交接当前组（2026-11-20）
 
 066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 下一步继续Popup首次组合/测量、表单整体交接与BufferQueue/SurfaceFlinger等待，再处理高频观测重组和其余Flutter面板/连续转场；整体仍PARTIAL。 独立包已清理，原Flutter/1.yaml/设置保持，未发版。SQL从线程根起表并去同类嵌套重复，IME开始标记不是已可输入，discarded统计不能忽略；见`docs/window-latency-and-close-investigation.md`。旧组下一步仅作历史。

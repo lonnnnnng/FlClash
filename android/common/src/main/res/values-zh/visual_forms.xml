@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="visual_glass_effect">玻璃效果</string>
+    <string name="visual_batch_import">批量导入</string>
+    <string name="visual_update_interval">自动更新间隔</string>
+    <string name="visual_minutes">分钟</string>
+    <string name="visual_age_identity">age 私钥</string>
+    <string name="visual_required">必填</string>
+</resources>

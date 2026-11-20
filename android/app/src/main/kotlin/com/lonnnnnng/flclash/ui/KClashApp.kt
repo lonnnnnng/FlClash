@@ -95,6 +95,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
@@ -1096,7 +1098,7 @@ fun KClashApp(
                             .padding(paddingValues)
                             .padding(horizontal = if (pageDestination == MainDestination.DASHBOARD) dashboardInset else 16.dp)
                             .testTag("page_${pageDestination.name.lowercase()}"),
-                        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
+                        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp + LocalMainDockInset.current),
                         verticalArrangement = Arrangement.spacedBy(
                             if (pageDestination == MainDestination.DASHBOARD && isDashboardEditing) 0.dp else 12.dp,
                         ),
@@ -1865,7 +1867,7 @@ internal fun ProfilesPanel(
                     }
                 }
                 LazyColumn(state = list, modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp),
+                    contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp + LocalMainDockInset.current),
                     verticalArrangement = Arrangement.spacedBy(spacing)) {
                     items(state.profiles.chunked(columns), key = { it.first().id }) { row ->
                         Row(Modifier.animateItem().fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing)) {
@@ -3712,7 +3714,8 @@ internal fun RequestsDialog(
             itemKey = { it.id },
             itemTag = { index -> if (activeConnections) "connections_row_$index" else "request_row_$index" },
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
+                bottom = 16.dp + if (embedded) LocalMainDockInset.current else 0.dp),
         ) { connection ->
             ConnectionRow(
                 connection = connection,
@@ -3821,7 +3824,8 @@ internal fun DnsDialog(
             itemKey = { "${it.time}|${it.domain}|${it.initiator}" },
             itemTag = { index -> "dns_row_$index" },
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
+                bottom = 16.dp + if (embedded) LocalMainDockInset.current else 0.dp),
         ) { dns ->
             DnsQueryRow(
                 query = dns,
@@ -3893,7 +3897,8 @@ internal fun LogsDialog(
                 },
                 itemKey = { "${it.timestampMillis}|${it.level}|${it.payload}" },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
+                    bottom = 16.dp + if (embedded) LocalMainDockInset.current else 0.dp),
             ) { entry ->
                 LogRow(entry) { keyword ->
                     if (keyword !in keywords) keywords = keywords + keyword
@@ -4992,149 +4997,121 @@ internal fun AddProfileDialog(
             ageKey = ""
         }
     }
-    val busyDismiss = { if (!locked) onDismiss() }
+    val busyDismiss = { if (!locked || terminal) onDismiss() }
     if (step == AddProfileStep.SOURCE) {
         ProfileSourceMenu(sourceAnchor, locked, busyDismiss, onPickQrCode, onPickFile,
             { step = AddProfileStep.REMOTE }, { onAddCustom("") }, menuSource)
         return
     }
     if (!formPresent) return
-    AlertDialog(
-        onDismissRequest = busyDismiss,
-        title = { Text(tr("从链接导入")) },
-        text = {
-            val formView = androidx.compose.ui.platform.LocalView.current
-            androidx.compose.runtime.SideEffect { formWindow.view = formView }
-            val windowInfo = LocalWindowInfo.current
-            val formKeyboard = LocalSoftwareKeyboardController.current
-            val formFocus = LocalFocusManager.current
-            val hideInput = { formFocus.clearFocus(force = true); formKeyboard?.hide(); Unit }
-            // 作者 long：输入会话属于Dialog；提交/失败也从同一窗口清焦收键盘，不能向底层Activity发送隐藏请求。
-            LaunchedEffect(feedback.requestId, feedback.phase) {
-                when (feedback.phase) {
-                    ProfileAddPhase.FAILED -> { submitted = false; hideInput() }
-                    ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> { submitted = true; hideInput() }
-                    else -> Unit
-                }
+    val scroll = rememberScrollState()
+    var returnAfterClose by remember { mutableStateOf(false) }
+    var measuredFormHeight by remember { mutableStateOf<Int?>(null) }
+    val formHeaderPx = with(LocalDensity.current) { 68.dp.roundToPx() }
+    ConnectionModalSheet(
+        onDismiss = { if (returnAfterClose) returningToSource = true else busyDismiss() },
+        contentScrollState = scroll, avoidIme = true, restoreDetentAfterIme = true,
+        dismissAllowed = { !locked || terminal }, sheetTag = "profile_add_remote_sheet",
+        floatingForm = true, fitFormOverKeyboard = true, naturalContentHeight = measuredFormHeight?.plus(formHeaderPx),
+        handleHeight = 10.dp, handleWidth = 28.dp, handleVerticalOffset = 3.dp,
+    ) { closeSheet ->
+        val formView = androidx.compose.ui.platform.LocalView.current
+        androidx.compose.runtime.SideEffect { formWindow.view = formView }
+        val windowInfo = LocalWindowInfo.current
+        val keyboard = LocalSoftwareKeyboardController.current
+        val focus = LocalFocusManager.current
+        val hideInput = { focus.clearFocus(force = true); keyboard?.hide(); Unit }
+        LaunchedEffect(feedback.requestId, feedback.phase) {
+            when (feedback.phase) {
+                ProfileAddPhase.FAILED -> { submitted = false; hideInput() }
+                ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> { submitted = true; hideInput() }
+                else -> Unit
             }
-            val inputLocked by rememberUpdatedState(locked || terminal)
-            LaunchedEffect(batchMode) {
-                // 作者 long：来源菜单关闭与Dialog取焦点有交接窗口，等本表单窗口真正获焦后才请求输入，避免焦点落在底层Activity而没有键盘。
-                snapshotFlow { windowInfo.isWindowFocused }.first { it }
-                if (!inputLocked) {
-                    // 作者 long：TextField获得焦点后自行创建输入连接；不在同一回调重复show，避免窗口交接时发出过早请求。
-                    if (batchMode) batchFocus.requestFocus() else urlFocus.requestFocus()
-                }
+        }
+        val inputLocked by rememberUpdatedState(locked || terminal)
+        LaunchedEffect(batchMode) {
+            snapshotFlow { windowInfo.isWindowFocused }.first { it }
+            if (!inputLocked) { if (batchMode) batchFocus.requestFocus() else urlFocus.requestFocus() }
+        }
+        ProfileFormHeader(if (batchMode) tr("批量导入") else tr("从链接导入"), {
+            ageKey = ""; hideInput(); returnAfterClose = !terminal; closeSheet()
+        }, !locked || terminal, "profile_add_back", actions = {
+            if (!terminal) IconButton({
+                if (!batchMode && batchInput.isEmpty()) batchInput = url.trim()
+                ageKey = ""; attempted = false; batchMode = !batchMode
+            }, Modifier.size(44.dp).appGlassTouch(AppSuperellipseShape(1000.dp), !locked)
+                .testTag(if (batchMode) "profile_add_mode_single" else "profile_add_mode_batch"), enabled = !locked) {
+                AppGlyphIcon(if (batchMode) AppGlyphs.textShort else AppGlyphs.listAdd, Modifier.size(24.dp))
             }
-            Column(modifier = Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PrimaryTabRow(selectedTabIndex = if (batchMode) 1 else 0) {
-                    Tab(
-                        selected = !batchMode,
-                        onClick = { batchMode = false; attempted = false },
-                        enabled = !locked,
-                        modifier = Modifier.testTag("profile_add_mode_single"),
-                        text = { Text(tr("单条")) },
-                    )
-                    Tab(
-                        selected = batchMode,
-                        onClick = {
-                            // 作者 long：首次切换批量时接住已输入链接；已有批量草稿不得被单条内容覆盖。
-                            if (batchInput.isEmpty()) batchInput = url.trim()
-                            ageKey = ""; attempted = false; batchMode = true
-                        },
-                        enabled = !locked,
-                        modifier = Modifier.testTag("profile_add_mode_batch"),
-                        text = { Text(tr("批量")) },
-                    )
-                }
+            val canSubmit = terminal || !locked && if (batchMode)
+                preview?.let { it.urls.isNotEmpty() && it.invalidCount == 0 } == true else url.isNotBlank()
+            IconButton({ if (terminal) { hideInput(); onDismiss() } else submit(hideInput) },
+                Modifier.size(44.dp).appGlassTouch(AppSuperellipseShape(1000.dp), canSubmit)
+                    .testTag(if (terminal) "profile_add_done" else "profile_add_submit"),
+                enabled = canSubmit) {
+                if (locked && !terminal) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                else AppGlyphIcon(AppGlyphs.check, Modifier.size(24.dp))
+            }
+        })
+        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).wrapContentHeight(Alignment.Top, unbounded = true)
+            .onSizeChanged { measuredFormHeight = it.height }.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (urlError != null) Text(tr(urlError), color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.errorContainer, AppSuperellipseShape(24.dp))
+                    .padding(16.dp).testTag("profile_add_remote_error"))
+            ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp, color = profileInputSurfaceColor()) {
                 if (batchMode) {
-                    OutlinedTextField(
-                        value = batchInput,
-                        onValueChange = { batchInput = it },
-                        label = { Text(tr("粘贴订阅链接")) },
-                        minLines = 4,
-                        maxLines = 7,
-                        enabled = !locked,
-                        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri),
-                        modifier = Modifier.fillMaxWidth().focusRequester(batchFocus).testTag("profile_add_remote_batch"),
-                    )
-                    val ready = preview
-                    if (ready == null) Text(tr("正在识别链接…"), Modifier.testTag("profile_add_parsing"))
-                    else Text(tr("识别到 {0} 个链接", ready.urls.size))
-                    if (ready != null && ready.skippedExisting > 0) {
-                        Text(tr("跳过已添加的重复项 {0} 个", ready.skippedExisting))
-                    }
-                    if (ready != null && ready.invalidCount > 0) {
-                        Text(
-                            tr("有 {0} 条链接格式无效，修正后才能导入", ready.invalidCount),
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
+                    androidx.compose.foundation.text.BasicTextField(batchInput, { batchInput = it },
+                        Modifier.fillMaxWidth().padding(16.dp).focusRequester(batchFocus).testTag("profile_add_remote_batch"),
+                        enabled = !locked, minLines = 4,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+                        keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Text),
+                        decorationBox = { input -> Box {
+                            if (batchInput.isEmpty()) Text(tr("粘贴订阅链接"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            input()
+                        } })
                 } else {
-                    OutlinedTextField(
-                        value = label,
-                        onValueChange = { label = it },
-                        label = { Text(tr("名称（可选）")) },
-                        singleLine = true,
-                        enabled = !locked,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { urlFocus.requestFocus() }),
-                        modifier = Modifier.testTag("profile_add_remote_label"),
-                    )
-                    OutlinedTextField(
-                        value = url,
-                        onValueChange = { url = it },
-                        label = { Text(tr("订阅链接")) },
-                        singleLine = true,
-                        enabled = !locked,
-                        isError = urlError != null,
-                        supportingText = urlError?.let { error -> { Text(tr(error), Modifier.testTag("profile_add_remote_error")) } },
+                    ProfileFormInput(tr("名称"), label, { label = it }, "profile_add_remote_label", enabled = !locked,
+                        placeholder = tr("可选"), keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        keyboardActions = KeyboardActions(onNext = { urlFocus.requestFocus() }))
+                    ProfileFormDivider()
+                    ProfileFormInput(tr("订阅链接"), url, { url = it }, "profile_add_remote_url",
+                        Modifier.focusRequester(urlFocus), enabled = !locked, invalid = urlError != null, placeholder = tr("必填"),
                         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { keyFocus.requestFocus() }),
-                        modifier = Modifier.focusRequester(urlFocus).testTag("profile_add_remote_url"),
-                    )
-                    AgeSecretKeyField(ageKey, { ageKey = it }, !locked, "profile_add_remote_age_key",
-                        modifier = Modifier.focusRequester(keyFocus), singleLine = true,
+                        keyboardActions = KeyboardActions(onNext = { keyFocus.requestFocus() }))
+                    ProfileFormDivider()
+                    ProfileFormInput(tr("age 私钥"), ageKey, { ageKey = it }, "profile_add_remote_age_key",
+                        Modifier.focusRequester(keyFocus), enabled = !locked, secret = true, placeholder = tr("可选"),
                         keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { submit(hideInput) }))
                 }
-                when (feedback.phase) {
-                    ProfileAddPhase.RUNNING -> Column(Modifier.fillMaxWidth().testTag("profile_add_progress"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        LinearProgressIndicator(Modifier.fillMaxWidth())
-                        Text(tr(feedback.message ?: "正在处理订阅…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    ProfileAddPhase.NEEDS_AGE_KEY -> Text(tr(feedback.message ?: "等待输入 age 解密密钥"), color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.testTag("profile_add_waiting_key"))
-                    ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> Text(tr(feedback.message.orEmpty()),
-                        color = if (feedback.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.testTag("profile_add_result"))
-                    ProfileAddPhase.FAILED -> Text(tr(feedback.message ?: "导入失败，请重试"), color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.testTag("profile_add_failure"))
-                    ProfileAddPhase.IDLE -> Unit
-                }
             }
-        },
-        confirmButton = {
-            val keyboard = LocalSoftwareKeyboardController.current
-            val focus = LocalFocusManager.current
-            if (terminal) TextButton(onClick = onDismiss, modifier = Modifier.testTag("profile_add_done")) { Text(tr("完成")) }
-            else TextButton(
-                    onClick = { submit { focus.clearFocus(force = true); keyboard?.hide() } },
-                    enabled = !locked && if (batchMode) {
-                        preview?.let { it.urls.isNotEmpty() && it.invalidCount == 0 } == true
-                    } else {
-                        url.isNotBlank()
-                    },
-                    modifier = Modifier.testTag("profile_add_submit"),
-                ) { Text(if (feedback.phase == ProfileAddPhase.FAILED) tr("重试导入") else if (batchMode) tr("导入 {0} 条", preview?.urls?.size ?: 0) else tr("导入")) }
-        },
-        dismissButton = {
-            val keyboard = LocalSoftwareKeyboardController.current
-            val focus = LocalFocusManager.current
-            TextButton(onClick = { if (terminal) onDismiss() else { ageKey = ""; focus.clearFocus(force = true); keyboard?.hide(); returningToSource = true } }, enabled = (terminal || !locked) && !returningToSource,
-                modifier = Modifier.testTag("profile_add_back")) { Text(tr("返回")) }
-        },
-    )
+            if (batchMode) {
+                val ready = preview
+                if (ready == null) Text(tr("正在识别链接…"), Modifier.testTag("profile_add_parsing"))
+                else Text(tr("识别到 {0} 个链接", ready.urls.size), style = MaterialTheme.typography.bodySmall)
+                if (ready != null && ready.skippedExisting > 0) Text(tr("跳过已添加的重复项 {0} 个", ready.skippedExisting))
+                if (ready != null && ready.invalidCount > 0) Text(tr("有 {0} 条链接格式无效，修正后才能导入", ready.invalidCount), color = MaterialTheme.colorScheme.error)
+            }
+            // 作者 long：上游表单只返回输入；Kotlin下载仍在本表单反馈，忙态/缺钥/失败不能因视觉对齐而提前退场。
+            when (feedback.phase) {
+                ProfileAddPhase.RUNNING -> Column(Modifier.fillMaxWidth().testTag("profile_add_progress"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                    Text(tr(feedback.message ?: "正在处理订阅…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                ProfileAddPhase.NEEDS_AGE_KEY -> Text(tr(feedback.message ?: "等待输入 age 解密密钥"), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.testTag("profile_add_waiting_key"))
+                ProfileAddPhase.SUCCEEDED, ProfileAddPhase.COMPLETED -> Text(tr(feedback.message.orEmpty()),
+                    color = if (feedback.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.testTag("profile_add_result"))
+                ProfileAddPhase.FAILED -> Text(tr(feedback.message ?: "导入失败，请重试"), color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.testTag("profile_add_failure"))
+                ProfileAddPhase.IDLE -> Unit
+            }
+            Spacer(Modifier.height(10.dp))
+        }
+    }
 }
 
 private enum class AddProfileStep {

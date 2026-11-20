@@ -11,8 +11,15 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -26,6 +33,7 @@ import androidx.compose.ui.unit.LayoutDirection
 // 作者 long：与 Flutter 手机 PageView 的 300ms easeOut 保持一致；跳过中间入口时仍只移动一屏，不构建沿途页面。
 internal const val MAIN_PAGE_SLIDE_MILLIS = 300
 internal val MainPageSlideEasing = CubicBezierEasing(0f, 0f, .58f, 1f)
+internal val LocalMainDockInset = staticCompositionLocalOf { 0.dp }
 
 @Composable
 internal fun MainNavigationHost(
@@ -35,24 +43,29 @@ internal fun MainNavigationHost(
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable (MainDestination) -> Unit,
 ) {
-    // 作者 long：Dock 和消息属于整个应用，标题栏及正文属于各页；外层只占底栏，内页分别处理顶部安全区。
-    Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        containerColor = dashboardPageColor(),
-        bottomBar = { MainNavigationDock(destination, destinations, onDestinationSelected) },
-        snackbarHost = snackbarHost,
-    ) { padding ->
-        MainPageTransition(destination, Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding), content)
-    }
+    val savedPages = rememberSaveableStateHolder()
+    val glass = LocalAppMenuGlass.current
+    val inset = (62 + 10f * (androidx.compose.ui.platform.LocalDensity.current.fontScale - 1f)).dp +
+        maxOf(21.dp, WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()) + 8.dp
+    val padding = PaddingValues(bottom = if (glass) 0.dp else inset)
+    // 作者 long：两种材质共用同一页面组合；分支切换时新registry早于旧页dispose保存，单独共享holder仍会丢草稿。
+    AppLiveMaterialHost(Modifier.fillMaxSize().background(dashboardPageColor()), background = {
+        CompositionLocalProvider(LocalMainDockInset provides if (glass) inset else 0.dp) {
+            MainPageTransition(destination, Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding), savedPages, content)
+        }
+    }, foreground = {
+        Box(Modifier.align(Alignment.BottomCenter)) { MainNavigationDock(destination, destinations, onDestinationSelected) }
+        Box(Modifier.align(Alignment.BottomCenter).padding(bottom = inset)) { snackbarHost() }
+    })
 }
 
 @Composable
 internal fun MainPageTransition(
     destination: MainDestination,
     modifier: Modifier = Modifier,
+    savedPages: androidx.compose.runtime.saveable.SaveableStateHolder = rememberSaveableStateHolder(),
     content: @Composable (MainDestination) -> Unit,
 ) {
-    val savedPages = rememberSaveableStateHolder()
     val direction = if (LocalLayoutDirection.current == LayoutDirection.Ltr) 1 else -1
     AnimatedContent(
         targetState = destination,

@@ -62,6 +62,7 @@ internal fun MainPageScaffold(
         MainDestination.PROFILES -> dashboardPageColor()
         else -> MaterialTheme.colorScheme.surface
     }
+    val dockInset = LocalMainDockInset.current
     Scaffold(
         modifier = modifier,
         containerColor = pageColor,
@@ -80,7 +81,9 @@ internal fun MainPageScaffold(
         snackbarHost = snackbarHost,
         bottomBar = { if (showNavigation) MainNavigationDock(selectedDestination, destinations, onDestinationSelected) },
         floatingActionButton = floatingActionButton,
-        content = content,
+        content = { padding -> content(PaddingValues(start = padding.calculateLeftPadding(androidx.compose.ui.platform.LocalLayoutDirection.current),
+            top = padding.calculateTopPadding(), end = padding.calculateRightPadding(androidx.compose.ui.platform.LocalLayoutDirection.current),
+            bottom = if (dockInset > 0.dp) 0.dp else padding.calculateBottomPadding())) },
     )
 }
 

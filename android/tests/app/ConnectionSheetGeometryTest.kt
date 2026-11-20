@@ -6,6 +6,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ConnectionSheetGeometryTest {
+    @Test fun `keyboard consumes blank space before lifting a short form`() {
+        val short = ConnectionSheetGeometry(600f, 280f, true, keyboardInset = 400f, fitOverKeyboard = true)
+        // 作者 long：取完全吃掉留白的键盘高度，避免把上游圆滑过渡区误当硬折线。
+        val lifted = ConnectionSheetGeometry(500f, 280f, true, keyboardInset = 500f, fitOverKeyboard = true)
+        assertEquals(220f, lifted.offset(ConnectionSheetDetent.PARTIAL), .001f)
+        assertTrue(short.offset(ConnectionSheetDetent.PARTIAL) in 318f..320f)
+        assertEquals(short.offset(ConnectionSheetDetent.PARTIAL), short.offset(ConnectionSheetDetent.EXPANDED), .001f)
+        val long = ConnectionSheetGeometry(600f, 1500f, true, keyboardInset = 400f, fitOverKeyboard = true)
+        assertTrue(long.offset(ConnectionSheetDetent.EXPANDED) >= 10f)
+        assertTrue(long.offset(ConnectionSheetDetent.PARTIAL) > long.offset(ConnectionSheetDetent.EXPANDED))
+    }
     @Test fun `floating form keeps minimum detent but caps expansion at measured content`() {
         val short = ConnectionSheetGeometry(1000f, 280f, minimumPartial = true)
         assertEquals(437.5f, short.offset(ConnectionSheetDetent.PARTIAL), .001f)

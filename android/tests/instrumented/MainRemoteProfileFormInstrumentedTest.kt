@@ -64,7 +64,7 @@ class MainRemoteProfileFormInstrumentedTest {
             capture("remote_single_invalid_recreated")
             back()
             compose.onNodeWithTag("profile_add_remote_url").assertDoesNotExist()
-            compose.onNodeWithTag("profiles_add_fab").assertIsDisplayed()
+            addEntry().assertIsDisplayed()
         }
     }
 
@@ -87,7 +87,7 @@ class MainRemoteProfileFormInstrumentedTest {
             closeSoftKeyboard()
             compose.activityRule.scenario.recreate()
             assertEquals(text, value("profile_add_remote_batch"))
-            compose.onNodeWithTag("profile_add_mode_batch").assertIsSelected()
+            compose.onNodeWithTag("profile_add_mode_single").assertIsDisplayed()
             compose.onNodeWithText("识别到 40 个链接").performScrollTo().assertIsDisplayed()
             compose.onNodeWithTag("profile_add_submit").assertIsNotEnabled()
             closeSoftKeyboard()
@@ -142,7 +142,10 @@ class MainRemoteProfileFormInstrumentedTest {
         repo.profilesLoaded.first { it }
         assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
         val rows = entry.database().profiles().getAll()
-        require(rows.isNotEmpty())
+        // 作者 long：空安装只验证输入/取消链路，须显式指定独立包；默认路径仍保留非空配置保护门禁。
+        if (InstrumentationRegistry.getArguments().getString("kclashRemoteFormEmptyAcceptance") == "true") {
+            require(compose.activity.packageName.endsWith(".motion") && rows.isEmpty())
+        } else require(rows.isNotEmpty())
         val files = rows.associate { it.id to signature(repo.profileFile(it.id)) }
         val scripts = entry.database().scripts().getAll()
         val scriptFiles = scripts.associate { it.id to signature(entry.scriptRepository().scriptFile(it.id)) }
@@ -170,10 +173,13 @@ class MainRemoteProfileFormInstrumentedTest {
     }
 
     private fun openForm() {
-        compose.onNodeWithTag("profiles_add_fab").performClick()
+        addEntry().performClick()
         compose.onNodeWithTag("profile_add_source_remote").performClick()
         compose.onNodeWithTag("profile_add_remote_url").assertIsDisplayed()
     }
+    private fun addEntry() = compose.onNodeWithTag(
+        if (InstrumentationRegistry.getArguments().getString("kclashRemoteFormEmptyAcceptance") == "true")
+            "profiles_empty_add" else "profiles_add_fab")
     private fun value(tag: String) = compose.onNodeWithTag(tag).fetchSemanticsNode().config[SemanticsProperties.EditableText].text
     private fun back() {
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)

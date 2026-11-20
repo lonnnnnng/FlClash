@@ -45,7 +45,7 @@ internal fun AppAppearance(activity: ComponentActivity, settings: AppearanceSett
     } }
     val localizedContext = remember(activity, localizedConfig) { android.view.ContextThemeWrapper(activity, 0).apply { applyOverrideConfiguration(localizedConfig) } }
     CompositionLocalProvider(androidx.compose.ui.platform.LocalContext provides localizedContext,
-        LocalConfiguration provides localizedConfig) { KClashTheme(darkTheme = dark, content = content) }
+        LocalConfiguration provides localizedConfig, LocalAppMenuGlass provides settings.glass) { KClashTheme(darkTheme = dark, content = content) }
 }
 
 @Composable
@@ -54,13 +54,13 @@ internal fun AppearancePicker(language: Boolean, store: AppearanceSettingsStore,
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-    fun save(value: AppearanceSettings) {
+    fun save(value: AppearanceSettings, close: Boolean = true) {
         if (busy) return
         busy = true
         scope.launch {
             val result = runCatching { withContext(Dispatchers.IO) { store.write(value) } }
             busy = false
-            if (result.isSuccess) onDismiss() else error = if (language) "语言设置保存失败，请重试" else "主题设置保存失败，请重试"
+            if (result.isSuccess) { if (close) onDismiss() } else error = if (language) "语言设置保存失败，请重试" else "主题设置保存失败，请重试"
         }
     }
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() },
@@ -79,6 +79,13 @@ internal fun AppearancePicker(language: Boolean, store: AppearanceSettingsStore,
                             Text(tr(label), modifier = Modifier.padding(start = 12.dp, top = 12.dp))
                         }
                     }
+                }
+                if (!language) Row(Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text(tr("玻璃效果"), Modifier.weight(1f))
+                    // 作者 long：材质为独立可选项，首次安装仍关闭；不改变深浅/系统三态，也不重载代理核心。
+                    Switch(settings.glass, { save(settings.copy(glass = it), close = false) }, enabled = !busy,
+                        modifier = Modifier.testTag("appearance_glass"))
                 }
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }

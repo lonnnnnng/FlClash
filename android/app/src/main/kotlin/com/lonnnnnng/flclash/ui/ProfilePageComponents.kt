@@ -200,9 +200,10 @@ internal fun ProfileFormSection(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(16.dp),
     spacing: androidx.compose.ui.unit.Dp = 12.dp,
+    color: androidx.compose.ui.graphics.Color = dashboardCardColor(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(modifier.fillMaxWidth(), shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
+    Surface(modifier.fillMaxWidth(), shape = AppSuperellipseShape(24.dp), color = color) {
         Column(Modifier.padding(contentPadding), verticalArrangement = Arrangement.spacedBy(spacing), content = content)
     }
 }

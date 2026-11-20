@@ -4,6 +4,12 @@ package com.lonnnnnng.flclash.common
 internal object AppTextCatalog {
     val ids: Map<String, Int> by lazy { buildMap {
         put("正在识别链接…", R.string.text_dd44ca603959)
+        put("玻璃效果", R.string.visual_glass_effect)
+        put("age 私钥", R.string.visual_age_identity)
+        put("必填", R.string.visual_required)
+        put("批量导入", R.string.visual_batch_import)
+        put("自动更新间隔", R.string.visual_update_interval)
+        put("分钟", R.string.visual_minutes)
         putAll(part0())
         putAll(part1())
         putAll(part2())

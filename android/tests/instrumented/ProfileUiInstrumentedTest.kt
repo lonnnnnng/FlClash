@@ -192,7 +192,7 @@ class ProfileUiInstrumentedTest {
         composeRule.onNodeWithText("从链接导入").assertIsDisplayed()
         composeRule.onNodeWithTag("profile_add_remote_label").performTextInput("我的订阅")
         composeRule.onNodeWithTag("profile_add_remote_url").performTextInput("https://example.invalid/sub")
-        composeRule.onNodeWithText("导入").performClick()
+        composeRule.onNodeWithTag("profile_add_submit").performClick()
 
         assertEquals(listOf("我的订阅", "https://example.invalid/sub"), added)
     }

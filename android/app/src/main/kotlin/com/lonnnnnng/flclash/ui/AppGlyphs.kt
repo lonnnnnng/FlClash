@@ -372,6 +372,15 @@ internal object AppGlyphs {
     ), role = GlyphRole.line),
   )) }
 
+    // 作者 long：与固定Flutter listAdd路径一致，批量入口沿用同一笔画节奏。
+    val listAdd by lazy { AppGlyph(listOf(
+        GlyphPolyline(listOf(GlyphVertex(4f, 4.4f), GlyphVertex(20f, 4.4f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(4f, 9.2f), GlyphVertex(20f, 9.2f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(4f, 14f), GlyphVertex(10f, 14f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(17f, 13.4f), GlyphVertex(17f, 20.2f)), role = GlyphRole.line),
+        GlyphPolyline(listOf(GlyphVertex(13.6f, 16.8f), GlyphVertex(20.4f, 16.8f)), role = GlyphRole.line),
+    ), matchTextDirection = true) }
+
     val textShort by lazy { AppGlyph(listOf(
     GlyphPolyline(listOf(
       GlyphVertex(4f, 9f),

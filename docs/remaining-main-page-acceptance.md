@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **067表单Sheet与实时材质（2026-11-20）**：067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 原失败保留，独立四包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](forms-live-material-flutter-alignment.md)、[证据](acceptance/forms-live-material-poco-20261120.json)
+
 > **066窗口延迟与关闭（2026-11-20）**：066修复回源中外部撤销再重开会执行旧选择；表单返回先移除Dialog再建来源菜单，最终返回首帧UI约48ms，旧路径81–87ms，整体首帧完成晚约6–8ms。920项JVM、POCO最终24/24、38图已核对，其中27张固定图像素一致，R8/motion、双Lint/DEX通过。首次建窗与表单整体延迟未稳定改善，滚动派生候选因长菜单回归失败已撤回。 下一步继续Popup首次组合/测量、表单整体交接与BufferQueue/SurfaceFlinger等待，再处理高频观测重组和其余Flutter面板/连续转场；整体仍PARTIAL。 [说明](window-latency-and-close-investigation.md)、[证据](acceptance/window-latency-poco-20261120.json)
 
 > **065 Popup与IME交接（2026-11-20）**：065已将来源菜单动作延后到Popup真实移窗后，统一Dialog自身清焦/收IME，减少首次坐标回写重组。920项JVM、POCO最终22/22、38图已核对，其中27张固定图像素一致，R8/motion构建、双Lint/DEX通过。Dialog首帧UI切片87–93ms→69ms，但首次绘制延后约19–35ms；Popup约75ms及整体掉帧仍未稳定改善。 下一步继续Popup首次建窗组成/测量、表单端到端延迟和关闭完整观测，再隔离高频观测重组；完整Flutter视觉与性能仍PARTIAL。 [说明](popup-input-handoff-performance.md)、[证据](acceptance/popup-ime-poco-20261120.json)
