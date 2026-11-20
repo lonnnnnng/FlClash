@@ -1074,8 +1074,10 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_open_server").performClick()
         compose.onNodeWithTag("more_server_value").performTextReplacement("time.example.com")
         restore.emulateSavedInstanceStateRestore()
+        compose.mainClock.advanceTimeBy(500); compose.waitForIdle()
         compose.onNodeWithTag("more_server_value").assertTextContains("time.example.com")
         compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.runOnIdle { assertEquals(1, saveCalls); assertTrue(state.isSaving) }
         compose.onNodeWithTag("more_value_confirm").assertIsNotEnabled()
         compose.onNodeWithTag("more_value_back").assertIsNotEnabled()
         InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
@@ -1140,6 +1142,125 @@ class ProfileMoreEditorInstrumentedTest {
         compose.onNodeWithTag("more_port_value").performTextReplacement("123")
         compose.onNodeWithTag("more_value_confirm").performClick(); waitGone("more_value_dialog")
         compose.runOnIdle { assertEquals(3, saveCalls) }
+    }
+
+    @Test fun vis061DialogEntryEarlyCancelAndStableFadeAcrossThemes() {
+        state = state.copy(ntp = ProfileNtpOverrides(port = 123)); render()
+        val metrics = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics
+        val density = metrics.density
+        val stableWidth = minOf(348f * density, metrics.widthPixels - 80f * density)
+        fun width() = compose.onNodeWithTag("more_value_dialog").fetchSemanticsNode().boundsInWindow.width
+        fun frame(name: String) {
+            val bitmap = checkNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+            recordVisualPng(name, ByteArrayOutputStream().also { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }.toByteArray())
+        }
+        fun backdrop(): Int {
+            val bitmap = checkNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+            return android.graphics.Color.red(bitmap.getPixel(bitmap.width / 2, bitmap.height * 7 / 8)).also { bitmap.recycle() }
+        }
+        try {
+            for (theme in listOf("light", "dark")) {
+                compose.runOnIdle { dark = theme == "dark" }
+                compose.waitForIdle(); android.os.SystemClock.sleep(600)
+                val parentRed = backdrop()
+                compose.mainClock.autoAdvance = false
+                compose.onNodeWithTag("more_open_port").performClick()
+                compose.mainClock.advanceTimeByFrame(); compose.waitForIdle()
+                compose.mainClock.advanceTimeBy(96); compose.waitForIdle()
+                val entering = width()
+                assertTrue("入场应仍大于稳定宽度", entering > stableWidth + 5f)
+                frame("vis061_entry_96_$theme")
+                compose.onNodeWithTag("more_value_back").performClick()
+                val held = width()
+                compose.mainClock.advanceTimeByFrame(); compose.mainClock.advanceTimeBy(32); compose.waitForIdle()
+                compose.onNodeWithTag("more_value_confirm").assertIsNotEnabled()
+                assertEquals("提前退出保持当时缩放", held, width(), 2f)
+                frame("vis061_early_exit_$theme")
+                compose.mainClock.advanceTimeBy(500); compose.waitForIdle()
+                compose.onNodeWithTag("more_value_dialog").assertDoesNotExist()
+                compose.runOnIdle { assertEquals(0, saveCalls) }
+                compose.mainClock.autoAdvance = true
+                compose.onNodeWithTag("more_open_port").performClick()
+                capture("vis061_settled_$theme")
+                val settled = width(); assertEquals(stableWidth, settled, 2f)
+                val expectedRed = parentRed * if (theme == "dark") .52f else .8f
+                assertEquals("仅应用本弹框遮罩，不能叠加系统默认dim", expectedRed, backdrop().toFloat(), 5f)
+                compose.mainClock.autoAdvance = false
+                compose.onNodeWithTag("more_value_back").performClick()
+                compose.mainClock.advanceTimeByFrame(); compose.mainClock.advanceTimeBy(96); compose.waitForIdle()
+                compose.onNodeWithTag("more_value_dialog").assertExists()
+                assertEquals(settled,width(),2f); frame("vis061_exit_96_$theme")
+                compose.onNodeWithTag("more_value_outside").performTouchInput { click(androidx.compose.ui.geometry.Offset(5f,5f)) }
+                compose.mainClock.advanceTimeBy(400); compose.waitForIdle()
+                compose.onNodeWithTag("more_value_dialog").assertDoesNotExist()
+                compose.runOnIdle { assertEquals(0,saveCalls) }
+                compose.mainClock.autoAdvance = true
+            }
+        } finally { compose.mainClock.autoAdvance = true }
+    }
+
+    @Test fun vis061ClearSaveRetainsWindowUntilFadeAndClosingRestoreDoesNotReplay() {
+        var registry by mutableStateOf(androidx.compose.runtime.saveable.SaveableStateRegistry(null) { true })
+        var mounted by mutableStateOf(true)
+        var disposals = 0
+        state = state.copy(ntp = ProfileNtpOverrides(server = "time.apple.com", port = 123))
+        compose.setContent { if (mounted) CompositionLocalProvider(androidx.compose.runtime.saveable.LocalSaveableStateRegistry provides registry) {
+          DisposableEffect(Unit) { onDispose { disposals++ } }
+          KClashTheme(darkTheme = true) {
+            ProfileMoreEditor(state,"ntp","",{}) { ntp,sniffer ->
+                saveCalls++; pendingSave=ntp to sniffer; state=state.copy(isSaving=true,error=null)
+            }
+          }
+        } }
+        compose.onNodeWithTag("more_open_server").performClick()
+        compose.mainClock.advanceTimeBy(500); compose.waitForIdle()
+        compose.onNodeWithTag("more_server_value").performTextClearance()
+        compose.onNodeWithTag("more_value_confirm").performClick()
+        compose.waitUntil(5_000) { state.isSaving }
+        try {
+            compose.mainClock.autoAdvance=false
+            compose.runOnIdle { completeHeldSave(true) }
+            compose.mainClock.advanceTimeByFrame(); compose.mainClock.advanceTimeBy(80); compose.waitForIdle()
+            compose.onNodeWithTag("more_value_dialog").assertExists()
+            compose.onNodeWithTag("more_value_confirm").assertIsNotEnabled()
+            compose.runOnIdle { assertEquals(1,saveCalls); assertNull(savedNtp?.server) }
+            val bitmap=checkNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot())
+            recordVisualPng("vis061_clear_fading",ByteArrayOutputStream().also { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it) }.toByteArray())
+            var savedState: Map<String, List<Any?>> = emptyMap()
+            compose.runOnIdle { savedState = registry.performSave(); mounted = false }
+            compose.mainClock.advanceTimeByFrame(); compose.waitForIdle()
+            compose.runOnIdle { assertEquals("冻结时钟也必须真正销毁旧子树", 1, disposals)
+                registry = androidx.compose.runtime.saveable.SaveableStateRegistry(savedState) { true }; mounted = true }
+            compose.mainClock.advanceTimeBy(64); compose.waitForIdle()
+            compose.onNodeWithTag("more_value_dialog").assertDoesNotExist()
+            compose.runOnIdle { assertEquals(1,saveCalls) }
+        } finally { compose.mainClock.autoAdvance=true }
+        compose.onNodeWithTag("profile_more_add").performClick()
+        compose.onNodeWithTag("more_add_server").performClick()
+        compose.runOnIdle { completeHeldSave(true) }
+        compose.onNodeWithTag("profile_more_add_done").performClick()
+        waitGone("profile_more_add_done")
+        compose.onNodeWithTag("more_value_dialog").assertDoesNotExist()
+    }
+
+    @Test fun vis061NewProfileDoesNotInheritClosingDialog() {
+        state = state.copy(ntp = ProfileNtpOverrides(port = 123)); render()
+        compose.onNodeWithTag("more_open_port").performClick()
+        compose.mainClock.advanceTimeBy(500); compose.waitForIdle()
+        try {
+            compose.mainClock.autoAdvance = false
+            compose.onNodeWithTag("more_value_back").performClick()
+            compose.mainClock.advanceTimeBy(64)
+            compose.runOnIdle { state = ProfileMoreEditorUiState(Profile.custom(9612,"新配置"),ntp=ProfileNtpOverrides(port=456)) }
+            compose.mainClock.advanceTimeByFrame(); compose.waitForIdle()
+            compose.onNodeWithTag("more_value_dialog").assertDoesNotExist()
+            compose.onNodeWithTag("more_open_port").performClick()
+            compose.mainClock.advanceTimeBy(600); compose.waitForIdle()
+            compose.onNodeWithTag("more_port_value").assertTextContains("456")
+            compose.onNodeWithTag("more_value_confirm").assertIsEnabled()
+            compose.runOnIdle { assertEquals(0,saveCalls) }
+        } finally { compose.mainClock.autoAdvance=true }
+        compose.onNodeWithTag("more_value_back").performClick(); waitGone("more_value_dialog")
     }
 
     private fun render() {

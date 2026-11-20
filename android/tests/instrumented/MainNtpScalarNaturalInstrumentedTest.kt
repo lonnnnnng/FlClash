@@ -85,6 +85,18 @@ class MainNtpScalarNaturalInstrumentedTest {
                 tap(Rect((24 * density).toInt(), heading.top, (60 * density).toInt(), heading.bottom))
                 awaitParent()
                 await("time.apple.com"); settle()
+                // 作者 long：自然帧下额外记录同字段开/关及入场早退，独立于冻结时钟的几何断言，不混作性能采样。
+                if (args.getString("kclashScalarMotionAcceptance") == "true") {
+                    val started = SystemClock.uptimeMillis()
+                    fun event(value: String) { ins.sendStatus(2, Bundle().apply {
+                        putString("kclash_scalar_motion_event", "$value;elapsedMs=${SystemClock.uptimeMillis() - started}")
+                    }) }
+                    await("服务器"); settle(); event("open"); tap(bounds(checkNotNull(find("服务器")))); await("取消"); settle(); capture("motion_open")
+                    settle(); event("close"); tap(bounds(checkNotNull(find("取消")))); awaitParent(); capture("motion_closed")
+                    await("服务器"); settle(); event("early-open"); tap(bounds(checkNotNull(find("服务器")))); await("取消")
+                    SystemClock.sleep(80); event("early-back"); back(); awaitParent()
+                    event("finished"); capture("motion_early_closed")
+                }
                 click("服务器"); settle(); capture("server")
                 setText("time.example.com"); awaitIme(true); settle(); capture("server_ime")
                 back(); awaitIme(false); scenario.recreate(); await("提交"); settle()

@@ -1,0 +1,685 @@
+{
+  "id": "KUI-VIS-061",
+  "date": "2026-11-20",
+  "status": "DONE-VERIFIED for NTP scalar motion/lifecycle slices;complete Flutter parity and menu performance remain PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "screen": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1,
+    "glassEnabled": false
+  },
+  "changes": [
+    "404ms route with275ms critical spring and linear residual correction;entry scale1.2to1 and alpha spring",
+    "Settled close uses flipped curve and holds scale1;early close preserves forward curve and current scale",
+    "Custom veil and content use same progress at drawing stage;clear system DIM_BEHIND on attach",
+    "Close request retains window and blocks repeated input/save;only completion removes window",
+    "Clear save retains opening snapshot until fade;profile/section/field isolate sessions;restored closing never resubmits",
+    "Float endpoints snap within1e-6 to avoid extra transparent input window"
+  ],
+  "build": {
+    "jvmAppMotion": {
+      "tests": 622,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionLog": "build5.log",
+    "releaseLog": "release5.log",
+    "releaseInstalled": false,
+    "testTaskLog": [
+      "> Task :app:testMotionBenchmarkUnitTest"
+    ],
+    "motionBenchmarkLint": {
+      "Warning": 73,
+      "Hint": 15
+    },
+    "releaseLint": {
+      "Warning": 69,
+      "Hint": 14
+    },
+    "releaseApk": {
+      "sha256": "d7b0d2d6e9560e536d5d9f434875c18a6dc14c4c2575d7c826b2d108c864e11e",
+      "bytes": 48456561
+    },
+    "mlkit": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MoreScalarDialog.kt": "24bb9770e47dd8c835f7e7fb940faa73714cbc25a76e7d9aa0b99765bca4664a",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt": "8a3e2db051cd1376792655c1e1ac8da076058e737784f4752e79db7734d53985",
+      "android/tests/instrumented/MainNtpScalarNaturalInstrumentedTest.kt": "7128291b30944068cd7c76737a1aabf7a291568d93d99442d36d4321b451fd88",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt": "650d67b0dd7348aa369bee245a22efffbc9de79e0d88f50c7c5ca34b54a07b23",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ScalarDialogMotion.kt": "b4959134ebf644d8509160673cb3022d025b2a58ad416bbbb6b91887774917e9",
+      "android/tests/app/ScalarDialogMotionTest.kt": "e8232a43e861b90c6976aaaf88d5230f4c35491589e8d60d5fc0cf75aa4505ba"
+    },
+    "app": {
+      "sha256": "3186f69ee383e842f6bc8ffd048d200f98008af53b05e4d36c0a55f51a7bd7d0",
+      "bytes": 66329697,
+      "installedMatched": true
+    },
+    "test": {
+      "sha256": "28f46f373ab17a48f3cbae5ad909678c9c79df3c360d471430416bb61776d341",
+      "bytes": 3176502,
+      "installedMatched": true
+    },
+    "identityNote": "final3 and main2 use same retained final build5 product/test APKs;installed bytes match;four new JVM motion tests included in622App motion suite"
+  },
+  "reference": {
+    "sourcePath": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "hostPath": "../acceptance-artifacts/flutter-ntp-provider-reference-host-20261120",
+    "gitMetadata": false,
+    "sdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "hostSourceSha256": "6e7a549d28db4fe876b01e641dd955bfef6de87a2e948dfed36eb057f68f234f",
+    "apkSha256": "ff276826fb851026ae23d8f2b881d762116c77930bd4ab00a428f295c106ff97",
+    "sourceHashes": {
+      "plugins/prism_ui/lib/dialog.dart": "7ca6ad78189d6a97a450523d43cfba7dfe365fa1c0871a8f52f0eee072de9bef",
+      "plugins/prism_ui/lib/motion.dart": "1530b64d185f7d730fcf55d8587c61110d44a366dc6a7fac1c7f1ed2a57e7df4",
+      "plugins/prism_ui/lib/liquid_glass_capture.dart": "6abd0b2f5fae7f748d32fe39457d9f624da398e42da49c0f4f67d6adb290e4b6",
+      "lib/views/config/ntp.dart": "d77597a82fb5083a92dde9e02e7f798267bc4c68ee0b4a765c2e2b123b6dddbf"
+    },
+    "validScreenshots": {
+      "light-open.png": "12036741a6d127f2a1f3d5a8e7ad53fd28522e7fe72bb0068f585a8b0b6648ce",
+      "dark-early-closed.png": "e8b6743cf8b6b8f6faf29961ea105c585bc9ae2f63723d406b3bebecf73e51ad",
+      "dark-closed.png": "e8b6743cf8b6b8f6faf29961ea105c585bc9ae2f63723d406b3bebecf73e51ad",
+      "dark-open.png": "090949298aec64c21a96596bfc2b475ef3a3e754070851f84ccea4e4c6718a1e",
+      "light-early-closed.png": "b56a3ae330227f2c02c457c5298e581d905b63994c6cd1cc9a68b30cac2ea1aa",
+      "light-closed.png": "b56a3ae330227f2c02c457c5298e581d905b63994c6cd1cc9a68b30cac2ea1aa"
+    },
+    "scope": "Original NtpView, profile provider overridden with isolated fixture; no original Flutter app or database/core",
+    "videos": {
+      "dark": {
+        "events": [
+          {
+            "event": "open",
+            "seconds": 1.0041503329994157
+          },
+          {
+            "event": "close",
+            "seconds": 2.464142291995813
+          },
+          {
+            "event": "early-open",
+            "seconds": 3.9854083329992136
+          },
+          {
+            "event": "early-back",
+            "seconds": 4.22689199999877
+          }
+        ],
+        "sha256": "c4365be7a1d028c66d55ba2ed8c32bd6f9fb0b2d98ab6dc2297e7563018956fc",
+        "bytes": 1663056,
+        "deviceCopyRemoved": true,
+        "clockNote": "Host dispatch timestamps;ADB andscreenrecord start latency unknown;not exact animation duration"
+      },
+      "light": {
+        "events": [
+          {
+            "event": "open",
+            "seconds": 1.010184874998231
+          },
+          {
+            "event": "close",
+            "seconds": 2.5009067080027307
+          },
+          {
+            "event": "early-open",
+            "seconds": 4.003747374998056
+          },
+          {
+            "event": "early-back",
+            "seconds": 4.241799333001836
+          }
+        ],
+        "sha256": "416b05134cc2d4d9c218f63a7ba8b4f955570450b1fb98f05790ad3668f95aac",
+        "bytes": 1871040,
+        "deviceCopyRemoved": true,
+        "clockNote": "Host dispatch timestamps;ADB andscreenrecord start latency unknown;not exact animation duration"
+      }
+    }
+  },
+  "acceptance": {
+    "component": {
+      "batch": "final3",
+      "passed": 11,
+      "total": 11,
+      "seconds": 52.894,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060ScalarSaveRestoreFailureAndClear",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis061ClearSaveRetainsWindowUntilFadeAndClosingRestoreDoesNotReplay",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis059YamlUnacceptedAndRepeatedRejectedSavesRemainEditable",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060ScalarUnacceptedAndRepeatedRejectionRemainEditable",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "returningFromFieldYamlAndParentProtectsUnsavedDrafts",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis061NewProfileDoesNotInheritClosingDialog",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis061DialogEntryEarlyCancelAndStableFadeAcrossThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060NormalizedNumbersAndClearedFieldCanBeReadded",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "failedFieldSaveRetainsInputAndRetriesWithoutParentSave",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis060ScalarDialogFieldsThemesValidationAndCancel",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileMoreEditorInstrumentedTest",
+          "test": "vis059ProtocolPickerGeometryAndNullableTargetAcrossThemes",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis060_save_failure": {
+          "count": 4,
+          "bytes": 112326,
+          "sha256": "3310c51d207a0001d488f0864730c8a7a2ab22914231bf5465de3b9b9a5a4942",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_clear_fading": {
+          "count": 3,
+          "bytes": 97195,
+          "sha256": "a80c0b2b2faa17bfc49f503d43104877857fb0e311e34a43ca0137cf2b04e4f1",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_entry_96_light": {
+          "count": 3,
+          "bytes": 91756,
+          "sha256": "0ba28228df72987872f3e91541a591c10a7c4f558b62d61991dedfed0f0130cf",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_early_exit_light": {
+          "count": 3,
+          "bytes": 95457,
+          "sha256": "40de359a04fd2a1790ee78a8176ff1140fe3cfee5c2d15311d110aca56bc008c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_settled_light": {
+          "count": 3,
+          "bytes": 82559,
+          "sha256": "aee4b4d237cc7c5b651dc8e4dbc0f678f5e97af6221852d20d20ed70afd3a251",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_exit_96_light": {
+          "count": 3,
+          "bytes": 80341,
+          "sha256": "e0b24ac69e57f7c140cbb4207a563e61597361f970751ae689cd078a04f0006b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_entry_96_dark": {
+          "count": 3,
+          "bytes": 93366,
+          "sha256": "f2ce85f516751b09015412edeacac1539f230d30bf2d88e995cd01e9e90771db",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_early_exit_dark": {
+          "count": 3,
+          "bytes": 97820,
+          "sha256": "5ee200bf2e1514b2d4dca6ef5d03ef04d09db82c839f7bd545d26466c6fd2f68",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_settled_dark": {
+          "count": 3,
+          "bytes": 81198,
+          "sha256": "0992e5af672acf933b9ca1a639888ff72d33f9f659293d35f35cb8926cf95e9c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis061_exit_96_dark": {
+          "count": 3,
+          "bytes": 84212,
+          "sha256": "4bd3b3808e4e489d895fcbb26bdf992c66f75916f260725e62421b7f55af28e3",
+          "width": 1080,
+          "height": 2400
+        },
+        "more_field_save_failure": {
+          "count": 3,
+          "bytes": 96111,
+          "sha256": "9a6b29a3234d89798dd1c01d96b95eb39a41bfb53d1d15aff73f31dff121155a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_server_light": {
+          "count": 3,
+          "bytes": 101047,
+          "sha256": "f89b787a4513d69c94a34de64ae828f8f2e79a48cbce8d6fd5b12a3718eb8447",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_port_light": {
+          "count": 3,
+          "bytes": 95992,
+          "sha256": "f441b0fdbb44d3dc93b98a641c8d5f969cf8be32b948313c7632ff43bc889345",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_error_light": {
+          "count": 4,
+          "bytes": 128247,
+          "sha256": "5d50f39b009e7d9e5302323232724cda73a935e4c8a7dbbcbe4ebb34111222d6",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_interval_light": {
+          "count": 3,
+          "bytes": 100482,
+          "sha256": "160bad7d58388715cbf6c419070c6ffbe26748cd620ef40006eeb5c8edbe9b69",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_dialer_proxy_light": {
+          "count": 3,
+          "bytes": 97013,
+          "sha256": "853dfa079dd4eff163a4787afdf26a293432949fe6c7cdfb3f56c6ed110df1c8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_before_back_light": {
+          "count": 3,
+          "bytes": 94368,
+          "sha256": "eb149530cbb9a578051961168f8bd853abd942c6dddff2a896c24bbe04bbf3b7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_server_dark": {
+          "count": 3,
+          "bytes": 98865,
+          "sha256": "8b781c8db5e44e323d0da91004abf4fe78d6509ee56622614c3ecb87ff130c10",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_port_dark": {
+          "count": 3,
+          "bytes": 93553,
+          "sha256": "a5bfa5253a388fb93316dad7b0974f027a0dc18a66d9c271c25deb1c2234e144",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_error_dark": {
+          "count": 4,
+          "bytes": 127507,
+          "sha256": "d37d974c41e303a0c02a551134f03a981ec420bb2ec452cbafafec76e1d7a948",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_interval_dark": {
+          "count": 3,
+          "bytes": 98490,
+          "sha256": "dddbd29ac87f6525fff9013be74a1c46042aef63520264a96e233a64060ab2cb",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_dialer_proxy_dark": {
+          "count": 3,
+          "bytes": 94901,
+          "sha256": "2af22ad71fbb7cd35e4fcc58b809c0c89a4ee106e1b753d3e79052787b95ed50",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_before_back_dark": {
+          "count": 3,
+          "bytes": 92161,
+          "sha256": "8587e7fbd497ff8ab1d1c9755894317397f76bb31573464981d32a3f169ccb0e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_protocol_light": {
+          "count": 2,
+          "bytes": 42386,
+          "sha256": "e4d06e9f8fbe30edd7fada5a767ac890ae3c68eaf6593c866b7eb0e2eaf5fa07",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_default_light": {
+          "count": 2,
+          "bytes": 56393,
+          "sha256": "1d16f086776057601e8d4a5ac7aa599818014bba468ad4b3ade3ff62e750b717",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_enabled_light": {
+          "count": 2,
+          "bytes": 56394,
+          "sha256": "04174030426df9a7e64bfc2ebd9ea6d6bf60bc69b35393b5aed9e10f98387dd0",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_protocol_dark": {
+          "count": 2,
+          "bytes": 42990,
+          "sha256": "518f87ff6af3194824290a19b0b47013e57a81875ddf5b7a196d944108258ddc",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_default_dark": {
+          "count": 2,
+          "bytes": 52322,
+          "sha256": "0e897a64f1cf15c773c361fee8dc588bcb3c030c1e5494f68ea9964c44f31f2b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis059_target_enabled_dark": {
+          "count": 2,
+          "bytes": 52314,
+          "sha256": "9f5a180f90e72b8b5ed1d340297863371fef407a79c1bb2ed31495fca39e6bf2",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "checks": [
+        "Entry width > settled;early reverse held width;settled exit held width;close disables repeated actions",
+        "Clear persistence keeps fading window;explicit save/dispose/restore observes disposal;closing removed within64ms",
+        "New profile does not inherit old closing/input session",
+        "Deep/light veil pixel ratio against parent with5-channel tolerance"
+      ]
+    },
+    "naturalMain": {
+      "batch": "main2",
+      "passed": 1,
+      "total": 1,
+      "seconds": 63.405,
+      "events": [
+        "open;elapsedMs=911",
+        "close;elapsedMs=3260",
+        "early-open;elapsedMs=5654",
+        "early-back;elapsedMs=6060",
+        "finished;elapsedMs=7049"
+      ],
+      "scope": "Real MainActivity/Hilt/Room;open/cancel/early Back then draft recreation,field saves,reopen and clear;source/config/preferences values preserved;STOPPED",
+      "images": {
+        "vis060_main_empty": {
+          "count": 3,
+          "bytes": 75412,
+          "sha256": "9636c09a889a22dab96293b42a9a291c9f6e86db831418bbebe054ec78c7b1fe",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_motion_open": {
+          "count": 3,
+          "bytes": 99724,
+          "sha256": "6325642931f6b2cba41db1c8ea0b484cc6bc23bc8aa3f299fa02543048b5fcfa",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_motion_closed": {
+          "count": 3,
+          "bytes": 100477,
+          "sha256": "42ebdd72d408505b56a846b4d2579db28596441ae6350afde5e1f7d24e66434a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_motion_early_closed": {
+          "count": 3,
+          "bytes": 100667,
+          "sha256": "90d5b59a30a6e1eb7053ab47cda115c590eeb598cbcf73842e50d150b3808b8f",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_server": {
+          "count": 3,
+          "bytes": 100024,
+          "sha256": "76b01378698f8fc660837e8622dd07d62bf8f824d1aadb8b36de2d0dc5722330",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_server_ime": {
+          "count": 5,
+          "bytes": 149722,
+          "sha256": "e92145dc5295b4f1c7ab4cb0f5b1f8e7ef7bb88afa0600bf2badc062018f99b8",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_draft_recreated": {
+          "count": 3,
+          "bytes": 98055,
+          "sha256": "de456927b7f39d4925e15163c36dcb60668737fa5fcb2e84869357387768c47a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_server_saved": {
+          "count": 3,
+          "bytes": 101735,
+          "sha256": "f7e133bbd13b6355f0007fc5db26a8f8573af33ef3c1af40b6af29e588e957db",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_port_error": {
+          "count": 3,
+          "bytes": 101668,
+          "sha256": "edd66897e3cacf55b19e40e46de562ea417df0cc89b262db3b2fc7b986d32e16",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_reopened": {
+          "count": 4,
+          "bytes": 136421,
+          "sha256": "8a591c521ff883e6fae5bee7d2f5fe295e3011d7b236f18a03df63769751b5e9",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_recreated": {
+          "count": 3,
+          "bytes": 100575,
+          "sha256": "d5f4a5baa36385d9d0fbeae68cd6965b33008fae37c9ef4e6e6a2a2d67f80d0c",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis060_main_cleared": {
+          "count": 3,
+          "bytes": 88429,
+          "sha256": "a233f0c3717b6efe0c974ad91e86ada46b7c8c92c638b2e92d2a7ee5df07bd73",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "video": {
+        "passed": true,
+        "videoSha256": "fafe364c2c555e1500c28fce12293261224313509a4ca4199e0d87c551cc4b6c",
+        "bytes": 33081285,
+        "deviceCopyRemoved": true,
+        "hasScreenshots": true,
+        "performanceEvidence": false,
+        "durationSeconds": 65.013744,
+        "sourcePtsFrameCount": 1692,
+        "reviewedTimeSamples": 12,
+        "fullFrameReview": false
+      },
+      "motionWindowReview": {
+        "rangeSeconds": [
+          25,
+          35
+        ],
+        "sourcePtsFrames": 182,
+        "contacts": [
+          "kotlin-final-motion-00.jpg",
+          "kotlin-final-motion-01.jpg",
+          "kotlin-final-motion-02.jpg",
+          "kotlin-final-motion-03.jpg",
+          "kotlin-final-motion-04.jpg"
+        ],
+        "allDecodedWindowFramesThumbnailed": true
+      }
+    },
+    "comparison": {
+      "pairs": [
+        {
+          "name": "server-open",
+          "theme": "dark",
+          "reference": "flutter/dark-open.png",
+          "kotlin": "main2/vis060_main_motion_open.png",
+          "sha256": [
+            "090949298aec64c21a96596bfc2b475ef3a3e754070851f84ccea4e4c6718a1e",
+            "6325642931f6b2cba41db1c8ea0b484cc6bc23bc8aa3f299fa02543048b5fcfa"
+          ],
+          "scope": "Same server/default value and theme;Flutter parent one field,Kotlin four;not full-page pixel equivalence"
+        }
+      ],
+      "flutterVideos": {
+        "light": {
+          "durationSeconds": 4.543278,
+          "sourcePtsFrames": 101,
+          "allDecodedFramesThumbnailed": true,
+          "contacts": [
+            "flutter-light-00.jpg",
+            "flutter-light-01.jpg",
+            "flutter-light-02.jpg",
+            "flutter-light-03.jpg",
+            "flutter-light-04.jpg"
+          ]
+        },
+        "dark": {
+          "durationSeconds": 4.542422,
+          "sourcePtsFrames": 86,
+          "allDecodedFramesThumbnailed": true,
+          "contacts": [
+            "flutter-dark-00.jpg",
+            "flutter-dark-01.jpg",
+            "flutter-dark-02.jpg",
+            "flutter-dark-03.jpg"
+          ]
+        }
+      },
+      "pixelIdentical": false
+    },
+    "visualReview": {
+      "kotlinImages": 41,
+      "componentContacts": 3,
+      "naturalContacts": 2,
+      "videoSamples": 12,
+      "flutterAllDecodedFramesReviewed": 187,
+      "kotlinSelectedWindowFramesReviewed": 182,
+      "veilPixelRed": {
+        "final2Light": 93,
+        "final3Light": 191,
+        "final3Dark": 10
+      },
+      "notes": [
+        "reopened screenshot is navigation intermediate;stable recreated/cleared frames andRoom checks retained",
+        "clear_fading is mid-transition with visible bottomIME remnant;not stable keyboard-hidden baseline",
+        "FFmpeg image2 DTS rounding warnings occurred;decoded output frame counts matched ffprobe sourcePTS list;sourceMP4 unchanged",
+        "Natural early-open toearly-back dispatch406ms;render phase not precisely80ms andnot equivalent to controlled early-reversal geometry test"
+      ]
+    }
+  },
+  "failuresPreserved": [
+    {
+      "batch": "build1",
+      "passed": 621,
+      "total": 622,
+      "reason": "Float endpoint residual left moving=true after segmented404ms;snapped endpoint andsame JVM test passed"
+    },
+    {
+      "batch": "final1",
+      "passed": 8,
+      "total": 11,
+      "reason": "Two new-dialog actions before firstframe;frozen StateRestorationTester did not explicitly demonstrate actual disposal.Changed test readiness and explicit SaveableStateRegistry unmount/restore with dispose assertion;product unchanged forfinal2"
+    },
+    {
+      "batch": "final2",
+      "passed": 11,
+      "total": 11,
+      "visualPassed": false,
+      "reason": "Light initial settled dialog background channel93 vs191 in other dialog;potential system/custom veil overlap.Fixed explicit DIM_BEHIND clearing onattach and added pixel regression"
+    }
+  ],
+  "protection": {
+    "inputCopyRemoved": true,
+    "packages": {
+      "com.lonnnnnng.flclash.motion.test": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      },
+      "com.lonnnnnng.kclash.reference.flutter_ntp_provider_reference": {
+        "removed": true,
+        "commandCode": 0,
+        "output": "Success"
+      }
+    },
+    "sourceAndSettingsPreserved": true,
+    "originalFlutterIdentityPreserved": true,
+    "originalFlutterIdentity": [
+      "versionCode=2026112401 minSdk=24 targetSdk=37",
+      "versionName=0.9.3",
+      "lastUpdateTime=2026-11-07 02:44:08",
+      "firstInstallTime=2026-11-07 02:44:08"
+    ]
+  },
+  "limits": [
+    "Only NTP scalar dialog changed;list input dialogs and other pages retain prior motion",
+    "MotionDurationScale zero branch has JVM finish coverage but device animation-scale setting not toggled this run",
+    "Flutter independent host parent one field vs Kotlin real parent four;not full-page same-state equivalence",
+    "Natural early Back timing is actual dispatch/visible-window observation,not exact80ms;recorded events do not equal rendered-frame timestamps",
+    "Recordings include PNG capture and instrumentation;no performance improvement claim,Perfetto/native attribution pending",
+    "No new release or formal Release installation;public0.1.10 unchanged;no core/VPN changes",
+    "Original1.yaml onlyUSB copy removed;originalFlutter identity/settings preserved;preferences protection key/value not updatedAt"
+  ],
+  "artifactRoot": "../acceptance-artifacts/ntp-dialog-motion-poco-20261120/"
+}

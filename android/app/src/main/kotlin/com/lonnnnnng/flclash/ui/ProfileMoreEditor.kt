@@ -49,7 +49,7 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     val root = if (ntp) state.ntp.toJson() else state.sniffer.toJson()
     var adding by rememberSaveable { mutableStateOf(false) }
     var addQuery by rememberSaveable(profile.id, section) { mutableStateOf("") }
-    var editing by rememberSaveable { mutableStateOf<String?>(null) }
+    var editing by rememberSaveable(profile.id, section) { mutableStateOf<String?>(null) }
     var yaml by rememberSaveable { mutableStateOf(false) }
     var clear by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -60,8 +60,9 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
     var pendingChild by remember(profile.id, section) { mutableStateOf<String?>(null) }
     LaunchedEffect(profile.id, section, state.revision) {
         when (pendingChild) { "value" -> editing = null; "yaml" -> yaml = false; "last-add" -> { adding = false; addQuery = "" } }
-        // 作者 long：清空字段成功会先移除子弹框，父页必须回收编辑标记，避免重新添加同字段时自动打开旧入口。
-        if (editing != null && fields.firstOrNull { it.key == editing }?.let { moreFieldValue(root, it) } == null) editing = null
+        // 作者 long：标量清空后由保留的弹框会话完成淡出再清标记；其他子页仍立即回收失效入口。
+        val field = fields.firstOrNull { it.key == editing }
+        if (field != null && field.kind !in setOf(MoreFieldKind.TEXT, MoreFieldKind.PORT, MoreFieldKind.NUMBER) && moreFieldValue(root, field) == null) editing = null
         pendingChild = null
     }
     fun submit(next: JsonObject, child: String? = null) {
@@ -254,16 +255,24 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
             }
         }
     }
-    fields.firstOrNull { it.key == editing }?.let { field -> moreFieldValue(root, field)?.let { value ->
-        if (field.kind == MoreFieldKind.PROTOCOL) {
+    fields.firstOrNull { it.key == editing }?.let { field ->
+        if (field.kind in setOf(MoreFieldKind.TEXT, MoreFieldKind.PORT, MoreFieldKind.NUMBER)) {
+          // 作者 long：切换配置/分区时销毁旧动画和输入会话，旧窗口结束不能关闭新配置的同名字段。
+          key(profile.id, section, field.key) {
+            // 作者 long：打开时保存输入快照；清空字段后的新root没有值，但窗口仍须留到退出动画完成，不能重放保存。
+            val original by rememberSaveable(profile.id, section, field.key) {
+                mutableStateOf((moreFieldValue(root, field) ?: field.defaultValue()).toString())
+            }
+            MoreScalarDialog(field, JsonParser.parseString(original), root, ntp, state.isSaving, state.error, state.revision,
+                { editing = null }) { change(field, it) }
+          }
+        } else moreFieldValue(root, field)?.let { value -> if (field.kind == MoreFieldKind.PROTOCOL) {
             MoreProtocolEditor(field, value.asJsonObject, root, state.isSaving, state.error, state.revision,
                 { editing = null }) { change(field, it) }
         } else if (field.kind in setOf(MoreFieldKind.LIST, MoreFieldKind.ADDRESSES)) {
             MoreListEditor(field, value, root, state.isSaving, state.error, { editing = null }) { change(field, it, "value") }
-        } else {
-            MoreScalarDialog(field, value, root, ntp, state.isSaving, state.error, state.revision, { editing = null }) { change(field, it) }
-        }
-    } }
+        } }
+    }
     if (yaml) MoreYamlEditor(if (ntp) "NTP" else "域名嗅探", root, ntp, state.isSaving, state.error, state.revision, { yaml = false }) { submit(it, "yaml") }
     if (clear) AlertDialog(onDismissRequest = { if (!state.isSaving) clear = false }, title = { Text("清除本分区覆盖？") }, text = { Text("清除后所有字段将恢复继承原配置。") },
         confirmButton = { TextButton(enabled = !state.isSaving, onClick = { submit(JsonObject()); clear = false }) { Text("清除") } },
