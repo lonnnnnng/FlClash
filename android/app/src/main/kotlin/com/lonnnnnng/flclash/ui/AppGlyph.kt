@@ -66,13 +66,14 @@ internal fun GlyphPolyline(vertices: List<GlyphVertex>, closed: Boolean = false,
 }
 
 /** 作者 long：实心 Dock 图标的细节是透明镂空；独立图层使其透出滑块底色，并避免半透明描边交点加深。 */
-private class AppGlyphPainter(private val glyph: AppGlyph, private val fill: Float) : Painter() {
+internal class AppGlyphPainter(private val glyphProvider: () -> AppGlyph, private val fill: Float) : Painter() {
     override val intrinsicSize = Size(24f, 24f)
     private var alpha = 1f
     private var filter: ColorFilter? = null
     override fun applyAlpha(alpha: Float): Boolean { this.alpha = alpha; return true }
     override fun applyColorFilter(colorFilter: ColorFilter?): Boolean { filter = colorFilter; return true }
     override fun DrawScope.onDraw() {
+        val glyph = glyphProvider()
         val canvas = drawContext.canvas
         canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply { alpha = this@AppGlyphPainter.alpha; colorFilter = filter })
         withTransform({
@@ -110,5 +111,5 @@ private class AppGlyphPainter(private val glyph: AppGlyph, private val fill: Flo
 internal fun AppGlyphIcon(glyph: AppGlyph, modifier: Modifier = Modifier,
     tint: Color = LocalContentColor.current, filled: Boolean = false, fillProgress: Float = if (filled) 1f else 0f) {
     // 作者 long：Painter的intrinsicSize是像素，不能当作dp；外部显式尺寸和菜单容器约束仍优先。
-    Icon(remember(glyph, fillProgress) { AppGlyphPainter(glyph, fillProgress) }, null, modifier.size(24.dp), tint)
+    Icon(remember(glyph, fillProgress) { AppGlyphPainter({ glyph }, fillProgress) }, null, modifier.size(24.dp), tint)
 }

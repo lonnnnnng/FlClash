@@ -23,4 +23,4 @@ POCO上安装的Motion、test和performance独立包均按SHA回拉后精确卸�
 
 ## 未完成
 
-上游在形状内部还会将播放符号变形为暂停符号，Kotlin按钮目前仍用系统电源图标；按需暂停的Wi-Fi符号也未对齐。没有安装/运行上游Flutter应用做全屏比较，其他面板和页面连续转场仍待验。玻璃默认关闭；任意重叠pane的atlas分层、完整光学捕获和全页采样策略仍在KUI-VIS总项中。
+071完成时播放／暂停和按需暂停字形尚未对齐；后续[072](runtime-glyph-resource-panel-alignment.md)已接入固定Flutter字形，并以8个独立光栅验收。未运行完整上游Flutter应用做全屏比较，其他面板和页面连续转场仍待验。玻璃默认关闭；任意重叠pane的atlas分层、完整光学捕获和全页采样策略仍在KUI-VIS总项中。

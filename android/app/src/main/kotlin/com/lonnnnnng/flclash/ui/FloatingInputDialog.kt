@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
@@ -119,11 +120,16 @@ internal fun FloatingInputDialog(
                                 shape = AppSuperellipseShape(24.dp), colors = ButtonDefaults.buttonColors(containerColor = inputColor,
                                     contentColor = MaterialTheme.colorScheme.onSurface,
                                     disabledContainerColor = if (closing) inputColor else MaterialTheme.colorScheme.onSurface.copy(alpha=.12f),
-                                    disabledContentColor = if (closing) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha=.38f))) { Text(cancelLabel) }
+                                    disabledContentColor = if (closing) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha=.38f))) {
+                                // 作者 long：Prism浮框操作使用17sp正文，默认Material按钮15sp会让同一浮框的动作明显偏小。
+                                Text(cancelLabel, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                            }
                             Button(::submit, Modifier.weight(1f).heightIn(min = 48.dp).testTag(confirmTag), enabled = enabled && confirmEnabled,
                                 shape = AppSuperellipseShape(24.dp), colors = ButtonDefaults.buttonColors(
                                     disabledContainerColor = if (closing && confirmEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha=.12f),
-                                    disabledContentColor = if (closing && confirmEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha=.38f))) { Text(confirmLabel) }
+                                    disabledContentColor = if (closing && confirmEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha=.38f))) {
+                                Text(confirmLabel, style = MaterialTheme.typography.titleMedium)
+                            }
                         }
                     }
                 }
@@ -147,7 +153,7 @@ internal fun FloatingInputField(value: TextFieldValue, onChange: (TextFieldValue
     Surface(shape = AppSuperellipseShape(24.dp),
         color = if (LocalKClashDarkTheme.current) colors.surfaceContainerHighest else dashboardPageColor(),
         border = if (focused) BorderStroke(2.dp, if (invalid) colors.error else colors.primary) else null) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(start = 10.dp, end = if (secret) 0.dp else 10.dp),
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(start = 14.dp, end = if (secret) 0.dp else 14.dp),
             verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(value, onChange, Modifier.weight(1f).padding(vertical = 12.dp).onFocusChanged { focused = it.isFocused }.testTag(tag),
                 enabled = enabled, singleLine = secret && !revealed, maxLines = if (secret && !revealed) 1 else 5,

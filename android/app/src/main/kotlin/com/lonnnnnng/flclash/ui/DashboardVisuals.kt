@@ -44,7 +44,6 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.PowerSettingsNew
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material.icons.outlined.SwapHoriz
@@ -375,8 +374,7 @@ internal fun RuntimeCard(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            if (busy) CircularProgressIndicator(Modifier.size(28.dp), strokeWidth = 2.dp)
-                            else Icon(Icons.Outlined.PowerSettingsNew, null, Modifier.size(32.dp))
+                            RuntimeToggleGlyph(state.isRunning, state.isRunning && onDemandSuspended, busy)
                             if (!largeText) {
                                 Text(
                                     actionLabel,

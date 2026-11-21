@@ -1,0 +1,1337 @@
+{
+  "id": "KUI-VIS-072",
+  "date": "2026-11-21",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1
+  },
+  "scope": "Runtime play/pause/wifi-off glyph; resource interval/Geo floating input; ordinary R8 source-menu close Binder attribution. Glass remains off by default.",
+  "source": {
+    "baseCommit": "82eb80f14bc90b4b48cfce6b7b652c9b97fc0c8a",
+    "visualSourceSha256": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlyph.kt": "7e63ddbb6f963486093edfbfc608f48c46ea9644bf7d2cb98f42d6e0cc2b04fc",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeToggleGlyph.kt": "62614dfc7d1eb6dd4ac1768742230a2b406bfc78fafc4b9afb08644b83ebf1b4",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt": "308911d4f7e31f30fdf77469b99e0760250cbebb3cf977050f618c828aaac710",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/FloatingInputDialog.kt": "d849f07c60141ee5cc75b643439439a0e0fd859254199b512bc69201fa577154",
+      "tool/runtime_glyph_oracle_test.dart": "3f63eb221a7baf67d26007c090790667196c34b362331cb080f9575bb35d2c60",
+      "tool/perfetto_menu_close_chain.sql": "27646a91d7f4b5948d4a7f51e5cf74f5a0f2d87ed9b8633b35055b20cdfec7e4",
+      "android/tests/instrumented/RuntimeGlyphResourceParityInstrumentedTest.kt": "db59bfb031f7554e375e3824abbce3db7829d471ca3a58868eb0a23630080ab8",
+      "android/tests/instrumented/resources/runtime-glyph-flutter-reference.json": "ea64e7cd5185ebec0809ba4e654e6cc0ff0d0c89169cf548290aa845bc69563d"
+    },
+    "buildWorktreeNote": "Existing uncommitted KCORE-011/service and core changes were preserved in this worktree and excluded from this visual commit. No core/VPN/network conclusion is made for these visual APKs."
+  },
+  "flutterReference": {
+    "snapshot": "../../../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "sourceSha256": {
+      "lib/ui/icons/app_glyphs.dart": "4a2a252feea72f93a73538c1f874f6a477474b5483189ac429b47829c9efb029",
+      "lib/views/dashboard/widgets/current_outbound.dart": "1fb47cc2e4274dc940ba9876c1736410183bbdf867d9d863b46a0e3b8db77974",
+      "lib/views/resources.dart": "9c61d1b0ec19d8a1a5f8ba9084a90f03ad1b36d547e7aad3b4f2da8101c36b40",
+      "plugins/prism_ui/lib/icons/glyph.dart": "8495b339abf5dd4bca8a4b87a26d4973f5efd0f6d8cb277acdb4c44514da0218",
+      "plugins/prism_ui/lib/icons/glyph_painter.dart": "3fb75af55fde1f740d969cbe48a0cc6b85e162ca443df2f065805fba50521893",
+      "plugins/prism_ui/lib/input.dart": "42732f6fb073e1651baf3125f6fa6ef9e6891211ab2fe76fdfa626f1863e8dd5",
+      "plugins/prism_ui/lib/dialog.dart": "7ca6ad78189d6a97a450523d43cfba7dfe365fa1c0871a8f52f0eee072de9bef"
+    },
+    "oracleTool": "tool/runtime_glyph_oracle_test.dart",
+    "oracleReexportByteIdentical": true,
+    "glyphSamples": [
+      -0.08,
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1,
+      1.08,
+      "wifiOff"
+    ],
+    "rasterSize": [
+      96,
+      96
+    ],
+    "rasterBoundaryTolerancePixels": 1,
+    "maxMismatchCountExclusive": 180,
+    "resourceRuntime": "Independent reference package invokes original InputDialog and UpdateGeoUrlFormDialog; not the full upstream application",
+    "validScreensDirectory": "../../../acceptance-artifacts/glyph-resource-close-20261121/flutter-verified2",
+    "validScreenshotSha256": {
+      "light_geo_ime.png": "2c5fb50b2e5a6edc147b6e6a11ea4a6517c48c011edc553e60b24b18d606e218",
+      "dark_interval_ime.png": "3d09b57a13f15e0c9e89fedb68b89e7356f46176b44e87767e5b32b8e86c6427",
+      "light_interval.png": "aec8172adfebd6b2b6368434b8b96be279d1312ce76bfd2369563f6fae14ae71",
+      "light_geo.png": "085bde674d9241127c6b0033da885d1cae316c9cfd58bc903580c20850bd52ff",
+      "dark_geo_ime.png": "f8612b672efa0b7806eaee859436be20c57d2c6f72764e8e69fe83e11099c0c0",
+      "dark_interval.png": "e5ff2df61d2639ced9877e7c6aed2c2c00f0ac15ed23f99994dec4fba8f5791b",
+      "dark_geo.png": "04d6ea9fdde3fa141b3ebabc2644e355d52c4f5073a2115eb23ee95b241eab99",
+      "light_interval_ime.png": "b741f2046a6fb5823de27001f9f8c37b0ebdf0836b42314a5424244f3f9ac8a1"
+    },
+    "sameInputStates": 8
+  },
+  "verification": {
+    "appMotionJvm": {
+      "tests": 628,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": {
+      "build-final-motion.log": {
+        "sha256": "3d18fc399335a0c7f2e4037024fca9ac0746a893fcef1e9472139ac5a51ab0a6",
+        "passed": true
+      },
+      "build-final-r8.log": {
+        "sha256": "864dd988b98839bca4d37943f6d78fb6e33322a143bc48bfdf853e0c3a2f0f6f",
+        "passed": true
+      }
+    },
+    "lint": {
+      "motion": {
+        "Error": 0,
+        "Warning": 75,
+        "Hint": 15
+      },
+      "release": {
+        "Error": 0,
+        "Warning": 71,
+        "Hint": 14
+      }
+    },
+    "releaseDexGate": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "pocoFinal": {
+      "passed": true,
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.RuntimeGlyphResourceParityInstrumentedTest",
+          "test": "glyphAnimationDrawsReversesAndSuspendsWithoutChangingActions",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.RuntimeGlyphResourceParityInstrumentedTest",
+          "test": "playPauseAndSuspendedGlyphsMatchEightFlutterRasters",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.RuntimeGlyphResourceParityInstrumentedTest",
+          "test": "resourcePanelsCaptureSameValuesInLightAndDarkAndKeepReturnContracts",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.RuntimeToggleShapeInstrumentedTest",
+          "test": "contoursAndGlassProfilesMatchFlutterAtSixProgressValues",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.RuntimeToggleShapeInstrumentedTest",
+          "test": "runtimeButtonPreservesBusyActionsAndBoundsInBothMaterialsAndThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.RuntimeToggleShapeInstrumentedTest",
+          "test": "animationReadsStayInDrawingAndReverseFromCurrentContour",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+          "test": "closeFailureRemainsVisibleAndSecondAcknowledgementCloses",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+          "test": "liveOpticsKeepSharpCenterMixHazeAndSeparateLensChannels",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+          "test": "ageInputRevealLongValueFailureRetryAndCancelKeepSecretLocal",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.PanelOpticsInstrumentedTest",
+          "test": "floatingRenameKeepsDraftBusyErrorAndFadesOutWithoutExpanding",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceInputMotionInstrumentedTest",
+          "test": "realToolsResourceInputsValidateSaveResetCancelAndReopenContinuously",
+          "code": 0
+        }
+      ],
+      "screenshots": {
+        "vis072_glyph_n8": {
+          "count": 1,
+          "bytes": 1015,
+          "sha256": "ae3c07f2277d76e1cd677affac4818ab937d8281c68322173884e400d9c5d126",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_0": {
+          "count": 1,
+          "bytes": 974,
+          "sha256": "7e442ea2f4274c268c74fbd4728951d2c652ee83947169968f2cf4e8f178fa50",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_25": {
+          "count": 1,
+          "bytes": 1013,
+          "sha256": "fd51448c40038c685189a275663fde245c85e70474022081d9adb3053dfa41d3",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_50": {
+          "count": 1,
+          "bytes": 1255,
+          "sha256": "71f27d6a4859fb68f2555185f363761d26cb606680652afc95ee9c5ed91c1555",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_75": {
+          "count": 1,
+          "bytes": 1406,
+          "sha256": "fed1a0fd730a492ca38b4625a584ef485de6a50d4cbaa4e92654825cab9fb52b",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_100": {
+          "count": 1,
+          "bytes": 625,
+          "sha256": "5064339697fa39cab3efdf1b08c95c786706ea3e163d51118fa883e6190f6af4",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_108": {
+          "count": 1,
+          "bytes": 1114,
+          "sha256": "95e286fa8b80c23f7a051269d31fcc1fabc316f8a42f6aad79405a0d48bc610c",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_glyph_200": {
+          "count": 1,
+          "bytes": 1623,
+          "sha256": "e10abcbd2790a1b16cbb903b8e77ecc6a03d1e27d56f8d38bbdacae2f446fb2e",
+          "width": 96,
+          "height": 96
+        },
+        "vis072_dark_interval": {
+          "count": 2,
+          "bytes": 52661,
+          "sha256": "1d989c992968f890983c95ab440d4e9e85d6d07522bdf399e1048aaccd7ee012",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_dark_interval_ime": {
+          "count": 3,
+          "bytes": 92481,
+          "sha256": "b30c1e706f368fd44f53fbe3195b8f6bfaff99336dd1e2d43fcbc455f3a7491b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_dark_geo": {
+          "count": 2,
+          "bytes": 58819,
+          "sha256": "e6d7f92228dc50958fff3e42020aff7aaa6512d5e38228fab2a1995ec4b0885d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_dark_geo_ime": {
+          "count": 4,
+          "bytes": 115963,
+          "sha256": "aacb8e41e9adc71ff396e531897d193ec5c9489d2b8e435f1f10d8ea3e8b95b9",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_light_interval": {
+          "count": 2,
+          "bytes": 53669,
+          "sha256": "8d348a545073882047b3bda2c9067b2d7911ef94a1d2b145e8a277c8f97d3012",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_light_interval_ime": {
+          "count": 3,
+          "bytes": 93615,
+          "sha256": "8ede28def03228e60afead05e32b50c562275b71e60acfabf67c8c393aec771a",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_light_geo": {
+          "count": 2,
+          "bytes": 60301,
+          "sha256": "0abf9b3a81d0e2a4428db46bb7d72200927d97bc858b215f667d7c22e7d1b273",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis072_light_geo_ime": {
+          "count": 4,
+          "bytes": 117359,
+          "sha256": "bceffe18925c6fbc98d2361808af84e143d5811d6e03fe9ab6841e0b3a352892",
+          "width": 1080,
+          "height": 2400
+        },
+        "runtime_toggle_false_false_running": {
+          "count": 2,
+          "bytes": 43573,
+          "sha256": "30db1d06b4696010b3101a2659639335234bdf737c3cb5862ba15fcd5d812030",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_false_false_failed": {
+          "count": 2,
+          "bytes": 44407,
+          "sha256": "2e4f3121e0758d99a23a075667d17ea5e5ca153619f587b63e3956174e5a77b6",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_false_true_running": {
+          "count": 2,
+          "bytes": 50232,
+          "sha256": "3f2641310b88ef316100e4a7591b8bf49d773a26c765d95035f5690cc0db7702",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_false_true_failed": {
+          "count": 2,
+          "bytes": 47649,
+          "sha256": "1845d1f8d4c63324c5d4ae8e234a0fedb40716e42c56a82e5bfebb1791674c81",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_true_false_running": {
+          "count": 2,
+          "bytes": 44023,
+          "sha256": "9659ed6cbf35db6163139fa24202ad332d8c1a493517ea427c2d5c1e2954ddcb",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_true_false_failed": {
+          "count": 2,
+          "bytes": 46375,
+          "sha256": "170773f81a35e9a12a236bf888be23cafd948aaabed4bbb532b50e158d9fb0b8",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_true_true_running": {
+          "count": 2,
+          "bytes": 49133,
+          "sha256": "31b366cf76e31ea3de778d06678d5c499678439c9a4b7c0327b56a5f16aa16a1",
+          "width": 1080,
+          "height": 594
+        },
+        "runtime_toggle_true_true_failed": {
+          "count": 2,
+          "bytes": 56770,
+          "sha256": "bcc1cf898c9afcacc93c82c55b84e803317cc0c3188bb988317e9ac92539078e",
+          "width": 1080,
+          "height": 594
+        },
+        "panel_optics_close_failure_visible": {
+          "count": 2,
+          "bytes": 57131,
+          "sha256": "fd4d8518b379d7fd71fa9992573b970529e32c1c9300e2d4d0e7165e9357b7a3",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_raw": {
+          "count": 1,
+          "bytes": 30387,
+          "sha256": "e290875c01f599f229067c3c2a92329bb0cf78bf933c7488a8a38e8b627b2b79",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_refracted": {
+          "count": 2,
+          "bytes": 48933,
+          "sha256": "762b451fd6e9e3c29e671074b45cfa5afb356b42acfd816c43b48335fc34d94c",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_haze_mixed": {
+          "count": 1,
+          "bytes": 36007,
+          "sha256": "680950453f9be1baace955b5aa8a626653689214a915e0211f0266504914868c",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_lens_dispersion": {
+          "count": 2,
+          "bytes": 57940,
+          "sha256": "52d7a4aaaa4c9e837d234967552d25e5f81047490efd4258157456a26bd3cec4",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_age_revealed_ime": {
+          "count": 4,
+          "bytes": 123104,
+          "sha256": "bd13c62fe87c675f823a93a5d05c690adae055d822d332f2f876d7af0c6600f3",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_age_retry": {
+          "count": 4,
+          "bytes": 117867,
+          "sha256": "3c8bdbde4be5ae20428450b008ca850e41d9da22eab3e9566353e4b4b0af9463",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_rename_light": {
+          "count": 2,
+          "bytes": 45635,
+          "sha256": "f8d3d21bedd047a5a1e67751314db702e6b3bc5e75bea8d3ef443c1769f09a68",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_rename_dark": {
+          "count": 2,
+          "bytes": 48055,
+          "sha256": "9eecbe88ac0795d2411b3fc2c8b57404ffd2bc4e29495c8d5bd0e8c1ddd958fd",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_rename_error": {
+          "count": 2,
+          "bytes": 56951,
+          "sha256": "7f25d1bdb4c8f54a0e5668c44345267fa4070cee29f5ae2a765c1ecd3f3eb022",
+          "width": 1080,
+          "height": 2400
+        },
+        "panel_optics_rename_closing": {
+          "count": 2,
+          "bytes": 45871,
+          "sha256": "d641adf19329c06100f46de6b13d50eba02b34ad2bd9eda6aee29b16d9498cb5",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_interval_invalid": {
+          "count": 4,
+          "bytes": 114569,
+          "sha256": "9f350be46bd601b828b4dd78baa577cc8825862f37d02c479a04ab336eb92a5e",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_interval_ime": {
+          "count": 4,
+          "bytes": 143110,
+          "sha256": "7114ee175796046a22fdd14f64ebc9c45ec47b72db316b12464377f2d5e700e7",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_interval_saved_reopened": {
+          "count": 3,
+          "bytes": 107362,
+          "sha256": "a009396b462873d3f99ddce32e4ea84206fee6b89f14682ecfb68a40d52abcfe",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_geo_url_ime": {
+          "count": 5,
+          "bytes": 159653,
+          "sha256": "67de3bbd1faa11b511d9d5ba050bc34d4a7e093620e633637f36b06313fc472e",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_geo_url_invalid": {
+          "count": 3,
+          "bytes": 110272,
+          "sha256": "ef1f45fa3f9d61e4154435f2aabf564a1f7bbef53cb0a9a32881c48623a2a308",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_geo_url_saved_reopened": {
+          "count": 3,
+          "bytes": 108709,
+          "sha256": "d4121da74e5527de16cd9ad6b1d6f4177ea1504a5546999ef377683bdf67088f",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_geo_url_reset_reopened": {
+          "count": 4,
+          "bytes": 117105,
+          "sha256": "a04d6bf819895667cbb22ad9c4dcb6012bcb2a4beba2a6fc8dcdaa7082901ba1",
+          "width": 1080,
+          "height": 2400
+        },
+        "resource_input_resources_returned": {
+          "count": 4,
+          "bytes": 119878,
+          "sha256": "ba0e9beeef117330b4a93f30324b7a221b5674b0aab5811b522e384a12b90d4b",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "artifactDirectory": "../../../acceptance-artifacts/glyph-resource-close-20261121/final"
+    },
+    "installedMotion": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "126cad0cc2d07bdc3a357ce292c33df5fc4300322e9fc5d6df625ebfd2835d71",
+        "bytes": 67534317
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "581518723bbe94f8db901250f739ec51b4c0312236a08885f9ef50048a61b584",
+        "bytes": 3263783
+      }
+    ],
+    "installedPerformance": {
+      "package": "com.lonnnnnng.flclash.performance",
+      "sha256": "45f0b497f3771f7fecfa2bde3717ee4ddc5193c3481a83ea15dabcd3ce51e922",
+      "bytes": 49604349
+    },
+    "installedFlutterReference": {
+      "package": "com.lonnnnnng.kclash.reference.flutter_resource_reference",
+      "sha256": "522915dd2ebd42a67f91fe0a608f49732e4f1e5e7e6341a97ed5cbd81cff9d20",
+      "bytes": 142784552
+    },
+    "naturalVideo": {
+      "reference-motion": [
+        {
+          "theme": "dark",
+          "sha256": "fafd414965a0d9b4537e15ea893014b27546118933f348c030e991e9ea7468b4",
+          "bytes": 4935181,
+          "scope": "InputDialog and UpdateGeoUrlFormDialog: open, focus, IME Back, dialog Back; independent Flutter host",
+          "originalFrameCount": 361,
+          "lastFramePtsSeconds": 14.295733,
+          "sampledReviewOnly": true
+        },
+        {
+          "theme": "light",
+          "sha256": "b7d20c893bfb91b125a22af863810a11f47aba10ff76baa6e811d4294cab9916",
+          "bytes": 5014797,
+          "scope": "InputDialog and UpdateGeoUrlFormDialog: open, focus, IME Back, dialog Back; independent Flutter host",
+          "originalFrameCount": 355,
+          "lastFramePtsSeconds": 9.153067,
+          "sampledReviewOnly": true
+        }
+      ],
+      "kotlin-motion-final": [
+        {
+          "theme": "dark",
+          "sha256": "c547695ee54b7ebff51afef931f321306024a9eb9515b4405af3f91f1f2012c3",
+          "bytes": 4668361,
+          "scope": "MainActivity Motion APK; period/default MMDB URL open, focus and Back; autoUpdate temporarily enabled and restored false; no edited values submitted; not R8 performance",
+          "frames": 272,
+          "lastFramePtsSeconds": 9.101456,
+          "limitation": "One dark MainActivity sequence; original PTS retained, selected frames reviewed, not all-frame equivalence or performance evidence",
+          "finalFrameShowsClosedGeo": true,
+          "originalFrameCount": 272,
+          "sampledReviewOnly": true
+        }
+      ]
+    }
+  },
+  "menuClose": {
+    "status": "PARTIAL",
+    "query": "tool/perfetto_menu_close_chain.sql",
+    "threadRootQuery": "tool/perfetto_window_work.sql",
+    "runs": [
+      {
+        "folder": "close-r8-1",
+        "traceSha256": "f57d58d30dcf3bd66600e5c78fc9e9559f12f8a62582ebc41c424441a411e3f8",
+        "roots": [
+          {
+            "ui": {
+              "root_id": "27524",
+              "stage": "ui-root",
+              "id": "27524",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "830",
+              "name": "Choreographer#doFrame 11736720",
+              "ts": "202900330956430",
+              "wall_ms": "16.972000",
+              "running_ms": "10.024000",
+              "runnable_ms": "1.150000",
+              "waiting_ms": "5.798000"
+            },
+            "token": "11736720",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "27524",
+                "stage": "onForgotten",
+                "id": "27598",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "830",
+                "name": "Compose:onForgotten",
+                "ts": "202900333148878",
+                "wall_ms": "11.490000",
+                "running_ms": "5.077000",
+                "runnable_ms": "0.774000",
+                "waiting_ms": "5.639000"
+              },
+              {
+                "root_id": "27524",
+                "stage": "app-binder",
+                "id": "27764",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "830",
+                "name": "binder transaction",
+                "ts": "202900338406846",
+                "wall_ms": "5.710000",
+                "running_ms": "0.058000",
+                "runnable_ms": "0.645000",
+                "waiting_ms": "5.007000"
+              },
+              {
+                "root_id": "27524",
+                "stage": "system-reply",
+                "id": "27765",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_19",
+                "tid": "8427",
+                "name": "binder reply",
+                "ts": "202900338451378",
+                "wall_ms": "5.633000",
+                "running_ms": "4.929000",
+                "runnable_ms": "0.133000",
+                "waiting_ms": "0.571000"
+              },
+              {
+                "root_id": "27524",
+                "stage": "system-work",
+                "id": "27766",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_19",
+                "tid": "8427",
+                "name": "removeInputChannel",
+                "ts": "202900338567315",
+                "wall_ms": "0.121000",
+                "running_ms": "0.121000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27524",
+                "stage": "nested-binder-reply",
+                "id": "27784",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_4",
+                "tid": "3029",
+                "name": "binder reply",
+                "ts": "202900339450805",
+                "wall_ms": "0.208000",
+                "running_ms": "0.208000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27524",
+                "stage": "system-work",
+                "id": "27787",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_19",
+                "tid": "8427",
+                "name": "performSurfacePlacement",
+                "ts": "202900340623096",
+                "wall_ms": "1.777000",
+                "running_ms": "1.777000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27524",
+                "stage": "system-work",
+                "id": "27805",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_19",
+                "tid": "8427",
+                "name": "wmUpdateFocus",
+                "ts": "202900342434242",
+                "wall_ms": "1.564000",
+                "running_ms": "1.199000",
+                "runnable_ms": "0.051000",
+                "waiting_ms": "0.314000"
+              },
+              {
+                "root_id": "27524",
+                "stage": "nested-binder-reply",
+                "id": "27812",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_4",
+                "tid": "3029",
+                "name": "binder reply",
+                "ts": "202900343058461",
+                "wall_ms": "0.133000",
+                "running_ms": "0.133000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27524",
+                "stage": "nested-binder-reply",
+                "id": "27814",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_4",
+                "tid": "3029",
+                "name": "binder reply",
+                "ts": "202900343551274",
+                "wall_ms": "0.123000",
+                "running_ms": "0.123000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "27915",
+                "token": "11736720",
+                "ts": "202900347348201",
+                "dur": "4608541",
+                "wall_ms": "4.609000",
+                "running_ms": "4.579000",
+                "runnable_ms": "0.030000",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          },
+          {
+            "ui": {
+              "root_id": "61632",
+              "stage": "ui-root",
+              "id": "61632",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "830",
+              "name": "Choreographer#doFrame 11739320",
+              "ts": "202904548623668",
+              "wall_ms": "17.008000",
+              "running_ms": "9.200000",
+              "runnable_ms": "1.595000",
+              "waiting_ms": "6.214000"
+            },
+            "token": "11739320",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "61632",
+                "stage": "onForgotten",
+                "id": "61712",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "830",
+                "name": "Compose:onForgotten",
+                "ts": "202904550677834",
+                "wall_ms": "11.425000",
+                "running_ms": "4.459000",
+                "runnable_ms": "0.945000",
+                "waiting_ms": "6.022000"
+              },
+              {
+                "root_id": "61632",
+                "stage": "app-binder",
+                "id": "61832",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "830",
+                "name": "binder transaction",
+                "ts": "202904555652939",
+                "wall_ms": "6.034000",
+                "running_ms": "0.061000",
+                "runnable_ms": "0.695000",
+                "waiting_ms": "5.278000"
+              },
+              {
+                "root_id": "61632",
+                "stage": "system-reply",
+                "id": "61834",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_1",
+                "tid": "1848",
+                "name": "binder reply",
+                "ts": "202904555702782",
+                "wall_ms": "5.944000",
+                "running_ms": "4.941000",
+                "runnable_ms": "0.419000",
+                "waiting_ms": "0.583000"
+              },
+              {
+                "root_id": "61632",
+                "stage": "system-work",
+                "id": "61839",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_1",
+                "tid": "1848",
+                "name": "removeInputChannel",
+                "ts": "202904555803512",
+                "wall_ms": "0.138000",
+                "running_ms": "0.138000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "61632",
+                "stage": "nested-binder-reply",
+                "id": "61879",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_5",
+                "tid": "3259",
+                "name": "binder reply",
+                "ts": "202904556773251",
+                "wall_ms": "0.176000",
+                "running_ms": "0.176000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "61632",
+                "stage": "system-work",
+                "id": "61890",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_1",
+                "tid": "1848",
+                "name": "performSurfacePlacement",
+                "ts": "202904557819709",
+                "wall_ms": "1.716000",
+                "running_ms": "1.716000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "61632",
+                "stage": "system-work",
+                "id": "61919",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_1",
+                "tid": "1848",
+                "name": "wmUpdateFocus",
+                "ts": "202904559574189",
+                "wall_ms": "1.974000",
+                "running_ms": "1.292000",
+                "runnable_ms": "0.319000",
+                "waiting_ms": "0.364000"
+              },
+              {
+                "root_id": "61632",
+                "stage": "nested-binder-reply",
+                "id": "61923",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_5",
+                "tid": "3259",
+                "name": "binder reply",
+                "ts": "202904560202887",
+                "wall_ms": "0.153000",
+                "running_ms": "0.153000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "61632",
+                "stage": "nested-binder-reply",
+                "id": "61928",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_5",
+                "tid": "3259",
+                "name": "binder reply",
+                "ts": "202904560976584",
+                "wall_ms": "0.148000",
+                "running_ms": "0.148000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "61983",
+                "token": "11739320",
+                "ts": "202904564747105",
+                "dur": "5081302",
+                "wall_ms": "5.081000",
+                "running_ms": "4.828000",
+                "runnable_ms": "0.253000",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          }
+        ],
+        "stats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "source": "trace",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "folder": "close-r8-2",
+        "traceSha256": "b7e151545acf45db72cc8ec9a27732e576aa66b511311e5a48d8c5686941932e",
+        "roots": [
+          {
+            "ui": {
+              "root_id": "29395",
+              "stage": "ui-root",
+              "id": "29395",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "1195",
+              "name": "Choreographer#doFrame 11743138",
+              "ts": "202921448967724",
+              "wall_ms": "17.811000",
+              "running_ms": "9.413000",
+              "runnable_ms": "1.712000",
+              "waiting_ms": "6.686000"
+            },
+            "token": "11743138",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "29395",
+                "stage": "onForgotten",
+                "id": "29473",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "1195",
+                "name": "Compose:onForgotten",
+                "ts": "202921450773088",
+                "wall_ms": "12.605000",
+                "running_ms": "4.554000",
+                "runnable_ms": "1.581000",
+                "waiting_ms": "6.470000"
+              },
+              {
+                "root_id": "29395",
+                "stage": "app-binder",
+                "id": "29613",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "1195",
+                "name": "binder transaction",
+                "ts": "202921456076318",
+                "wall_ms": "6.591000",
+                "running_ms": "0.055000",
+                "runnable_ms": "1.071000",
+                "waiting_ms": "5.465000"
+              },
+              {
+                "root_id": "29395",
+                "stage": "system-reply",
+                "id": "29615",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "binder reply",
+                "ts": "202921456107307",
+                "wall_ms": "6.412000",
+                "running_ms": "5.084000",
+                "runnable_ms": "0.711000",
+                "waiting_ms": "0.617000"
+              },
+              {
+                "root_id": "29395",
+                "stage": "system-work",
+                "id": "29620",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "removeInputChannel",
+                "ts": "202921456233401",
+                "wall_ms": "0.114000",
+                "running_ms": "0.114000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "29395",
+                "stage": "nested-binder-reply",
+                "id": "29645",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "202921457061422",
+                "wall_ms": "0.188000",
+                "running_ms": "0.188000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "29395",
+                "stage": "system-work",
+                "id": "29675",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "performSurfacePlacement",
+                "ts": "202921458676838",
+                "wall_ms": "1.885000",
+                "running_ms": "1.885000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "29395",
+                "stage": "system-work",
+                "id": "29691",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "wmUpdateFocus",
+                "ts": "202921460597568",
+                "wall_ms": "1.821000",
+                "running_ms": "1.340000",
+                "runnable_ms": "0.101000",
+                "waiting_ms": "0.380000"
+              },
+              {
+                "root_id": "29395",
+                "stage": "nested-binder-reply",
+                "id": "29695",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "202921461261474",
+                "wall_ms": "0.160000",
+                "running_ms": "0.160000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "29395",
+                "stage": "nested-binder-reply",
+                "id": "29700",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "202921461876265",
+                "wall_ms": "0.151000",
+                "running_ms": "0.151000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "29816",
+                "token": "11743138",
+                "ts": "202921466527359",
+                "dur": "4513594",
+                "wall_ms": "4.514000",
+                "running_ms": "4.477000",
+                "runnable_ms": "0.036000",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          },
+          {
+            "ui": {
+              "root_id": "59666",
+              "stage": "ui-root",
+              "id": "59666",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "1195",
+              "name": "Choreographer#doFrame 11745187",
+              "ts": "202925649565066",
+              "wall_ms": "17.051000",
+              "running_ms": "9.083000",
+              "runnable_ms": "1.215000",
+              "waiting_ms": "6.753000"
+            },
+            "token": "11745187",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "59666",
+                "stage": "onForgotten",
+                "id": "59742",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "1195",
+                "name": "Compose:onForgotten",
+                "ts": "202925651646003",
+                "wall_ms": "12.057000",
+                "running_ms": "4.271000",
+                "runnable_ms": "1.199000",
+                "waiting_ms": "6.586000"
+              },
+              {
+                "root_id": "59666",
+                "stage": "app-binder",
+                "id": "59857",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "1195",
+                "name": "binder transaction",
+                "ts": "202925656368503",
+                "wall_ms": "6.787000",
+                "running_ms": "0.061000",
+                "runnable_ms": "0.716000",
+                "waiting_ms": "6.010000"
+              },
+              {
+                "root_id": "59666",
+                "stage": "system-reply",
+                "id": "59859",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "binder reply",
+                "ts": "202925656413295",
+                "wall_ms": "6.702000",
+                "running_ms": "5.589000",
+                "runnable_ms": "0.496000",
+                "waiting_ms": "0.617000"
+              },
+              {
+                "root_id": "59666",
+                "stage": "system-work",
+                "id": "59860",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "removeInputChannel",
+                "ts": "202925656550274",
+                "wall_ms": "0.127000",
+                "running_ms": "0.127000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "59666",
+                "stage": "nested-binder-reply",
+                "id": "59896",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_5",
+                "tid": "3259",
+                "name": "binder reply",
+                "ts": "202925657394076",
+                "wall_ms": "0.186000",
+                "running_ms": "0.186000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "59666",
+                "stage": "system-work",
+                "id": "59918",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "performSurfacePlacement",
+                "ts": "202925658699233",
+                "wall_ms": "2.215000",
+                "running_ms": "2.042000",
+                "runnable_ms": "0.173000",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "59666",
+                "stage": "system-work",
+                "id": "59937",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_11",
+                "tid": "3644",
+                "name": "wmUpdateFocus",
+                "ts": "202925660949649",
+                "wall_ms": "2.071000",
+                "running_ms": "1.555000",
+                "runnable_ms": "0.127000",
+                "waiting_ms": "0.389000"
+              },
+              {
+                "root_id": "59666",
+                "stage": "nested-binder-reply",
+                "id": "59944",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_5",
+                "tid": "3259",
+                "name": "binder reply",
+                "ts": "202925661797618",
+                "wall_ms": "0.167000",
+                "running_ms": "0.167000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "59666",
+                "stage": "nested-binder-reply",
+                "id": "59946",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_5",
+                "tid": "3259",
+                "name": "binder reply",
+                "ts": "202925662453451",
+                "wall_ms": "0.145000",
+                "running_ms": "0.145000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "60058",
+                "token": "11745187",
+                "ts": "202925666404493",
+                "dur": "4782083",
+                "wall_ms": "4.782000",
+                "running_ms": "4.782000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          }
+        ],
+        "stats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "source": "trace",
+            "value": "25"
+          }
+        ]
+      }
+    ],
+    "observed": "Four close UI roots 16.972-17.811ms; app Binder 5.710-6.787ms linked by flow to system_server replies 5.633-6.702ms. Window layout/focus is visible CPU work; nested SurfaceFlinger replies only 0.123-0.208ms. Same-token RT 4.514-5.081ms; no waitForBufferRelease slice observed.",
+    "limitations": [
+      "24/25 discarded chunks in the two traces; not dropped-frame counts",
+      "Parent/child wall and Running durations overlap and must not be added",
+      "No stable performance improvement or complete GPU/fence attribution established",
+      "Ordinary R8 package only; no instrumentation, video or screenshots during timed trace intervals"
+    ]
+  },
+  "preservedFailures": [
+    {
+      "batch": "candidate1",
+      "passed": 5,
+      "total": 6,
+      "reason": "Animation test black background and default black foreground hid changed pixels; fixed test foreground, not a product drawing fault"
+    },
+    {
+      "batch": "candidate2",
+      "passed": 3,
+      "total": 3,
+      "scope": "Intermediate product before final cancel-font weight"
+    },
+    {
+      "batch": "flutter and flutter-final/verified",
+      "reason": "Reference Geo edit retained old URL tail or ignored Ctrl+A; excluded. flutter-verified2 requires exact edited string."
+    },
+    {
+      "batch": "kotlin-motion",
+      "reason": "AutoUpdate false meant period row absent; guard stopped before record. Final capture temporarily enabled isolated setting and restored false."
+    }
+  ],
+  "protection": {
+    "uninstalledAfterShaVerification": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "126cad0cc2d07bdc3a357ce292c33df5fc4300322e9fc5d6df625ebfd2835d71",
+        "bytes": 67534317
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "581518723bbe94f8db901250f739ec51b4c0312236a08885f9ef50048a61b584",
+        "bytes": 3263783
+      },
+      {
+        "package": "com.lonnnnnng.flclash.performance",
+        "sha256": "45f0b497f3771f7fecfa2bde3717ee4ddc5193c3481a83ea15dabcd3ce51e922",
+        "bytes": 49604349
+      },
+      {
+        "package": "com.lonnnnnng.kclash.reference.flutter_resource_reference",
+        "sha256": "522915dd2ebd42a67f91fe0a608f49732e4f1e5e7e6341a97ed5cbd81cff9d20",
+        "bytes": 142784552
+      }
+    ],
+    "packageSetEqual": true,
+    "settingsEqual": true,
+    "originalFlutterStableFieldsEqual": true,
+    "originalFlutterStableFields": {
+      "appId": "10185",
+      "codePath": "/data/app/~~BuOa5bjLF5F8uf0z6QC-hw==/com.follow.clash-dabovf9Ks3fSV7RqrrZY1g==",
+      "versionCode": "2026112401 minSdk=24 targetSdk=37",
+      "versionName": "0.9.3",
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-07 02:44:08"
+    },
+    "originalFlutterNotLaunchedOrModified": true,
+    "originalYamlFilesNotReadOrUploaded": true,
+    "coreVpnNotStarted": true,
+    "resourceSettingsRestoredByInstrumentedFinally": true,
+    "naturalAutoUpdateRestoredFalse": true
+  },
+  "remaining": [
+    "Other panels/subpages and complete full-page Flutter continuous comparison",
+    "Long URL line wrapping, small text/layout and label differences",
+    "Kotlin busy spinner retained; suspended Tween lifecycle differs from Flutter",
+    "Overlapping glass pane atlas and full-page sampling strategy",
+    "Menu first-open/local onForgotten/system window work optimization and complete GPU/fence causality"
+  ],
+  "release": {
+    "published": false,
+    "currentPublicVersion": "0.1.12"
+  },
+  "artifacts": "../../../acceptance-artifacts/glyph-resource-close-20261121/"
+}

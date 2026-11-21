@@ -1,6 +1,8 @@
 # KClash Kotlin 重写路线图
 
-> **KUI-VIS-071（2026-11-21）**：首页运行按钮circle→cookie9轮廓、450ms形变与64方向玻璃轮廓已验。POCO集成15/15、最终绘制定向3/3；六个进度栅格边界≤1像素、光学profile≤0.6像素。App motion JVM628/628，Motion/Test、Release-R8、Performance-R8和双Lint/DEX通过。按钮字形、全页Flutter运行对照及其他页面/转场仍未完成。菜单续验区分首次图形shader编译尖峰与持续首开CPU成本，普通R8首开65.651ms/Running54.942ms，关闭仍有17.871ms；没有稳定优化结论。玻璃默认关闭，三独立包已按SHA清理，原Flutter未操作，未发版。[说明](runtime-toggle-shape-alignment.md)、[视觉证据](acceptance/runtime-toggle-shape-poco-20261121.json)、[菜单证据](acceptance/menu-first-frame-perfetto-poco-20261121.json)
+> **KUI-VIS-072（2026-11-21）**：072播放／暂停与按需暂停字形已接固定Flutter路径，8个独立光栅通过；资源周期／Geo浮框补17sp按钮、500字重与输入留白，双主题8状态运行对照。POCO最终11/11、43图，App JVM628/628，Motion/Test、Release-R8、Performance-R8及双Lint/DEX通过。普通R8两轮4次关闭UI为16.972～17.811ms，应用Binder5.710～6.787ms沿flow关联system_server布局／焦点工作；同token RT4.514～5.081ms，trace discarded24／25，无稳定性能收益结论。四自有包按SHA清理，原版／设置保持，未发版。完整全页／其他面板、URL断行、连续转场及光学／菜单性能仍PARTIAL，玻璃默认关闭。[说明](runtime-glyph-resource-panel-alignment.md)、[证据](acceptance/runtime-glyph-resource-poco-20261121.json)
+
+> **KUI-VIS-071（2026-11-21）**：首页运行按钮circle→cookie9轮廓、450ms形变与64方向玻璃轮廓已验。POCO集成15/15、最终绘制定向3/3；六个进度栅格边界≤1像素、光学profile≤0.6像素。App motion JVM628/628，Motion/Test、Release-R8、Performance-R8和双Lint/DEX通过。071时按钮字形未完成，已由072补齐；全页Flutter运行对照及其他页面/转场仍未完成。菜单续验区分首次图形shader编译尖峰与持续首开CPU成本，普通R8首开65.651ms/Running54.942ms，关闭仍有17.871ms；没有稳定优化结论。玻璃默认关闭，三独立包已按SHA清理，原Flutter未操作，未发版。[说明](runtime-toggle-shape-alignment.md)、[视觉证据](acceptance/runtime-toggle-shape-poco-20261121.json)、[菜单证据](acceptance/menu-first-frame-perfetto-poco-20261121.json)
 
 > **0.1.12正式发布（2026-11-21）**：KClash 0.1.12/code1012 已发布为 GitHub Latest，标签`kclash-v0.1.12`固定`3c987106`。标签CI 44860733363 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,590,093字节，SHA`4946cf89…3a1ed2`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。本版包含055～070的工具、双语/主题、面板与交互改进；完整视觉/光学/菜单性能仍按下列范围推进。[发布证据](acceptance/release-0.1.12-20261121.json)、[更新说明](releases/kclash-v0.1.12.md)
 
@@ -32,7 +34,7 @@
 
 > **KUI-VIS-057（2026-11-20）：POCO单项圆角输入、列表胶囊工具栏与带行号快速编辑已验；补查找/撤销重做/字号/换行，返回只合并列表草稿。最终产品618项App motion JVM、motion/Test、未签名Release-R8、双Lint与DEX通过。集中final6为28/29，旧测试宿主切分区抢在Sheet关闭前导致1失败；修正测试等待后final7定向5/5，真实MainActivity 1/1（47.374秒），各批次独立保留。Flutter Rust宿主已可用，深浅6组限定范围对照；49秒录像1404原PTS帧、12点抽样，不称完整逐帧或性能改善。** [说明](list-editor-flutter-alignment.md)与[证据](acceptance/list-editor-parity-poco-20261120.json)
 
-> **当前范围（2026-11-21）**：语义预检与系统兼容按用户决定保留当前覆盖，停止扩项；工具四Tab、双语和主题已完成具名验收。069补工具资源输入浮框与真实返回链路，070补代理组健康检查项原行内编辑；完整视觉、其他面板排版和Flutter同态转场仍PARTIAL。下一步继续其他子页/面板及完整连续转场，再集中处理菜单首开/关闭、RenderThread/合成等待及完整玻璃采样模型。玻璃默认关闭。
+> **当前范围（2026-11-21）**：语义预检与系统兼容按用户决定保留当前覆盖，停止扩项；工具四Tab、双语和主题已完成具名验收。071运行按钮轮廓、072播放／暂停字形和资源浮框同值对照已补。下一步继续其他子页／面板、URL排版及完整连续转场，再处理菜单首开、本地组合释放、系统窗口交接及GPU／合成等待。完整视觉／光学／性能仍PARTIAL，玻璃默认关闭。
 
 > **KUI-VIS-056（2026-11-20）POCO本组已验**：域名嗅探整页标题/空态/添加面板/协议文案收敛，端口/域名/地址新增列表草稿、增删排序与快速编辑；修复列表和目标菜单保存中恢复丢回执。最终组件及相邻回归28/28、真实MainActivity自然流程1/1，92张PNG；49秒录像保留1364原PTS帧，两个转场窗口抽取39/42张独立留存（原PTS窗口77/82帧）。618项App motion JVM、motion/Test、未签名Release-R8与Lint/DEX通过。Flutter Rust快速编辑在隔离宿主未初始化；单项弹框/快速编辑/列表工具栏/精确像素等仍未完成，菜单性能归因仍待。原版Flutter、1.yaml与设置保持，自有三包/输入副本已清。[说明](sniffer-page-list-alignment.md)与[证据](acceptance/sniffer-full-parity-poco-20261120.json)
 
@@ -906,14 +908,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 071首页按钮轮廓已验：POCO集成15/15、最终绘制定向3/3，六个进度及64方向光学profile与固定Flutter独立路径对照通过；App motion JVM628/628，Motion/Test、Release-R8、Performance-R8及双Lint/DEX通过。两批不合计为18个独立用例，完整页面Flutter运行对照未完成。 |
+| 最新自动化记录 | 072播放／暂停／wifiOff的8个Flutter独立光栅、资源浮框同值双主题8状态完成；POCO最终同批11/11、43张PNG，App motion JVM628/628，Motion/Test、Release-R8、Performance-R8、双Lint与DEX3/3通过。自然录像保留Flutter361／355和Kotlin272原PTS帧；仅抽样核对，非完整全页逐帧等价。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | 071的POCO motion/test/performance三独立包按安装SHA核对后卸载，包清单及旋转/字号/night保持。原Flutter未启动/修改，安装路径/版本/更新时间保持；本组不使用1.yaml、不启动核心/VPN。 |
-| 正在推进 | 071按钮轮廓完成；播放/暂停字形和按需暂停符号仍有差异。继续其他未覆盖面板/子页排版、完整连续转场及全页同态对照；补重叠玻璃pane分层和全页采样策略。菜单普通R8首开65.651ms/Running54.942ms、复开59.377/46.139ms，关闭17.871ms；首次安装图形shader编译形成90ms RT尖峰，后轮RT最大14.438ms，但三trace discarded21～23，首开持续成本/关闭释放和GPU/合成等待未闭环、无稳定优化证据。整体视觉/性能PARTIAL，玻璃默认关闭。 |
+| 数据保护 | 072四个自有motion/test/performance/独立Flutter宿主包按安装SHA核对后卸载，包清单及旋转／字号／night保持，原Flutter安装身份保持且未操作。真实资源页设置finally恢复，自然录像临时启用的自动更新恢复false；不读原1.yaml／2.yaml，不启动核心／VPN。 |
+| 正在推进 | 071轮廓与072播放／暂停／wifiOff字形完成。继续其他未覆盖面板／子页、URL断行、全页Flutter运行对照及完整连续转场；玻璃重叠pane分层／全页采样仍待补。072普通R8四次关闭16.972～17.811ms，已沿Binder确认system_server窗口布局／焦点成本，同token RT4.514～5.081ms；两trace discarded24／25，应用本地释放／GPU／fence完整归因及稳定收益未闭环。首开持续成本仍待，整体视觉／性能PARTIAL，玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [071运行按钮轮廓](acceptance/runtime-toggle-shape-poco-20261121.json)、[菜单Perfetto续验](acceptance/menu-first-frame-perfetto-poco-20261121.json)、[0.1.12发布](acceptance/release-0.1.12-20261121.json)、[070代理组选项](acceptance/proxy-group-inline-options-poco-20261121.json)、[069资源输入](acceptance/resource-input-motion-poco-20261121.json)。071本机附件`../acceptance-artifacts/runtime-shape-menu-20261121/`，trace路径见本组证据。 |
+| 最新证据 | [072字形／资源浮框与关闭归因](acceptance/runtime-glyph-resource-poco-20261121.json)、[071轮廓](acceptance/runtime-toggle-shape-poco-20261121.json)、[前轮菜单](acceptance/menu-first-frame-perfetto-poco-20261121.json)、[0.1.12发布](acceptance/release-0.1.12-20261121.json)。072本机附件`../acceptance-artifacts/glyph-resource-close-20261121/`。 |
 
 ## 4. 目标架构图
 
@@ -1464,7 +1466,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 KClash 0.1.12/code1012 已发布为 GitHub Latest，标签`kclash-v0.1.12`固定`3c987106`。标签CI 44860733363 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,590,093字节，SHA`4946cf89…3a1ed2`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。见[发布证据](acceptance/release-0.1.12-20261121.json)。较早版本签名/CI/真机记录为独立历史证据。
 
-最新工程/视觉验收为KUI-VIS-071：运行按钮circle→cookie9轮廓及玻璃轮廓采样已完成，POCO集成15/15与最终绘制3/3分别通过，App motion JVM628/628、双Lint/R8/DEX通过。六点轮廓/64方向采样与固定Flutter独立路径参考一致于指定容差；按钮字形及完整页面运行对照仍待补，整体视觉/转场PARTIAL。菜单普通R8首开65.651ms、关闭17.871ms，首次图形编译尖峰已有定域证据，持续首开/关闭和GPU/合成等待仍未闭环、无稳定收益。见[071](acceptance/runtime-toggle-shape-poco-20261121.json)和[菜单续验](acceptance/menu-first-frame-perfetto-poco-20261121.json)。在线age、TUN补偿及实网证据仍独立保留，本组未重跑实网；既定保留/暂缓项不变。以下日期段落为历史，不覆盖第3节当前快照。
+最新工程／视觉验收为KUI-VIS-072：072播放／暂停与按需暂停字形已接固定Flutter路径，8个独立光栅通过；资源周期／Geo浮框补17sp按钮、500字重与输入留白，双主题8状态运行对照。POCO最终11/11、43图，App JVM628/628，Motion/Test、Release-R8、Performance-R8及双Lint/DEX通过。普通R8两轮4次关闭UI为16.972～17.811ms，应用Binder5.710～6.787ms沿flow关联system_server布局／焦点工作；同token RT4.514～5.081ms，trace discarded24／25，无稳定性能收益结论。四自有包按SHA清理，原版／设置保持，未发版。自然转场与同值对照仅覆盖资源浮框组件，完整页面、其他面板及光学仍PARTIAL。详见[072说明](runtime-glyph-resource-panel-alignment.md)与[验收](acceptance/runtime-glyph-resource-poco-20261121.json)。在线age、TUN补偿及实网证据独立保留，本组未重跑实网；既定保留／暂缓项不变。以下日期段落为历史，不覆盖第3节当前快照。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 
