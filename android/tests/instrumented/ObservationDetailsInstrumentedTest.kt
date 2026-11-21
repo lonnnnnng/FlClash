@@ -107,8 +107,9 @@ class ObservationDetailsInstrumentedTest {
     }
 
     @Test fun connectionDetailsReturnToTheSameNonEmptyListPosition() {
+        var darkTheme by mutableStateOf(true)
         composeRule.setContent {
-            KClashTheme {
+            KClashTheme(darkTheme = darkTheme) {
                 ObservationPage(
                     RequestsUiState(),
                     DnsUiState(),
@@ -126,20 +127,33 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithTag("connections_row_50")
             .performTouchInput { click(androidx.compose.ui.geometry.Offset(width / 2f, height * .2f)) }
         composeRule.onNodeWithTag("connections_detail_title").assertIsDisplayed()
+        composeRule.onNodeWithTag("connection_detail_handle").performClick()
+        composeRule.waitForIdle()
         val detailLeft = composeRule.onNodeWithTag("connections_detail_content").fetchSemanticsNode().boundsInRoot.left
         val titleLeft = composeRule.onNodeWithTag("connections_detail_title").fetchSemanticsNode().boundsInRoot.left
         val expectedInset = 16f * androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
             .targetContext.resources.displayMetrics.density
         assertEquals(expectedInset, titleLeft - detailLeft, 2f)
-        if (androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("kclashCapturePng") == "true") {
-            val bitmap = composeRule.onNodeWithTag("connections_detail_content").captureToImage().asAndroidBitmap()
-            val png = ByteArrayOutputStream().also {
-                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
-            }.toByteArray()
-            bitmap.recycle()
-            recordVisualPng("connections-detail-observation-nonempty", png)
-        }
+        val expectedRowHeight = 56f * androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .targetContext.resources.displayMetrics.density
+        val creationRowHeight = composeRule.onNodeWithTag("connection_detail_创建时间")
+            .fetchSemanticsNode().boundsInRoot.height
+        assertEquals(expectedRowHeight, creationRowHeight, 2f)
+        captureDetailScreenshot("connections-detail-activity-dark")
+
+        composeRule.runOnIdle { darkTheme = false }
+        composeRule.waitForIdle()
+        captureDetailScreenshot("connections-detail-activity-light")
         composeRule.onNodeWithText("host50.example.test").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("connection_detail_chains").performScrollTo().assertIsDisplayed()
+        composeRule.onNode(
+            hasText("DIRECT") and hasAnyAncestor(hasTestTag("connection_detail_chains")),
+            useUnmergedTree = true,
+        ).assertIsDisplayed()
+        captureDetailScreenshot("connections-detail-activity-light-proxy")
+        composeRule.runOnIdle { darkTheme = true }
+        composeRule.waitForIdle()
+        captureDetailScreenshot("connections-detail-activity-dark-proxy")
 
         androidx.test.espresso.Espresso.pressBack()
         composeRule.waitUntil(5_000) {
@@ -150,6 +164,16 @@ class ObservationDetailsInstrumentedTest {
             composeRule.onNodeWithTag("connections_row_50").fetchSemanticsNode().boundsInRoot.top,
             1f,
         )
+    }
+
+    private fun captureDetailScreenshot(name: String) {
+        if (androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("kclashCapturePng") != "true") return
+        val bitmap = composeRule.onNodeWithTag("connections_detail_content").captureToImage().asAndroidBitmap()
+        val png = ByteArrayOutputStream().also {
+            check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+        }.toByteArray()
+        bitmap.recycle()
+        recordVisualPng(name, png)
     }
 
     @Test fun scrollingAndSearchSurviveTabAndSavedStateRestoration() {

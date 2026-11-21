@@ -1,0 +1,160 @@
+{
+  "id": "KUI-VIS-077",
+  "date": "2026-11-22",
+  "scope": "Activity connection detail typography, grouped surfaces, dividers, badges, and expanded scroll area",
+  "reference": {
+    "flutterSource": [
+      "lib/features/connection/tracker_info_item.dart",
+      "lib/widgets/record.dart",
+      "lib/ui/list_selected.dart",
+      "lib/ui/list_row_separator.dart",
+      "lib/ui/metrics.dart",
+      "lib/ui/surface.dart",
+      "lib/ui/chip.dart",
+      "lib/ui/typography.dart"
+    ],
+    "detailBodyHorizontalInsetDp": 16,
+    "labelStyle": "17sp/22sp regular, onSurface",
+    "valueStyle": "15sp/20sp regular, onSurfaceVariant",
+    "rowMinimumHeightDp": 56,
+    "rowVerticalPaddingDp": 10,
+    "dividerThicknessDp": "ceil(devicePixelRatio * 0.75) / devicePixelRatio",
+    "dividerLeadingInsetDp": 16,
+    "dividerTrailingInsetDp": 14,
+    "sectionHeaderStyle": "17sp/22sp semibold, onSurfaceVariant",
+    "proxyBadgeStyle": "11sp/13sp semibold, onSurfaceVariant; horizontal 4dp, vertical 2dp"
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "physicalSize": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "darkModeAtStart": true
+  },
+  "implementation": {
+    "scope": "Activity-page connection details only; dashboard connection details keep the previous compact layout",
+    "activityPageDetailStyle": {
+      "groupedSurface": true,
+      "minimumRowHeightDp": 56,
+      "horizontalRowPaddingDp": 16,
+      "verticalRowPaddingDp": 10,
+      "sectionHeadingTypography": "Material titleMedium mapped to 17sp/22sp semibold",
+      "labelTypography": "Material bodyLarge mapped to 17sp/22sp regular",
+      "valueTypography": "Material bodyMedium mapped to 15sp/20sp regular",
+      "proxyBadgeTypography": "Material labelSmall mapped to 11sp/13sp semibold",
+      "badgeHorizontalPaddingDp": 4,
+      "badgeVerticalPaddingDp": 2,
+      "dividerThicknessDp": 0.75,
+      "sectionSpacingDp": 8
+    },
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "android/tests/instrumented/ObservationDetailsInstrumentedTest.kt"
+    ]
+  },
+  "buildValidation": {
+    "jvmTests": {
+      "tests": 631,
+      "suites": 83,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "assembleDebug": "passed",
+    "assembleReleaseR8": "passed",
+    "debugLint": { "errors": 0, "warnings": 75, "hints": 15 },
+    "releaseLint": { "errors": 0, "warnings": 71, "hints": 14 },
+    "debugApk": {
+      "bytes": 81097739,
+      "sha256": "451860b113f7150a4e2d5724e68853a902b0d8a01b2e1a0cb15c5939c333e9a9"
+    },
+    "unsignedReleaseApk": {
+      "bytes": 49601525,
+      "sha256": "4cbf25370ff82fe16e4f62528ce20fd0915c183474303cf82f4471871eb310e6"
+    }
+  },
+  "instrumentedTests": [
+    {
+      "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 22.488,
+      "focusedMethod": "connectionDetailsReturnToTheSameNonEmptyListPosition",
+      "focusedAssertions": [
+        "100-row fixture, row 50 opens detail and the expanded sheet keeps the list position after system Back within 1px",
+        "detail container title inset is 16dp within 2px",
+        "activity detail data row is 56dp minimum within 2px",
+        "dark/light theme switch retains readable full detail content",
+        "proxy chain remains visible after scrolling to the lower section"
+      ],
+      "resultXml": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/ObservationDetailsInstrumentedTest.xml",
+      "resultXmlSha256": "e068eb049fc2b9fce747d9c73c076886817d1dad247792dd0d9845563f4dc11e"
+    },
+    {
+      "class": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest",
+      "method": "connectionsRowOpensDetailsAndClosesWithoutChangingList",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 3.181,
+      "purpose": "dashboard detail keeps its previous layout and remains functional",
+      "resultXml": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/ConnectionsInstrumentedTest.xml",
+      "resultXmlSha256": "faf5583ba41557d4daa26026be6a000493afd4be9c58fb54b9407a5a5cadde91"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/connections-detail-activity-dark.png",
+      "dimensions": "1080x1970",
+      "bytes": 109015,
+      "sha256": "15e3f7d9395552cb3fdbdb20aef5dba5d24dccdeb97f5f8629ce80d8eac326ea",
+      "visualState": "expanded sheet, basic information and address sections, dark theme"
+    },
+    {
+      "path": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/connections-detail-activity-light.png",
+      "dimensions": "1080x1970",
+      "bytes": 110583,
+      "sha256": "0bbb57a4c3968f8c17a4457cd46a2aecc1c1ea8f42b2f6932f1ed72bca6ca3ba",
+      "visualState": "expanded sheet, basic information and address sections, light theme"
+    },
+    {
+      "path": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/connections-detail-activity-dark-proxy.png",
+      "dimensions": "1080x1970",
+      "bytes": 114336,
+      "sha256": "cf9025dd8c75112072c0346e24575af54293491ace42eeb4d269d6a31a1d9d42",
+      "visualState": "expanded sheet scrolled to proxy chain, dark theme"
+    },
+    {
+      "path": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/connections-detail-activity-light-proxy.png",
+      "dimensions": "1080x1970",
+      "bytes": 115621,
+      "sha256": "ca2e764c15b04f2ff6e593878c13a803ff84d095f5c0d31cf52a034202a33e46",
+      "visualState": "expanded sheet scrolled to proxy chain, light theme"
+    }
+  ],
+  "instrumentationLog": {
+    "path": "../../../acceptance-artifacts/observation-connection-detail-style-final-poco-20261122/instrumentation.log",
+    "sha256": "56810608ed321cf215ed0f8d52f0b0cdf4bd1d7d4b2a20383afc5e30ea5b37c6"
+  },
+  "deviceCleanup": {
+    "kclashDebugPackagesAbsent": true,
+    "com.follow.clashVersionName": "0.9.3",
+    "com.follow.clashFirstInstallTime": "2026-11-07 02:44:08",
+    "com.follow.clashLastUpdateTime": "2026-11-07 02:44:08",
+    "fontScale": 1.0,
+    "nightModeRestored": "yes",
+    "physicalSize": "1080x2400"
+  },
+  "limits": [
+    "Kotlin activity detail used a deterministic Compose fixture and did not pass through MainActivity, Hilt, the live core bridge, VPN, or a real connection source.",
+    "The comparison used Flutter source definitions and POCO Kotlin screenshots; no live Flutter runtime screenshot was captured in this batch.",
+    "Other subpages and complete continuous transitions remain open.",
+    "Menu discarded source, app-surface FrameTimeline coverage, GPU/fence wait attribution, and stable performance benefit remain unconfirmed."
+  ],
+  "glassDefault": false
+}

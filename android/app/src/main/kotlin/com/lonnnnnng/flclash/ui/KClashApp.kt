@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.lazy.LazyColumn
@@ -134,6 +135,7 @@ import com.lonnnnnng.flclash.service.RuntimeDiagnosticKind
 import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import com.lonnnnnng.flclash.common.AccessControlMode
 import com.lonnnnnng.flclash.common.AccessSortType
+import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
 import com.lonnnnnng.flclash.AlwaysOnVpnState
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
@@ -3519,6 +3521,7 @@ private fun ConnectionDetailSheet(
     onDismiss: () -> Unit,
     onCopyText: (String) -> Unit,
     contentHorizontalPadding: Dp = 24.dp,
+    activityPageStyle: Boolean = false,
 ) {
     val metadata = connection.metadata
     val contentScrollState = rememberScrollState()
@@ -3573,6 +3576,7 @@ private fun ConnectionDetailSheet(
                         tr("下载") to formatBytes(connection.download),
                     ),
                     onCopyText = copyValue,
+                    activityPageStyle = activityPageStyle,
                 )
                 ConnectionDetailSection(
                     title = tr("地址"),
@@ -3585,6 +3589,7 @@ private fun ConnectionDetailSheet(
                         tr("远端目标") to metadata.remoteDestination,
                     ),
                     onCopyText = copyValue,
+                    activityPageStyle = activityPageStyle,
                 )
                 ConnectionDetailSection(
                     title = tr("代理"),
@@ -3594,8 +3599,14 @@ private fun ConnectionDetailSheet(
                         tr("DNS 模式") to metadata.dnsMode,
                     ),
                     onCopyText = copyValue,
+                    activityPageStyle = activityPageStyle,
+                    trailingRow = if (activityPageStyle) {
+                        { ConnectionChainRow(connection.chains, activityPageStyle = true) }
+                    } else {
+                        null
+                    },
                 )
-                ConnectionChainRow(connection.chains)
+                if (!activityPageStyle) ConnectionChainRow(connection.chains)
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -3607,56 +3618,158 @@ private fun ConnectionDetailSection(
     title: String,
     rows: List<Pair<String, String>>,
     onCopyText: (String) -> Unit,
+    activityPageStyle: Boolean = false,
+    trailingRow: (@Composable () -> Unit)? = null,
 ) {
+    val visibleRows = rows.filter { it.second.isNotBlank() }
+    val rowCount = visibleRows.size + if (trailingRow == null) 0 else 1
+    if (activityPageStyle && rowCount == 0) return
+
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(title, style = MaterialTheme.typography.titleSmall)
-        rows.filter { it.second.isNotBlank() }.forEach { (label, value) ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("connection_detail_$label")
-                    .heightIn(min = 48.dp)
-                    .clickable { onCopyText(value) }
-                    .padding(vertical = 6.dp),
-                verticalAlignment = Alignment.Top,
+        // 作者 long：网络活动详情要与Flutter分组记录行一致，首页摘要详情继续保留其独立紧凑层级。
+        if (activityPageStyle) {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Surface(
+                shape = ConnectionSheetSuperellipseShape(24.dp),
+                color = if (LocalKClashDarkTheme.current) {
+                    MaterialTheme.colorScheme.surfaceContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceBright
+                },
             ) {
-                Text(
-                    label,
-                    modifier = Modifier.weight(0.42f),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    value,
-                    modifier = Modifier.weight(0.58f),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.End,
-                )
+                Column {
+                    visibleRows.forEachIndexed { index, (label, value) ->
+                        ConnectionDetailRow(label, value, onCopyText, activityPageStyle = true)
+                        if (index < rowCount - 1 || trailingRow != null) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = 16.dp, end = 14.dp),
+                                thickness = 0.75.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                            )
+                        }
+                    }
+                    trailingRow?.invoke()
+                }
             }
+        } else {
+            Text(title, style = MaterialTheme.typography.titleSmall)
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                visibleRows.forEach { (label, value) ->
+                    ConnectionDetailRow(label, value, onCopyText, activityPageStyle = false)
+                }
+                trailingRow?.invoke()
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConnectionDetailRow(
+    label: String,
+    value: String,
+    onCopyText: (String) -> Unit,
+    activityPageStyle: Boolean,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("connection_detail_$label")
+            .heightIn(min = if (activityPageStyle) 56.dp else 48.dp)
+            .clickable { onCopyText(value) }
+            .padding(
+                horizontal = if (activityPageStyle) 16.dp else 0.dp,
+                vertical = if (activityPageStyle) 10.dp else 6.dp,
+            ),
+        verticalAlignment = if (activityPageStyle) Alignment.CenterVertically else Alignment.Top,
+    ) {
+        if (activityPageStyle) {
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.width(20.dp))
+            Text(
+                value,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+            )
+        } else {
+            Text(
+                label,
+                modifier = Modifier.weight(0.42f),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                value,
+                modifier = Modifier.weight(0.58f),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.End,
+            )
         }
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ConnectionChainRow(chains: List<String>) {
+private fun ConnectionChainRow(chains: List<String>, activityPageStyle: Boolean = false) {
     val displayed = chains.asReversed()
     Row(
-        modifier = Modifier.fillMaxWidth().testTag("connection_detail_chains"),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("connection_detail_chains")
+            .then(if (activityPageStyle) Modifier.heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 10.dp) else Modifier),
+        verticalAlignment = if (activityPageStyle) Alignment.CenterVertically else Alignment.Top,
     ) {
-        Text(tr("代理链"), modifier = Modifier.weight(0.42f), style = MaterialTheme.typography.labelMedium)
+        if (activityPageStyle) {
+            Text(tr("代理链"), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
+            Spacer(Modifier.width(20.dp))
+        } else {
+            Text(tr("代理链"), modifier = Modifier.weight(0.42f), style = MaterialTheme.typography.labelMedium)
+        }
         FlowRow(
-            modifier = Modifier.weight(0.58f),
+            modifier = Modifier.weight(if (activityPageStyle) 1f else 0.58f),
             horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End),
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             displayed.forEachIndexed { index, chain ->
-                if (index > 0) Text("→")
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    shape = RoundedCornerShape(8.dp),
-                ) {
-                    Text(chain, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                if (index > 0 && activityPageStyle) {
+                    Text("→", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else if (index > 0) {
+                    Text("→")
+                }
+                if (activityPageStyle) {
+                    Surface(
+                        color = if (LocalKClashDarkTheme.current) {
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainer
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                    ) {
+                        Text(
+                            chain,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                } else {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        shape = RoundedCornerShape(8.dp),
+                    ) {
+                        Text(chain, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                    }
                 }
             }
         }
@@ -3748,6 +3861,7 @@ internal fun RequestsDialog(
             onDismiss = { selectedConnection = null },
             onCopyText = onCopyText,
             contentHorizontalPadding = if (activeConnections) 16.dp else 24.dp,
+            activityPageStyle = activeConnections,
         )
     }
 }
