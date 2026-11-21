@@ -1,6 +1,6 @@
 # KClash Kotlin 重写路线图
 
-> **0.1.11正式发布（2026-11-20）**：KClash 0.1.11/code1011 已发布为 GitHub Latest，标签`kclash-v0.1.11`固定`10697f3f`。标签CI 44754219878 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,584,177字节，SHA`b7fb8727…488c08da`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。 本版包含055～068的工具/双语/主题、输入面板与交互/材质改进；完整视觉/光学/菜单性能继续按下列剩余范围推进。[发布证据](acceptance/release-0.1.11-20261120.json)、[更新说明](releases/kclash-v0.1.11.md)
+> **0.1.12正式发布（2026-11-21）**：KClash 0.1.12/code1012 已发布为 GitHub Latest，标签`kclash-v0.1.12`固定`3c987106`。标签CI 44860733363 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,590,093字节，SHA`4946cf89…3a1ed2`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。本版包含055～070的工具、双语/主题、面板与交互改进；完整视觉/光学/菜单性能仍按下列范围推进。[发布证据](acceptance/release-0.1.12-20261121.json)、[更新说明](releases/kclash-v0.1.12.md)
 
 > **KUI-VIS-070（2026-11-21）**：代理组健康检查的URL、间隔、超时、最大失败次数、预期状态码和容差已改为原行内编辑；数字过滤/键盘、URI键盘、清空保留选项行、删除后重加默认值及父级单次提交均覆盖。POCO最终11/11、24张截图哈希/尺寸通过；motion JVM 628项零失败/错误/跳过，Service220/Core39/Common34为Gradle复用，Debug/motion构建和Lint通过。设备收尾核对未发现KClash motion/test包，原Flutter包保留且未操作；本组仅作固定Flutter源码参考，未做运行对照，完整视觉和转场仍PARTIAL。[说明](proxy-group-inline-options-alignment.md)、[证据](acceptance/proxy-group-inline-options-poco-20261121.json)
 
@@ -899,8 +899,8 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.11/code1011**，标签`kclash-v0.1.11`指向`10697f3f`；公开APK SHA`b7fb8727…488c08da`，沿用既有正式证书 |
-| 发布范围 | 0.1.11标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI/DEX检查通过；Latest及下载资产SHA/digest回验一致。055～068具名功能纳入本版，完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.11-20261120.json) |
+| 当前公开版本 | **0.1.12/code1012**，标签`kclash-v0.1.12`指向`3c987106`；公开APK SHA`4946cf89…3a1ed2`，沿用既有正式证书 |
+| 发布范围 | 0.1.12标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI/DEX检查通过；Latest及下载资产SHA/digest回验一致。055～070具名功能纳入本版，完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.12-20261121.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
@@ -911,7 +911,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 数据保护 | 069的POCO motion/test包已按当批哈希卸载，原Flutter未启动；070结束核对时POCO未安装KClash motion/test包，原Flutter包仍安装且本组未操作。069真实Geo设置回读原值、核心STOPPED，并核对原1.yaml SHA/大小/mtime；本组（070）未读取或使用1.yaml。 |
 | 正在推进 | 继续其他未覆盖输入面板及页面精确排版/字形/间距与完整连续转场；070仅作固定Flutter源码参考，未运行同态页面。之后补重叠玻璃捕获分层、运行按钮轮廓及采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放和RenderThread/合成等待。首开约75ms仍未证稳定改善，整体性能/视觉PARTIAL；玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [KUI-VIS-070代理组选项行内编辑](acceptance/proxy-group-inline-options-poco-20261121.json)、[KUI-VIS-069资源输入浮框](acceptance/resource-input-motion-poco-20261121.json)、[0.1.11发布](acceptance/release-0.1.11-20261120.json)、[068输入浮框/光学/菜单定域](acceptance/panels-live-optics-poco-20261120.json)、[菜单/IME窗口交接](acceptance/window-latency-poco-20261120.json)；070原始截图/日志在本机`../acceptance-artifacts/group-options-inline-poco-20261121/final/`。 |
+| 最新证据 | [0.1.12发布](acceptance/release-0.1.12-20261121.json)、[KUI-VIS-070代理组选项行内编辑](acceptance/proxy-group-inline-options-poco-20261121.json)、[KUI-VIS-069资源输入浮框](acceptance/resource-input-motion-poco-20261121.json)、[068输入浮框/光学/菜单定域](acceptance/panels-live-optics-poco-20261120.json)、[菜单/IME窗口交接](acceptance/window-latency-poco-20261120.json)；070原始截图/日志在本机`../acceptance-artifacts/group-options-inline-poco-20261121/final/`，发布制品证据在`../acceptance-artifacts/release-0.1.12-20261121/`。 |
 
 ## 4. 目标架构图
 
@@ -1460,7 +1460,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-KClash 0.1.11/code1011 已发布为 GitHub Latest，标签`kclash-v0.1.11`固定`10697f3f`。标签CI 44754219878 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,584,177字节，SHA`b7fb8727…488c08da`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。 见[发布证据](acceptance/release-0.1.11-20261120.json)。较早版本签名/CI/真机记录为独立历史证据。
+KClash 0.1.12/code1012 已发布为 GitHub Latest，标签`kclash-v0.1.12`固定`3c987106`。标签CI 44860733363 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,590,093字节，SHA`4946cf89…3a1ed2`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。见[发布证据](acceptance/release-0.1.12-20261121.json)。较早版本签名/CI/真机记录为独立历史证据。
 
 最新工程/视觉验收为KUI-VIS-070：代理组健康检查项原行内编辑，POCO同批11/11、24张截图哈希/尺寸通过；motion JVM 628项本批执行，其他模块测试为Gradle成功结果复用，Debug/motion构建与Lint通过。仅核对固定Flutter源码，未运行同态页面；完整视觉和页面转场仍PARTIAL。菜单首开约75ms尚未证明稳定改善，RenderThread/合成等待归因未闭环；玻璃仍默认关闭。功能验收在线age完整链路1/1、TUN补偿5/5与10笔实网仍按原证据独立保留；本组未重跑实网。其他条件边界见[功能清单](functional-closure.md)。首次联网TLS按用户决定归档。以下日期段落为历史，不覆盖第3节当前快照。
 

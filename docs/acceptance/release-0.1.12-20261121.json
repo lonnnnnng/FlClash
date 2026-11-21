@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-21",
+  "release": {
+    "tag": "kclash-v0.1.12",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.12",
+    "sourceCommit": "3c98710613d4378b9761d5beb581d93b49cbfa8f",
+    "workflowRunId": 44860733363,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44860733363",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-21T03:39:02Z",
+    "publishedAtAsiaShanghai": "2026-11-21T11:39:02+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.12-android-arm64-v8a.apk",
+        "size": 49590093,
+        "digest": "sha256:4946cf89c45ae32bf2c5a470a2ed70218f0e69034b217ec132d0ea283a5a1ed2",
+        "state": "uploaded",
+        "browserDownloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.12/KClash-0.1.12-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 102,
+        "digest": "sha256:36a5fe86d575c75615c69d74d079f48abfc2998efe595a09eccb5f8911df1862",
+        "state": "uploaded",
+        "browserDownloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.12/SHA256SUMS"
+      }
+    ]
+  },
+  "package": {
+    "versionName": "0.1.12",
+    "versionCode": 1012,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "signatureSchemeV2Verified": true,
+    "signerCount": 1,
+    "abis": ["arm64-v8a"],
+    "minSdk": 24,
+    "targetSdk": 37,
+    "debuggable": false,
+    "remoteDigestVerified": true,
+    "sha256SumsVerified": true,
+    "downloadedMlkitDexVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "jobs": [
+      {
+        "name": "Verify KClash Android arm64",
+        "conclusion": "success",
+        "duration": "16m 52s",
+        "checks": [
+          "Go core, controller and Geo recovery race tests",
+          "JVM tests",
+          "Debug and signed arm64 Release/R8 builds",
+          "Debug and Release Lint",
+          "Package/version/minSdk/ABI/debuggable checks",
+          "ML Kit DEX registrar checks",
+          "Release signing certificate check",
+          "Signed APK and SHA256SUMS artifact upload"
+        ]
+      },
+      {
+        "name": "Publish signed KClash release",
+        "conclusion": "success",
+        "duration": "14s"
+      }
+    ],
+    "nonBlockingWarnings": [
+      "GitHub Actions reported Node.js 20 and setup-java v4 deprecation notices; both jobs succeeded."
+    ]
+  },
+  "localPreflight": {
+    "result": "passed",
+    "gradleCommand": "./gradlew test :app:assembleDebug :app:assembleRelease --no-daemon -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.12 -PkclashVersionCode=1012",
+    "appJvmTests": {
+      "tests": 628,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "goRaceCommands": [
+      "go test -race ./...",
+      "go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http github.com/metacubex/mihomo/component/updater"
+    ],
+    "lint": {
+      "debugErrors": 0,
+      "debugWarnings": 75,
+      "debugHints": 15,
+      "releaseErrors": 0,
+      "releaseWarnings": 71,
+      "releaseHints": 14
+    },
+    "localUnsignedReleaseApk": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "bytes": 49583485,
+      "sha256": "68a2791dea37f3c717b05d2575eba62862a54ce7d6c843e422489f08b8828f64"
+    }
+  },
+  "featureAcceptance": [
+    "docs/acceptance/proxy-group-inline-options-poco-20261121.json",
+    "docs/acceptance/resource-input-motion-poco-20261121.json"
+  ],
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "reason": "Published artifact was verified by downloading it; no phone install was performed.",
+    "featureDevice": "POCO F2 Pro / API36"
+  },
+  "protection": {
+    "originalYamlRead": false,
+    "originalYamlUploaded": false,
+    "flutterOriginalModified": false,
+    "flutterReferenceUsedForThisRelease": false
+  },
+  "remaining": [
+    "Other Flutter page and panel layout differences and complete continuous transitions.",
+    "Complete glass optics and menu first-open/close RenderThread attribution."
+  ],
+  "rawEvidenceRoot": "../acceptance-artifacts/release-0.1.12-20261121",
+  "rawEvidence": {
+    "KClash-0.1.12-android-arm64-v8a.apk": {
+      "sha256": "4946cf89c45ae32bf2c5a470a2ed70218f0e69034b217ec132d0ea283a5a1ed2",
+      "bytes": 49590093
+    },
+    "SHA256SUMS": {
+      "sha256": "36a5fe86d575c75615c69d74d079f48abfc2998efe595a09eccb5f8911df1862",
+      "bytes": 102
+    },
+    "signature.txt": {
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798",
+      "bytes": 974
+    },
+    "badging.txt": {
+      "sha256": "77d85ec2503431a7e60b452f2824c9af47ac51ed871dc860e982ce60aab53b8c",
+      "bytes": 17595
+    },
+    "checksum-verification.txt": {
+      "sha256": "61ef00f4d0a663e5627c420a9d2665fa8990891d8d82f1c5fba808a499519e39",
+      "bytes": 40
+    },
+    "dex-check.json": {
+      "sha256": "0925b5111ba1a62e2847f6300ba95a1ec22715a1a1197e767bbc5f8e9f6fc308",
+      "bytes": 655
+    },
+    "tag-ci.log": {
+      "sha256": "51198e8b9e6b56e5a345a9eead49f88079f4aa1ca7c101e91d92e61d670372fc",
+      "bytes": 250646
+    }
+  }
+}

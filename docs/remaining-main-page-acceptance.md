@@ -1,10 +1,10 @@
 # 第9项剩余交互与恢复验收清单
 
-> **发布状态（2026-11-20）**：055～068具名改进已进入0.1.11正式版，签名CI及公开APK回验通过；本轮未安装手机。下方分组“未发版”为实施时记录，整体视觉/光学/性能仍PARTIAL。[发布证据](acceptance/release-0.1.11-20261120.json)
+> **发布状态（2026-11-21）**：055～070具名改进已进入0.1.12正式版，签名CI及公开APK回验通过；本轮未安装手机。下方分组反映各切片实施时的记录，整体视觉/光学/性能仍PARTIAL。[发布证据](acceptance/release-0.1.12-20261121.json)
 
-> **KUI-VIS-070（2026-11-21，尚未发版）**：代理组健康检查URL、间隔、超时、最大失败次数、预期状态码和容差改为原行内编辑；数字过滤、真实键盘、清空留行、删除重加和父级提交回读通过。POCO `ProxyGroupEditorInstrumentedTest` 最终11/11、24张图哈希/尺寸核验；motion JVM 628项零失败，其他模块由Gradle复用。只核对固定Flutter源码，未做Flutter运行态对照。[说明](proxy-group-inline-options-alignment.md)、[证据](acceptance/proxy-group-inline-options-poco-20261121.json)。完整页面视觉、其他子页连续转场和菜单慢帧仍未闭环。
+> **KUI-VIS-070（2026-11-21，已随0.1.12发布）**：代理组健康检查URL、间隔、超时、最大失败次数、预期状态码和容差改为原行内编辑；数字过滤、真实键盘、清空留行、删除重加和父级提交回读通过。POCO `ProxyGroupEditorInstrumentedTest` 最终11/11、24张图哈希/尺寸核验；motion JVM 628项零失败，其他模块由Gradle复用。只核对固定Flutter源码，未做Flutter运行态对照。[说明](proxy-group-inline-options-alignment.md)、[证据](acceptance/proxy-group-inline-options-poco-20261121.json)。完整页面视觉、其他子页连续转场和菜单慢帧仍未闭环。
 
-> **KUI-VIS-069（2026-11-21，尚未发版）**：工具→资源的更新周期和Geo URL浮框统一到已验Prism样式，数字/URI键盘、小时尾缀、范围/地址错误、恢复默认、IME保存与返回/重开已补。POCO真实MainActivity流程及双主题资源页回归同批2/2，16张截图哈希核验/目视通过；最终设置回读原值，核心STOPPED，验收包已按SHA卸载。[说明](resource-input-motion-alignment.md)、[证据](acceptance/resource-input-motion-poco-20261121.json)。没有做Flutter runtime同态比较，整体视觉与其他页连续转场仍PARTIAL。
+> **KUI-VIS-069（2026-11-21，已随0.1.12发布）**：工具→资源的更新周期和Geo URL浮框统一到已验Prism样式，数字/URI键盘、小时尾缀、范围/地址错误、恢复默认、IME保存与返回/重开已补。POCO真实MainActivity流程及双主题资源页回归同批2/2，16张截图哈希核验/目视通过；最终设置回读原值，核心STOPPED，验收包已按SHA卸载。[说明](resource-input-motion-alignment.md)、[证据](acceptance/resource-input-motion-poco-20261121.json)。没有做Flutter runtime同态比较，整体视觉与其他页连续转场仍PARTIAL。
 
 > **KUI-VIS-068（2026-11-20）**：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 四个自有包与USB副本已清，原Flutter/原1.yaml/设置保持，未发版。[说明](floating-input-live-optics-alignment.md)、[证据](acceptance/panels-live-optics-poco-20261120.json)
 
