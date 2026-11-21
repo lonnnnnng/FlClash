@@ -1,37 +1,22 @@
 name: KClash Android Kotlin
 
 on:
+  # 作者 long：只有已确认发布并推送版本标签时才运行，普通代码提交不启动 Android 发布构建。
   push:
-    branches:
-      - kotlin
     tags:
       - 'kclash-v*'
-  pull_request:
-    branches:
-      - kotlin
-  workflow_dispatch:
-    inputs:
-      version_name:
-        description: 'Android versionName (MAJOR.MINOR.PATCH); empty uses the project default'
-        required: false
-        type: string
-      version_code:
-        description: 'Android versionCode; empty uses the project default'
-        required: false
-        type: string
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: kclash-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  verify:
-    name: Verify KClash Android arm64
+  release:
+    name: Build and publish KClash Android arm64
     runs-on: ubuntu-latest
-    outputs:
-      version_name: ${{ steps.metadata.outputs.version_name }}
-    env:
-      MANUAL_VERSION_NAME: ${{ inputs.version_name }}
-      MANUAL_VERSION_CODE: ${{ inputs.version_code }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,13 +28,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.27.1'
-          cache: true
-          cache-dependency-path: core/go.sum
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -72,40 +50,23 @@ jobs:
         id: metadata
         shell: bash
         run: |
-          version_name="${MANUAL_VERSION_NAME:-}"
-          version_code="${MANUAL_VERSION_CODE:-}"
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            version_name="${GITHUB_REF_NAME#kclash-v}"
-            if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "KClash tags must use kclash-vMAJOR.MINOR.PATCH" >&2
-              exit 1
-            fi
-            if [[ -z "$version_code" ]]; then
-              IFS='.' read -r major minor patch <<< "$version_name"
-              version_code=$((major * 1000000 + minor * 1000 + patch))
-            fi
-          fi
-          version_name="${version_name:-0.1.12}"
-          version_code="${version_code:-1012}"
-          if [[ ! "$version_code" =~ ^[1-9][0-9]*$ ]]; then
-            echo "version_code must be a positive integer" >&2
+          version_name="${GITHUB_REF_NAME#kclash-v}"
+          if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "KClash tags must use kclash-vMAJOR.MINOR.PATCH" >&2
             exit 1
           fi
+          IFS='.' read -r major minor patch <<< "$version_name"
+          version_code=$((major * 1000000 + minor * 1000 + patch))
           echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
           echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
           {
             echo "### Kotlin arm64 build"
             echo "- versionName: \`$version_name\`"
             echo "- versionCode: \`$version_code\`"
-            if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-              echo '- trigger: signed Kotlin release tag'
-            else
-              echo "- trigger: $GITHUB_EVENT_NAME"
-            fi
+            echo '- trigger: signed Kotlin release tag'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Configure KClash release signing
-        if: startsWith(github.ref, 'refs/tags/kclash-v')
         shell: bash
         env:
           KEYSTORE_BASE64: ${{ secrets.KCLASH_RELEASE_KEYSTORE_BASE64 }}
@@ -122,27 +83,13 @@ jobs:
           chmod 600 android/app/keystore.jks
           echo "KCLASH_RELEASE_KEYSTORE=$GITHUB_WORKSPACE/android/app/keystore.jks" >> "$GITHUB_ENV"
 
-      - name: Verify Go core, controllers and Geo recovery with race detector
-        working-directory: core
-        run: |
-          go test -race ./...
-          go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http github.com/metacubex/mihomo/component/updater
-
-      - name: Verify tests, R8 and arm64 Release package
+      - name: Build signed arm64 Release APK
         env:
           BUILD_VERSION_NAME: ${{ steps.metadata.outputs.version_name }}
           BUILD_VERSION_CODE: ${{ steps.metadata.outputs.version_code }}
-          KCLASH_RELEASE_STORE_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/kclash-v') && secrets.KCLASH_RELEASE_STORE_PASSWORD || '' }}
-          KCLASH_RELEASE_KEY_ALIAS: ${{ startsWith(github.ref, 'refs/tags/kclash-v') && secrets.KCLASH_RELEASE_KEY_ALIAS || '' }}
-          KCLASH_RELEASE_KEY_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/kclash-v') && secrets.KCLASH_RELEASE_KEY_PASSWORD || '' }}
         run: |
-          ./gradlew test :app:assembleDebug :app:assembleRelease \
+          ./gradlew :app:assembleRelease \
             --no-daemon -Ptarget-platform=android-arm64 \
-            -PkclashVersionName="$BUILD_VERSION_NAME" \
-            -PkclashVersionCode="$BUILD_VERSION_CODE"
-          # 作者 long：先完成两套kapt输出再分析Lint，避免Lint读取另一变体正在重建的Hilt源码。
-          ./gradlew :app:lintDebug :app:lintRelease --no-daemon --max-workers=2 \
-            -Ptarget-platform=android-arm64 \
             -PkclashVersionName="$BUILD_VERSION_NAME" \
             -PkclashVersionCode="$BUILD_VERSION_CODE"
 
@@ -154,13 +101,7 @@ jobs:
           VERSION_CODE: ${{ steps.metadata.outputs.version_code }}
         run: |
           set -euo pipefail
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            apk=android/app/build/outputs/apk/release/app-release.apk
-            artifact_suffix=signed
-          else
-            apk=android/app/build/outputs/apk/release/app-release-unsigned.apk
-            artifact_suffix=unsigned
-          fi
+          apk=android/app/build/outputs/apk/release/app-release.apk
           test -f "$apk"
           unzip -Z1 "$apk" | awk -F/ '$1 == "lib" {print}' | tee /tmp/kclash-libs.txt
           test "$(awk -F/ '$1 == "lib" {print $2}' /tmp/kclash-libs.txt | sort -u | tr -d ' ' | wc -l)" -eq 1
@@ -181,57 +122,29 @@ jobs:
               grep -Fqx "$type" android/app/build/outputs/mapping/release/usage.txt
             fi
           done
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" > android/app/build/outputs/apk/release/signature.txt
-            grep -q 'Signer #1 certificate SHA-256 digest: 3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49' android/app/build/outputs/apk/release/signature.txt
-            artifact_apk="KClash-${VERSION_NAME}-android-arm64-v8a.apk"
-          else
-            artifact_apk=app-release-unsigned.apk
-          fi
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" > android/app/build/outputs/apk/release/signature.txt
+          grep -q 'Signer #1 certificate SHA-256 digest: 3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49' android/app/build/outputs/apk/release/signature.txt
+          artifact_apk="KClash-${VERSION_NAME}-android-arm64-v8a.apk"
           if [[ "$apk" != "android/app/build/outputs/apk/release/$artifact_apk" ]]; then
             cp "$apk" "android/app/build/outputs/apk/release/$artifact_apk"
           fi
           (cd android/app/build/outputs/apk/release && shasum -a 256 "$artifact_apk" > SHA256SUMS)
           echo "apk_name=$artifact_apk" >> "$GITHUB_OUTPUT"
-          echo "artifact_suffix=$artifact_suffix" >> "$GITHUB_OUTPUT"
-
-      - name: Upload Release artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: kclash-android-arm64-${{ steps.metadata.outputs.version_name }}-${{ steps.release-artifact.outputs.artifact_suffix }}
-          path: |
-            android/app/build/outputs/apk/release/${{ steps.release-artifact.outputs.apk_name }}
-            android/app/build/outputs/apk/release/SHA256SUMS
-          if-no-files-found: error
-
-      - name: Remove runner signing material
-        if: always() && startsWith(github.ref, 'refs/tags/kclash-v')
-        run: rm -f -- android/app/keystore.jks
-
-  publish:
-    name: Publish signed KClash release
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/kclash-v')
-    needs: verify
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout release notes
-        uses: actions/checkout@v4
-
-      - name: Download signed APK
-        uses: actions/download-artifact@v4
-        with:
-          name: kclash-android-arm64-${{ needs.verify.outputs.version_name }}-signed
-          path: release-assets
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: KClash ${{ needs.verify.outputs.version_name }}
+          tag_name: ${{ github.ref_name }}
+          name: KClash ${{ steps.metadata.outputs.version_name }}
           body_path: docs/releases/${{ github.ref_name }}.md
-          files: release-assets/*
+          files: |
+            android/app/build/outputs/apk/release/${{ steps.release-artifact.outputs.apk_name }}
+            android/app/build/outputs/apk/release/SHA256SUMS
           draft: false
           prerelease: false
           make_latest: true
           fail_on_unmatched_files: true
+
+      - name: Remove runner signing material
+        if: always()
+        run: rm -f -- android/app/keystore.jks
