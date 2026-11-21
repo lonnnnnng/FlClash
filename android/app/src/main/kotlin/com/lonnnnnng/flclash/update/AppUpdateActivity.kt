@@ -66,7 +66,10 @@ internal fun UpdatePanel(state: UpdateState, currentVersion: String, browserErro
                         UpdatePhase.CHECKING -> tr("正在检查更新")
                         UpdatePhase.LATEST -> tr("已是最新正式版本")
                         UpdatePhase.AVAILABLE -> tr("发现新版本 {0}", state.release?.version.orEmpty())
-                        UpdatePhase.FAILED -> tr("检查更新失败，请检查网络后重试")
+                        UpdatePhase.FAILED -> buildString {
+                            append(tr("检查更新失败，请检查网络后重试"))
+                            state.failure?.let { append(" [${it.diagnosticCode}]") }
+                        }
                     }, modifier = Modifier.testTag("app_update_status"))
                     if (state.phase == UpdatePhase.CHECKING) LinearProgressIndicator(Modifier.fillMaxWidth())
                     browserError?.let { Text(com.lonnnnnng.flclash.ui.tr(it), color = MaterialTheme.colorScheme.error) }

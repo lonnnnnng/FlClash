@@ -1,0 +1,100 @@
+{
+  "id": "KUI-VIS-076",
+  "date": "2026-11-22",
+  "scope": "Non-empty activity connection list, detail, and return continuity",
+  "reference": {
+    "flutterSource": "lib/features/connection/tracker_info_item.dart",
+    "detailBodyHorizontalInsetDp": 16
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "physicalSize": "1080x2400",
+    "orientation": "portrait",
+    "nightMode": "yes",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "activityConnectionDetailInsetDp": 16,
+    "homeConnectionDetailDefaultInsetDp": 24,
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "android/tests/instrumented/ObservationDetailsInstrumentedTest.kt"
+    ]
+  },
+  "buildValidation": {
+    "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease -Ptarget-platform=android-arm64 --no-daemon",
+    "appJvmTests": {
+      "tests": 631,
+      "suites": 83,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "assembleDebug": "passed",
+    "assembleReleaseR8": "passed",
+    "lint": {
+      "debug": { "errors": 0, "warnings": 75, "hints": 15 },
+      "release": { "errors": 0, "warnings": 71, "hints": 14 }
+    }
+  },
+  "instrumentedTests": [
+    {
+      "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 21.500,
+      "method": "connectionDetailsReturnToTheSameNonEmptyListPosition",
+      "fixtureRows": 100,
+      "selectedRowIndex": 50,
+      "detailFieldScrolledIntoView": "host50.example.test",
+      "returnAction": "system Back",
+      "listRowTopDeltaPxMaximum": 1,
+      "measuredInsetAssertion": "16dp within 2 physical pixels",
+      "resultXml": "../../../acceptance-artifacts/observation-connection-detail-poco-20261122/ObservationDetailsInstrumentedTest.xml",
+      "resultXmlBytes": 1428,
+      "resultXmlSha256": "635a093b086c2187ad0e56785d8b200896a89746e57ccab4faca26d62fd3b9d0"
+    },
+    {
+      "class": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest",
+      "method": "connectionsRowOpensDetailsAndClosesWithoutChangingList",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 3.177,
+      "purpose": "home connection-card detail path remains functional",
+      "resultXml": "../../../acceptance-artifacts/observation-connection-detail-poco-20261122/ConnectionsInstrumentedTest.xml",
+      "resultXmlBytes": 622,
+      "resultXmlSha256": "ac9ff04691834f2ee6eda596216e8dcf2ff29df512c5a16b9356a8300abba036"
+    }
+  ],
+  "visualEvidence": {
+    "path": "../../../acceptance-artifacts/observation-connection-detail-poco-20261122/connections-detail-observation-nonempty.png",
+    "bytes": 57679,
+    "sha256": "a26bd39aad29fb298f825349875ab06e112d0856f016f46d4d8c55bedb698d78",
+    "dimensions": "1080x1187",
+    "capture": "Optional instrumentation PNG channel; fixed fixture detail content crop",
+    "review": "Dark detail view shows title, close control, Basic Info rows, and the next section heading without clipping.",
+    "instrumentationLog": "../../../acceptance-artifacts/observation-connection-detail-poco-20261122/instrumentation.log",
+    "instrumentationLogBytes": 78541,
+    "instrumentationLogSha256": "2a59f86f5cb9867041619618569cdbddd74d126f84112eb5cc71c619f753254c"
+  },
+  "deviceCleanup": {
+    "debugPackagesAbsent": true,
+    "com.follow.clashVersionName": "0.9.3",
+    "com.follow.clashFirstInstallTime": "2026-11-07 02:44:08",
+    "com.follow.clashLastUpdateTime": "2026-11-07 02:44:08",
+    "coreOrVpnStarted": false
+  },
+  "limits": [
+    "The non-empty activity list uses a deterministic ObservationPage Compose fixture; it does not pass through MainActivity, Hilt, the live core bridge, VPN, or a real connection source.",
+    "Flutter alignment was checked against source layout values; this batch did not capture a live Flutter comparison screenshot.",
+    "Other subpages, their continuous transitions, and a full Flutter runtime comparison remain open.",
+    "No new menu Perfetto trace was collected. The previous trace still lacks enough app-surface frames and fence wait events for thread/GPU attribution or a stable performance claim."
+  ],
+  "glassDefault": false
+}

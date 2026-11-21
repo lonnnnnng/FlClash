@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -56,6 +57,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +69,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme
+
+internal val ObservationDockedSearchInset = 76.dp
 
 /** 作者 long：Requests、DNS 与 Logs 共用 Flutter 页面级搜索和关键词栏，页面动作由对应列表提供。 */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,16 +94,19 @@ internal fun ObservationListPage(
     onClearHistory: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val dockedSearch = embedded
     val toolbarSurfaceColor = if (LocalKClashDarkTheme.current) {
         MaterialTheme.colorScheme.surfaceContainer
     } else {
         MaterialTheme.colorScheme.surfaceBright
     }
     val searchFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     var requestSearchFocus by remember { androidx.compose.runtime.mutableStateOf(false) }
 
     val page: @Composable () -> Unit = {
-        BackHandler(enabled = searchExpanded) {
+        BackHandler(enabled = searchExpanded && !dockedSearch) {
             onSearchQueryChange("")
             onSearchExpandedChange(false)
         }
@@ -109,7 +118,7 @@ internal fun ObservationListPage(
                 Column(Modifier.fillMaxSize()) {
                     TopAppBar(
                         navigationIcon = {
-                            if (!searchExpanded) {
+                            if (dockedSearch || !searchExpanded) {
                                 IconButton(
                                     onClick = onDismiss,
                                     modifier = Modifier
@@ -121,7 +130,9 @@ internal fun ObservationListPage(
                             }
                         },
                         title = {
-                            AnimatedContent(searchExpanded, transitionSpec = {
+                            if (dockedSearch) {
+                                Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            } else AnimatedContent(searchExpanded, transitionSpec = {
                                 fadeIn(tween(180)) togetherWith fadeOut(tween(80))
                             }, label = "observationSearchTitle") { searching ->
                             if (searching) {
@@ -200,7 +211,7 @@ internal fun ObservationListPage(
                             }
                         },
                         actions = {
-                            if (searchExpanded) {
+                            if (!dockedSearch && searchExpanded) {
                                 // 作者 long：搜索占用整条导航栏时，保留 Flutter 对应的独立取消入口，避免 DNS 清理动作挤占输入区域。
                                 IconButton(
                                     onClick = {
@@ -214,7 +225,7 @@ internal fun ObservationListPage(
                                 ) {
                                     Icon(Icons.Outlined.Close, contentDescription = null)
                                 }
-                            } else {
+                            } else if (!dockedSearch) {
                                 IconButton(
                                     onClick = { requestSearchFocus = true; onSearchExpandedChange(true) },
                                     modifier = Modifier
@@ -224,6 +235,8 @@ internal fun ObservationListPage(
                                 ) {
                                     Icon(Icons.Outlined.Search, contentDescription = null)
                                 }
+                            }
+                            if (dockedSearch || !searchExpanded) {
                                 if (onClear != null) {
                                     IconButton(
                                         onClick = onClear,
@@ -319,10 +332,98 @@ internal fun ObservationListPage(
                     }
                     content()
                 }
+                if (dockedSearch) {
+                    Row(
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                            .padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 12.dp + LocalMainDockInset.current,
+                            )
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Surface(
+                            modifier = Modifier.weight(1f).height(48.dp)
+                                .testTag("observation_search_dock"),
+                            shape = CircleShape,
+                            color = toolbarSurfaceColor,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize().padding(
+                                    start = 12.dp,
+                                    end = if (searchQuery.isEmpty()) 12.dp else 0.dp,
+                                ),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(9.dp))
+                                val searchStyle = MaterialTheme.typography.bodyLarge.copy(
+                                    fontSize = 16.sp,
+                                    letterSpacing = 0.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                BasicTextField(
+                                    value = searchQuery,
+                                    onValueChange = onSearchQueryChange,
+                                    modifier = Modifier.weight(1f).fillMaxHeight()
+                                        .focusRequester(searchFocusRequester)
+                                        .onFocusChanged { onSearchExpandedChange(it.isFocused) }
+                                        .testTag("observation_search_field"),
+                                    singleLine = true,
+                                    textStyle = searchStyle,
+                                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                    keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
+                                    decorationBox = { innerTextField ->
+                                        Box(contentAlignment = Alignment.CenterStart) {
+                                            if (searchQuery.isEmpty()) {
+                                                Text(
+                                                    searchLabel,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    style = searchStyle.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                                                )
+                                            }
+                                            innerTextField()
+                                        }
+                                    },
+                                )
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(
+                                        onClick = { onSearchQueryChange("") },
+                                        modifier = Modifier.size(44.dp).testTag("observation_search_clear"),
+                                    ) { Icon(Icons.Outlined.Close, contentDescription = null) }
+                                }
+                            }
+                        }
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = searchExpanded || searchQuery.isNotEmpty(),
+                            enter = fadeIn(tween(120)),
+                            exit = fadeOut(tween(90)),
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    onSearchQueryChange("")
+                                    focusManager.clearFocus()
+                                    keyboardController?.hide()
+                                    onSearchExpandedChange(false)
+                                },
+                                modifier = Modifier.size(48.dp).background(toolbarSurfaceColor, CircleShape)
+                                    .testTag("observation_search_cancel"),
+                            ) { Icon(Icons.Outlined.Close, contentDescription = null) }
+                        }
+                    }
+                }
                 // 作者 long：全屏 Dialog 会盖住主页面 Scaffold 的 Snackbar，因此列表结果提示必须挂在当前窗口。
                 Box(
                     Modifier.align(Alignment.BottomCenter)
-                        .navigationBarsPadding()
+                        .then(
+                            if (dockedSearch) Modifier.padding(bottom = ObservationDockedSearchInset + LocalMainDockInset.current)
+                            else Modifier.navigationBarsPadding(),
+                        )
                         .padding(horizontal = 16.dp, vertical = 16.dp),
                 ) {
                     pageOverlay()

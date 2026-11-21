@@ -206,7 +206,7 @@ class MainViewModel @Inject constructor(
                         mutableConnections.value = ConnectionsUiState()
                         mutableRequests.value = RequestsUiState()
                         mutableDns.value = DnsUiState()
-                        mutableLogs.value = LogsUiState()
+                        mutableLogs.update { it.clear() }
                         mutableProbe.value = ProbeUiState()
                         mutableDiagnostic.value = DiagnosticSessionUiState()
                     }
@@ -294,7 +294,7 @@ class MainViewModel @Inject constructor(
     suspend fun clearDnsCache(): Result<Unit> = runtimeManager.clearDnsCache()
 
     fun clearLogs() {
-        mutableLogs.value = LogsUiState()
+        mutableLogs.update { it.clear() }
     }
 
     fun probe(url: String) {
@@ -567,14 +567,33 @@ private fun observationSearchTerms(query: String): List<String> =
 
 data class LogsUiState(
     val entries: List<CoreEvent.Log> = emptyList(),
+    val entryIds: List<Long> = entries.indices.map(Int::toLong),
+    private val nextEntryId: Long = (entryIds.maxOrNull() ?: -1L) + 1L,
 ) {
+    init {
+        require(entryIds.size == entries.size)
+    }
+
     /**
      * 作者 long：日志需要保留故障上下文但不能无限增长；清空由用户显式触发，便于围绕一次问题重新收集证据。
      */
     internal fun apply(event: CoreEvent): LogsUiState = when (event) {
-        is CoreEvent.Log -> copy(entries = (entries + event).takeLast(MAX_LOG_HISTORY))
+        is CoreEvent.Log -> {
+            // 作者 long：核心时间戳只有毫秒精度，列表身份使用本进程接纳序号，重复事件也必须各自可见。
+            val updatedEntries = entries + event
+            val updatedIds = entryIds + nextEntryId
+            val overflow = (updatedEntries.size - MAX_LOG_HISTORY).coerceAtLeast(0)
+            copy(
+                entries = updatedEntries.drop(overflow),
+                entryIds = updatedIds.drop(overflow),
+                nextEntryId = nextEntryId + 1L,
+            )
+        }
         else -> this
     }
+
+    // 作者 long：日志清除只移除可见记录，不复用仍可能被LazyColumn记住的旧key。
+    internal fun clear(): LogsUiState = copy(entries = emptyList(), entryIds = emptyList())
 }
 
 internal fun filterLogs(
@@ -582,13 +601,14 @@ internal fun filterLogs(
     query: String,
     level: String?,
 ): List<CoreEvent.Log> {
+    return entries.filter { entry -> matchesLog(entry, query, level) }
+}
+
+internal fun matchesLog(entry: CoreEvent.Log, query: String, level: String?): Boolean {
     val needle = query.trim()
-    return entries.filter { entry ->
-        val levelMatches = level.isNullOrBlank() || entry.level.equals(level, ignoreCase = true)
-        val textMatches = needle.isEmpty() ||
-            listOf(entry.level, entry.payload).containsIgnoreCase(needle)
-        levelMatches && textMatches
-    }
+    val levelMatches = level.isNullOrBlank() || entry.level.equals(level, ignoreCase = true)
+    val textMatches = needle.isEmpty() || listOf(entry.level, entry.payload).containsIgnoreCase(needle)
+    return levelMatches && textMatches
 }
 
 /**

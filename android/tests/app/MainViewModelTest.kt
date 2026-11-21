@@ -76,6 +76,25 @@ class MainViewModelTest {
     }
 
     @Test
+    fun `identical log events keep unique stable ids across clear and capacity trimming`() {
+        val repeated = CoreEvent.Log("info", "same payload", 1_795_279_154_653L)
+        val state = LogsUiState().apply(repeated).apply(repeated).apply(repeated.copy())
+
+        assertEquals(listOf(repeated, repeated, repeated), state.entries)
+        assertEquals(listOf(0L, 1L, 2L), state.entryIds)
+        assertEquals(state.entryIds, state.apply(CoreEvent.Log("info", "next", 1_795_279_154_654L)).entryIds.take(3))
+
+        val nextAfterClear = state.clear().apply(repeated)
+        assertEquals(listOf(3L), nextAfterClear.entryIds)
+
+        val trimmed = (1..1_005).fold(LogsUiState()) { current, index ->
+            current.apply(CoreEvent.Log("info", "line-$index", index.toLong()))
+        }
+        assertEquals(1_000, trimmed.entries.size)
+        assertEquals((5L..1_004L).toList(), trimmed.entryIds)
+    }
+
+    @Test
     fun `request filter searches host process chain and rule`() {
         val first = connection("request-1")
         val second = connection("request-2").copy(

@@ -1,0 +1,123 @@
+{
+  "id": "KUI-VIS-075",
+  "date": "2026-11-22",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "change": {
+    "page": "Tools > Network Activity",
+    "details": [
+      "Moved the shared Requests, Connections, DNS and Logs search field from the top toolbar to a persistent Flutter-style bottom capsule.",
+      "Each tab retains its own query and keyword chips across tab switches, primary navigation and Activity recreation.",
+      "The inline clear button clears text while retaining focus; the adjacent cancel action clears text, hides the IME and leaves the docked field visible.",
+      "List content reserves space for the search dock; the search dock and snackbar are raised above the main navigation dock when glass overlap is enabled."
+    ],
+    "singlePageEntrypoints": "Standalone Requests, DNS and Logs pages keep their existing toolbar search."
+  },
+  "build": {
+    "command": "./gradlew :app:compileDebugKotlin :app:compileDebugAndroidTestKotlin --no-daemon -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "apkSha256": "b266514440c719de8765c6ba4b8f0b56dcd13814b59582d0e03ae7521c46acdb"
+  },
+  "deviceTests": [
+    {
+      "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+      "method": "mainActivityDockedSearchKeepsQueriesSeparateAndCancelLeavesDockVisible",
+      "result": "passed",
+      "checks": "All four MainActivity tabs keep separate queries; cancel empties EditableText and retains the dock."
+    },
+    {
+      "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+      "method": "mainActivityRetainsObservationTabAcrossPrimaryNavigationAndRecreation",
+      "result": "passed",
+      "checks": "Selected tab and search text restore across primary navigation and Activity recreation."
+    },
+    {
+      "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+      "method": "mainActivityNavigatesAcrossFlutterMobileDestinationsAndTools",
+      "result": "passed",
+      "checks": "The four observation tabs expose the docked search and retain the tools return path."
+    },
+    {
+      "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+      "method": "fourTabsSearchCompleteListsAndKeepIndependentQueries",
+      "result": "passed",
+      "checks": "All four query filters work on the complete fixture lists and remain isolated by tab."
+    }
+  ],
+  "visualInspection": {
+    "device": "POCO F2 Pro/API36",
+    "observed": [
+      "The dock sits above the main navigation dock without overlap.",
+      "The dock moves above the visible soft keyboard while typing.",
+      "Query results replace the prior content; cancel closes the keyboard, clears the query and keeps the empty dock visible."
+    ],
+    "glass": "Disabled/default state retained; only the inset path is provided for the glass-enabled layout."
+  },
+  "perfettoDiscardProbes": {
+    "device": "POCO F2 Pro/API36",
+    "perfetto": "v51.2",
+    "traceProcessor": "v59.1-1e9c61e98",
+    "serviceRestarted": false,
+    "results": [
+      {
+        "trace": "ftrace-only.perfetto-trace",
+        "durationSeconds": 2,
+        "bytes": 27870,
+        "sha256": "8ba94a215d50c3d1acb5043992c1d9d64a357078755ef7fc70700a33ff540d69",
+        "dataSourcesSeen": 97,
+        "sessions": 1,
+        "globalDiscardedChunks": 30,
+        "bufferDiscardedChunks": 0,
+        "bufferOverwrittenChunks": 0,
+        "ftraceSetupErrors": 0,
+        "schedSwitchEvents": 2058
+      },
+      {
+        "trace": "process-stats-only.perfetto-trace",
+        "durationSeconds": 2,
+        "bytes": 61755,
+        "sha256": "d60c857de1adde54bfa60fa9da6a23e178c3dd68590139f9cb1d78856531cabb",
+        "dataSourcesSeen": 98,
+        "sessions": 1,
+        "globalDiscardedChunks": 30,
+        "bufferDiscardedChunks": 0,
+        "bufferOverwrittenChunks": 0,
+        "ftraceSetupErrors": 0
+      },
+      {
+        "trace": "frametimeline-only.perfetto-trace",
+        "durationSeconds": 2,
+        "bytes": 743,
+        "sha256": "baf6fccce69d523cda19cc54404afaea825b4b3ef0effb4302ab685117237336",
+        "dataSourcesSeen": 99,
+        "sessions": 1,
+        "globalDiscardedChunks": 30,
+        "bufferDiscardedChunks": 0,
+        "bufferOverwrittenChunks": 0,
+        "frameTimelineRows": 0,
+        "frameTimelineParserErrors": 0
+      }
+    ],
+    "interpretation": "Three separately configured captures retained the same global discarded count while their data source sets differed; this supports a service/producer-snapshot scope rather than loss in each trace buffer, but is not enough to prove the counter owner or reset lifetime. The earlier real DropdownMenu trace had 2 FrameTimeline rows and fence lifecycle events but no wait-start/end; it cannot attribute a menu frame or establish a performance gain.",
+    "menuTrace": "../../../acceptance-artifacts/visual-connections-menu-poco-20261122/dropdown-open-close.perfetto-trace",
+    "probeDirectory": "../../../acceptance-artifacts/visual-connections-menu-poco-20261122/discard-probes/"
+  },
+  "limits": [
+    "The probe series did not restart Perfetto service and did not isolate an identified producer; the global discarded source remains open.",
+    "The menu trace was a Debug build and had too few app-surface frames for menu close or RenderThread attribution.",
+    "Other subpages and a non-empty live connection/connection-details comparison remain outstanding.",
+    "No stable performance improvement is claimed; glass remains disabled by default."
+  ],
+  "cleanup": {
+    "kclashPackageInstalled": false,
+    "flutterReferencePackagePresent": true,
+    "kclashOrMihomoProcessPresent": false,
+    "coreOrVpnStarted": false,
+    "profilesOrConfigModified": false
+  }
+}

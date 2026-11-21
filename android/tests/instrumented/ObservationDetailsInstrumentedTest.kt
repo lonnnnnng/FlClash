@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,6 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.ByteArrayOutputStream
 
 /** 作者 long：四类完整列表直接置于页签内，验证真实搜索、详情和清理隔离，取代旧摘要页的第二层入口。 */
 @RunWith(AndroidJUnit4::class)
@@ -54,6 +56,18 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithText("显示 2/2").assertIsDisplayed()
     }
 
+    @Test fun identicalRuntimeLogsRenderAsSeparateRows() {
+        val duplicate = CoreEvent.Log("info", "duplicate runtime message", 1_795_279_154_653L)
+        composeRule.setContent {
+            KClashTheme {
+                LogsDialog(LogsUiState(listOf(duplicate, duplicate.copy())), onDismiss = {}, onExport = {})
+            }
+        }
+
+        composeRule.waitForIdle()
+        assertEquals(2, composeRule.onAllNodesWithText("duplicate runtime message").fetchSemanticsNodes().size)
+    }
+
     @Test fun clearsCacheHistoryAndLogsIndependentlyAndExports() {
         var dnsState by mutableStateOf(DnsUiState(listOf(dns())))
         var logsState by mutableStateOf(LogsUiState(listOf(CoreEvent.Log("info", "ready", 1))))
@@ -91,6 +105,53 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithTag("connections_detail_close").performClick()
         composeRule.onNodeWithTag("connections_empty_state").assertIsDisplayed()
     }
+
+    @Test fun connectionDetailsReturnToTheSameNonEmptyListPosition() {
+        composeRule.setContent {
+            KClashTheme {
+                ObservationPage(
+                    RequestsUiState(),
+                    DnsUiState(),
+                    LogsUiState(),
+                    CoreRuntimeStatus.RUNNING,
+                    ObservationTab.CONNECTIONS.ordinal,
+                    {}, {}, {}, {},
+                    connections = ConnectionsUiState(connections = (0..99).map(::connection)),
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("observation_records").performScrollToIndex(50)
+        val rowTop = composeRule.onNodeWithTag("connections_row_50").fetchSemanticsNode().boundsInRoot.top
+        composeRule.onNodeWithTag("connections_row_50")
+            .performTouchInput { click(androidx.compose.ui.geometry.Offset(width / 2f, height * .2f)) }
+        composeRule.onNodeWithTag("connections_detail_title").assertIsDisplayed()
+        val detailLeft = composeRule.onNodeWithTag("connections_detail_content").fetchSemanticsNode().boundsInRoot.left
+        val titleLeft = composeRule.onNodeWithTag("connections_detail_title").fetchSemanticsNode().boundsInRoot.left
+        val expectedInset = 16f * androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .targetContext.resources.displayMetrics.density
+        assertEquals(expectedInset, titleLeft - detailLeft, 2f)
+        if (androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("kclashCapturePng") == "true") {
+            val bitmap = composeRule.onNodeWithTag("connections_detail_content").captureToImage().asAndroidBitmap()
+            val png = ByteArrayOutputStream().also {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }.toByteArray()
+            bitmap.recycle()
+            recordVisualPng("connections-detail-observation-nonempty", png)
+        }
+        composeRule.onNodeWithText("host50.example.test").performScrollTo().assertIsDisplayed()
+
+        androidx.test.espresso.Espresso.pressBack()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("connections_detail_sheet").fetchSemanticsNodes().isEmpty()
+        }
+        assertEquals(
+            rowTop,
+            composeRule.onNodeWithTag("connections_row_50").fetchSemanticsNode().boundsInRoot.top,
+            1f,
+        )
+    }
+
     @Test fun scrollingAndSearchSurviveTabAndSavedStateRestoration() {
         val restoration = androidx.compose.ui.test.junit4.StateRestorationTester(composeRule)
         restoration.setContent {
@@ -114,7 +175,6 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithTag("observation_tab_$name").performClick()
     }
     private fun search(query: String) {
-        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithTag("observation_search_field").performTextInput(query)
         androidx.test.espresso.Espresso.closeSoftKeyboard()
     }

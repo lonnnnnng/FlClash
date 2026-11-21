@@ -36,7 +36,7 @@ internal class UpdateTransport(route: CoreDownloadRoute) : AutoCloseable {
             override fun onResponse(call: Call, response: Response) {
                 try {
                     val text = response.use {
-                        check(it.code == 200)
+                        if (it.code != 200) throw UpdateHttpStatusException(it.code)
                         checkNotNull(it.body).byteStream().use { input ->
                             val output = ByteArrayOutputStream()
                             val buffer = ByteArray(8192)
@@ -55,3 +55,5 @@ internal class UpdateTransport(route: CoreDownloadRoute) : AutoCloseable {
     }
     override fun close() { client.dispatcher.executorService.shutdown(); client.connectionPool.evictAll() }
 }
+
+internal class UpdateHttpStatusException(val statusCode: Int) : IOException("GitHub returned HTTP $statusCode")

@@ -246,7 +246,7 @@ class MainActivityInstrumentedTest {
         listOf("requests", "connections", "dns", "logs").forEach { tab ->
             composeRule.onNodeWithTag("observation_tab_$tab").performClick()
             composeRule.onNodeWithTag("page_$tab").assertIsDisplayed()
-            composeRule.onNodeWithTag("observation_search_toggle").assertIsDisplayed()
+            composeRule.onNodeWithTag("observation_search_dock").assertIsDisplayed()
         }
         composeRule.onNodeWithTag("observation_list_back").performClick()
         composeRule.onNodeWithTag("tools_item_observations").assertIsDisplayed()
@@ -261,6 +261,9 @@ class MainActivityInstrumentedTest {
         listOf("requests", "connections", "dns", "logs").forEach { tab ->
             composeRule.onNodeWithTag("observation_tab_$tab").performClick()
             composeRule.onNodeWithTag("${tab}_empty_state").assertIsDisplayed()
+            if (tab == "connections") {
+                composeRule.onNodeWithTag("connections_empty_illustration").assertIsDisplayed()
+            }
         }
         composeRule.onNodeWithTag("nav_dashboard").performClick()
         composeRule.onNodeWithTag("page_dashboard").assertIsDisplayed()
@@ -271,7 +274,6 @@ class MainActivityInstrumentedTest {
         composeRule.onNodeWithTag("nav_tools").performClick()
         composeRule.onNodeWithTag("tools_item_observations").performClick()
         composeRule.onNodeWithTag("observation_tab_dns").performClick()
-        composeRule.onNodeWithTag("observation_search_toggle").performClick()
         composeRule.onNodeWithTag("observation_search_field").performTextInput("retained-query")
         androidx.test.espresso.Espresso.closeSoftKeyboard()
         composeRule.onNodeWithTag("nav_profiles").performClick()
@@ -282,6 +284,29 @@ class MainActivityInstrumentedTest {
         composeRule.activityRule.scenario.recreate()
         composeRule.waitUntil(5_000) { composeRule.onAllNodesWithTag("page_dns").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithTag("observation_search_field").assertTextEquals("retained-query")
+    }
+
+    @Test
+    fun mainActivityDockedSearchKeepsQueriesSeparateAndCancelLeavesDockVisible() {
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_observations").performClick()
+        listOf("requests", "connections", "dns", "logs").forEach { tab ->
+            composeRule.onNodeWithTag("observation_tab_$tab").performClick()
+            composeRule.onNodeWithTag("observation_search_dock").assertIsDisplayed()
+            composeRule.onNodeWithTag("observation_search_field").performTextInput("query-$tab")
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
+        }
+        listOf("requests", "connections", "dns", "logs").forEach { tab ->
+            composeRule.onNodeWithTag("observation_tab_$tab").performClick()
+            composeRule.onNodeWithTag("observation_search_field").assertTextEquals("query-$tab")
+        }
+        composeRule.onNodeWithTag("observation_search_cancel").performClick()
+        assertEquals(
+            "",
+            composeRule.onNodeWithTag("observation_search_field")
+                .fetchSemanticsNode().config[SemanticsProperties.EditableText].text,
+        )
+        composeRule.onNodeWithTag("observation_search_dock").assertIsDisplayed()
     }
 
     @Test

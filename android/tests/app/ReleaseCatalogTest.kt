@@ -2,6 +2,11 @@ package com.lonnnnnng.flclash.update
 
 import org.junit.Assert.*
 import org.junit.Test
+import com.lonnnnnng.flclash.service.CoreDownloadRoute
+import com.lonnnnnng.flclash.service.CoreRuntimeStatus
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 
 class ReleaseCatalogTest {
     private fun row(version: String = "0.1.3", tag: String = "kclash-v$version", draft: Boolean = false, prerelease: Boolean = false,
@@ -26,5 +31,30 @@ class ReleaseCatalogTest {
     }
     @Test fun missingKotlinReleaseDoesNotPretendVersionIsCurrent() {
         assertTrue(runCatching { ReleaseCatalog.check("[${row(tag="v0.9.3")}]", 1002) }.isFailure)
+    }
+
+    @Test fun failureDiagnosticsIdentifyRouteAndNetworkStageWithoutRawExceptionText() {
+        val proxy = CoreDownloadRoute(7890, "user", "secret", 7)
+        assertEquals("CORE_HTTP_PROXY/DNS", UpdateFailureDiagnostics.classify(
+            UnknownHostException("github host detail"), proxy, CoreRuntimeStatus.RUNNING,
+        ).diagnosticCode)
+        assertEquals("DIRECT/TIMEOUT", UpdateFailureDiagnostics.classify(
+            SocketTimeoutException("sensitive address"), CoreDownloadRoute(null, null, null, 8), CoreRuntimeStatus.STOPPED,
+        ).diagnosticCode)
+        assertEquals("CORE_HTTP_PROXY/TLS", UpdateFailureDiagnostics.classify(
+            SSLHandshakeException("certificate detail"), proxy, CoreRuntimeStatus.RUNNING,
+        ).diagnosticCode)
+        assertEquals("CORE_HTTP_PROXY/TIMEOUT", UpdateFailureDiagnostics.classify(
+            SocketTimeoutException("proxy request timed out while stopping"), proxy, CoreRuntimeStatus.STOPPING,
+        ).diagnosticCode)
+        assertEquals("CORE_HTTP_PROXY/HTTP/403", UpdateFailureDiagnostics.classify(
+            UpdateHttpStatusException(403), proxy, CoreRuntimeStatus.RUNNING,
+        ).diagnosticCode)
+        assertEquals("UNKNOWN/CORE_ROUTE", UpdateFailureDiagnostics.classify(
+            IllegalStateException("proxy route unavailable"), null, CoreRuntimeStatus.RUNNING,
+        ).diagnosticCode)
+        assertEquals("UNKNOWN/CORE_TRANSITION", UpdateFailureDiagnostics.classify(
+            IllegalStateException("state transition"), null, CoreRuntimeStatus.STARTING,
+        ).diagnosticCode)
     }
 }

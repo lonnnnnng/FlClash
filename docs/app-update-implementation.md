@@ -9,6 +9,11 @@
 - 没有更高版本显示“已是最新正式版本”；查询失败保留重试按钮。
 - 有新版本显示版本和发布说明，点击按钮以ACTION_VIEW打开该GitHub发布页。浏览器负责后续下载。
 - 查询GitHub时沿用当前核心的实际HTTP入站；核心停止时使用直连。查询没有放宽TLS校验，也没有改用加速地址。
+- 查询失败时页面附加脱敏诊断码，例如 `CORE_HTTP_PROXY/TIMEOUT`、`DIRECT/DNS` 或 `CORE_HTTP_PROXY/HTTP/403`；诊断只标记路线和失败阶段，不显示异常正文、凭据或响应内容。
+
+## VPN 更新检查诊断（2026-11-22）
+
+POCO F2 Pro/API36 上核心停止时的真实 GitHub 检查成功；本次没有 Kotlin 包和可用的 Kotlin VPN 运行态，因此活动代理分支尚未复验。直连成功不代表 VPN 路径通过。下一次运行态失败可按页面诊断码继续区分本地代理、DNS、TLS、连接或 GitHub HTTP 响应阶段，详见[缺陷记录](runtime-log-and-update-check-defects.md)。
 
 ## 已移除的旧范围
 

@@ -6,6 +6,13 @@ import android.content.ClipboardManager
 import android.content.ContentResolver
 import android.provider.OpenableColumns
 import android.text.format.DateUtils
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -106,6 +113,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileProvidersEditor
@@ -3510,6 +3518,7 @@ private fun ConnectionDetailSheet(
     connection: CoreConnection,
     onDismiss: () -> Unit,
     onCopyText: (String) -> Unit,
+    contentHorizontalPadding: Dp = 24.dp,
 ) {
     val metadata = connection.metadata
     val contentScrollState = rememberScrollState()
@@ -3530,7 +3539,7 @@ private fun ConnectionDetailSheet(
                 .testTag("connections_detail_content")
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = contentHorizontalPadding),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -3539,7 +3548,7 @@ private fun ConnectionDetailSheet(
                 Text(
                     tr("连接详情"),
                     style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag("connections_detail_title"),
                 )
                 IconButton(onClick = requestDismiss, modifier = Modifier.testTag("connections_detail_close")) {
                     Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.testTag("action:关闭连接详情"))
@@ -3711,6 +3720,8 @@ internal fun RequestsDialog(
                         !runtimeState.isRunning -> tr("启动核心后显示活动连接"); else -> tr("暂无活动连接") },
                     illustration = if (noResults) {
                         ObservationEmptyIllustration.SEARCH
+                    } else if (activeConnections) {
+                        ObservationEmptyIllustration.CONNECTIONS
                     } else {
                         ObservationEmptyIllustration.REQUESTS
                     },
@@ -3722,7 +3733,7 @@ internal fun RequestsDialog(
             itemTag = { index -> if (activeConnections) "connections_row_$index" else "request_row_$index" },
             modifier = Modifier.weight(1f).fillMaxWidth(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
-                bottom = 16.dp + if (embedded) LocalMainDockInset.current else 0.dp),
+                bottom = 16.dp + if (embedded) ObservationDockedSearchInset + LocalMainDockInset.current else 0.dp),
         ) { connection ->
             ConnectionRow(
                 connection = connection,
@@ -3736,6 +3747,7 @@ internal fun RequestsDialog(
             connection = selectedConnection!!,
             onDismiss = { selectedConnection = null },
             onCopyText = onCopyText,
+            contentHorizontalPadding = if (activeConnections) 16.dp else 24.dp,
         )
     }
 }
@@ -3832,7 +3844,7 @@ internal fun DnsDialog(
             itemTag = { index -> "dns_row_$index" },
             modifier = Modifier.weight(1f).fillMaxWidth(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
-                bottom = 16.dp + if (embedded) LocalMainDockInset.current else 0.dp),
+                bottom = 16.dp + if (embedded) ObservationDockedSearchInset + LocalMainDockInset.current else 0.dp),
         ) { dns ->
             DnsQueryRow(
                 query = dns,
@@ -3862,9 +3874,12 @@ internal fun LogsDialog(
     var query by rememberSaveable { mutableStateOf("") }
     var searchExpanded by rememberSaveable { mutableStateOf(false) }
     var keywords by rememberSaveable { mutableStateOf(emptyList<String>()) }
-    val filteredBySearch = filterLogs(state.entries, query, null)
-    val filtered = keywords.fold(filteredBySearch) { entries, keyword ->
-        filterLogs(entries, "", keyword)
+    val logRows = remember(state.entries, state.entryIds) {
+        state.entries.mapIndexed { index, entry -> ObservationLogRow(state.entryIds[index], entry) }
+    }
+    val filteredBySearch = logRows.filter { matchesLog(it.entry, query, null) }
+    val filtered = keywords.fold(filteredBySearch) { rows, keyword ->
+        rows.filter { matchesLog(it.entry, "", keyword) }
     }
     ObservationListPage(
         title = if (embedded) tr("网络活动") else tr("日志"),
@@ -3902,18 +3917,20 @@ internal fun LogsDialog(
                         testTag = if (isSearching) "logs_no_results_state" else "logs_empty_state",
                     )
                 },
-                itemKey = { "${it.timestampMillis}|${it.level}|${it.payload}" },
+                itemKey = { it.id },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
-                    bottom = 16.dp + if (embedded) LocalMainDockInset.current else 0.dp),
-            ) { entry ->
-                LogRow(entry) { keyword ->
+                    bottom = 16.dp + if (embedded) ObservationDockedSearchInset + LocalMainDockInset.current else 0.dp),
+            ) { row ->
+                LogRow(row.entry) { keyword ->
                     if (keyword !in keywords) keywords = keywords + keyword
                 }
             }
         }
     }
 }
+
+private data class ObservationLogRow(val id: Long, val entry: CoreEvent.Log)
 
 @Composable
 internal fun DnsQueryDetailSheet(
@@ -4040,19 +4057,29 @@ private fun <T> ObservationList(
         }
     }
 
-    if (items.isEmpty()) {
-        Box(modifier.fillMaxWidth(), contentAlignment = BiasAlignment(0f, -0.2f)) {
-            emptyContent()
-        }
-    } else {
-        LazyColumn(
-            state = listState,
-            modifier = modifier.fillMaxWidth().testTag("observation_records"),
-            contentPadding = contentPadding,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            itemsIndexed(items, key = { _, item -> itemKey(item) }) { index, item ->
-                Box(itemTag?.let { Modifier.testTag(it(index)) } ?: Modifier) { row(item) }
+    AnimatedContent(
+        targetState = items.isEmpty(),
+        modifier = modifier.fillMaxWidth(),
+        transitionSpec = {
+            (fadeIn(tween(180)) + scaleIn(initialScale = 0.92f, animationSpec = tween(260))) togetherWith
+                (fadeOut(tween(100)) + scaleOut(targetScale = 0.96f, animationSpec = tween(100)))
+        },
+        label = "observationEmptyListTransition",
+    ) { isEmpty ->
+        if (isEmpty) {
+            Box(Modifier.fillMaxSize(), contentAlignment = BiasAlignment(0f, -0.2f)) {
+                emptyContent()
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize().testTag("observation_records"),
+                contentPadding = contentPadding,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                itemsIndexed(items, key = { _, item -> itemKey(item) }) { index, item ->
+                    Box(itemTag?.let { Modifier.testTag(it(index)) } ?: Modifier) { row(item) }
+                }
             }
         }
     }

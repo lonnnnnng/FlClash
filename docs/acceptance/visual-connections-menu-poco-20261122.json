@@ -1,0 +1,86 @@
+{
+  "id": "KUI-VIS-074",
+  "date": "2026-11-22",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "visualChange": {
+    "page": "Tools > Network Activity > Connections",
+    "details": [
+      "Added a dedicated four-sided cookie silhouette and three-node connections glyph from Flutter source geometry and palette.",
+      "Added a 180 ms fade and 260 ms scale transition between the empty state and the records list.",
+      "The shared four-tab page still uses a top-bar search toggle; Flutter keeps a docked bottom search field."
+    ],
+    "scopeLimit": "The real device had no KClash profile and the core remained stopped; no non-empty running connection page or detail flow was exercised."
+  },
+  "build": {
+    "command": "./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.MainActivityInstrumentedTest#mainActivityRendersObservationEmptyStatesFromEachTab",
+    "result": "BUILD SUCCESSFUL",
+    "apkSha256": "9ec3833eaf1f36bce8bce2a7e4c9dadd7ff8ee03a3968bf8d680b1159ade480e"
+  },
+  "instrumentedTest": {
+    "class": "com.lonnnnnng.flclash.MainActivityInstrumentedTest",
+    "method": "mainActivityRendersObservationEmptyStatesFromEachTab",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "durationSeconds": 3.891,
+    "resultXml": "../../android/app/build/outputs/androidTest-results/connected/debug/TEST-POCO F2 Pro - 16.xml"
+  },
+  "menuTrace": {
+    "scenario": "Debug MainActivity, stopped empty database, DNS tab clear-history DropdownMenu opened and dismissed twice",
+    "durationSeconds": 12,
+    "traceBytes": 452031,
+    "traceSha256": "ce529c37bfc5ed0cfe91931237a173309f1e99a3f6af6fbc2a1a0a0694c211ca",
+    "traceProcessor": "Perfetto v59.1-1e9c61e98",
+    "actualFrameTimelineRows": 2,
+    "frameRows": [
+      "TX - StatusBar#86: App Deadline Missed, Full, Late Present, 24.838 ms",
+      "Unnamed layer: None, On-time Present, 15.212 ms"
+    ],
+    "ftraceEvents": {
+      "sched_switch": 14237,
+      "sched_waking": 7972,
+      "dma_fence_init": 5,
+      "dma_fence_destroy": 6,
+      "dma_fence_enable_signal": 2,
+      "dma_fence_signaled": 5,
+      "dma_fence_wait_start": 0,
+      "dma_fence_wait_end": 0,
+      "kgsl_syncpoint_fence": 0,
+      "kgsl_syncpoint_fence_expire": 3,
+      "kgsl_adreno_cmdbatch_queued": 17,
+      "kgsl_adreno_cmdbatch_submitted": 14,
+      "kgsl_adreno_cmdbatch_retired": 16,
+      "kgsl_adreno_cmdbatch_sync": 14
+    },
+    "integrity": {
+      "ftraceSetupErrors": 0,
+      "frameTimelineParserErrors": 0,
+      "bufferBytesWritten": 462848,
+      "bufferBytesOverwritten": 0,
+      "bufferChunksDiscarded": 0,
+      "globalDiscardedChunks": 30
+    },
+    "interpretation": "The GPU/fence producers emitted lifecycle and command events, but no wait-start/end event was recorded and only two frame rows were available, neither tagged to the KClash app surface. The trace cannot attribute a dropped menu frame, fence wait, or performance gain.",
+    "rawTrace": "../../../acceptance-artifacts/visual-connections-menu-poco-20261122/dropdown-open-close.perfetto-trace"
+  },
+  "limits": [
+    "This was a Debug build, not a non-debuggable Release-R8 or diagnostic-R8 performance comparison.",
+    "The 12-second menu sample is too sparse for stable latency or dropped-frame statistics.",
+    "The global traced_chunks_discarded counter increased from 29 in the preceding probe to 30 here, while this trace buffer reported zero discarded or overwritten chunks; the global producer remains unidentified.",
+    "Glass remains disabled by default."
+  ],
+  "deviceCleanup": {
+    "kclashPackageInstalled": false,
+    "flutterReferencePackagePresent": true,
+    "kclashOrMihomoProcessPresent": false,
+    "coreOrVpnStarted": false,
+    "profileOrWorkspaceYamlChanged": false
+  }
+}
