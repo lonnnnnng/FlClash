@@ -1,10 +1,20 @@
 name: KClash Android Kotlin
 
 on:
-  # 作者 long：只有已确认发布并推送版本标签时才运行，普通代码提交不启动 Android 发布构建。
+  # 作者 long：只接受版本标签或明确指定标签/源码的手动发版，普通代码提交不启动 Android 发布构建。
   push:
     tags:
       - 'kclash-v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing or new KClash release tag (kclash-vMAJOR.MINOR.PATCH)
+        required: true
+        type: string
+      source_ref:
+        description: Git ref to build for that release
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -22,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.ref }}
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -49,8 +60,16 @@ jobs:
       - name: Resolve build version
         id: metadata
         shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          version_name="${GITHUB_REF_NAME#kclash-v}"
+          set -euo pipefail
+          release_tag="${RELEASE_TAG:-$GITHUB_REF_NAME}"
+          if [[ ! "$release_tag" =~ ^kclash-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "KClash tags must use kclash-vMAJOR.MINOR.PATCH" >&2
+            exit 1
+          fi
+          version_name="${release_tag#kclash-v}"
           if [[ ! "$version_name" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "KClash tags must use kclash-vMAJOR.MINOR.PATCH" >&2
             exit 1
@@ -59,6 +78,7 @@ jobs:
           version_code=$((major * 1000000 + minor * 1000 + patch))
           echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
           echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
           {
             echo "### Kotlin arm64 build"
             echo "- versionName: \`$version_name\`"
@@ -87,6 +107,9 @@ jobs:
         env:
           BUILD_VERSION_NAME: ${{ steps.metadata.outputs.version_name }}
           BUILD_VERSION_CODE: ${{ steps.metadata.outputs.version_code }}
+          KCLASH_RELEASE_STORE_PASSWORD: ${{ secrets.KCLASH_RELEASE_STORE_PASSWORD }}
+          KCLASH_RELEASE_KEY_ALIAS: ${{ secrets.KCLASH_RELEASE_KEY_ALIAS }}
+          KCLASH_RELEASE_KEY_PASSWORD: ${{ secrets.KCLASH_RELEASE_KEY_PASSWORD }}
         run: |
           ./gradlew :app:assembleRelease \
             --no-daemon -Ptarget-platform=android-arm64 \
@@ -134,9 +157,9 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ steps.metadata.outputs.release_tag }}
           name: KClash ${{ steps.metadata.outputs.version_name }}
-          body_path: docs/releases/${{ github.ref_name }}.md
+          body_path: docs/releases/${{ steps.metadata.outputs.release_tag }}.md
           files: |
             android/app/build/outputs/apk/release/${{ steps.release-artifact.outputs.apk_name }}
             android/app/build/outputs/apk/release/SHA256SUMS
