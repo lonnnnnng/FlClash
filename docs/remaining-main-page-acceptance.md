@@ -1,6 +1,6 @@
 # 第9项剩余交互与恢复验收清单
 
-> **发布状态（2026-11-21）**：055～070具名改进已进入0.1.12正式版，签名CI及公开APK回验通过；本轮未安装手机。下方分组反映各切片实施时的记录，整体视觉/光学/性能仍PARTIAL。[发布证据](acceptance/release-0.1.12-20261121.json)
+> **发布状态（2026-11-22）**：当前Latest为0.1.13/code1013，新增纳入KCORE-011与KUI-VIS-073；签名构建和公开APK回验通过，本轮未安装手机。055～070已包含在0.1.12，以下分组保留各切片当时的记录；完整视觉/光学/性能仍PARTIAL。[0.1.13发布证据](acceptance/release-0.1.13-20261122.json)
 
 > **KUI-VIS-070（2026-11-21，已随0.1.12发布）**：代理组健康检查URL、间隔、超时、最大失败次数、预期状态码和容差改为原行内编辑；数字过滤、真实键盘、清空留行、删除重加和父级提交回读通过。POCO `ProxyGroupEditorInstrumentedTest` 最终11/11、24张图哈希/尺寸核验；motion JVM 628项零失败，其他模块由Gradle复用。只核对固定Flutter源码，未做Flutter运行态对照。[说明](proxy-group-inline-options-alignment.md)、[证据](acceptance/proxy-group-inline-options-poco-20261121.json)。完整页面视觉、其他子页连续转场和菜单慢帧仍未闭环。
 

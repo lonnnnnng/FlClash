@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **0.1.13正式发布（2026-11-22）**：KClash 0.1.13/code1013 已发布为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`。恢复运行CI `44921344965`通过签名构建、版本/ABI/DEX及证书门禁；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与GitHub digest、`SHA256SUMS`一致，沿用既有正式证书。版本包含KCORE-011与KUI-VIS-073；本地629项App JVM、Go全量race及相关子模块race、Debug/Release构建和双Lint通过。首次标签CI因签名凭据未传入Gradle而在产物校验处失败，修复提交`b01fa1ed`后从原标签源码恢复发布；失败运行未创建Release。[发布证据](acceptance/release-0.1.13-20261122.json)、[更新说明](releases/kclash-v0.1.13.md)
+
 > **KUI-VIS-073（2026-11-21，面板转场与关闭定域已续验）**：新远程脚本导入对齐为单URL浮框，名称仍由仓库按下载建议名／URL文件名去重；URI显示层的点号断行标记保持原文，复制、IME提交、每个点号边界方向键及删除原字符通过。POCO最终组件与MainActivity 8/8、15张PNG哈希／尺寸通过；当前源码对应的自然时钟窗口双主题四种面板8轮、JUnit1/1及66.131秒录像核验。Motion JVM629项零失败，Motion/Test、Release-R8、诊断Performance-R8、双Lint及Release扫码DEX通过。菜单诊断R8两轮：组合释放2.864～3.100ms Running；窗口移除8.917～9.058ms wall，其中UI线程等待6.179～6.442ms；同帧system_server窗口工作已关联。环形buffer无覆盖或数据丢失，但全局trace discarded28／29且producer原因未明，证据仍为部分完整；无稳定性能收益或可安全删除的业务清理点。全应用Flutter视觉、其他子页、任意URL断点及GPU／fence仍未闭环。POCO结束时自有包已卸载、设置与原版安装信息复原；Flutter未启动／修改，玻璃默认关闭，未发版。[说明](resource-options-url-disposal-alignment.md)、[证据](acceptance/resource-options-url-disposal-poco-20261121.json)
 
 > **KUI-VIS-072（2026-11-21）**：072播放／暂停与按需暂停字形已接固定Flutter路径，8个独立光栅通过；资源周期／Geo浮框补17sp按钮、500字重与输入留白，双主题8状态运行对照。POCO最终11/11、43图，App JVM628/628，Motion/Test、Release-R8、Performance-R8及双Lint/DEX通过。普通R8两轮4次关闭UI为16.972～17.811ms，应用Binder5.710～6.787ms沿flow关联system_server布局／焦点工作；同token RT4.514～5.081ms，trace discarded24／25，无稳定性能收益结论。四自有包按SHA清理，原版／设置保持，未发版。完整全页／其他面板、URL断行、连续转场及光学／菜单性能仍PARTIAL，玻璃默认关闭。[说明](runtime-glyph-resource-panel-alignment.md)、[证据](acceptance/runtime-glyph-resource-poco-20261121.json)
@@ -900,17 +902,17 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 
 以上仅记录2026-11-05该批验收边界：当时规则重建使用保存状态模拟，未做冷进程，未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。后续编辑器、独立全局规则及资源选择器冷恢复已有具名证据；0.1.1正式签名、Go race、远端CI和Redmi发布资产回验已完成，当前状态以第3节和`acceptance/qr-camera-r8-redmi-20261110.json`为准。整体Flutter视觉、菜单性能和低API仍PARTIAL；玻璃默认关闭，Dock/按钮实时背景和触点光效后排，既定暂缓项保持。
 
-## 3. 当前快照（2026-11-21核对）
+## 3. 当前快照（2026-11-22核对）
 
 本节与[功能清单](functional-closure.md)、工作区根`todo.md`为当前状态；具名日期的验收切片保留原始范围和失败，不能将其中旧“下一步”当作现行待办。
 
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.12/code1012**，标签`kclash-v0.1.12`指向`3c987106`；公开APK SHA`4946cf89…3a1ed2`，沿用既有正式证书 |
-| 发布范围 | 0.1.12标签CI的Go race、JVM/R8、双Lint、证书/版本/ABI/DEX检查通过；Latest及下载资产SHA/digest回验一致。055～070具名功能纳入本版，完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.12-20261121.json) |
+| 当前公开版本 | **0.1.13/code1013**，标签`kclash-v0.1.13`指向`5c8161d9`；公开APK SHA`f21df1a2…55f0653`，沿用既有正式证书 |
+| 发布范围 | 0.1.13恢复CI签名构建、包名/版本/ABI/DEX与证书门禁通过，Latest及回下载资产SHA/digest/`SHA256SUMS`一致。版本包含KCORE-011网络切换保护与KUI-VIS-073资源输入/转场；完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.13-20261122.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
-| 内核 | gitlink`d43bbd751fe5eb95a599a6211423f645269ba57d`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
+| 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
 | 最新自动化记录 | 073 POCO最终定向8/8，真实MainActivity宿主2/2，15张PNG校验并目视；当前源码对应的Motion/Test自然双主题四面板8轮、JUnit1/1，66.131秒录像检查。629项App JVM、Motion/Test、Release-R8、诊断Performance-R8、双Lint及Release DEX通过。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
@@ -919,7 +921,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 数据保护 | 073四个自有包按安装SHA核对后清理，包清单、旋转／字号／night及原Flutter稳定安装字段与起始相同。真实宿主原目录和脚本／Profile保护通过；未读原1.yaml／2.yaml，未启动核心／VPN。 |
 | 正在推进 | 073已补新脚本单URL导入浮框、长URL断行边界及自然面板转场；全应用Flutter同态、其他子页与任意URL断点仍待。诊断R8组合释放2.864～3.100ms Running，窗口移除8.917～9.058ms wall，其中UI等待6.179～6.442ms；清理小于0.125ms。两条短trace buffer无覆盖/数据损失，但全局discarded28／29的producer未明，不作完整归因或收益声明。继续菜单可信trace完整性与全页对照；GPU／fence、玻璃重叠pane仍未收口，玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [073资源选项／URI与销毁](acceptance/resource-options-url-disposal-poco-20261121.json)、[072字形／资源浮框](acceptance/runtime-glyph-resource-poco-20261121.json)、[0.1.12发布](acceptance/release-0.1.12-20261121.json)。073本机附件`../acceptance-artifacts/panels-url-close-20261121/`。 |
+| 最新证据 | [0.1.13发布](acceptance/release-0.1.13-20261122.json)、[073资源选项／URI与销毁](acceptance/resource-options-url-disposal-poco-20261121.json)、[KCORE-011实网与保护](acceptance/network-outbound-reset-20261121.json)。073本机附件`../acceptance-artifacts/panels-url-close-20261121/`；发布包及检查材料`../acceptance-artifacts/release-0.1.13-20261122/`。 |
 
 ## 4. 目标架构图
 
@@ -1468,9 +1470,9 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-KClash 0.1.12/code1012 已发布为 GitHub Latest，标签`kclash-v0.1.12`固定`3c987106`。标签CI 44860733363 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,590,093字节，SHA`4946cf89…3a1ed2`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。见[发布证据](acceptance/release-0.1.12-20261121.json)。较早版本签名/CI/真机记录为独立历史证据。
+KClash 0.1.13/code1013 已发布为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`。恢复CI `44921344965`的正式签名Release、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和`SHA256SUMS`一致，沿用既有证书。Release APK已回下载核验，未安装手机。首次标签运行因Gradle构建步骤缺少签名密码/别名环境变量而失败，修正提交`b01fa1ed`后以明确版本和源码引用手动恢复；首个运行没有创建Release。详见[发布证据](acceptance/release-0.1.13-20261122.json)。
 
-最新工程／视觉记录为KUI-VIS-073：新脚本导入与脚本改址均使用单URL浮框，URI显示保护与点号两侧光标／删除边界已验；POCO最终定向8/8、MainActivity宿主2/2、自然四面板双主题转场8轮及当前源码录像通过。629项App JVM、Motion/Test、Release-R8、诊断Performance-R8、双Lint／DEX通过。诊断关闭两轮主组合释放2.864～3.100ms Running、窗口移除8.917～9.058ms wall（UI等待6.179～6.442ms）；buffer无覆盖／数据损失，但全局discarded28／29原因未定位，无稳定收益结论。自有三包已卸载，Flutter未触碰，设置复原。全应用视觉、其他子页、任意URL断点与菜单GPU／fence仍PARTIAL。[说明](resource-options-url-disposal-alignment.md)、[证据](acceptance/resource-options-url-disposal-poco-20261121.json)。本组未提交／推送／发版。
+最新工程／视觉记录为KUI-VIS-073：新脚本导入与脚本改址均使用单URL浮框，URI显示保护与点号两侧光标／删除边界已验；POCO最终定向8/8、MainActivity宿主2/2、自然四面板双主题转场8轮及当前源码录像通过。629项App JVM、Motion/Test、Release-R8、诊断Performance-R8、双Lint／DEX通过。诊断关闭两轮主组合释放2.864～3.100ms Running、窗口移除8.917～9.058ms wall（UI等待6.179～6.442ms）；buffer无覆盖／数据损失，但全局discarded28／29原因未定位，无稳定收益结论。自有三包已卸载，Flutter未触碰，设置复原。该组随0.1.13正式发布；全应用视觉、其他子页、任意URL断点与菜单GPU／fence仍PARTIAL。[说明](resource-options-url-disposal-alignment.md)、[证据](acceptance/resource-options-url-disposal-poco-20261121.json)。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 

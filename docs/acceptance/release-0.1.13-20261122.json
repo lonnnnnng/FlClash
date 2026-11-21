@@ -1,0 +1,153 @@
+{
+  "date": "2026-11-22",
+  "release": {
+    "tag": "kclash-v0.1.13",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.13",
+    "sourceCommit": "5c8161d938b988a735673b945e362a50af2c5c61",
+    "workflowFixCommit": "b01fa1ed1afc7d51f5cad871230f7457ea226065",
+    "workflowRunId": 44921344965,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44921344965",
+    "workflowEvent": "workflow_dispatch",
+    "sourceRef": "kclash-v0.1.13",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-21T16:03:13Z",
+    "publishedAtAsiaShanghai": "2026-11-22T00:03:13+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.13-android-arm64-v8a.apk",
+        "size": 49605181,
+        "digest": "sha256:f21df1a238b56bf780863de202e741543557133f084c44c46cefa689555f0653",
+        "state": "uploaded",
+        "browserDownloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.13/KClash-0.1.13-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 102,
+        "digest": "sha256:534fa1a5239c62e4522350bf6abe10776319e0642045ef816e8ece49bdc6b911",
+        "state": "uploaded",
+        "browserDownloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.13/SHA256SUMS"
+      }
+    ]
+  },
+  "firstAttempt": {
+    "workflowRunId": 44919689774,
+    "conclusion": "failure",
+    "releasePublished": false,
+    "cause": "The workflow passed only the keystore path to Gradle. Signing password and alias variables were absent from the build step, so Gradle emitted an unsigned APK while the verifier expected app-release.apk.",
+    "fix": "The signing secrets are now explicitly passed to the Gradle release step; recovery run 44921344965 passed and published the existing source tag."
+  },
+  "package": {
+    "versionName": "0.1.13",
+    "versionCode": 1013,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "signatureSchemeV2Verified": true,
+    "signerCount": 1,
+    "abis": ["arm64-v8a"],
+    "minSdk": 24,
+    "targetSdk": 37,
+    "debuggable": false,
+    "remoteDigestVerified": true,
+    "sha256SumsVerified": true,
+    "downloadedMlkitDexVerified": true
+  },
+  "ci": {
+    "result": "success",
+    "duration": "12m 26s",
+    "event": "workflow_dispatch",
+    "checks": [
+      "Signed arm64 Release APK build",
+      "Package, version, minSdk, ABI and debuggable checks",
+      "ML Kit DEX registrar checks",
+      "SnakeYAML R8 mapping/usage checks",
+      "Release signing certificate check",
+      "GitHub Release and SHA256SUMS upload"
+    ],
+    "nonBlockingWarnings": [
+      "GitHub Actions reported Node.js 20 and setup-java v4 deprecation notices; the job succeeded."
+    ]
+  },
+  "localPreflight": {
+    "result": "passed",
+    "gradleCommand": "./gradlew :app:testDebugUnitTest :app:assembleRelease :app:lintDebug :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+    "appJvmTests": {
+      "tests": 629,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "goRaceCommands": [
+      "go test -race ./...",
+      "go test -race ./adapter/outbound ./transport/tuic",
+      "go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http github.com/metacubex/mihomo/component/updater"
+    ],
+    "lint": {
+      "debug": "passed",
+      "release": "passed"
+    },
+    "workflowYaml": {
+      "actionlint": "passed",
+      "rubyYamlParse": "passed"
+    },
+    "localUnsignedReleaseApk": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "bytes": 49594929,
+      "sha256": "4a2b0022d1606bc4448d0587891d82592ece2a89408f561e74f6096f9e410dc8"
+    }
+  },
+  "featureAcceptance": [
+    "docs/acceptance/network-outbound-reset-20261121.json",
+    "docs/acceptance/vpn-protect-startup-poco-20261121.json",
+    "docs/acceptance/resource-options-url-disposal-poco-20261121.json",
+    "docs/adr/0022-network-change-outbound-reset.md",
+    "docs/resource-options-url-disposal-alignment.md"
+  ],
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "reason": "The published artifact was downloaded and verified; it was not installed on a phone.",
+    "featureDevice": "POCO F2 Pro / API36"
+  },
+  "protection": {
+    "originalYamlReadDuringRelease": false,
+    "originalYamlUploaded": false,
+    "flutterOriginalModified": false
+  },
+  "remaining": [
+    "WireGuard and TUIC real-network switching coverage; cellular switching coverage.",
+    "Other Flutter page and panel layout differences and complete continuous transitions.",
+    "Complete glass optics and menu RenderThread/GPU/fence attribution."
+  ],
+  "rawEvidenceRoot": "../acceptance-artifacts/release-0.1.13-20261122",
+  "rawEvidence": {
+    "KClash-0.1.13-android-arm64-v8a.apk": {
+      "sha256": "f21df1a238b56bf780863de202e741543557133f084c44c46cefa689555f0653",
+      "bytes": 49605181
+    },
+    "SHA256SUMS": {
+      "sha256": "534fa1a5239c62e4522350bf6abe10776319e0642045ef816e8ece49bdc6b911",
+      "bytes": 102
+    },
+    "signature.txt": {
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798",
+      "bytes": 974
+    },
+    "badging.txt": {
+      "sha256": "5247ec713c80f3fe466e4a8800f7704f71a4b2ba979ce9df5b84f1b6c98423e3",
+      "bytes": 5941
+    },
+    "checksum-verification.txt": {
+      "sha256": "37531435d5756f2ae09afd9866b456314f9fa89ba1bc54d1386850ff955a197f",
+      "bytes": 40
+    },
+    "dex-check.json": {
+      "sha256": "b55ca3288cc78a58fc0593f78348d7bf154e58fc36064d54b1052fc835e15454",
+      "bytes": 595
+    },
+    "tag-ci.log": {
+      "sha256": "cae53972a30b2feb45537c631279db0c51657cf4b7cdb8b494798031721276a8",
+      "bytes": 155844
+    }
+  }
+}
