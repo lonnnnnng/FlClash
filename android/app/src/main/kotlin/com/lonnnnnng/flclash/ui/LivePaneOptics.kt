@@ -9,7 +9,7 @@ import kotlin.math.sqrt
 internal class LivePaneOptics {
     private val shader = android.graphics.RuntimeShader(LIVE_GLASS_SHADER)
     private val blurs = linkedMapOf<Float, RenderEffect>()
-    private var last: List<Any>? = null
+    private var last: List<Any?>? = null
     private var cached: RenderEffect? = null
     fun blur(sigma: Float): RenderEffect? {
         if (sigma <= .01f) return null
@@ -20,14 +20,17 @@ internal class LivePaneOptics {
             .asComposeRenderEffect().also { blurs[sigma]=it }
     }
     fun effect(width: Float, height: Float, tileWidth: Float, padding: Float, radius: Float, unit: Float,
-        style: AppGlassStyle, light: AppTouchLight?, dock: Boolean, superellipse: Boolean): RenderEffect {
+        style: AppGlassStyle, light: AppTouchLight?, dock: Boolean, superellipse: Boolean,
+        profile: FloatArray? = null): RenderEffect {
         val amount = light?.amount?.coerceIn(0f,1f) ?: 0f
         val strength = if (dock) .06f*amount*amount else .16f*amount
         val reach = (if (dock) 28f*unit else height/sqrt(2f)) * (1f+3f*(light?.spreadAmount ?: 0f))
         val point = light?.point ?: androidx.compose.ui.geometry.Offset(width/2,height/2)
-        val key = listOf(width,height,tileWidth,padding,radius,unit,style,strength,reach,point,dock,superellipse)
+        val key = listOf(width,height,tileWidth,padding,radius,unit,style,strength,reach,point,dock,superellipse,profile)
         if (key==last) return checkNotNull(cached)
         shader.setFloatUniform("atlasInfo",tileWidth,padding,height+padding*2,if(superellipse) 1f else 0f)
+        shader.setFloatUniform("outlined", if (profile != null) 1f else 0f)
+        if (profile != null) shader.setFloatUniform("profile", profile)
         shader.setFloatUniform("box",width/2,height/2,width/2,height/2)
         shader.setFloatUniform("drop",width/2,height/2,width/2,height/2)
         shader.setFloatUniform("geometry",radius,0f,unit,0f)
@@ -67,7 +70,31 @@ uniform float4 rimStyle;
 uniform float4 lineStyle;
 uniform float4 pillCurve;
 uniform float2 pillCenter;
+uniform float outlined;
+uniform float4 profile[16];
 const float3 luma = float3(.2126,.7152,.0722);
+// 作者 long：固定Prism的64方向Catmull-Rom半径与导数，共同驱动九瓣轮廓的法线、折射和高光。
+float2 addTurn(float u, float index, float radius) {
+    float x=u-index; x-=64.0*floor(x/64.0+.5);
+    float d=abs(x);
+    if(d>=2.0) return float2(0);
+    float2 weight=d<1.0?float2((1.5*d-2.5)*d*d+1.0,(4.5*d-5.0)*d)
+        :float2(((-.5*d+2.5)*d-4.0)*d+2.0,(-1.5*d+5.0)*d-4.0);
+    return radius*float2(weight.x,weight.y*sign(x));
+}
+float3 outlineGeometry(float2 p) {
+    float len=max(length(p),.001), turn=atan(p.y,p.x)/6.28318530718;
+    float u=(turn-floor(turn))*64.0; float2 sum=float2(0);
+    for(int i=0;i<16;i++) {
+        float4 r=profile[i]; float index=float(i)*4.0;
+        sum+=addTurn(u,index,r.x)+addTurn(u,index+1.0,r.y)+addTurn(u,index+2.0,r.z)+addTurn(u,index+3.0,r.w);
+    }
+    float reach=max(sum.x,.001), slope=sum.y*64.0/6.28318530718/reach;
+    float2 radial=len<=.001?float2(1,0):p/len;
+    float2 gradient=radial-slope*float2(-radial.y,radial.x);
+    float stretch=max(length(gradient),.001);
+    return float3(max((reach-len)/stretch,0.0),gradient/stretch);
+}
 float distanceBox(float2 p,float2 halfSize,float radius) {
     float2 q=abs(p)-halfSize+radius;
     return length(max(q,0.0))+min(max(q.x,q.y),0.0)-radius;
@@ -129,6 +156,10 @@ half4 main(float2 pixel) {
     float2 centered=p-box.xy;
     float d=distanceBox(centered,box.zw,radius), edge=atlasInfo.w>0.0?insetCurve(centered):-d;
     float2 normal=normalBox(centered,box.zw,radius);
+    if(outlined>.5) {
+        float3 contour=outlineGeometry(centered);
+        d=-contour.x; edge=contour.x; normal=contour.yz;
+    }
     if(geometry.y>0.0) {
         float other=distanceBox(p-drop.xy,drop.zw,min(drop.z,drop.w));
         float nearest=min(d,other), lost=max(-d-edge,0.0);

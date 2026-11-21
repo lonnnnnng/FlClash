@@ -288,6 +288,7 @@ internal fun RuntimeCard(
     onDemandSuspended: Boolean = false,
 ) {
     val busy = state == CoreRuntimeStatus.STARTING || state == CoreRuntimeStatus.STOPPING
+    val toggleShape = rememberRuntimeToggleShape(state.isRunning)
     val colors = MaterialTheme.colorScheme
     val tone = dashboardBlockColor()
     val actionLabel = when (state) {
@@ -362,10 +363,10 @@ internal fun RuntimeCard(
                         enabled = !busy,
                         modifier = Modifier.size(88.dp).testTag("dashboard_runtime_toggle")
                             .appElasticPress(enabled = !busy)
-                            .appLiveButton(CircleShape, AppGlassStyle.tinted(LocalKClashDarkTheme.current,
+                            .appLiveButton(toggleShape, AppGlassStyle.tinted(LocalKClashDarkTheme.current,
                                 if (state.isRunning) colors.primary else colors.primaryContainer), !busy)
-                            .appFocusRing(CircleShape, standsOff = true),
-                        shape = CircleShape,
+                            .appFocusRing(toggleShape, standsOff = true),
+                        shape = toggleShape,
                         color = if (LocalAppMenuGlass.current && LocalAppLiveBackdrop.current != null) Color.Transparent else if (state.isRunning) colors.primary else colors.primaryContainer,
                         contentColor = if (state.isRunning) colors.onPrimary else colors.onPrimaryContainer,
                     ) {

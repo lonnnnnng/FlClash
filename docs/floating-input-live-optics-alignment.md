@@ -18,7 +18,7 @@
 
 Dock主体先绘制，抬起镜片采样已绘制主体，文字层独立折射。触光采用高斯衰减，普通按钮120ms入/360ms出，Dock原100/500ms弹簧，先画光再画前景。菜单仍冻结背景，未改为实时捕获。
 
-本组不是完整Flutter捕获引擎：任意重叠pane的atlas分层/group/veil、启动按钮运行态circle→cookie9轮廓、全页采样降采样策略仍有差异。旧API仅保留既有模糊/染色降级，未扩大系统兼容验收。
+本组不是完整Flutter捕获引擎：任意重叠pane的atlas分层/group/veil与全页采样降采样策略仍有差异。启动按钮circle→cookie9轮廓已由后续KUI-VIS-071补验；按钮播放/暂停字形和按需暂停图标仍有差异，见[071说明](runtime-toggle-shape-alignment.md)。旧API仅保留既有模糊/染色降级，未扩大系统兼容验收。
 
 ## 菜单性能与溯源
 

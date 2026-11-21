@@ -115,7 +115,8 @@ internal fun Modifier.appLiveMaterialRegion(shape: Shape, material: () -> AppGla
                 for (i in 0..3) translate(i * tile.width.toFloat(), 0f) { drawLayer(layers[i]) }
             }
             atlas.renderEffect = optics.effect(paneSize.width, paneSize.height, tile.width.toFloat(), padding, radius,
-                density, style, light, dock, shape is AppSuperellipseShape)
+                density, style, light, dock, shape is AppSuperellipseShape,
+                (shape as? RuntimeToggleShape)?.profile(paneSize, layoutDirection, this))
             translate(bounds.left,bounds.top) { clipPath(path) { translate(-padding, -padding) { drawLayer(atlas) } } }
         } else {
             val sigma = style.effective(AppGlassQuality.STANDARD).blur

@@ -1,0 +1,177 @@
+{
+  "id": "KUI-VIS-071",
+  "date": "2026-11-21",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "scope": "Dashboard runtime toggle shape and its live-glass outline; no core, VPN, Room profile, or full-page Flutter runtime comparison",
+  "flutterReference": {
+    "snapshot": "../../../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "currentOutboundSha256": "1fb47cc2e4274dc940ba9876c1736410183bbdf867d9d863b46a0e3b8db77974",
+    "morphSha256": "9280474ebc49ba59d81761b0a9dd3d27b01edcd64e71f927b7ee98da2a9a6498",
+    "materialShapesSha256": "5c569c1b64dc3c88022b2b02ae4e46247bfad77f17a275b6e2b93e427c7530e6",
+    "roundedPolygonSha256": "245d37f46ac192d2f5d905f3e0a5163f3530be4f4d2b6004fe15269e86e58313",
+    "liquidGlassSha256": "e71b88315f590dc4e3b0908727c08897cf9f4763a33e7def1d00e4093efcb66d",
+    "animation": {
+      "durationMs": 450,
+      "shape": "circle to cookie9Sided",
+      "rotation": "progress * 2pi / 9",
+      "forwardCurve": "easeOutBack",
+      "reverseCurve": "easeInCubic"
+    }
+  },
+  "implementation": {
+    "shapeSource": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeToggleShape.kt",
+    "curveSource": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeToggleCurves.kt",
+    "instrumentedTest": "android/tests/instrumented/RuntimeToggleShapeInstrumentedTest.kt",
+    "oracleTool": "tool/export_runtime_shape_reference.py",
+    "glassProfile": "64-direction Catmull-Rom radius and derivative passed to AGSL"
+  },
+  "verification": {
+    "motionJvm": {
+      "tests": 628,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pocoFinalBatch": {
+      "tests": 15,
+      "failures": 0,
+      "screenshots": 23,
+      "screenshotsJson": "../../../acceptance-artifacts/runtime-shape-menu-20261121/final4/screenshots.json"
+    },
+    "pocoFinalDrawBatch": {
+      "tests": 3,
+      "failures": 0,
+      "screenshots": 8,
+      "screenshotsJson": "../../../acceptance-artifacts/runtime-shape-menu-20261121/final5/screenshots.json"
+    },
+    "outlineOracle": {
+      "progressSamples": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0,
+        1.1
+      ],
+      "edgeTolerancePixels": 1,
+      "radialDirections": 64,
+      "profileTolerancePixels": 0.6,
+      "result": "passed"
+    },
+    "builds": [
+      "assembleMotionBenchmark",
+      "assembleMotionBenchmarkAndroidTest",
+      "assembleRelease",
+      "assemblePerformanceBenchmark"
+    ],
+    "lint": {
+      "motionErrors": 0,
+      "motionWarnings": 75,
+      "motionHints": 15,
+      "releaseErrors": 0,
+      "releaseWarnings": 71,
+      "releaseHints": 14
+    },
+    "releaseDexGate": {
+      "mlKitRegistrars": 3,
+      "passed": true
+    },
+    "productionSourceUnchangedBetweenFinal4AndFinal5": true
+  },
+  "dataProtection": {
+    "testPackagesInstalledThenUninstalledBySha": [
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.performance"
+    ],
+    "originalFlutterPackage": "com.follow.clash",
+    "originalFlutterPackageUnchanged": true,
+    "originalFlutterStableFields": {
+      "appId": 10185,
+      "codePath": "/data/app/~~BuOa5bjLF5F8uf0z6QC-hw==/com.follow.clash-dabovf9Ks3fSV7RqrrZY1g==",
+      "versionCode": 2026112401,
+      "versionName": "0.9.3",
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-07 02:44:08"
+    },
+    "deviceSettingsUnchanged": true,
+    "cleanupEvidence": "../../../acceptance-artifacts/runtime-shape-menu-20261121/cleanup.json"
+  },
+  "limitations": [
+    "The power icon has not yet been morphed to Flutter's play/pause glyph; suspended Wi-Fi glyph also remains different.",
+    "The upstream Flutter app was not launched or modified; full-page runtime parity and other page transitions remain open.",
+    "Glass remains disabled by default; overlapping-pane atlas layering and whole-screen sampling policy remain incomplete.",
+    "The feature is not included in public version 0.1.12 and was not released."
+  ],
+  "baseCommit": "724c105c",
+  "builtWithExistingUncommittedKcoreChanges": true,
+  "installedPackages": [
+    {
+      "package": "com.lonnnnnng.flclash.motion",
+      "sha256": "91021f4140af2fd8a1670a3333110c8779a3becb83bf3f3339d9d16f00964c68",
+      "bytes": 67530789,
+      "cleanupOutput": "Success"
+    },
+    {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "sha256": "25be8fa03a7f8414b27101f1f9f9edfc8c117045a9283774477cfbac249dd8de",
+      "bytes": 3254899,
+      "cleanupOutput": "Success"
+    },
+    {
+      "package": "com.lonnnnnng.flclash.performance",
+      "sha256": "417747b5e06231451215559916fe639d4b12f01e32e06548303d866935adbe4d",
+      "bytes": 49603585,
+      "menuTrace": false,
+      "cleanupOutput": "Success"
+    }
+  ],
+  "failuresPreserved": [
+    {
+      "batch": "build-motion.log",
+      "reason": "nullable profile changed cache key to List<Any?>; fixed declaration"
+    },
+    {
+      "batch": "instrumentation.log",
+      "result": "2/3",
+      "reason": "test treated non-convex shape row extrema as filled span; replaced with independent Flutter PathMetric radial oracle"
+    },
+    {
+      "batch": "live-r1/live-r2",
+      "reason": "cold launch notification permission blocked before trace; isolated performance package permission granted for subsequent runs"
+    },
+    {
+      "batch": "cleanup.json",
+      "reason": "full dumpsys equality first failed on runtime object identities and unordered query lists; installation fields and package/settings readback unchanged"
+    }
+  ],
+  "sourceHashes": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeToggleShape.kt": "8a4485bc7dcbe0ba52db627a02da8302302abd44d88c4f24282c66ddf6b707d4",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/RuntimeToggleCurves.kt": "62e71426d55bfdd78d9ba50eabf3e1623d43a5066961776813aa17b20f7ffcb6",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt": "72d64940d62b9c9f6ebf8dccaab082937533da36d028a1417cdbb427a90c23a5",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppLiveMaterial.kt": "9a48adb42bfef8e041159f6560a8a8e8be8d3342d7702ea908f3cdc67172e543",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/LivePaneOptics.kt": "f0de7db640d4dc6c8fda30387c53cf84327c4509e4d215b71e81128ec4ed488d",
+    "tool/export_runtime_shape_reference.py": "e53b5e5a655b714c6c2f619a5276072d03e24d5145a685f3a405da40eff0f553",
+    "tool/runtime_shape_oracle_test.dart": "a1d111713da3464debededace4c434603d6439c96d79c3d58aa1411a97e46393",
+    "android/tests/instrumented/RuntimeToggleShapeInstrumentedTest.kt": "c8d77a6f504fa5c0552f67de4b95d3f908abb5d0ab3c8d5d0327bc78294a0983",
+    "android/tests/instrumented/resources/runtime-toggle-flutter-reference.json": "77a19026de275ab478d044d58a9eef72cd565d6346cbe7a7a12e7c183991e429"
+  },
+  "artifacts": [
+    {
+      "name": "app-release-unsigned.apk",
+      "bytes": 49587137,
+      "sha256": "23bfee921fb465f5a32408931fc224f4e9601c08c3396cc820ea660e02ec9879"
+    },
+    {
+      "name": "normal-r8-final4.apk",
+      "bytes": 49603585,
+      "sha256": "417747b5e06231451215559916fe639d4b12f01e32e06548303d866935adbe4d"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "id": "KUI-VIS-PERF-20261121",
+  "date": "2026-11-21",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "package": "com.lonnnnnng.flclash.performance",
+  "flow": "empty-profile source menu only; cold process, open, back, reopen, back",
+  "runs": [
+    {
+      "name": "diagnostic-first-install",
+      "menuTrace": true,
+      "traceBytes": 6199114,
+      "traceSha256": "25134525cb12d4939d04176966b4fbd896683c8997cb8723bafc745b682ffde0",
+      "discardedChunks": 21,
+      "popupFirstUiWallMs": 74.399,
+      "popupFirstUiRunningMs": 58.320,
+      "popupReopenUiWallMs": 62.430,
+      "popupReopenUiRunningMs": 45.923,
+      "renderThreadSlowRootWallMs": 90.292,
+      "renderThreadSlowRootRunningMs": 86.859,
+      "nestedShaderCompileWallMs": 82.247,
+      "nestedCacheMissWallMs": 80.171,
+      "nestedDriverCompileShaderWallMs": 26.745,
+      "nestedDriverLinkProgramWallMs": 49.273,
+      "nestedBufferReleaseWaitWallMs": 0.0,
+      "rawTrace": "../../../acceptance-artifacts/panels-optics-poco-20261120/live-r3/trace.perfetto-trace"
+    },
+    {
+      "name": "diagnostic-reopen-after-driver-cache-warm",
+      "menuTrace": true,
+      "traceBytes": 6475383,
+      "traceSha256": "7f4159ccf66084bedb1391cdeeb07b2d6ab53b4ef943781e6e8707871b363cdf",
+      "discardedChunks": 22,
+      "popupFirstUiWallMs": 72.794,
+      "popupFirstUiRunningMs": 57.809,
+      "popupReopenUiWallMs": 65.199,
+      "popupReopenUiRunningMs": 52.394,
+      "popupCloseUiFramesMs": [17.379, 16.621],
+      "renderThreadMaxRootWallMs": 14.438,
+      "renderThreadMaxRootRunningMs": 10.899,
+      "renderThreadMaxRootBufferReleaseWaitMs": 3.254,
+      "shaderCompileTotalWallMs": 21.583,
+      "rawTrace": "../../../acceptance-artifacts/panels-optics-poco-20261120/live-r4/trace.perfetto-trace"
+    },
+    {
+      "name": "normal-r8-with-menu-trace-disabled",
+      "menuTrace": false,
+      "packageApkSha256": "417747b5e06231451215559916fe639d4b12f01e32e06548303d866935adbe4d",
+      "traceBytes": 6769375,
+      "traceSha256": "01e52c6bf54dce82062ded4bfff7800208ae6c5eace25a343ad7621475e59950",
+      "discardedChunks": 23,
+      "popupFirstUiWallMs": 65.651,
+      "popupFirstUiRunningMs": 54.942,
+      "popupReopenUiWallMs": 59.377,
+      "popupReopenUiRunningMs": 46.139,
+      "popupCloseUiWallMs": 17.871,
+      "rawTrace": "../../../acceptance-artifacts/panels-optics-poco-20261120/live-final-normal/trace.perfetto-trace"
+    }
+  ],
+  "conclusion": "The first full-R8 trace contains a one-time RenderThread shader compilation spike; the warm-cache trace has no comparable root. A later uninstrumented R8 sample still has a 65.651 ms popup-first UI root with 54.942 ms scheduled Running. Menu startup and close performance therefore remain partial and have not been optimized or attributed completely.",
+  "limits": [
+    "Each run has one first-open sequence and nonzero traced_chunks_discarded; treat values as diagnostic samples, not a stable A/B or percentage improvement.",
+    "Nested trace slices overlap and must not be summed; UI wall time, Running time, RenderThread time and sub-slices are separate measures.",
+    "The source menu was measured without opening its child sheet or IME; downstream transitions remain outside this trace.",
+    "The single first-install shader compilation is a driver/render-pipeline event in this trace, not proof of a cause for every menu jank or close frame."
+  ],
+  "cleanup": "../../../acceptance-artifacts/runtime-shape-menu-20261121/cleanup.json"
+}

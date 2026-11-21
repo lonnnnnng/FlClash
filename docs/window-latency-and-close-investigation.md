@@ -80,3 +80,13 @@ POCO最终`final-ui2`同套包24/24，包含7项输入窗口、5项液滴菜单�
 后续优先首次Popup组合/测量CPU成本、表单端到端交接延迟与BufferQueue/SurfaceFlinger等待，再继续高频观测状态重组隔离及剩余Flutter面板/连续转场。语义预检边界与系统兼容按用户决定保持，玻璃默认关闭。
 
 证据：[window-latency-poco-20261120.json](acceptance/window-latency-poco-20261120.json)；本机原始附件`../acceptance-artifacts/window-latency-poco-20261120/`。原始失败、候选制品、最终制品、线程切片/SQL/CSV、录像和图片均保留SHA清单。
+
+## 2026-11-21 来源菜单复测
+
+同一POCO空配置来源菜单，用独立完整R8 `com.lonnnnnng.flclash.performance` 冷进程执行打开→Back→重开→Back。两次显式菜单trace的首帧UI为74.399/58.320ms与72.794/57.809ms；复开为62.430/45.923ms与65.199/52.394ms。第二次诊断trace仍有关闭UI线程根16.621/17.379ms。随后以`MENU_TRACE=false`的普通R8再次测得首开65.651/54.942ms、复开59.377/46.139ms和关闭帧17.871ms。墙钟/Running分别保留，不能相加；Trace marker只存在诊断variant。
+
+首次安装流程中的RenderThread根token`11333326`墙钟90.292ms、Running86.859ms，嵌套shader编译82.247ms、cache miss80.171ms，其中driver compile/link片段分别26.745/49.273ms；这些片段与根区间重叠，不求和。后续缓存热起的诊断trace最大RenderThread根为14.438ms，包含shader编译累计仍有21.583ms，但该最大根无编译切片。它支持首次图形管线编译是一个一次性尖峰；普通R8首开仍约65.7ms，因此它不能解释持续菜单首开/组合成本，也没有证明关闭瓶颈已经解决。
+
+三个trace的`traced_chunks_discarded`为21/22/23，缺失统计均非零；这是有限定域样本，不是稳定A/B、完整线程归因或性能改善结论。Raw traces、frame/work/scope CSV及脚本保存在本机`../acceptance-artifacts/panels-optics-poco-20261120/live-r3/`、`live-r4/`、`live-final-normal/`。汇总见[2026-11-21 Perfetto记录](acceptance/menu-first-frame-perfetto-poco-20261121.json)。
+
+仍待独立诊断首开组合/测量/绘制和窗口交接的稳定成本，关闭阶段的`onForgotten`、Binder及RenderThread/合成等待也未闭环；此前撤回的固有测宽和滚动订阅候选不重开为产品修改。
