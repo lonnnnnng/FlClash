@@ -1,0 +1,115 @@
+{
+  "id": "KUI-VIS-070",
+  "date": "2026-11-21",
+  "status": "POCO_INSTRUMENTED_ACCEPTANCE_PASSED; full Flutter runtime and pixel parity remain PARTIAL",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "screen": "1080x2400",
+    "themes": ["light", "dark"]
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileFormInputs.kt",
+      "android/tests/instrumented/ProxyGroupEditorInstrumentedTest.kt"
+    ],
+    "sourceHashes": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProxyGroupEditor.kt": "2a33adf8445678062bd477cd98e9b510e61f0700fa6711dfedb51211612f380c",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileFormInputs.kt": "6f237d0915693f39fb054325d942edf7247f175f929c975e07cb04c8d991ac28",
+      "android/tests/instrumented/ProxyGroupEditorInstrumentedTest.kt": "4195236e55d97720904424e64cfe077cdb4601969884d8e732223c996435bfba"
+    },
+    "behavior": [
+      "Health-check scalar fields are edited in place in the proxy-group option list.",
+      "Numeric fields use a number keyboard and retain digits only; URL uses a URI keyboard.",
+      "Clearing a value removes it from the YAML draft while keeping its option row visible.",
+      "The remove control deletes the row; adding it again restores the option default.",
+      "The parent editor commits the resulting draft once after confirmation."
+    ]
+  },
+  "reference": {
+    "kind": "fixed Flutter source review",
+    "runtimeCompared": false,
+    "pixelParityClaimed": false
+  },
+  "build": {
+    "variant": "motionBenchmark",
+    "jvmAppMotion": {
+      "tests": 628,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "resultSource": "android/app/build/test-results/testMotionBenchmarkUnitTest"
+    },
+    "reusedModuleResults": {
+      "serviceTests": 220,
+      "coreTests": 39,
+      "commonTests": 34,
+      "note": "Gradle reused the successful module results; these counts were not re-executed in this motion test task."
+    },
+    "checks": [
+      "Debug app and AndroidTest builds passed.",
+      "Debug Lint passed with zero errors.",
+      "motionBenchmark app and AndroidTest builds passed.",
+      "motionBenchmark JVM tests passed.",
+      "motionBenchmark Lint passed with zero errors."
+    ],
+    "motionApk": {
+      "path": "android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+      "sha256": "00a9574612fc8bf64fc74de4b3aa50b7ec568be7a5cbf7ce45e55eebba113fe0"
+    },
+    "androidTestApk": {
+      "path": "android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+      "sha256": "77d2174be0a8090a13a089f055f581dcc2ab8e5be2999ecf3d66383ca0edb0bf"
+    }
+  },
+  "acceptance": {
+    "class": "com.lonnnnnng.flclash.ui.ProxyGroupEditorInstrumentedTest",
+    "passed": 11,
+    "total": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "tests": [
+      "emptyGroupBlocksConfirmAndCancelDoesNotWrite",
+      "listCopyDeleteAndLongPressReorderKeepIndependentIdentity",
+      "groupFormMembersOptionsAndQuickYamlWorkAcrossThemes",
+      "fallbackTargetPickerGroupsSourcesAndMarksCurrentChoice",
+      "addingAllOptionsReturnsToDraftWithoutSavingParent",
+      "memberDockCancelPreservesDraftAndStaysAboveRealIme",
+      "urlTestScalarOptionsEditInlineAndCommitAcrossThemes",
+      "categorizedMemberPicksRestoreAndUndoWholeOriginalDraft",
+      "addSettingSearchUsesTenItemThresholdAndFiltersAllTerms",
+      "overviewSingleGroupConfirmWritesOnceAndReturnsWithoutExtraSave",
+      "defaultSelectedPickerSeparatesDefaultAndGroupMembers"
+    ],
+    "junitXml": {
+      "path": "android/app/build/outputs/androidTest-results/connected/motionBenchmark/TEST-POCO F2 Pro - 16.xml",
+      "sha256": "b7f181eb9765ae29d4d620cad1db4fa37b002b3012924f9acf21445fb706c35b"
+    },
+    "instrumentationLog": {
+      "path": "../acceptance-artifacts/group-options-inline-poco-20261121/final/instrumentation.log",
+      "sha256": "9f5ecc26f52ca9c51473ea035cc6cdaa706bd06518c88e76ff53027f05a29cb7"
+    },
+    "screenshots": {
+      "count": 24,
+      "allHaveDimensions": "1080x2400",
+      "manifest": "../acceptance-artifacts/group-options-inline-poco-20261121/final/screenshots.json",
+      "manifestSha256": "c42b0eaddf77d0888d470dc9b2f23b62616890b0d6b13180714d36c8b40afea2"
+    }
+  },
+  "deviceEndState": {
+    "kclashMotionPackageInstalled": false,
+    "kclashMotionTestPackageInstalled": false,
+    "flutterReferencePackageInstalled": true,
+    "flutterReferencePackageUsed": false,
+    "note": "Package state was read from POCO after acceptance; this continuation performed no install or uninstall."
+  },
+  "remaining": [
+    "Runtime comparison against the Flutter page and full-page pixel parity.",
+    "Other subpage and panel layouts and complete continuous transitions.",
+    "Complete glass optics and menu first-open/close RenderThread attribution."
+  ]
+}

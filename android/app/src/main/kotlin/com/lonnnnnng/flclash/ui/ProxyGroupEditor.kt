@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Sort
@@ -24,6 +25,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -308,6 +310,9 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     onDismiss: () -> Unit, onConfirm: (ProxyGroupDraft) -> Unit, onDelete: () -> Unit) {
     var json by rememberSaveable(initial.key) { mutableStateOf(initial.json) }
     var memberLayout by rememberSaveable(initial.key) { mutableStateOf(initial.memberLayout.orEmpty()) }
+    var shownOptionKeys by rememberSaveable(initial.key) {
+        mutableStateOf(initial.fields.keySet().filter { key -> groupOptions.any { it.key == key } })
+    }
     val group = initial.copy(json = json, memberLayout = memberLayout.takeIf { it.isNotEmpty() })
     var iconPicker by rememberSaveable(initial.key) { mutableStateOf(false) }
     var confirming by remember { mutableStateOf(false) }
@@ -351,6 +356,19 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
     var error by remember { mutableStateOf<String?>(null) }
     val clearFocus = remember { arrayOf<(() -> Unit)?>(null) }
     fun change(action: (com.google.gson.JsonObject) -> Unit) { json = group.edit(action).json; error = null }
+    fun changeOptionValue(option: GroupOption, value: String) {
+        change { fields ->
+            when {
+                value.isEmpty() -> fields.remove(option.key)
+                option.kind == "number" -> fields.addProperty(option.key, value.toLong())
+                else -> fields.addProperty(option.key, value)
+            }
+        }
+    }
+    fun removeOption(option: GroupOption) {
+        shownOptionKeys = shownOptionKeys.filterNot { it == option.key }
+        change { it.remove(option.key) }
+    }
     fun exit() {
         confirmRevision++
         clearFocus[0]?.invoke()
@@ -389,7 +407,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
         "hash-key" -> group.text("type") == "load-balance" && group.text("strategy") != "round-robin"
         else -> true
     } }
-    val remainingOptions = applicable.filterNot { group.fields.has(it.key) }
+    val remainingOptions = applicable.filterNot { it.key in shownOptionKeys }
     val optionTerms = optionQuery.trim().lowercase().split(Regex("\\s+")).filter(String::isNotEmpty)
     val matchingOptions = remainingOptions.filter { option -> optionTerms.all(option.label.lowercase()::contains) }
     val optionSearchable = optionSearchExpanded || optionQuery.isNotEmpty() ||
@@ -450,15 +468,28 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
             }, after = {
                 GroupSectionHeading(tr("选项"))
                 ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                    applicable.filter { group.fields.has(it.key) }.forEach { option ->
-                        Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = { change { it.remove(option.key) } }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
-                            if (option.kind == "boolean") {
-                                Text(option.label, Modifier.weight(1f).padding(start = 16.dp)); Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
-                    } else Box(Modifier.weight(1f)) { GroupFieldRow(option.label, group.text(option.key).ifBlank { tr("默认") }, "group_option_" + option.key) {
-                        if (option.kind == "target") { targetQuery = ""; targetSearchExpanded = false }
-                        editingKey = option.key
-                    } }
+                    applicable.filter { it.key in shownOptionKeys }.forEach { option ->
+                        if (option.kind == "number" || option.key == "url" || option.key == "expected-status") {
+                            GroupOptionInlineInput(
+                                groupKey = initial.key,
+                                option = option,
+                                value = group.text(option.key),
+                                onValueChange = { changeOptionValue(option, it) },
+                                onRemove = { removeOption(option) },
+                            )
+                        } else {
+                            Row(Modifier.heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { removeOption(option) }, modifier = Modifier.testTag("group_remove_" + option.key)) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
+                                if (option.kind == "boolean") {
+                                    Text(option.label, Modifier.weight(1f).padding(start = 16.dp))
+                                    Switch(group.flag(option.key), { value -> change { it.addProperty(option.key, value) } }, modifier = Modifier.padding(end = 16.dp))
+                                } else Box(Modifier.weight(1f)) {
+                                    GroupFieldRow(option.label, group.text(option.key).ifBlank { tr("默认") }, "group_option_" + option.key) {
+                                        if (option.kind == "target") { targetQuery = ""; targetSearchExpanded = false }
+                                        editingKey = option.key
+                                    }
+                                }
+                            }
                         }
                     }
                     TextButton(onClick = { optionQuery = ""; optionSearchExpanded = false; addOption = true }, modifier = Modifier.testTag("proxy_group_add_option")) { Icon(Icons.Outlined.Add, null); Text(tr("添加设置项")) }
@@ -562,6 +593,7 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                                 "number" -> it.addProperty(option.key, option.default.toLong())
                                 else -> it.addProperty(option.key, option.default)
                             } }
+                            shownOptionKeys = (shownOptionKeys + option.key).distinct()
                             if (last) { collapseOptionSearch(); addOption = false }
                         }.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(option.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
@@ -570,11 +602,16 @@ private fun SingleProxyGroupEditor(initial: ProxyGroupDraft, groups: List<ProxyG
                     }
                 }
             }
-            if (applicable.all { group.fields.has(it.key) }) Text(tr("已添加全部设置项"), Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (applicable.all { it.key in shownOptionKeys }) Text(tr("已添加全部设置项"), Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
         }
     })
-    "yaml" -> GroupQuickYaml(group, onDismiss = { yaml = false }, onApply = { next -> json = next.json; yaml = false; error = null })
+    "yaml" -> GroupQuickYaml(group, onDismiss = { yaml = false }, onApply = { next ->
+        json = next.json
+        shownOptionKeys = next.fields.keySet().filter { key -> groupOptions.any { it.key == key } }
+        yaml = false
+        error = null
+    })
     }
     }
     editing?.takeUnless { it.kind == "target" }?.let { option ->
@@ -688,6 +725,49 @@ private fun GroupFieldRow(label: String, value: String, tag: String, onClick: ()
             color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyLarge)
         Icon(Icons.Outlined.ChevronRight, null, Modifier.padding(start = 8.dp).size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+}
+
+/** 作者 long：健康检查的可选值直接留在原行编辑，清空只移除 YAML 值，不丢失当前表单里的选项行。 */
+@Composable
+private fun GroupOptionInlineInput(
+    groupKey: String,
+    option: GroupOption,
+    value: String,
+    onValueChange: (String) -> Unit,
+    onRemove: () -> Unit,
+) {
+    val number = option.kind == "number"
+    val maxLength = when (option.key) {
+        "url" -> 2048
+        "expected-status" -> 128
+        else -> 10
+    }
+    var draft by rememberSaveable(groupKey, option.key) { mutableStateOf(value) }
+    LaunchedEffect(value) { if (draft != value) draft = value }
+    ProfileFormInput(
+        title = option.label,
+        value = draft,
+        onValueChange = { candidate ->
+            val next = if (number) candidate.filter(Char::isDigit).take(maxLength) else candidate.take(maxLength)
+            if (!number || next.isEmpty() || next.toLongOrNull() != null) {
+                draft = next
+                onValueChange(next)
+            }
+        },
+        tag = "group_option_${option.key}_input",
+        leading = {
+            IconButton(onRemove, Modifier.testTag("group_remove_${option.key}")) {
+                Icon(Icons.Outlined.RemoveCircleOutline, null)
+            }
+        },
+        placeholder = tr("可选"),
+        unit = when (option.key) { "interval" -> "s"; "timeout", "tolerance" -> "ms"; else -> null },
+        keyboardOptions = KeyboardOptions(keyboardType = when {
+            number -> KeyboardType.Number
+            option.key == "url" -> KeyboardType.Uri
+            else -> KeyboardType.Text
+        }),
+    )
 }
 
 @Composable

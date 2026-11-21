@@ -229,12 +229,11 @@ class ProxyGroupEditorInstrumentedTest {
             compose.onNodeWithTag("group_add_timeout").assertDoesNotExist()
             capture("groups_add_options_$theme")
             compose.onNodeWithTag("proxy_group_add_option_back").performClick()
-            compose.onNodeWithTag("group_option_timeout").performScrollTo().performClick()
-            compose.onNodeWithTag("group_value_input").performTextReplacement("-1")
-            compose.onNodeWithTag("group_value_confirm").performClick()
-            compose.onNodeWithText("请输入非负整数").assertIsDisplayed()
-            compose.onNodeWithTag("group_value_input").performTextReplacement("8000")
-            compose.onNodeWithTag("group_value_confirm").performClick()
+            compose.onNodeWithTag("group_option_timeout_input").performScrollTo().performTextReplacement("-1")
+            compose.onNodeWithTag("group_option_timeout_input").assertTextEquals("1")
+            compose.onNodeWithTag("group_option_timeout_input").performTextReplacement("8000")
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
+            compose.waitUntil(5_000) { imeTop() == null }
             capture("groups_options_$theme")
             compose.onNodeWithTag("proxy_group_quick_yaml").performClick()
             compose.onNodeWithTag("proxy_group_yaml_content").assertTextContains("future: keep", substring = true)
@@ -251,6 +250,90 @@ class ProxyGroupEditorInstrumentedTest {
                 assertEquals("8000", values.last().text("timeout"))
                 assertEquals(listOf(ProxyGroupMember("Local"), ProxyGroupMember("DIRECT"), ProxyGroupMember("cloud", true)), ProxyGroupDrafts.members(values.last()))
                 assertTrue(values.last().fields.has("future"))
+            }
+        }
+    }
+
+    @Test fun urlTestScalarOptionsEditInlineAndCommitAcrossThemes() {
+        assertPortraitDefaultFontConfiguration()
+        val source = """
+            proxies:
+              - {name: Local, type: direct}
+            proxy-groups:
+              - name: Health
+                type: url-test
+                proxies: [DIRECT]
+                url: https://old.example/check
+                interval: 300
+                timeout: 5000
+                max-failed-times: 5
+                lazy: true
+                expected-status: '200'
+                tolerance: 100
+        """.trimIndent() + "\n"
+        var dark by mutableStateOf(false)
+        var saved: ProxyGroupsSave? = null
+        var saves = 0
+        compose.setContent { KClashTheme(darkTheme = dark) { key(dark) {
+            val profileId = if (dark) 851L else 850L
+            ProfileProxyGroupsEditorDialog(Profile.custom(profileId, "健康检查"),
+                ProfileProxyGroupsEditor.extractGroups(source), false, {}, {}, sourceContent = source,
+                initialGroupIndex = 0, onSaveDraft = { saved = it; saves++ })
+        } } }
+
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle { dark = theme == "dark"; saved = null; saves = 0 }
+            compose.waitForIdle()
+            compose.onNodeWithTag("connection_detail_handle").performClick()
+            val list = compose.onNodeWithTag("group_form_list")
+            list.performScrollToNode(hasTestTag("group_option_url_input"))
+            compose.onNodeWithTag("group_option_url_input").assertTextEquals("https://old.example/check")
+            compose.onNodeWithTag("group_option_interval_input").assertTextEquals("300")
+            compose.onNodeWithTag("group_option_expected-status_input").assertTextEquals("200")
+            compose.onNodeWithTag("group_value_input").assertDoesNotExist()
+
+            compose.onNodeWithTag("group_option_url_input").performTextReplacement("https://new.example/health")
+            compose.waitUntil(5_000) { imeTop() != null }
+            compose.onNodeWithTag("group_option_url_input").assertTextEquals("https://new.example/health")
+            capture("proxy_group_inline_url_ime_$theme")
+            compose.onNodeWithTag("group_option_url_input").performTextReplacement("")
+            assertEquals("", compose.onNodeWithTag("group_option_url_input").fetchSemanticsNode()
+                .config[androidx.compose.ui.semantics.SemanticsProperties.EditableText].text)
+            compose.onNodeWithTag("group_remove_url").assertIsDisplayed()
+            compose.onNodeWithTag("group_option_url_input").performTextReplacement("https://new.example/health")
+
+            compose.onNodeWithTag("group_option_expected-status_input").performScrollTo().performTextReplacement("204")
+            compose.onNodeWithTag("group_option_interval_input").performScrollTo().performTextReplacement("-45x")
+            compose.onNodeWithTag("group_option_interval_input").assertTextEquals("45")
+            compose.onNodeWithTag("group_option_timeout_input").performScrollTo().performTextReplacement("6500")
+            compose.onNodeWithTag("group_option_max-failed-times_input").performScrollTo().performTextReplacement("7")
+            compose.onNodeWithTag("group_option_tolerance_input").performScrollTo().performTextReplacement("125")
+            compose.onNodeWithTag("group_option_url_input").performScrollTo()
+            capture("proxy_group_inline_options_$theme")
+            compose.onNodeWithText("s").assertIsDisplayed()
+            assertEquals(0, saves)
+
+            compose.onNodeWithTag("group_remove_url").performClick()
+            compose.onNodeWithTag("group_option_url_input").assertDoesNotExist()
+            compose.onNodeWithTag("proxy_group_add_option").performScrollTo().performClick()
+            compose.onNodeWithTag("group_add_url").performScrollTo().performClick()
+            compose.onNodeWithTag("group_add_url").assertDoesNotExist()
+            compose.onNodeWithTag("proxy_group_add_option_back").performClick()
+            compose.onNodeWithTag("group_option_url_input").performScrollTo().assertTextEquals("https://www.gstatic.com/generate_204")
+            compose.onNodeWithTag("group_option_url_input").performTextReplacement("https://new.example/health")
+            androidx.test.espresso.Espresso.closeSoftKeyboard()
+            compose.waitUntil(5_000) { imeTop() == null }
+            compose.onNodeWithTag("proxy_group_form_confirm").performClick()
+            compose.waitUntil(10_000) { saved != null }
+            compose.runOnIdle {
+                val group = checkNotNull(saved).groups.single()
+                assertEquals("https://new.example/health", group.text("url"))
+                assertEquals("45", group.text("interval"))
+                assertEquals("6500", group.text("timeout"))
+                assertEquals("7", group.text("max-failed-times"))
+                assertEquals("204", group.text("expected-status"))
+                assertEquals("125", group.text("tolerance"))
+                assertEquals(1, saves)
             }
         }
     }
@@ -326,8 +409,8 @@ class ProxyGroupEditorInstrumentedTest {
         compose.onNodeWithTag("profile_top_search_open").assertDoesNotExist()
         compose.waitUntil(5_000) { imeTop() == null }
         compose.onNodeWithTag("proxy_group_add_option_back").performClick()
-        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_option_interval"))
-        compose.onNodeWithTag("group_option_interval").assertTextContains("300")
+        compose.onNodeWithTag("group_form_list").performScrollToNode(hasTestTag("group_option_interval_input"))
+        compose.onNodeWithTag("group_option_interval_input").assertTextContains("300")
         compose.runOnIdle { assertEquals(0, writes) }
     }
 

@@ -1,6 +1,10 @@
 # Project Context
 
-## KUI-VIS-069 资源设置输入浮框（2026-11-21，当前）
+## KUI-VIS-070 代理组健康检查项行内编辑（2026-11-21，当前）
+
+代理组URL、间隔、超时、最大失败次数、预期状态码与容差可在原行内编辑；清空留行，删除后重加恢复默认，父级确认单次提交。POCO F2 Pro/API36最终11/11、24张截图哈希/尺寸通过；motion JVM628项零失败、Service220/Core39/Common34复用，Debug/motion构建和Lint通过。固定Flutter源码参考，不含Flutter runtime/逐像素对照；结束核对未安装motion/test包，原Flutter包未操作。完整视觉与转场仍PARTIAL。见`docs/proxy-group-inline-options-alignment.md`及配套验收JSON。
+
+## KUI-VIS-069 资源设置输入浮框（2026-11-21）
 
 工具→资源中的Geo周期/地址表单已对齐共享404ms Prism浮框，保留小时尾缀、Number/URI键盘、原设置校验与恢复默认语义。POCO真实MainActivity保存/重开/取消/系统Back/重置/返回工具流程和资源页双主题回归最终同批2/2；8目标截图+8双主题回归共16张校验并目视。628项App motion JVM执行，其余模块结果复用；Debug/motion Lint零错误。原设置逐值恢复、核心STOPPED，双包精确清理，Flutter/1.yaml/系统设置保持。未发布；完整Flutter同态/其他页面连续转场仍PARTIAL。见`docs/resource-input-motion-alignment.md`及配套验收JSON。
 

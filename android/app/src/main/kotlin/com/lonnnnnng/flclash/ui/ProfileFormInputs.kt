@@ -30,7 +30,8 @@ internal fun profileInputSurfaceColor() = if (LocalKClashDarkTheme.current) {
 @Composable
 internal fun ProfileFormInput(
     title: String, value: String, onValueChange: (String) -> Unit, tag: String,
-    modifier: Modifier = Modifier, enabled: Boolean = true, secret: Boolean = false,
+    modifier: Modifier = Modifier, leading: (@Composable () -> Unit)? = null,
+    enabled: Boolean = true, secret: Boolean = false,
     invalid: Boolean = false, placeholder: String = "", unit: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -38,7 +39,7 @@ internal fun ProfileFormInput(
     var revealed by remember { mutableStateOf(false) }
     if (secret) ClearAgeInputOnBackground { revealed = false }
     val colors = MaterialTheme.colorScheme
-    ProfileFormRow(title, Modifier.background(if (invalid) colors.errorContainer.copy(alpha = .3f) else androidx.compose.ui.graphics.Color.Transparent)) {
+    ProfileFormRow(title, Modifier.background(if (invalid) colors.errorContainer.copy(alpha = .3f) else androidx.compose.ui.graphics.Color.Transparent), leading = leading) {
         BasicTextField(value, onValueChange, modifier.weight(1f).padding(vertical = 12.dp).testTag(tag), enabled = enabled,
             singleLine = true, textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.End,
                 color = (if (invalid) colors.error else colors.onSurface).copy(alpha = if (enabled) 1f else .4f)),
