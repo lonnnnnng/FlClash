@@ -162,5 +162,5 @@ KREL-001与KUI-020已修，公开APK在Redmi验证：真实SAF/首次VPN及运�
 ## KUI-033后续顺序
 
 1. 菜单计数首次覆盖触点输入并分离深浅首开/复开/关闭：主线程和RenderThread累计CPU高，Popup关闭窗可见；先设计单因素绘制候选和无采样基线，再以现成ART采样核对热点。若ROM继续拒绝原生栈，保持“线程成本定位、函数因果未定”，不重复同一失败的Perfetto/Simpleperf入口。
-2. 安全Flutter副本非空CUSTOM已读取34组、91规则、90资源以及NTP/Sniffer；下一步补非空Provider运行条件和图标/图库，沿Toolbar、编辑/选择/预览逐页录制。Kotlin成员搜索已下沉至真实IME上沿Dock，DNS自然深浅转场已录制；剩余子页按导航/返回/快速反向分组，区分fixture宿主和真实页面。
+2. 安全Flutter副本非空CUSTOM已读取34组、91规则、90资源以及NTP/Sniffer；下一步补非空Provider运行条件和图标/图库，沿Toolbar、编辑/选择/预览逐页录制。Kotlin成员搜索已下沉至真实IME上沿Dock；KUI-VIS-078补DNS详情深浅成功/失败分组、八态截图和列表返回位置保持（POCO组件夹具9/9），但没有接实时MainActivity DNS或Flutter运行并排。剩余子页按导航/返回/快速反向分组，区分fixture宿主和真实页面。
 3. 保留启动后238条测速value/updatedAtMillis变化、运行投影mtime变化和自动更新审计文件变化；按Profile/代理四字段复合键关联写入者及来源时刻，再做长窗重复启停。现有启动后复查已稳定但不解释首次变化，未复现不关闭历史记录。

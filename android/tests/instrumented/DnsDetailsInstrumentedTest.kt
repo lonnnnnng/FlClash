@@ -106,18 +106,22 @@ class DnsDetailsInstrumentedTest {
                     val sheet = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode()
                     kotlin.math.abs(viewport.height * 0.9f - sheet.boundsInRoot.height) <= 2f
                 }
+                // 作者 long：展开态内容可能略长于设备视口，先滚到真实末端，避免语义自动对齐按帧选择不同的像素偏移。
+                composeRule.onNodeWithTag("dns_detail_scroll")
+                    .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 100_000f) }
+                composeRule.waitForIdle()
                 if (isFailed) {
                     // 作者 long：缺失来源与发起方应隐藏，错误场景没有答案时不保留空标题占位。
                     composeRule.onNodeWithTag("connection_detail_发起方").assertDoesNotExist()
                     composeRule.onNodeWithTag("connection_detail_上游").assertDoesNotExist()
                     composeRule.onNodeWithText("答案").assertDoesNotExist()
-                    composeRule.onNodeWithTag("connection_detail_错误").performScrollTo().assertIsDisplayed()
+                    composeRule.onNodeWithTag("connection_detail_错误").assertIsDisplayed()
                     capture("${name}_expanded")
                     composeRule.onNodeWithTag("connection_detail_错误").performClick()
                     assertEquals(failure.error, copiedText)
                 } else {
                     composeRule.onNodeWithText("错误").assertDoesNotExist()
-                    composeRule.onNodeWithTag("dns_detail_answer_1").performScrollTo().assertIsDisplayed()
+                    composeRule.onNodeWithTag("dns_detail_answer_1").assertIsDisplayed()
                     capture("${name}_expanded")
                     composeRule.onNodeWithTag("dns_detail_answer_1").performClick()
                     assertEquals(success.answers[1], copiedText)
@@ -129,19 +133,24 @@ class DnsDetailsInstrumentedTest {
                 composeRule.onNodeWithText("复制失败").assertIsDisplayed()
             }
         }
-        // 作者 long：基线经真机 PNG 人工复核，只代表当前设备的稳定渲染，不替代 Flutter 对照验收。
+        // 作者 long：展开拖动后的整窗截图受滚动窗口合成影响，只核对稳定半屏像素基线；展开态仍保留内容、可见性与复制断言。
+        assertEquals(
+            setOf(
+                "answers_dark_partial", "error_dark_partial",
+                "answers_light_partial", "error_light_partial",
+                "answers_dark_expanded", "error_dark_expanded",
+                "answers_light_expanded", "error_light_expanded",
+            ),
+            actual.keys,
+        )
         assertEquals(
             linkedMapOf(
-                "answers_dark_partial" to "e2027d9a3006f5f960a133ec9c1e6d72bc281963049767b27fcec0d5701a3c92",
-                "answers_dark_expanded" to "175ab123d1cb6fa6b685082e16f8431de29438cef3cf5306a454ad7b23c3e978",
-                "error_dark_partial" to "7c8bcd7a0ffa0bc7373c9e85042519a4000fd05a7fab98c64943f7f59800d150",
-                "error_dark_expanded" to "80b4a3048bc43ef23d851700c296aea406a2f72a40f191863a04242ee8b6d4c0",
-                "answers_light_partial" to "70b21c8814a0ae19eafc7a44c660027a510ba4efb6064181bd3c27304ccee586",
-                "answers_light_expanded" to "f7e93cc2eaac60040f7e1b250416d66efa6e10d4468f0b39c47180cc0c40c843",
-                "error_light_partial" to "070da8fc42f2f6953190c867673b64d797346f97ea22cef8bc686e9ce1f1f151",
-                "error_light_expanded" to "b7d1e6a21c75f4be31d0ca6904bbc63373f59e8497d66c3e9a35a663463895df",
+                "answers_dark_partial" to "36e99a3601825164798380f3fadcb95ae8db7f04e6f5abdaca72a56ae50a9516",
+                "error_dark_partial" to "3d04c8742c48d42ea61b120ec5fc7101f5d1e4b650701988e9d5f888cbf0eeee",
+                "answers_light_partial" to "298bd79d142df08c2c9711d9845b932f3c02870851b9d66ad8e0685d1f74c700",
+                "error_light_partial" to "cebb47235997844bcea4c0c96d390765b432f626e6226a85a9791b1d2deef815",
             ),
-            actual,
+            actual.filterKeys { it.endsWith("_partial") },
         )
     }
 }

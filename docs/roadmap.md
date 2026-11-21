@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **KUI-VIS-078（2026-11-22，DNS 详情分组视觉与返回连续性）**：DNS 基本信息、错误、答案按 Flutter 分组 surface、16dp 内容线与56dp最小行高整理；空发起方/上游/答案节隐藏，复制成功/失败反馈保留。POCO F2 Pro/API36深浅主题成功/失败八态、长域名折行和错误文案已采图目视；100行列表打开第50行详情、滚动后系统返回，原行位置误差不超过1px。DNS/观测页/首页详情合并定向9/9、631项JVM、Debug/Release-R8、双Lint通过。半屏四态SHA作为稳定像素门禁；展开态整窗哈希跨复采不稳定，保留截图人工查看并以内容/可见性/几何/复制断言验收，不推定像素差来源。[验收证据](acceptance/dns-detail-parity-poco-20261122.json)，[截图和原始日志](../../../acceptance-artifacts/dns-details-parity-poco-20261122/)。这是固定Compose夹具，未接MainActivity实时DNS/核心/VPN，也未运行Flutter并排对照；其它子页/连续转场、菜单discarded来源和GPU/fence归因仍未闭环，玻璃默认关闭。
+
 > **KUI-VIS-077（2026-11-22，活动连接详情分组视觉续验）**：网络活动页详情按 Flutter `DetailRow` 对齐标签/值字体色彩、56dp 最小行高、16dp 内容边距、分组 surface、像素对齐分隔线及代理链小徽标；首页连接卡详情保留旧紧凑版。POCO F2 Pro/API36 深浅主题展开态上/下段四张截图已逐张目视，链路、长字段和分组均可读；新增长列表详页回归与56dp/16dp几何断言，ObservationDetails 6/6、首页旧样式回归1/1；631项App JVM、Debug/Release-R8和双Lint通过。UI XML/截图及SHA详见[验收证据](acceptance/visual-connection-detail-style-poco-20261122.json)。这仍是固定Compose连接夹具，未接 MainActivity 运行连接源，也未运行Flutter并排对照；其它子页/转场、菜单Perfetto discarded来源和GPU/fence归因仍未闭环，玻璃默认关闭。
 
 > **运行日志闪退修复与 VPN 更新检查诊断（2026-11-22，本地未发布）**：真机异常为 `LazyColumn` 收到重复 key，原 key 用毫秒时间戳/等级/正文拼接；已改为日志接纳时分配单调 ID，过滤、清空和容量淘汰保持唯一稳定身份。App JVM、POCO 重复行 Compose 用例、Debug/Release-R8 与双 Lint 通过。应用更新仍在核心运行时使用实际本地 HTTP 入站、停止时直连；失败页新增脱敏路线/阶段/HTTP 状态码，未改变代理路由。POCO 核心停止时真实 GitHub 检查通过；当前设备没有 Kotlin 包和可复验的 Kotlin VPN 运行态，故 VPN 代理分支未闭环，不能认定为已修复。详见[缺陷与诊断记录](runtime-log-and-update-check-defects.md)与[应用更新实现](app-update-implementation.md)。
@@ -1482,7 +1484,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 KClash 0.1.13/code1013 已发布为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`。恢复CI `44921344965`的正式签名Release、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和`SHA256SUMS`一致，沿用既有证书。Release APK已回下载核验，未安装手机。首次标签运行因Gradle构建步骤缺少签名密码/别名环境变量而失败，修正提交`b01fa1ed`后以明确版本和源码引用手动恢复；首个运行没有创建Release。详见[发布证据](acceptance/release-0.1.13-20261122.json)。
 
-最新工程／视觉记录为KUI-VIS-073：新脚本导入与脚本改址均使用单URL浮框，URI显示保护与点号两侧光标／删除边界已验；POCO最终定向8/8、MainActivity宿主2/2、自然四面板双主题转场8轮及当前源码录像通过。629项App JVM、Motion/Test、Release-R8、诊断Performance-R8、双Lint／DEX通过。诊断关闭两轮主组合释放2.864～3.100ms Running、窗口移除8.917～9.058ms wall（UI等待6.179～6.442ms）；buffer无覆盖／数据损失，但全局discarded28／29原因未定位，无稳定收益结论。自有三包已卸载，Flutter未触碰，设置复原。该组随0.1.13正式发布；全应用视觉、其他子页、任意URL断点与菜单GPU／fence仍PARTIAL。[说明](resource-options-url-disposal-alignment.md)、[证据](acceptance/resource-options-url-disposal-poco-20261121.json)。
+最新视觉切片为KUI-VIS-078：DNS详情分组与列表返回在POCO固定夹具上9/9；631项JVM、Debug/Release-R8和双Lint通过。半屏状态使用稳定SHA门禁，展开态保留截图和语义/几何/复制断言，未把不稳定整窗像素哈希当成回归。当前尚未接MainActivity实时DNS源或做Flutter运行并排。完整视觉、其它子页/连续转场、菜单discarded来源和GPU/fence归因仍PARTIAL；玻璃默认关闭。[本组证据](acceptance/dns-detail-parity-poco-20261122.json)。最近正式发布仍为0.1.13，KUI-VIS-078尚未发版。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 

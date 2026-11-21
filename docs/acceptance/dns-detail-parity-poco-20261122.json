@@ -1,0 +1,159 @@
+{
+  "id": "KUI-VIS-078",
+  "date": "2026-11-22",
+  "scope": "DNS detail grouped layout, copy feedback, and list-to-detail return continuity",
+  "reference": {
+    "flutterSource": [
+      "lib/views/dns_queries.dart",
+      "lib/ui/list.dart",
+      "lib/ui/list_selected.dart"
+    ],
+    "detailBodyHorizontalInsetDp": 16,
+    "rowMinimumHeightDp": 56,
+    "sections": ["basic information", "error", "answers"]
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "physicalSize": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "android/tests/instrumented/DnsDetailsInstrumentedTest.kt",
+      "android/tests/instrumented/ObservationDetailsInstrumentedTest.kt"
+    ],
+    "changes": [
+      "DNS basic information, error, and answer rows use the grouped activity-detail surface and Flutter-aligned row geometry.",
+      "Missing initiator/upstream/answer sections remain hidden; copy success and clipboard failure feedback remain covered.",
+      "DNS list detail uses a 100-row fixture, opens row 50, scrolls detail content, sends system Back, and verifies the original row position is preserved."
+    ]
+  },
+  "buildValidation": {
+    "jvmTests": {
+      "tests": 631,
+      "suites": 83,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "assembleDebug": "passed",
+    "assembleReleaseR8": "passed",
+    "debugLint": { "errors": 0, "warnings": 75, "hints": 15 },
+    "releaseLint": { "errors": 0, "warnings": 71, "hints": 14 },
+    "apk": {
+      "debug": {
+        "bytes": 81097739,
+        "sha256": "290b93a925abb0bad2101edf8dadb5514029404c58a870d76430020bed3dce8e"
+      },
+      "unsignedReleaseR8": {
+        "bytes": 49601821,
+        "sha256": "ffe113ab8eac6d3f097e92c4ec03dec23f1194722957a9079e0587ea688f80ae"
+      },
+      "androidTest": {
+        "bytes": 7106443,
+        "sha256": "ef6fbed465e1e16ea2b13b6de8d662bec0eacc2b9cbe2881519cce5e24bb2443"
+      }
+    }
+  },
+  "instrumentedTests": {
+    "command": "adb -s 31936bb6 shell am instrument -w -r -e class DnsDetailsInstrumentedTest,ObservationDetailsInstrumentedTest,ConnectionsInstrumentedTest#connectionsRowOpensDetailsAndClosesWithoutChangingList -e kclashCapturePng true -e kclashCapturePngChunks true com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "durationSeconds": 33.369,
+    "results": [
+      {
+        "class": "com.lonnnnnng.flclash.ui.DnsDetailsInstrumentedTest",
+        "tests": 1,
+        "focus": "dark/light success/error states, expanded sheet content, answer/error copy success and failure"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ObservationDetailsInstrumentedTest",
+        "tests": 7,
+        "focus": "DNS row geometry and return position, activity-list behaviors and regressions"
+      },
+      {
+        "class": "com.lonnnnnng.flclash.ui.ConnectionsInstrumentedTest",
+        "tests": 1,
+        "focus": "home connection-card detail retains its existing compact layout"
+      }
+    ],
+    "dnsListReturn": {
+      "fixtureRows": 100,
+      "selectedRowIndex": 50,
+      "detailInset": "16dp within 2 physical pixels",
+      "domainRowHeight": "56dp within 2 physical pixels",
+      "rowTopDeltaAfterSystemBackPxMaximum": 1
+    }
+  },
+  "visualEvidence": {
+    "artifactDirectory": "../../../acceptance-artifacts/dns-details-parity-poco-20261122/",
+    "instrumentationLog": {
+      "file": "instrumentation-final.log",
+      "bytes": 1600643,
+      "sha256": "94eb7f5947cf1cfd203051c9082c20fc55a0f830d2eed07be34e05332cae8532"
+    },
+    "validatedScreenshotManifest": {
+      "file": "instrumentation-final-visuals.json",
+      "sha256": "0ec74d19aeb4b422cd8c1c9b09af4009bbd6b637737fdc216486433e49d38946",
+      "images": 12,
+      "validation": "All chunk indices, decoded PNG dimensions, byte lengths, and SHA-256 values matched the instrumentation metadata."
+    },
+    "dnsScreenshots": {
+      "answers_dark_partial": {
+        "sha256": "36e99a3601825164798380f3fadcb95ae8db7f04e6f5abdaca72a56ae50a9516",
+        "dimensions": "1080x1306"
+      },
+      "answers_dark_expanded": {
+        "sha256": "d99adf07a81cdf291742c5e24b473afb5e91d3f40086ecad2e3a999da2a21d82",
+        "dimensions": "1080x2089"
+      },
+      "error_dark_partial": {
+        "sha256": "3d04c8742c48d42ea61b120ec5fc7101f5d1e4b650701988e9d5f888cbf0eeee",
+        "dimensions": "1080x1306"
+      },
+      "error_dark_expanded": {
+        "sha256": "290ab4f05ba1092f189ec78df3b09e380fb153f782076085b88ef626fa53de1e",
+        "dimensions": "1080x2089"
+      },
+      "answers_light_partial": {
+        "sha256": "298bd79d142df08c2c9711d9845b932f3c02870851b9d66ad8e0685d1f74c700",
+        "dimensions": "1080x1306"
+      },
+      "answers_light_expanded": {
+        "sha256": "118ccc2cb8e82aeda0de8dadd0712d41701670ff006a6359eb26b4b793b2234e",
+        "dimensions": "1080x2089"
+      },
+      "error_light_partial": {
+        "sha256": "cebb47235997844bcea4c0c96d390765b432f626e6226a85a9791b1d2deef815",
+        "dimensions": "1080x1306"
+      },
+      "error_light_expanded": {
+        "sha256": "e92eaaab5a872c15434bc521df7e1d5edddbebd6d6e1aa40a2439b7a6931cb39",
+        "dimensions": "1080x2089"
+      }
+    },
+    "review": "Dark/light success and error layouts were visually inspected. Stable partial-state hashes are test-gated. Expanded-state screenshots are retained for manual review; repeated captures differed in full-window pixels, so expanded-state behavior is gated by visible content, geometry, and copy assertions instead of a brittle full-window hash. The cause of those pixel differences is not established."
+  },
+  "deviceCleanup": {
+    "kotlinDebugAndTestPackagesAbsent": true,
+    "coreOrVpnStarted": false,
+    "com.follow.clash": {
+      "versionName": "0.9.3",
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-07 02:44:08",
+      "changed": false
+    }
+  },
+  "limits": [
+    "This uses deterministic Compose fixtures and does not exercise live MainActivity DNS data, Hilt, the core bridge, VPN, or production Room state.",
+    "Flutter source layout was checked; this batch did not run a live Flutter side-by-side comparison.",
+    "Other subpages and continuous transitions remain open. Menu discarded producer and GPU/fence attribution remain unresolved; no performance gain is claimed."
+  ],
+  "glassDefault": false
+}

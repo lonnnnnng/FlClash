@@ -56,6 +56,52 @@ class ObservationDetailsInstrumentedTest {
         composeRule.onNodeWithText("显示 2/2").assertIsDisplayed()
     }
 
+    @Test fun dnsListDetailBackKeepsTheSelectedRowPosition() {
+        val queries = (0..99).map { index -> dns().copy(domain = "dns$index.example.test") }
+        composeRule.setContent {
+            KClashTheme {
+                ObservationPage(
+                    RequestsUiState(),
+                    DnsUiState(queries),
+                    LogsUiState(),
+                    CoreRuntimeStatus.RUNNING,
+                    ObservationTab.DNS.ordinal,
+                    {}, {}, {}, {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("observation_records").performScrollToIndex(50)
+        val rowTop = composeRule.onNodeWithTag("dns_row_50").fetchSemanticsNode().boundsInRoot.top
+        composeRule.onNodeWithTag("dns_row_50").performClick()
+        composeRule.onNodeWithTag("dns_detail_title").assertIsDisplayed()
+        composeRule.onNodeWithTag("connection_detail_域名").assertIsDisplayed()
+        val detailLeft = composeRule.onNodeWithTag("dns_detail_content").fetchSemanticsNode().boundsInRoot.left
+        val domainLabelLeft = composeRule.onNode(
+            hasText("域名") and hasAnyAncestor(hasTestTag("connection_detail_域名")),
+            useUnmergedTree = true,
+        ).fetchSemanticsNode().boundsInRoot.left
+        val density = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .targetContext.resources.displayMetrics.density
+        assertEquals(16f * density, domainLabelLeft - detailLeft, 2f)
+        assertEquals(
+            56f * density,
+            composeRule.onNodeWithTag("connection_detail_域名").fetchSemanticsNode().boundsInRoot.height,
+            2f,
+        )
+        composeRule.onNodeWithTag("connection_detail_域名").performScrollTo().assertIsDisplayed()
+
+        androidx.test.espresso.Espresso.pressBack()
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag("dns_detail_content").fetchSemanticsNodes().isEmpty()
+        }
+        assertEquals(
+            rowTop,
+            composeRule.onNodeWithTag("dns_row_50").fetchSemanticsNode().boundsInRoot.top,
+            1f,
+        )
+    }
+
     @Test fun identicalRuntimeLogsRenderAsSeparateRows() {
         val duplicate = CoreEvent.Log("info", "duplicate runtime message", 1_795_279_154_653L)
         composeRule.setContent {

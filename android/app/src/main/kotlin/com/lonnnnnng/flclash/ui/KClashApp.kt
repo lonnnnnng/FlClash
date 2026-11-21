@@ -4070,17 +4070,23 @@ internal fun DnsQueryDetailSheet(
     ) { requestDismiss ->
         // 作者 long：Flutter DNS 详情列表两侧留白为 16dp，保持基本信息、错误和答案共用该对齐线。
         Column(
-            modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 16.dp)
+                .testTag("dns_detail_content"),
         ) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(tr("DNS 详情"), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                Text(
+                    tr("DNS 详情"),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f).testTag("dns_detail_title"),
+                )
                 IconButton(onClick = requestDismiss, modifier = Modifier.testTag("dns_detail_close")) {
                     Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.testTag("action:关闭 DNS 详情"))
                 }
             }
             copyMessage?.let { Text(tr(it), modifier = Modifier.testTag("dns_copy_feedback")) }
             Column(
-                modifier = Modifier.weight(1f, fill = false).verticalScroll(contentScrollState),
+                modifier = Modifier.weight(1f, fill = false).verticalScroll(contentScrollState)
+                    .testTag("dns_detail_scroll"),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 ConnectionDetailSection(
@@ -4096,39 +4102,76 @@ internal fun DnsQueryDetailSheet(
                         tr("耗时") to "${query.delay} ms",
                     ),
                     onCopyText = copyValue,
+                    activityPageStyle = true,
                 )
-                // 作者 long：解析错误独立成组并使用错误色，避免长错误挤占基本信息的值列；答案整行复制便于复用 IPv6 等完整记录。
                 if (query.error.isNotBlank()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(tr("错误"), style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            query.error,
-                            modifier = Modifier.fillMaxWidth().testTag("connection_detail_错误")
-                                .heightIn(min = 48.dp)
-                                .clickable { copyValue(query.error) }
-                                .padding(vertical = 14.dp),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
+                    DnsDetailTextSection(
+                        title = tr("错误"),
+                        values = listOf(query.error),
+                        tagForIndex = { "connection_detail_错误" },
+                        error = true,
+                        onCopyText = copyValue,
+                    )
                 }
                 if (query.answers.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(tr("答案"), style = MaterialTheme.typography.titleSmall)
-                        query.answers.forEachIndexed { index, answer ->
-                            Text(
-                                answer,
-                                modifier = Modifier.fillMaxWidth().testTag("dns_detail_answer_$index")
-                                    .heightIn(min = 48.dp)
-                                    .clickable { copyValue(answer) }
-                                    .padding(vertical = 14.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        }
-                    }
+                    DnsDetailTextSection(
+                        title = tr("答案"),
+                        values = query.answers,
+                        tagForIndex = { "dns_detail_answer_$it" },
+                        error = false,
+                        onCopyText = copyValue,
+                    )
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun DnsDetailTextSection(
+    title: String,
+    values: List<String>,
+    tagForIndex: (Int) -> String,
+    error: Boolean,
+    onCopyText: (String) -> Unit,
+) {
+    if (values.isEmpty()) return
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Surface(
+            shape = ConnectionSheetSuperellipseShape(24.dp),
+            color = if (LocalKClashDarkTheme.current) {
+                MaterialTheme.colorScheme.surfaceContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceBright
+            },
+        ) {
+            Column {
+                values.forEachIndexed { index, value ->
+                    Text(
+                        value,
+                        modifier = Modifier.fillMaxWidth()
+                            .testTag(tagForIndex(index))
+                            .heightIn(min = 56.dp)
+                            .clickable { onCopyText(value) }
+                            .padding(horizontal = 16.dp, vertical = if (error) 14.dp else 10.dp),
+                        style = if (error) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
+                        color = if (error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                    if (index < values.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 16.dp, end = 14.dp),
+                            thickness = 0.75.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                    }
+                }
+            }
         }
     }
 }
