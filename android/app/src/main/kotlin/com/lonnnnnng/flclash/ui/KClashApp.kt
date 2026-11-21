@@ -77,6 +77,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
@@ -1497,16 +1498,22 @@ fun KClashApp(
         )
     }
 
-    if (remoteScriptState.isOpen) {
+    // 作者 long：VM成功会立即结束业务草稿，UI暂留最后一份脚本地址仅供退场；动画结束即释放，不重放提交。
+    var retiringRemoteScript by remember { mutableStateOf<ScriptRemoteUiState?>(null) }
+    SideEffect { if (remoteScriptState.isOpen) retiringRemoteScript = remoteScriptState }
+    val shownRemoteScript = remoteScriptState.takeIf { it.isOpen } ?: retiringRemoteScript
+    if (shownRemoteScript != null) {
         ScriptRemoteDialog(
             busy = scriptsState.isBusy,
-            script = remoteScriptState.script,
+            script = shownRemoteScript.script,
             error = scriptsState.error,
-            initialLabel = remoteScriptState.label,
-            initialUrl = remoteScriptState.url,
+            initialLabel = shownRemoteScript.label,
+            initialUrl = shownRemoteScript.url,
             onDraftChange = scriptsViewModel::editRemoteDraft,
             onDismiss = scriptsViewModel::closeRemote,
             onImport = scriptsViewModel::submitRemote,
+            closing = !remoteScriptState.isOpen,
+            onClosed = { retiringRemoteScript = null },
         )
     }
 

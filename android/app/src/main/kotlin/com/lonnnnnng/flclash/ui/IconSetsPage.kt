@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
 import kotlinx.coroutines.flow.first
@@ -40,13 +41,15 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
     var addMenu by remember { mutableStateOf(false) }
     var importing by rememberSaveable { mutableStateOf(false) }
     var editing by remember { mutableStateOf<ResourceIconSet?>(null) }
+    var optionsClosing by remember { mutableStateOf(false) }
     var previewId by rememberSaveable { mutableStateOf<String?>(null) }
     var menuId by remember { mutableStateOf<String?>(null) }
     var deleting by remember { mutableStateOf<ResourceIconSet?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
     var sorting by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(sets.size) { if (sets.size < 2) sorting = false }
-    LaunchedEffect(completed) { if (completed > 0 && error == null) { importing = false; editing = null } }
+    // 作者 long：成功回执先触发表单退场，等动画结束再移除，不能让已保存的Sheet在半空突然消失。
+    LaunchedEffect(completed) { if (completed > 0 && error == null && (importing || editing != null)) optionsClosing = true }
     ProfileEditorPage(onDismissRequest = { if (!busy) { if (sorting) sorting = false else onDismiss() } }, title = { Text(tr("图标集")) }, backTag = "icon_sets_back",
         confirmButton = {
         if (sorting) TextButton(onClick = { sorting = false }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort_done")) { Text(tr("完成")) }
@@ -103,8 +106,8 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
                 }
             }
         })
-    if (importing) IconSetOptionsDialog(null, busy, error, { importing = false }, onImportUrl)
-    editing?.let { original -> IconSetOptionsDialog(original, busy, error, { editing = null }, { name, url -> onOptions(original, name, url) }) }
+    if (importing) IconSetOptionsDialog(null, busy, error, { importing = false; optionsClosing = false }, onImportUrl, optionsClosing)
+    editing?.let { original -> IconSetOptionsDialog(original, busy, error, { editing = null; optionsClosing = false }, { name, url -> onOptions(original, name, url) }, optionsClosing) }
     deleting?.let { item -> AlertDialog(onDismissRequest = { deleting = null }, title = { Text(tr("删除 {0}？", item.name)) },
         text = { Text(tr("配置中已经使用的图标链接会保留。")) }, confirmButton = { TextButton(onClick = { onDelete(item.id); deleting = null }) { Text(tr("删除")) } },
         dismissButton = { TextButton(onClick = { deleting = null }) { Text(tr("取消")) } }) }
@@ -210,21 +213,27 @@ private fun IconSetPreviewEmpty(query: String, onClearQuery: () -> Unit) {
 }
 
 @Composable
-private fun IconSetOptionsDialog(original: ResourceIconSet?, busy: Boolean, error: String?, onDismiss: () -> Unit, onSave: (String, String) -> Unit) {
-    var name by rememberSaveable(original?.id) { mutableStateOf(original?.name.orEmpty()) }
+internal fun IconSetOptionsDialog(original: ResourceIconSet?, busy: Boolean, error: String?, onDismiss: () -> Unit,
+    onSave: (String, String) -> Unit, closing: Boolean = false) {
+    var name by rememberSaveable(original?.id, stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(original?.name.orEmpty())) }
     var url by rememberSaveable(original?.id) { mutableStateOf(original?.url.orEmpty()) }
     var invalid by remember { mutableStateOf<String?>(null) }
-    AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(if (original == null) tr("从 URL 导入") else tr("选项")) }, text = {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(name, { name = it; invalid = null }, Modifier.fillMaxWidth().testTag("icon_set_name"), label = { Text(if (original == null) tr("名称（可选）") else tr("名称")) }, enabled = !busy, singleLine = true)
-            if (original == null || original.url.isNotEmpty()) OutlinedTextField(url, { url = it; invalid = null }, Modifier.fillMaxWidth().testTag("icon_set_url"), label = { Text(tr("图标集地址")) }, enabled = !busy, singleLine = true)
-            (invalid ?: error)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
-            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-        }
-    }, confirmButton = { TextButton(onClick = {
-        if (original != null && (name.trim().isEmpty() || name.length > 128)) invalid = tr("名称须为 1 至 128 字符")
+    var submitted by remember { mutableStateOf(false) }
+    LaunchedEffect(busy, error) { if (!busy && error != null) submitted = false }
+    fun save() {
+        if (busy || submitted || closing) return
+        if (original != null && (name.text.trim().isEmpty() || name.text.length > 128)) invalid = "名称须为 1 至 128 字符"
         else if ((original == null || original.url.isNotEmpty()) && !IconSetCodec.validUrl(url.trim())) invalid = tr("请输入有效 HTTP/HTTPS 地址")
-        else onSave(name.trim(), url.trim())
-    }, enabled = !busy, modifier = Modifier.testTag("icon_set_save")) { Text(tr("保存")) } },
-        dismissButton = { TextButton(onClick = onDismiss, enabled = !busy) { Text(tr("取消")) } })
+        else { submitted = true; onSave(name.text.trim(), url.trim()) }
+    }
+    val locked = busy || submitted
+    if (original != null && original.url.isEmpty()) {
+        FloatingInputDialog(tr("选项"), "icon_set_options_dialog", locked, true, onDismiss, ::save, tr("保存"),
+            error = invalid ?: error, errorTag = "icon_set_error", confirmTag = "icon_set_save", cancelTag = "icon_set_cancel",
+            externallyClosing = closing, onExitComplete = { if (closing) onDismiss() }) { enabled, submit ->
+            FloatingInputField(name, { name = it; invalid = null }, "icon_set_name", enabled, submit, placeholder = tr("名称"))
+        }
+    } else ResourceNamedUrlSheet(if (original == null) tr("从 URL 导入") else tr("选项"), name.text, url,
+        { name = TextFieldValue(it); invalid = null }, { url = it; invalid = null }, locked, invalid ?: error,
+        closing, onDismiss, ::save)
 }

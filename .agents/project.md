@@ -1,6 +1,14 @@
 # Project Context
 
-## KUI-VIS-070 代理组健康检查项行内编辑（2026-11-21，当前）
+## KCORE-011 网络切换出站重置与 VPN 前 socket 保护（2026-11-21，当前）
+
+已从批准的 `chen08209/Clash.Meta:FlClash` 参考移植 WireGuard/Hysteria2/TUIC 的共享连接重置，并让 Go `ResetNetwork` 遍历全部配置代理和 Provider 节点。socket hook 在核心初始化时安装；真实 UDP RawConn 的定向 Go 回归确认 VPN 前创建的同一 fd 会在 TUN 栈启动前被 Protect。另在 POCO/API36 真机上，预建 UDP socket 于真实 VPN `STARTING`、`Core.startTun` 调用仍活动时由当前 `VpnService.protect(DatagramSocket)` 接受，socket 保持打开；Go 独立快照记录启动期保护24次、拒绝0次。平台探针与 Go RawConn 不是同一 fd，也未证明其落在 Go gate 的短 `phase=starting` 子窗口。父 Go race、Mihomo adapter/TUIC 及 route/http/updater race、Debug `bindCore` 构建均通过。POCO F2 Pro/API36 用用户提供的 `2.yaml` 实测 Hysteria2：Wi-Fi 关闭4秒后重连，前后独立UID DNS/TLS/HTTPS 及HTTP 200、同一 Hysteria2 叶节点哈希、同源端口双向非直连流量均通过；底层Network handle变化，核心PID/运行起始时间不变。Wi-Fi和`allowBypass=false`恢复，motion双包已卸载，`com.follow.clash`原版未操作。WireGuard/TUIC暂缺节点、蜂窝无SIM尚未覆盖；Hysteria2结果不推广其他协议，也不归因历史TLS故障。见 `docs/adr/0022-network-change-outbound-reset.md` 和 `docs/acceptance/network-outbound-reset-20261121.json`、`docs/acceptance/vpn-protect-startup-poco-20261121.json`。
+
+## KUI-VIS-073 资源输入、自然转场与菜单关闭（2026-11-21，当前续验）
+
+新远程脚本导入与改址共用URL浮框；本地名称编辑浮框、远程图标集同行Sheet与URI断行保护保留。POCO组件/宿主最终8/8、15图，Motion JVM629项通过；当前Motion/Test APK的两主题四类面板自然转场8轮/1测试通过并留66.131秒录像。Release-R8、诊断Performance-R8、双Lint和Release扫码DEX通过。菜单诊断两轮显示组合释放2.864～3.100ms Running、窗口移除8.917～9.058ms wall，其中UI等待6.179～6.442ms；buffer未覆盖/丢失，但全局discarded28/29的producer未定位，不能宣称完整trace或性能收益。POCO自有测试包已卸载，系统设置及`com.follow.clash`稳定安装信息保持，未启核心/VPN/真实订阅。完整应用视觉、其他子页、任意URI断点等价及GPU/fence仍PARTIAL；玻璃默认关闭。本组准备随`kclash-v0.1.13`发布，最终状态以标签CI为准。见`docs/resource-options-url-disposal-alignment.md`、`docs/acceptance/resource-options-url-disposal-poco-20261121.json`和`../acceptance-artifacts/panels-url-close-20261121/continuation/`。
+
+## KUI-VIS-070 代理组健康检查项行内编辑（2026-11-21）
 
 代理组URL、间隔、超时、最大失败次数、预期状态码与容差可在原行内编辑；清空留行，删除后重加恢复默认，父级确认单次提交。POCO F2 Pro/API36最终11/11、24张截图哈希/尺寸通过；motion JVM628项零失败、Service220/Core39/Common34复用，Debug/motion构建和Lint通过。固定Flutter源码参考，不含Flutter runtime/逐像素对照；结束核对未安装motion/test包，原Flutter包未操作。完整视觉与转场仍PARTIAL。见`docs/proxy-group-inline-options-alignment.md`及配套验收JSON。
 

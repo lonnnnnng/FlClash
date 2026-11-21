@@ -1,0 +1,2199 @@
+{
+  "id": "KUI-VIS-073",
+  "date": "2026-11-21",
+  "status": "PARTIAL",
+  "baseCommit": "520e4fe52d110eff4cc476b85017841a3f67543d",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "fontScale": 1,
+    "orientation": "portrait"
+  },
+  "scope": "Local icon-set name floating dialog, remote icon-set name/URL sheet, existing script URL floating dialog, URI filename wrapping and diagnostic-only popup disposal attribution",
+  "sourceSha256": {
+    "android/app/build.gradle.kts": "2995ee7de0d42a074b5e16e7de57e46bb929204b335a650234dacd98858c02c5",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt": "69a5835d7fa0fe74c3582bbb312998a8ea371230aea7cb78431c59615c2c7735",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/FloatingInputDialog.kt": "4ace35976578f7c06707fd72f649fc6fe073fd73622663d785789bd484d39471",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/IconSetsPage.kt": "cd225b903ff8c3bdffcf2922976e2a7e02d4ea08b9ed6e8ddc6eb1a55b407870",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "9c123bc657565d2a514d5177be278ccaefd64839b28f1fae54171687cd2ee47f",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ScriptsPage.kt": "677b305f3b9eba998802a6dd73c3f596eb29268a4fe3fed4cfa20694384eb51a",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ResourceNamedUrlSheet.kt": "e75551d574e062b87612d539593e491c277745a120ac17f3847c9f6923d5c868",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/UriDisplayTransformation.kt": "57064c8b916351b7f219fc15f10891198d318900ed46013f5e32e44260db4975",
+    "android/tests/app/UriDisplayTransformationTest.kt": "cd671736b763015e0144850e49742830bb73f37529c3479ca6212daed7ec7e65",
+    "android/tests/instrumented/ResourceOptionsTransitionInstrumentedTest.kt": "d8bee1ef793e2517d3873cadb6aa3b0a525a5205e4357e2eef2d2736a8e1f9d4",
+    "android/tests/instrumented/ResourceOptionsHostInstrumentedTest.kt": "8a10afad489e7f887ef366215bc764448189450c22204fcfaa0433216c50be50",
+    "android/tests/instrumented/RawInputAssertions.kt": "e6fd7465eb16303df3ac6c346ff68c02ba0c64c34d7a26113eba018e303a6824",
+    "android/tests/instrumented/ResourceInputMotionInstrumentedTest.kt": "886bea149aa27490d14a157501f3eeb360e874c34bab23a25ce24ff726f9b9ec",
+    "tool/perfetto_popup_disposal.sql": "f881b7fbab65a8e0cbf6bc38370764225214a7759468114a2defdd170e411927"
+  },
+  "flutterReference": {
+    "snapshot": "../../../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "sourceSha256": {
+      "lib/views/config/icon_sets.dart": "e9486b6d1b80320c7442d3b5e30dd0e3c32646ef8e94aa5d5d4a6b47278b5680",
+      "lib/views/config/scripts.dart": "881fbbfb94bfcebe087f2b19ab05e92e70d9abc7a5e8086b501192f4ffbd625d",
+      "lib/features/form/named_url_form.dart": "cb40fb715f5418c7bb02e50a423629e550d9afd2e2df204d4e838a48509d5a25",
+      "plugins/prism_ui/lib/input.dart": "42732f6fb073e1651baf3125f6fa6ef9e6891211ab2fe76fdfa626f1863e8dd5",
+      "plugins/prism_ui/lib/dialog.dart": "7ca6ad78189d6a97a450523d43cfba7dfe365fa1c0871a8f52f0eee072de9bef",
+      "plugins/prism_ui/lib/text_field.dart": "de140d6a0afba8a1e3aa1c9c3cdb4524137f5c4d792e1bfa3166fed76fb64d37"
+    },
+    "runtimeHost": {
+      "package": "com.lonnnnnng.kclash.reference.flutter_options_reference",
+      "bytes": 142787464,
+      "sha256": "0042e1404d83489dd99b4af9603cda346f3196e97a834544a82a6b1882cede7a"
+    },
+    "screenshots": {
+      "light_local.png": "304a2fed39cb345c7a1e1f4046bf48064fc48e2612b5c902f15ba7921c54e301",
+      "dark_remote.png": "65fde677e9897fbce3a36580b2a163b8a067cd0d5192d10080bd8e78d022d102",
+      "light_script.png": "44449d2d6fb27ea55c5fb3995780c8872f0730305a811d9413e6d8938416e1bb",
+      "light_remote.png": "de044dc80834374e47ae858d83906fabfb8159c8bae2249ce9a38a9b7c8c5973",
+      "dark_script.png": "a4685f3ba13963203599354dc3b812402e8594007f9cc31cd6f10e2c2659b943",
+      "light_geo.png": "b599f7440629556e509baf52b46d029c1430c403d3469d410f757f5ed0ee7639",
+      "dark_geo.png": "4d7553f958d123877532292536878dba0483f7d4d5dde7b35d45d312b69bc64a",
+      "dark_local.png": "7aa53c84a1ff3404c900373889c30c588873a867401d6593c88fb046508cd6b0"
+    },
+    "scope": "Eight light/dark component reference states, not full upstream application or synchronized frame-by-frame comparison"
+  },
+  "verification": {
+    "appMotionJvm": {
+      "tests": 629,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "motionBenchmark": {
+        "Error": 0,
+        "Warning": 75,
+        "Hint": 15
+      },
+      "release": {
+        "Error": 0,
+        "Warning": 71,
+        "Hint": 14
+      }
+    },
+    "buildLogs": [
+      "build-candidate5.log",
+      "build-final-motion4.log",
+      "build-test-final5.log",
+      "build-diagnostic-r8.log",
+      "build-ordinary-r8.log",
+      "build-ordinary-r8.log",
+      "continuation/build-release-lint.log",
+      "continuation/build-final-tests-diagnostic.log",
+      "continuation/lint-final.log"
+    ],
+    "components": {
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOptionsTransitionInstrumentedTest",
+          "test": "remoteIconSheetFocusesUrlKeepsBusyFailureAndReopensAfterClose",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOptionsTransitionInstrumentedTest",
+          "test": "urlBreakStrategyDiagnostic",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOptionsTransitionInstrumentedTest",
+          "test": "uriWrapKeepsFlutterFilenameTogetherAndPreservesRawInput",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOptionsTransitionInstrumentedTest",
+          "test": "scriptUrlDialogKeepsLongDraftDuringFailureAndWaitsForSuccessfulExit",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ResourceOptionsTransitionInstrumentedTest",
+          "test": "localIconOptionsKeepInvalidAndFailedDraftThenAnimateSuccessfulExit",
+          "code": 0
+        }
+      ],
+      "passed": true,
+      "screenshots": {
+        "vis073_remote_false_initial": {
+          "count": 4,
+          "bytes": 135396,
+          "sha256": "13cd9ce47aea503f79f54a6cbb41c5daf4ff7d0e79d2faeafe379bb5d8f2556e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_remote_false_error": {
+          "count": 3,
+          "bytes": 99626,
+          "sha256": "e47410af98ea639a036d8a8e3353173de5333cf69e78306fa1bb6cfc4d70db47",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_remote_true_initial": {
+          "count": 4,
+          "bytes": 135144,
+          "sha256": "63697835905ffa1763be10327cc6cbba2685d1c5b5d5ce8ea6bdb14b71c42ee3",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_remote_true_error": {
+          "count": 3,
+          "bytes": 98645,
+          "sha256": "4d28c1bad3f4ac08ef76f542aab082c5c0445a82319fb0ccba611b51f18101de",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_url_wrap_initial": {
+          "count": 2,
+          "bytes": 52136,
+          "sha256": "3badd1ffee6357ecdc8782a7204df2e1347a549ccc01f899679f9017f4d10692",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_url_wrap_long": {
+          "count": 4,
+          "bytes": 113556,
+          "sha256": "48749a4334f5ebc900340298ba00d7160ece86893f8c922318da44fe4eb86f76",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_script_light_initial": {
+          "count": 3,
+          "bytes": 85538,
+          "sha256": "af388e7453426104137e92d9a2e974462c4409fda1349bf365364ea0770694ba",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_script_dark_long_ime": {
+          "count": 4,
+          "bytes": 122576,
+          "sha256": "52ad439bb56f23ca9ebeb660d20814c4cf6e659c7c405d31f2f023153c891b7b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_script_dark_error": {
+          "count": 3,
+          "bytes": 94533,
+          "sha256": "4d642ee445ad5288484f0c0ed199b8f8a91ee7837fe886c3942658edfd59216b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_local_false_ime": {
+          "count": 4,
+          "bytes": 136256,
+          "sha256": "3e4b66093e8f56aff67dd9d33a8ea3030e3bdb22b9d660e032b0424e7129123d",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_local_false_error": {
+          "count": 3,
+          "bytes": 83945,
+          "sha256": "6a95bc7da2af3ebb790c14522875bb172e34babb6db5bd47eded26da841bc3f1",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_local_true_ime": {
+          "count": 4,
+          "bytes": 133425,
+          "sha256": "9a7a745d9b30765c8ea07de31329389ef3808e10a18b952878fe48e151c4ec6b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis073_local_true_error": {
+          "count": 3,
+          "bytes": 83125,
+          "sha256": "959681efce54a142ccb190c56b05d29a1de5656986a36d0e50553c10f03829e0",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "artifacts": "../../../acceptance-artifacts/panels-url-close-20261121/candidate5/"
+    },
+    "host": {
+      "tests": 1,
+      "passedByRawJUnit": true,
+      "durationSeconds": 6.128,
+      "rawLog": "../../../acceptance-artifacts/panels-url-close-20261121/host-verified-complete/instrumentation.log",
+      "collectorPassed": false,
+      "collectorLimitation": "The earlier collector expected plural OK (1 tests) and missed AndroidJUnitRunner's singular OK (1 test); the continuation collector now accepts singular/plural JUnit summaries and still validates return/test codes.",
+      "fixture": "The isolated motion database has no Profile. A ScriptRepository without the production active-profile apply hook prepares only local test metadata; UI actions still traverse MainActivity, ScriptsViewModel, and repository wiring. No Profile is created or imported.",
+      "assertions": [
+        "Local icon rename save and Activity recreation readback",
+        "Existing script invalid-URL error with draft retained",
+        "Activity recreation retains raw edited URL",
+        "Cancel preserves script metadata and body; reopen restores original value",
+        "Before/after profiles, scripts and icons restored; core STOPPED"
+      ],
+      "method": "realOptionsPersistNameAndScriptDraftSurvivesRecreationAndCancel",
+      "rawJUnitOutput": "OK (1 test)",
+      "artifactDirectory": "../../../acceptance-artifacts/panels-url-close-20261121/host-verified-complete"
+    },
+    "naturalTransition": {
+      "status": "PANEL_SCOPE_PASSED",
+      "passed": true,
+      "method": "ResourceOptionsNaturalInstrumentedTest#lightAndDarkOptionsUseNaturalEnterImeCancelAndSuccessfulExit",
+      "rawJUnitOutput": "OK (1 test)",
+      "device": "POCO F2 Pro / 31936bb6 / API36",
+      "themes": ["light", "dark"],
+      "panelTypes": ["local icon options", "remote icon sheet", "script URL update", "new script URL import"],
+      "rounds": 8,
+      "saveCallbacks": 8,
+      "video": {
+        "path": "../../../acceptance-artifacts/panels-url-close-20261121/continuation/natural-source-final/natural.mp4",
+        "durationSeconds": 66.131078,
+        "bytes": 34713313,
+        "sha256": "679acf404791eae031749b466fde80e2a12838eb2a3f9226ef94d2ef18e45330"
+      },
+      "scope": "Android ComponentActivity natural windows and test callbacks; no full application navigation, Flutter full-app comparison, or real remote download"
+    },
+    "releaseDex": {
+      "apk": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "registrars": [
+        {
+          "class": "com.google.mlkit.common.internal.CommonComponentRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.barcode.internal.BarcodeRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        },
+        {
+          "class": "com.google.mlkit.vision.common.internal.VisionCommonRegistrar",
+          "publicNoArgConstructor": true,
+          "concrete": true
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    "ordinaryR8Gates": [
+      {
+        "label": "release",
+        "sha256": "0985108261d09e3c200fc4f4b1dc437869479efc7554129b5d016680696f819f",
+        "bytes": 49598229,
+        "diagnosticScopeStringsAbsent": true
+      },
+      {
+        "label": "ordinary",
+        "sha256": "05277dc9cfce340061fed1994a9008ba2415a13268c48589eadf6df3f59793e3",
+        "bytes": 49614669,
+        "diagnosticScopeStringsAbsent": true
+      }
+    ],
+    "installedComponentApks": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "bytes": 67547985,
+        "sha256": "e91559811e282c16bbb9af2179b67efa8df6bd2799d29452c1550aec482d1dae"
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "bytes": 3281827,
+        "sha256": "5968d7e9906a0ebfc941838f599a367438f490c0048fa04a9fe4fedbf170e315"
+      }
+    ],
+    "installedHostApks": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "e91559811e282c16bbb9af2179b67efa8df6bd2799d29452c1550aec482d1dae",
+        "bytes": 67547985
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "ff9975a3a4c0a3b39ef427202c42bd5131556b66e184722d18e3ea5f206491f3",
+        "bytes": 3290711
+      }
+    ],
+    "interruptedBatch": {
+      "status": "INTERRUPTED",
+      "testsCollected": false,
+      "reason": "The run was cancelled before instrumentation summary; it is not counted as a pass.",
+      "artifact": "../../../acceptance-artifacts/panels-url-close-20261121/final-components/instrumentation.log"
+    }
+  },
+  "urlWrapping": {
+    "baseline": "LineBreak.Simple and Paragraph both ended first line at index31, leaving .mmdb alone; balanced variants ended at15, splitting host",
+    "implementation": "Display-only U+2060 around dots; original TextFieldValue unchanged, monotonic UTF16 OffsetMapping",
+    "verified": [
+      "Reference country.mmdb remains together on second line",
+      "Raw long URL with escaped query and insertion submitted unchanged",
+      "Copy via transformed full selection returns complete raw URL",
+      "629 JVM includes offset round-trip test for Unicode and 4KiB path",
+      "POCO caret moved left/right across every dot boundary and backspace deleted only the original character"
+    ],
+    "remaining": [
+      "Exact Flutter break decisions for arbitrary strings, including hyphenated filenames",
+      "Assistive-technology reading of inserted display markers is not verified"
+    ]
+  },
+  "menuDisposal": {
+    "diagnosticOnly": true,
+    "flag": "-PkclashPopupDisposeTrace=true -PkclashMenuTrace=true -PkclashPerformanceBenchmark=true",
+    "composeUiResolvedVersion": "1.12.1",
+    "ordinaryReleaseScopesAbsent": true,
+    "query": "tool/perfetto_popup_disposal.sql",
+    "runs": [
+      {
+        "folder": "diagnostic-close-1",
+        "rows": [
+          {
+            "id": "2500",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206737016057831",
+            "tid": "8460",
+            "frame_id": "2040",
+            "wall_ms": "0.040000",
+            "running_ms": "0.040000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "2501",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206737016143664",
+            "tid": "8460",
+            "frame_id": "2040",
+            "wall_ms": "0.017000",
+            "running_ms": "0.017000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "2502",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206737016196372",
+            "tid": "8460",
+            "frame_id": "2040",
+            "wall_ms": "0.012000",
+            "running_ms": "0.012000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "2503",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206737016243508",
+            "tid": "8460",
+            "frame_id": "2040",
+            "wall_ms": "0.009000",
+            "running_ms": "0.009000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27485",
+            "name": "kclash/menu/cleanup/restore-source-before-detach",
+            "ts": "206739537983507",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.016000",
+            "running_ms": "0.016000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27722",
+            "name": "kclash/dispose/composition",
+            "ts": "206739553608819",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "2.569000",
+            "running_ms": "2.569000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27725",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206739553624444",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.005000",
+            "running_ms": "0.005000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27798",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206739555577101",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.099000",
+            "running_ms": "0.099000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27815",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206739555751267",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.026000",
+            "running_ms": "0.026000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27816",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206739555834132",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.047000",
+            "running_ms": "0.047000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27817",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206739555938455",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.021000",
+            "running_ms": "0.021000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27820",
+            "name": "kclash/dispose/window",
+            "ts": "206739556189809",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "7.223000",
+            "running_ms": "1.751000",
+            "runnable_ms": "1.091000",
+            "waiting_ms": "4.381000"
+          },
+          {
+            "id": "27831",
+            "name": "kclash/dispose/detach",
+            "ts": "206739556826215",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.094000",
+            "running_ms": "0.094000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27837",
+            "name": "kclash/dispose/composition",
+            "ts": "206739557087049",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.014000",
+            "running_ms": "0.014000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "27838",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206739557092361",
+            "tid": "8460",
+            "frame_id": "27634",
+            "wall_ms": "0.004000",
+            "running_ms": "0.004000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28049",
+            "name": "kclash/menu/cleanup/drop-action",
+            "ts": "206739566942101",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.009000",
+            "running_ms": "0.009000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28051",
+            "name": "kclash/menu/cleanup/drop-captured-frames",
+            "ts": "206739566962569",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.056000",
+            "running_ms": "0.056000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28057",
+            "name": "kclash/menu/cleanup/cancel-pointer",
+            "ts": "206739567027986",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.010000",
+            "running_ms": "0.010000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28059",
+            "name": "kclash/menu/cleanup/clear-hover",
+            "ts": "206739567048090",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.006000",
+            "running_ms": "0.006000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28406",
+            "name": "kclash/menu/cleanup/restore-source-dispose",
+            "ts": "206739572377101",
+            "tid": "8460",
+            "frame_id": "28270",
+            "wall_ms": "0.011000",
+            "running_ms": "0.011000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28411",
+            "name": "kclash/menu/cleanup/lifecycle-remove",
+            "ts": "206739572577257",
+            "tid": "8460",
+            "frame_id": "28270",
+            "wall_ms": "0.029000",
+            "running_ms": "0.029000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36087",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206741185020642",
+            "tid": "8460",
+            "frame_id": "35750",
+            "wall_ms": "0.039000",
+            "running_ms": "0.039000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36088",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206741185109965",
+            "tid": "8460",
+            "frame_id": "35750",
+            "wall_ms": "0.016000",
+            "running_ms": "0.016000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36089",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206741185166267",
+            "tid": "8460",
+            "frame_id": "35750",
+            "wall_ms": "0.013000",
+            "running_ms": "0.013000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36090",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206741185218090",
+            "tid": "8460",
+            "frame_id": "35750",
+            "wall_ms": "0.010000",
+            "running_ms": "0.010000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62430",
+            "name": "kclash/menu/cleanup/restore-source-before-detach",
+            "ts": "206743756052255",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.023000",
+            "running_ms": "0.023000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62661",
+            "name": "kclash/dispose/composition",
+            "ts": "206743772380380",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "2.742000",
+            "running_ms": "2.742000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62662",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206743772393714",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.006000",
+            "running_ms": "0.006000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62735",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206743774528818",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.112000",
+            "running_ms": "0.112000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62736",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206743774720484",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.030000",
+            "running_ms": "0.030000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62737",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206743774811787",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.021000",
+            "running_ms": "0.021000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62738",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206743774888557",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.015000",
+            "running_ms": "0.015000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62743",
+            "name": "kclash/dispose/window",
+            "ts": "206743775126839",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "8.761000",
+            "running_ms": "1.788000",
+            "runnable_ms": "1.020000",
+            "waiting_ms": "5.953000"
+          },
+          {
+            "id": "62774",
+            "name": "kclash/dispose/detach",
+            "ts": "206743776033297",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.039000",
+            "running_ms": "0.039000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62776",
+            "name": "kclash/dispose/composition",
+            "ts": "206743776117412",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.016000",
+            "running_ms": "0.016000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62777",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206743776123089",
+            "tid": "8460",
+            "frame_id": "62593",
+            "wall_ms": "0.005000",
+            "running_ms": "0.005000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63026",
+            "name": "kclash/menu/cleanup/drop-action",
+            "ts": "206743787785797",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.010000",
+            "running_ms": "0.010000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63029",
+            "name": "kclash/menu/cleanup/drop-captured-frames",
+            "ts": "206743787802984",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.057000",
+            "running_ms": "0.057000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63034",
+            "name": "kclash/menu/cleanup/cancel-pointer",
+            "ts": "206743787865172",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.010000",
+            "running_ms": "0.010000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63035",
+            "name": "kclash/menu/cleanup/clear-hover",
+            "ts": "206743787879912",
+            "tid": "8460",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.006000",
+            "running_ms": "0.006000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63232",
+            "name": "kclash/menu/cleanup/restore-source-dispose",
+            "ts": "206743790751266",
+            "tid": "8460",
+            "frame_id": "63104",
+            "wall_ms": "0.009000",
+            "running_ms": "0.009000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63243",
+            "name": "kclash/menu/cleanup/lifecycle-remove",
+            "ts": "206743790900172",
+            "tid": "8460",
+            "frame_id": "63104",
+            "wall_ms": "0.030000",
+            "running_ms": "0.030000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          }
+        ]
+      },
+      {
+        "folder": "diagnostic-close-2",
+        "rows": [
+          {
+            "id": "2701",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206758411576468",
+            "tid": "8689",
+            "frame_id": "2654",
+            "wall_ms": "0.034000",
+            "running_ms": "0.034000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "2704",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206758411651104",
+            "tid": "8689",
+            "frame_id": "2654",
+            "wall_ms": "0.014000",
+            "running_ms": "0.014000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "2705",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206758411698291",
+            "tid": "8689",
+            "frame_id": "2654",
+            "wall_ms": "0.012000",
+            "running_ms": "0.012000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "2706",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206758411744802",
+            "tid": "8689",
+            "frame_id": "2654",
+            "wall_ms": "0.011000",
+            "running_ms": "0.011000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28834",
+            "name": "kclash/menu/cleanup/restore-source-before-detach",
+            "ts": "206760946404801",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.021000",
+            "running_ms": "0.021000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28973",
+            "name": "kclash/dispose/composition",
+            "ts": "206760958916572",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "3.138000",
+            "running_ms": "2.843000",
+            "runnable_ms": "0.295000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "28974",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206760958930895",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.005000",
+            "running_ms": "0.005000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29057",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206760961396728",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.126000",
+            "running_ms": "0.126000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29063",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206760961604436",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.033000",
+            "running_ms": "0.033000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29064",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206760961701572",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.022000",
+            "running_ms": "0.022000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29065",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206760961783343",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.017000",
+            "running_ms": "0.017000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29067",
+            "name": "kclash/dispose/window",
+            "ts": "206760962068395",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "11.423000",
+            "running_ms": "2.697000",
+            "runnable_ms": "1.722000",
+            "waiting_ms": "7.004000"
+          },
+          {
+            "id": "29083",
+            "name": "kclash/dispose/detach",
+            "ts": "206760962938863",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.122000",
+            "running_ms": "0.122000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29088",
+            "name": "kclash/dispose/composition",
+            "ts": "206760963253915",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.015000",
+            "running_ms": "0.015000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29089",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206760963259436",
+            "tid": "8689",
+            "frame_id": "28894",
+            "wall_ms": "0.004000",
+            "running_ms": "0.004000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29707",
+            "name": "kclash/menu/cleanup/drop-action",
+            "ts": "206760980981832",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.008000",
+            "running_ms": "0.008000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29710",
+            "name": "kclash/menu/cleanup/drop-captured-frames",
+            "ts": "206760981000999",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.061000",
+            "running_ms": "0.061000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29727",
+            "name": "kclash/menu/cleanup/cancel-pointer",
+            "ts": "206760981071363",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.009000",
+            "running_ms": "0.009000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29732",
+            "name": "kclash/menu/cleanup/clear-hover",
+            "ts": "206760981087770",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.005000",
+            "running_ms": "0.005000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29836",
+            "name": "kclash/menu/cleanup/restore-source-dispose",
+            "ts": "206760983738238",
+            "tid": "8689",
+            "frame_id": "29759",
+            "wall_ms": "0.007000",
+            "running_ms": "0.007000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "29837",
+            "name": "kclash/menu/cleanup/lifecycle-remove",
+            "ts": "206760983859020",
+            "tid": "8689",
+            "frame_id": "29759",
+            "wall_ms": "0.023000",
+            "running_ms": "0.023000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36815",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206762613221675",
+            "tid": "8689",
+            "frame_id": "36761",
+            "wall_ms": "0.038000",
+            "running_ms": "0.038000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36831",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206762613306831",
+            "tid": "8689",
+            "frame_id": "36761",
+            "wall_ms": "0.016000",
+            "running_ms": "0.016000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36841",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206762613360738",
+            "tid": "8689",
+            "frame_id": "36761",
+            "wall_ms": "0.013000",
+            "running_ms": "0.013000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "36852",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206762613412196",
+            "tid": "8689",
+            "frame_id": "36761",
+            "wall_ms": "0.013000",
+            "running_ms": "0.013000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "62961",
+            "name": "kclash/menu/cleanup/restore-source-before-detach",
+            "ts": "206765162899435",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.030000",
+            "running_ms": "0.030000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63102",
+            "name": "kclash/dispose/composition",
+            "ts": "206765175980685",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "2.931000",
+            "running_ms": "2.931000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63103",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206765175992091",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.005000",
+            "running_ms": "0.005000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63185",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206765178247039",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.123000",
+            "running_ms": "0.123000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63186",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206765178451830",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.034000",
+            "running_ms": "0.034000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63187",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206765178549330",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.033000",
+            "running_ms": "0.033000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63188",
+            "name": "kclash/menu/cleanup/unregister-item",
+            "ts": "206765178647455",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.019000",
+            "running_ms": "0.019000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63190",
+            "name": "kclash/dispose/window",
+            "ts": "206765178916726",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "8.182000",
+            "running_ms": "1.468000",
+            "runnable_ms": "0.778000",
+            "waiting_ms": "5.937000"
+          },
+          {
+            "id": "63193",
+            "name": "kclash/dispose/detach",
+            "ts": "206765179475893",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.044000",
+            "running_ms": "0.044000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63194",
+            "name": "kclash/dispose/composition",
+            "ts": "206765179571883",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.017000",
+            "running_ms": "0.017000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63195",
+            "name": "kclash/dispose/input-connection",
+            "ts": "206765179577976",
+            "tid": "8689",
+            "frame_id": "63024",
+            "wall_ms": "0.005000",
+            "running_ms": "0.005000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63412",
+            "name": "kclash/menu/cleanup/drop-action",
+            "ts": "206765190585737",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.008000",
+            "running_ms": "0.008000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63415",
+            "name": "kclash/menu/cleanup/drop-captured-frames",
+            "ts": "206765190602768",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.056000",
+            "running_ms": "0.056000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63427",
+            "name": "kclash/menu/cleanup/cancel-pointer",
+            "ts": "206765190665112",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.011000",
+            "running_ms": "0.011000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63429",
+            "name": "kclash/menu/cleanup/clear-hover",
+            "ts": "206765190682247",
+            "tid": "8689",
+            "frame_id": "[NULL]",
+            "wall_ms": "0.006000",
+            "running_ms": "0.006000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63624",
+            "name": "kclash/menu/cleanup/restore-source-dispose",
+            "ts": "206765193849799",
+            "tid": "8689",
+            "frame_id": "63468",
+            "wall_ms": "0.008000",
+            "running_ms": "0.008000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          },
+          {
+            "id": "63638",
+            "name": "kclash/menu/cleanup/lifecycle-remove",
+            "ts": "206765194022924",
+            "tid": "8689",
+            "frame_id": "63468",
+            "wall_ms": "0.028000",
+            "running_ms": "0.028000",
+            "runnable_ms": "0.000000",
+            "waiting_ms": "0.000000"
+          }
+        ]
+      }
+    ],
+    "binderChain": [
+      {
+        "folder": "diagnostic-close-1",
+        "traceSha256": "fe738ba0aea56af1c240bc92befe64a0a71ed9b2051b7ec5f0c66bb3f0cdc595",
+        "roots": [
+          {
+            "ui": {
+              "root_id": "27634",
+              "stage": "ui-root",
+              "id": "27634",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "8460",
+              "name": "Choreographer#doFrame 11934861",
+              "ts": "206739551829340",
+              "wall_ms": "14.687000",
+              "running_ms": "9.014000",
+              "runnable_ms": "1.106000",
+              "waiting_ms": "4.567000"
+            },
+            "token": "11934861",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "27634",
+                "stage": "onForgotten",
+                "id": "27719",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8460",
+                "name": "Compose:onForgotten",
+                "ts": "206739553519080",
+                "wall_ms": "9.943000",
+                "running_ms": "4.472000",
+                "runnable_ms": "1.091000",
+                "waiting_ms": "4.381000"
+              },
+              {
+                "root_id": "27634",
+                "stage": "app-binder",
+                "id": "27860",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8460",
+                "name": "binder transaction",
+                "ts": "206739558399861",
+                "wall_ms": "4.412000",
+                "running_ms": "0.060000",
+                "runnable_ms": "0.936000",
+                "waiting_ms": "3.417000"
+              },
+              {
+                "root_id": "27634",
+                "stage": "system-reply",
+                "id": "27861",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_15",
+                "tid": "5980",
+                "name": "binder reply",
+                "ts": "206739558444236",
+                "wall_ms": "4.336000",
+                "running_ms": "3.429000",
+                "runnable_ms": "0.340000",
+                "waiting_ms": "0.566000"
+              },
+              {
+                "root_id": "27634",
+                "stage": "system-work",
+                "id": "27863",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_15",
+                "tid": "5980",
+                "name": "removeInputChannel",
+                "ts": "206739558539288",
+                "wall_ms": "0.113000",
+                "running_ms": "0.113000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27634",
+                "stage": "nested-binder-reply",
+                "id": "27904",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "206739559299653",
+                "wall_ms": "0.144000",
+                "running_ms": "0.144000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27634",
+                "stage": "system-work",
+                "id": "27936",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_15",
+                "tid": "5980",
+                "name": "performSurfacePlacement",
+                "ts": "206739560066632",
+                "wall_ms": "1.328000",
+                "running_ms": "1.138000",
+                "runnable_ms": "0.190000",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27634",
+                "stage": "system-work",
+                "id": "27976",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_15",
+                "tid": "5980",
+                "name": "wmUpdateFocus",
+                "ts": "206739561413924",
+                "wall_ms": "1.296000",
+                "running_ms": "0.799000",
+                "runnable_ms": "0.111000",
+                "waiting_ms": "0.385000"
+              },
+              {
+                "root_id": "27634",
+                "stage": "nested-binder-reply",
+                "id": "27983",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "206739561716215",
+                "wall_ms": "0.215000",
+                "running_ms": "0.191000",
+                "runnable_ms": "0.024000",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "27634",
+                "stage": "nested-binder-reply",
+                "id": "27989",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "206739562290590",
+                "wall_ms": "0.114000",
+                "running_ms": "0.114000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "28023",
+                "token": "11934861",
+                "ts": "206739566292465",
+                "dur": "4775365",
+                "wall_ms": "4.775000",
+                "running_ms": "4.532000",
+                "runnable_ms": "0.243000",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          },
+          {
+            "ui": {
+              "root_id": "62593",
+              "stage": "ui-root",
+              "id": "62593",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "8460",
+              "name": "Choreographer#doFrame 11937469",
+              "ts": "206743770202464",
+              "wall_ms": "17.103000",
+              "running_ms": "9.517000",
+              "runnable_ms": "1.378000",
+              "waiting_ms": "6.209000"
+            },
+            "token": "11937469",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "62593",
+                "stage": "onForgotten",
+                "id": "62656",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8460",
+                "name": "Compose:onForgotten",
+                "ts": "206743772272464",
+                "wall_ms": "11.656000",
+                "running_ms": "4.683000",
+                "runnable_ms": "1.020000",
+                "waiting_ms": "5.953000"
+              },
+              {
+                "root_id": "62593",
+                "stage": "app-binder",
+                "id": "62814",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8460",
+                "name": "binder transaction",
+                "ts": "206743777148714",
+                "wall_ms": "6.337000",
+                "running_ms": "0.055000",
+                "runnable_ms": "0.989000",
+                "waiting_ms": "5.294000"
+              },
+              {
+                "root_id": "62593",
+                "stage": "system-reply",
+                "id": "62815",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_B",
+                "tid": "2853",
+                "name": "binder reply",
+                "ts": "206743777193662",
+                "wall_ms": "6.262000",
+                "running_ms": "5.277000",
+                "runnable_ms": "0.167000",
+                "waiting_ms": "0.818000"
+              },
+              {
+                "root_id": "62593",
+                "stage": "system-work",
+                "id": "62817",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_B",
+                "tid": "2853",
+                "name": "removeInputChannel",
+                "ts": "206743777296005",
+                "wall_ms": "0.124000",
+                "running_ms": "0.124000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "62593",
+                "stage": "nested-binder-reply",
+                "id": "62847",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_4",
+                "tid": "3029",
+                "name": "binder reply",
+                "ts": "206743778096526",
+                "wall_ms": "0.188000",
+                "running_ms": "0.188000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "62593",
+                "stage": "system-work",
+                "id": "62857",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_B",
+                "tid": "2853",
+                "name": "performSurfacePlacement",
+                "ts": "206743779548193",
+                "wall_ms": "2.174000",
+                "running_ms": "2.174000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "62593",
+                "stage": "system-work",
+                "id": "62873",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_B",
+                "tid": "2853",
+                "name": "wmUpdateFocus",
+                "ts": "206743781758662",
+                "wall_ms": "1.607000",
+                "running_ms": "1.194000",
+                "runnable_ms": "0.054000",
+                "waiting_ms": "0.359000"
+              },
+              {
+                "root_id": "62593",
+                "stage": "nested-binder-reply",
+                "id": "62880",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_4",
+                "tid": "3029",
+                "name": "binder reply",
+                "ts": "206743782377568",
+                "wall_ms": "0.157000",
+                "running_ms": "0.157000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "62593",
+                "stage": "nested-binder-reply",
+                "id": "62882",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_4",
+                "tid": "3029",
+                "name": "binder reply",
+                "ts": "206743782916943",
+                "wall_ms": "0.130000",
+                "running_ms": "0.130000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "62977",
+                "token": "11937469",
+                "ts": "206743786725484",
+                "dur": "4811928",
+                "wall_ms": "4.812000",
+                "running_ms": "4.702000",
+                "runnable_ms": "0.109000",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          }
+        ],
+        "stats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "source": "trace",
+            "value": "26"
+          }
+        ]
+      },
+      {
+        "folder": "diagnostic-close-2",
+        "traceSha256": "072c0c8a4b4c5eaeb16ad7131303bbef04c1f02ed1f782e55096081da0747726",
+        "roots": [
+          {
+            "ui": {
+              "root_id": "28894",
+              "stage": "ui-root",
+              "id": "28894",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "8689",
+              "name": "Choreographer#doFrame 11941438",
+              "ts": "206760956997301",
+              "wall_ms": "23.255000",
+              "running_ms": "11.722000",
+              "runnable_ms": "4.189000",
+              "waiting_ms": "7.344000"
+            },
+            "token": "11941438",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "28894",
+                "stage": "onForgotten",
+                "id": "28969",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8689",
+                "name": "Compose:onForgotten",
+                "ts": "206760958819488",
+                "wall_ms": "15.643000",
+                "running_ms": "5.910000",
+                "runnable_ms": "2.728000",
+                "waiting_ms": "7.004000"
+              },
+              {
+                "root_id": "28894",
+                "stage": "app-binder",
+                "id": "29131",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8689",
+                "name": "binder transaction",
+                "ts": "206760964395218",
+                "wall_ms": "6.952000",
+                "running_ms": "0.097000",
+                "runnable_ms": "1.565000",
+                "waiting_ms": "5.291000"
+              },
+              {
+                "root_id": "28894",
+                "stage": "system-reply",
+                "id": "29133",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_2",
+                "tid": "1850",
+                "name": "binder reply",
+                "ts": "206760964479905",
+                "wall_ms": "6.298000",
+                "running_ms": "5.322000",
+                "runnable_ms": "0.127000",
+                "waiting_ms": "0.850000"
+              },
+              {
+                "root_id": "28894",
+                "stage": "system-work",
+                "id": "29138",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_2",
+                "tid": "1850",
+                "name": "removeInputChannel",
+                "ts": "206760964613759",
+                "wall_ms": "0.140000",
+                "running_ms": "0.140000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "28894",
+                "stage": "nested-binder-reply",
+                "id": "29179",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "206760965497197",
+                "wall_ms": "0.180000",
+                "running_ms": "0.180000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "28894",
+                "stage": "system-work",
+                "id": "29208",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_2",
+                "tid": "1850",
+                "name": "performSurfacePlacement",
+                "ts": "206760966932509",
+                "wall_ms": "2.035000",
+                "running_ms": "2.035000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "28894",
+                "stage": "system-work",
+                "id": "29230",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_2",
+                "tid": "1850",
+                "name": "wmUpdateFocus",
+                "ts": "206760969003551",
+                "wall_ms": "1.668000",
+                "running_ms": "1.254000",
+                "runnable_ms": "0.053000",
+                "waiting_ms": "0.361000"
+              },
+              {
+                "root_id": "28894",
+                "stage": "nested-binder-reply",
+                "id": "29237",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "206760969674384",
+                "wall_ms": "0.178000",
+                "running_ms": "0.178000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "28894",
+                "stage": "nested-binder-reply",
+                "id": "29283",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_3",
+                "tid": "2134",
+                "name": "binder reply",
+                "ts": "206760970241468",
+                "wall_ms": "0.129000",
+                "running_ms": "0.129000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "29649",
+                "token": "11941438",
+                "ts": "206760979798863",
+                "dur": "3615365",
+                "wall_ms": "3.615000",
+                "running_ms": "3.615000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          },
+          {
+            "ui": {
+              "root_id": "63024",
+              "stage": "ui-root",
+              "id": "63024",
+              "process_name": "com.lonnnnnng.flclash.performance",
+              "thread_name": "ash.performance",
+              "tid": "8689",
+              "name": "Choreographer#doFrame 11944070",
+              "ts": "206765174046049",
+              "wall_ms": "16.108000",
+              "running_ms": "9.185000",
+              "runnable_ms": "0.794000",
+              "waiting_ms": "6.129000"
+            },
+            "token": "11944070",
+            "frameTimelineRows": "1",
+            "chain": [
+              {
+                "root_id": "63024",
+                "stage": "onForgotten",
+                "id": "63100",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8689",
+                "name": "Compose:onForgotten",
+                "ts": "206765175890060",
+                "wall_ms": "11.249000",
+                "running_ms": "4.534000",
+                "runnable_ms": "0.778000",
+                "waiting_ms": "5.937000"
+              },
+              {
+                "root_id": "63024",
+                "stage": "app-binder",
+                "id": "63217",
+                "process_name": "com.lonnnnnng.flclash.performance",
+                "thread_name": "ash.performance",
+                "tid": "8689",
+                "name": "binder transaction",
+                "ts": "206765180668601",
+                "wall_ms": "6.058000",
+                "running_ms": "0.054000",
+                "runnable_ms": "0.648000",
+                "waiting_ms": "5.357000"
+              },
+              {
+                "root_id": "63024",
+                "stage": "system-reply",
+                "id": "63218",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_20",
+                "tid": "16974",
+                "name": "binder reply",
+                "ts": "206765180711830",
+                "wall_ms": "5.976000",
+                "running_ms": "5.005000",
+                "runnable_ms": "0.525000",
+                "waiting_ms": "0.446000"
+              },
+              {
+                "root_id": "63024",
+                "stage": "system-work",
+                "id": "63219",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_20",
+                "tid": "16974",
+                "name": "removeInputChannel",
+                "ts": "206765180803914",
+                "wall_ms": "0.119000",
+                "running_ms": "0.119000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "63024",
+                "stage": "nested-binder-reply",
+                "id": "63237",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_1",
+                "tid": "1461",
+                "name": "binder reply",
+                "ts": "206765181656726",
+                "wall_ms": "0.248000",
+                "running_ms": "0.248000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "63024",
+                "stage": "system-work",
+                "id": "63249",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_20",
+                "tid": "16974",
+                "name": "performSurfacePlacement",
+                "ts": "206765182872612",
+                "wall_ms": "1.826000",
+                "running_ms": "1.826000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "63024",
+                "stage": "system-work",
+                "id": "63307",
+                "process_name": "system_server",
+                "thread_name": "binder:1754_20",
+                "tid": "16974",
+                "name": "wmUpdateFocus",
+                "ts": "206765184735841",
+                "wall_ms": "1.861000",
+                "running_ms": "1.292000",
+                "runnable_ms": "0.410000",
+                "waiting_ms": "0.158000"
+              },
+              {
+                "root_id": "63024",
+                "stage": "nested-binder-reply",
+                "id": "63314",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_1",
+                "tid": "1461",
+                "name": "binder reply",
+                "ts": "206765185380841",
+                "wall_ms": "0.152000",
+                "running_ms": "0.152000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              },
+              {
+                "root_id": "63024",
+                "stage": "nested-binder-reply",
+                "id": "63329",
+                "process_name": "/system/bin/surfaceflinger",
+                "thread_name": "binder:1423_1",
+                "tid": "1461",
+                "name": "binder reply",
+                "ts": "206765186047560",
+                "wall_ms": "0.125000",
+                "running_ms": "0.125000",
+                "runnable_ms": "[NULL]",
+                "waiting_ms": "[NULL]"
+              }
+            ],
+            "renderThreadSameToken": [
+              {
+                "role": "RenderThread",
+                "id": "63361",
+                "token": "11944070",
+                "ts": "206765189924695",
+                "dur": "4630677",
+                "wall_ms": "4.631000",
+                "running_ms": "4.594000",
+                "runnable_ms": "0.037000",
+                "waiting_ms": "[NULL]",
+                "timeline_rows": "1",
+                "recompose_ms": "[NULL]",
+                "remembered_ms": "[NULL]",
+                "forgotten_ms": "[NULL]",
+                "measure_ms": "[NULL]",
+                "relayout_ms": "[NULL]",
+                "layout_ms": "[NULL]",
+                "draw_ms": "[NULL]",
+                "buffer_release_wait_ms": "[NULL]",
+                "binder_ms": "[NULL]"
+              }
+            ]
+          }
+        ],
+        "stats": [
+          {
+            "name": "traced_chunks_discarded",
+            "idx": "[NULL]",
+            "severity": "info",
+            "source": "trace",
+            "value": "27"
+          }
+        ]
+      }
+    ],
+    "observations": {
+      "primaryCompositionWallMs": [
+        2.569,
+        2.742,
+        3.138,
+        2.931
+      ],
+      "primaryCompositionRunningMs": [
+        2.569,
+        2.742,
+        2.843,
+        2.931
+      ],
+      "windowWallMs": [
+        7.223,
+        8.761,
+        11.423,
+        8.182
+      ],
+      "windowRunningMs": [
+        1.751,
+        1.788,
+        2.697,
+        1.468
+      ],
+      "inputConnectionWallRangeMs": [
+        0.004,
+        0.006
+      ],
+      "detachWallRangeMs": [
+        0.039,
+        0.122
+      ],
+      "businessCleanupIndividualMaximumMs": 0.126,
+      "discardedChunks": [
+        26,
+        27
+      ]
+    },
+    "limitations": [
+      "Diagnostic overhead; no ordinary-R8 performance improvement claim",
+      "Parent/child scopes overlap; do not add inclusive durations",
+      "26/27 discarded chunks limit completeness; not dropped-frame counts",
+      "Direct cleanup is too short to explain all local disposal CPU; no speculative asynchronous window removal change",
+      "GPU/fence complete causality and stable performance optimization remain open"
+    ],
+    "continuationRuns": [
+      {
+        "trace": "../../../acceptance-artifacts/panels-url-close-20261121/continuation/close-short1/trace.perfetto-trace",
+        "sha256": "8bc5a9aa74df78fc566625516206cdf170efedcb62e5b07256dfe693a77f6c7a",
+        "bytes": 3316533,
+        "disposeCompositionRunningMs": 3.1,
+        "disposeWindowWallMs": 8.917,
+        "disposeWindowRunningMs": 1.861,
+        "disposeWindowWaitingMs": 6.179,
+        "systemReplyWallMs": 6.22,
+        "systemReplyRunningMs": 5.313,
+        "tracedChunksDiscarded": 28
+      },
+      {
+        "trace": "../../../acceptance-artifacts/panels-url-close-20261121/continuation/close-short2/trace.perfetto-trace",
+        "sha256": "901f97ed150f7d7510369b4c71bee4634eaaef96dcfa7aa78bd502806125cc16",
+        "bytes": 3475212,
+        "disposeCompositionRunningMs": 2.864,
+        "disposeWindowWallMs": 9.058,
+        "disposeWindowRunningMs": 1.919,
+        "disposeWindowWaitingMs": 6.442,
+        "systemReplyWallMs": 6.498,
+        "systemReplyRunningMs": 5.136,
+        "tracedChunksDiscarded": 29
+      }
+    ],
+    "traceIntegrity": "Both rings had zero bytes/chunks overwritten and zero per-buffer data-loss counters; global traced_chunks_discarded was 28/29, producer unresolved. Treat as partially complete, not dropped-frame counts."
+  },
+  "failuresPreserved": [
+    "candidate1 compile: missing SideEffect import",
+    "candidate2 URI first-line mismatch with Paragraph strategy",
+    "candidate4 copy test used raw length as transformed selection; script assertion read display text",
+    "actual-host/final-host invalid icon fixture, then stale test APK rerun",
+    "host-correct-apk no active profile in fixture preparation",
+    "host-isolated-preparation display-text assertion versus InputText",
+    "natural-unrecorded click assertion; interrupted final-components not counted",
+    "Intermediate cleanup comparisons used inconsistent package prefix and overescaped regex; final normalized readback matches",
+    "Initial natural transition host placed its trigger under the status bar; corrected host bounds then completed the final run",
+    "An extra legacy MainActivity host attempt hit the empty-profile precondition and notification permission window; final resource MainActivity host tests ran after scoped test permission grant"
+  ],
+  "protection": {
+    "device": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "removedAfterInstallHashVerification": [
+      {
+        "package": "com.lonnnnnng.flclash.motion",
+        "sha256": "e91559811e282c16bbb9af2179b67efa8df6bd2799d29452c1550aec482d1dae",
+        "bytes": 67547985
+      },
+      {
+        "package": "com.lonnnnnng.flclash.motion.test",
+        "sha256": "ff9975a3a4c0a3b39ef427202c42bd5131556b66e184722d18e3ea5f206491f3",
+        "bytes": 3290711
+      }
+    ],
+    "packageInventoryRestored": true,
+    "settingsRestored": true,
+    "referenceFlutterStableFieldsRestored": true,
+    "referenceFlutterStableFields": {
+      "appId": "10185",
+      "codePath": "/data/app/~~BuOa5bjLF5F8uf0z6QC-hw==/com.follow.clash-dabovf9Ks3fSV7RqrrZY1g==",
+      "versionCode": "2026112401 minSdk=24 targetSdk=37",
+      "versionName": "0.9.3",
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-07 02:44:08"
+    },
+    "settings": {
+      "rotation": "0",
+      "accelerometer": "0",
+      "font": "1.0",
+      "night": "Night mode: yes"
+    }
+  },
+  "buildWorktree": "Acceptance uses independent motion, instrumentation, performance, and Flutter component hosts; unrelated existing worktree edits were left separate. No core/VPN/network result is claimed.",
+  "continuation": {
+    "date": "2026-11-21",
+    "sourceSha256": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ScriptsPage.kt": "581514145c8ab92eb526ca3619660aad67df1d18242c4c1cbe57bd4ce5a5f9d8",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "dab833eba2fc6c38ac4fa32f6c47694336c0449a6d7c29b883d6154d7fd238fc",
+      "android/tests/instrumented/ResourceOptionsHostInstrumentedTest.kt": "87228b95d24c78274dff4d25a98a50ddb718f07c14a589eea12eb8470c0d0251",
+      "android/tests/instrumented/ResourceOptionsNaturalInstrumentedTest.kt": "9a9f8abec8a76a2eafedaa19613ac678f5e3c6f34534cfe101ebe2b98d1d8db1",
+      "android/tests/instrumented/ResourceOptionsTransitionInstrumentedTest.kt": "f3815534f1ef911ffeb36c049199b515ea45cc12d595a240b2c98ffc3b7fbbb0",
+      "tool/perfetto_trace_integrity.sql": "52f5c41b4732fb2dfcb981648b1f8058de464fa7a3fe426bbd424bb3f99cfcba"
+    },
+    "motionJvm": {
+      "tests": 629,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report": "continuation/jvm.json"
+    },
+    "finalDeviceBatch": {
+      "device": "POCO F2 Pro / 31936bb6 / API36",
+      "tests": 8,
+      "failures": 0,
+      "skipped": 0,
+      "screenshots": 15,
+      "naturalVideo": "continuation/natural-source-final/natural.mp4",
+      "naturalVideoBytes": 34713313,
+      "naturalVideoSha256": "679acf404791eae031749b466fde80e2a12838eb2a3f9226ef94d2ef18e45330",
+      "naturalDurationSeconds": 66.131078,
+      "screenshotReport": "continuation/final-source-components/screenshots.json",
+      "collectorAcceptsJUnitSingularAndPlural": true
+    },
+    "builds": {
+      "motionApk": {
+        "bytes": 67542309,
+        "sha256": "3e7af94561b4bf6ec0c13dad78e1622143e218353b2702135cef6fd0b0e670f3"
+      },
+      "motionTestApk": {
+        "bytes": 3297875,
+        "sha256": "c101048e613c7ffd1a87c37b77670db8f2bd711a4187f32bee1b0b560a8466a2"
+      },
+      "diagnosticPerformanceR8Apk": {
+        "bytes": 49610213,
+        "sha256": "39df2955d88f7b43668b92571a5a753b587f3a950e2dce89ec88c5da68a79cc5",
+        "diagnosticScopesPresent": true
+      },
+      "unsignedReleaseApk": {
+        "bytes": 49594929,
+        "sha256": "2119ceb74157134bc6547d860f59ba4f4d9e211497fd976c77be7cae197964d0",
+        "diagnosticScopesAbsent": true,
+        "releaseDexGatePassed": true
+      },
+      "lint": {
+        "motionErrors": 0,
+        "motionWarnings": 75,
+        "motionHints": 15,
+        "releaseErrors": 0,
+        "releaseWarnings": 71,
+        "releaseHints": 14
+      }
+    },
+    "menuTrace": {
+      "runs": 2,
+      "settings": "6s duration, 16MiB ring, scheduler/binder/FrameTimeline retained, no recording or instrumentation",
+      "compositionRunningMs": [3.1, 2.864],
+      "windowWallMs": [8.917, 9.058],
+      "windowRunningMs": [1.861, 1.919],
+      "windowWaitingMs": [6.179, 6.442],
+      "systemReplyWallMs": [6.22, 6.498],
+      "globalChunksDiscarded": [28, 29],
+      "bufferOverwriteAndDataLossCounters": 0,
+      "causalLimit": "Global discarded producer is unresolved; no stable performance gain, GPU/fence cause, or removable multi-millisecond app cleanup established.",
+      "analysis": "continuation/close-analysis.json"
+    },
+    "deviceCleanup": {
+      "report": "continuation/cleanup-verification.json",
+      "ownedPackagesAbsent": true,
+      "ownedServiceRecords": 0,
+      "systemSettingsMatchStart": true,
+      "referenceFlutterStableFieldsMatchStart": true,
+      "packageInventoryMatchStart": true,
+      "originalReferencePackage": "com.follow.clash"
+    },
+    "failuresPreserved": [
+      "Initial natural harness click intersected the status bar; the harness was moved into a safe touch area and the final recorded run passed.",
+      "An extra legacy ScriptsPageHost test encountered the empty-profile precondition; the chosen MainActivity resource host tests passed 2/2."
+    ]
+  },
+  "remaining": [
+    "Other subpages/panels and exact full Flutter layout",
+    "Complete full-app natural continuous transitions/runtime comparison beyond the four resource panels",
+    "Arbitrary URL and hyphenated wrapping equivalence",
+    "Menu release/render/system-window optimization and GPU/fence attribution",
+    "Glass overlapping-pane atlas and full-page sampling"
+  ],
+  "release": {
+    "published": false,
+    "currentPublic": "0.1.12",
+    "commitOrPush": "Not performed; not requested. Broader full-app visual/performance work remains PARTIAL; unrelated pre-existing worktree changes remain untouched."
+  },
+  "artifacts": "../../../acceptance-artifacts/panels-url-close-20261121/"
+}

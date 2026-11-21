@@ -158,7 +158,11 @@ internal fun FloatingInputField(value: TextFieldValue, onChange: (TextFieldValue
             BasicTextField(value, onChange, Modifier.weight(1f).padding(vertical = 12.dp).onFocusChanged { focused = it.isFocused }.testTag(tag),
                 enabled = enabled, singleLine = secret && !revealed, maxLines = if (secret && !revealed) 1 else 5,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface), cursorBrush = SolidColor(colors.primary),
-                visualTransformation = if (secret && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = when {
+                    secret && !revealed -> PasswordVisualTransformation()
+                    !secret && keyboardType == KeyboardType.Uri -> UriDisplayTransformation
+                    else -> VisualTransformation.None
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = keyboardType,
                     autoCorrectEnabled = !secret && keyboardType == KeyboardType.Text, imeAction = ImeAction.Done), keyboardActions = KeyboardActions(onDone = { latestSubmit() }),
                 decorationBox = { input -> Box { if (value.text.isEmpty()) Text(placeholder, color = colors.onSurfaceVariant); input() } })

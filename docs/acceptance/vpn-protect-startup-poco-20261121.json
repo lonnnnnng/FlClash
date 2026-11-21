@@ -1,0 +1,79 @@
+{
+  "date": "2026-11-21",
+  "scope": "Direct Android VpnService.protect(DatagramSocket) call during the real VPN/Core startup window",
+  "result": "passed",
+  "device": {
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "serial": "31936bb6"
+  },
+  "source": {
+    "localFile": "workspace-root/1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "transfer": "USB only",
+    "uploadedToInternet": false
+  },
+  "build": {
+    "appPackage": "com.lonnnnnng.flclash.motion",
+    "appApkSha256": "3b580103534fbc8c9ef4c8e1a4ac808b699a04f6277e67e8063ff326394c54eb",
+    "installedAppApkMatchedBuild": true,
+    "testPackage": "com.lonnnnnng.flclash.motion.test",
+    "testApkSha256": "1892ff72ec767228102fddf091fcde855af3c7bb87876ba5e076bda9b1fb5775",
+    "installedTestApkMatchedBuild": true
+  },
+  "test": {
+    "method": "VpnProtectStartupWindowInstrumentedTest#androidProtectAcceptsPrecreatedSocketDuringTunStartup",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "socketCreatedBeforeVpnStart": true,
+    "socketCreatedElapsedMs": 193340863,
+    "vpnStartElapsedMs": 193340892,
+    "elapsedFromVpnStartToProtectMs": 499,
+    "platformProtect": {
+      "method": "VpnService.protect(DatagramSocket)",
+      "accepted": true,
+      "vpnServiceState": "STARTING",
+      "coreStartCallActive": true,
+      "socketBound": true,
+      "socketOpenAfterCall": true,
+      "socketLocalPort": 42628,
+      "elapsedRealtimeMs": 193341391
+    },
+    "coreGateAfterStartup": {
+      "phase": "ready",
+      "accepted": 24,
+      "rejected": 0,
+      "unavailable": 0,
+      "callsDuringStart": 24
+    },
+    "sameSocketFdAsGoRawConnClaimed": false
+  },
+  "verification": {
+    "command": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "passed",
+    "unitTests": { "count": 848, "failures": 0, "errors": 0, "skipped": 0 },
+    "serviceLint": { "errors": 0, "warnings": 8 },
+    "motionLint": { "errors": 0, "warnings": 75, "hints": 15 }
+  },
+  "cleanup": {
+    "runtimeStopped": true,
+    "vpnPreferenceRestored": true,
+    "alwaysOnVpn": false,
+    "lockdownVpn": false,
+    "tunInterfacePresent": false,
+    "motionAcceptancePackagesUninstalledAfterTest": true,
+    "wifiValidated": true,
+    "referencePackage": "com.follow.clash",
+    "referencePackageOperated": false
+  },
+  "limitations": [
+    "The Java DatagramSocket passed to Android VpnService.protect is not the same fd as any Go RawConn in the pending queue.",
+    "The platform call was observed while the VPN service was STARTING and the synchronous Core.startTun call was active; the test does not claim the call occurred inside the Go gate's short phase=starting sub-window.",
+    "The final Go snapshot independently recorded 24 startup protection calls with zero rejection; that aggregate does not attribute the Java probe socket to the Go queue.",
+    "An external polling attempt missed the approximately 5 ms Go gate-start phase; the final test invokes the Android API from the synchronous service callback and records the broader STARTING window without claiming the shorter phase."
+  ],
+  "privateArtifacts": "../acceptance-artifacts/pre-vpn-protect-poco-20261121/"
+}

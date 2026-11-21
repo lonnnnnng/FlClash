@@ -22,6 +22,7 @@ import com.lonnnnnng.flclash.service.models.tunOptions
 import com.lonnnnnng.flclash.service.modules.ServiceModules
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import android.net.VpnService as SystemVpnService
 
 class VpnService : SystemVpnService(), ManagedService {
@@ -193,18 +194,25 @@ class VpnService : SystemVpnService(), ManagedService {
                 // longer keeps its own sockets out of them: every connection
                 // then hangs until it times out. Tear the VPN down instead of
                 // reporting a start that only looks successful.
-                check(
+                val coreStartCallActive = AtomicBoolean(true)
+                val coreAccepted = try {
                     attempt.startCore(fd, options.stack, options.tunOptions) { stack, nativeOptions -> Core.startTun(
                         fd = fd,
-                        protect = { socket -> socketProtection.protect { protect(socket) } },
+                        protect = { socket ->
+                            attempt.beforeCoreProtect(coreStartCallActive.get()) { datagram -> protect(datagram) }
+                            socketProtection.protect { protect(socket) }
+                        },
                         resolveUid = this::resolveUid,
                         resolvePackage = this::resolvePackage,
                         stack = stack,
                         address = options.tunAddress,
                         dns = options.tunDns,
                         options = nativeOptions,
-                    ) },
-                ) { "Core rejected the tun file descriptor" }
+                    ) }.also { coreStartCallActive.set(false) }
+                } finally {
+                    coreStartCallActive.set(false)
+                }
+                check(coreAccepted) { "Core rejected the tun file descriptor" }
             } catch (error: Exception) {
                 stopTunLocked()
                 throw error

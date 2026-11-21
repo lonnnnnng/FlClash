@@ -49,6 +49,10 @@ func (th *TunHandler) start(fd int, stack, address, dns, options string) bool {
 	th.mu.Lock()
 	th.initHook()
 	th.mu.Unlock()
+	// 作者 long：先保护 VPN 建立前已打开的 socket，再让 TUN 栈开始拨号，避免它们被新路由送回核心。
+	pendingSocketProtection.activate(func(conn syscall.RawConn) error {
+		return protectRawSocket(conn, th.protection)
+	})
 
 	// 作者 long：栈初始化本身可能拨号，不能持有它会回入的handler锁；保护回调已在hook发布前就绪，不依赖listener赋值。
 	tunListener := t.Start(fd, stack, address, dns, options)
@@ -73,6 +77,7 @@ func (th *TunHandler) close() {
 
 func (th *TunHandler) clear() {
 	th.removeHook()
+	pendingSocketProtection.deactivate()
 	th.protection.close()
 	if th.listener != nil {
 		_ = th.listener.Close()
@@ -108,22 +113,35 @@ func (th *TunHandler) handleResolveProcess(source, target net.Addr) (int, string
 }
 
 var (
-	installHooksOnce sync.Once
-	activeTunHandler atomic.Pointer[TunHandler]
+	installHooksOnce        sync.Once
+	activeTunHandler        atomic.Pointer[TunHandler]
+	pendingSocketProtection = newPendingSocketProtector()
 )
 
-func installHooks() {
-	installHooksOnce.Do(func() {
-		dialer.DefaultSocketHook = func(network, address string, conn syscall.RawConn) error {
+func init() {
+	hook := newSocketProtectionHook(
+		func() error {
 			if platform.ShouldBlockConnection() {
 				return errBlocked
 			}
+			return nil
+		},
+		func() *socketProtectionGate {
 			th := activeTunHandler.Load()
 			if th == nil {
 				return nil
 			}
-			return protectRawSocket(conn, th.protection)
-		}
+			return th.protection
+		},
+		pendingSocketProtection,
+	)
+	dialer.DefaultSocketHook = func(_, _ string, conn syscall.RawConn) error {
+		return hook(conn)
+	}
+}
+
+func installHooks() {
+	installHooksOnce.Do(func() {
 		process.DefaultPackageNameResolver = func(metadata *constant.Metadata) (string, error) {
 			th := activeTunHandler.Load()
 			if th == nil {

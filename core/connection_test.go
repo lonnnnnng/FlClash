@@ -7,10 +7,34 @@ import (
 
 	"github.com/metacubex/mihomo/adapter"
 	"github.com/metacubex/mihomo/adapter/outbound"
+	"github.com/metacubex/mihomo/adapter/provider"
 	"github.com/metacubex/mihomo/constant"
+	cp "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/tunnel"
 	"github.com/metacubex/mihomo/tunnel/statistic"
 )
+
+type resettableTestOutbound struct {
+	constant.ProxyAdapter
+	resets int
+}
+
+func (o *resettableTestOutbound) ResetNetwork() { o.resets++ }
+
+func resettableTestProxy(name string) (*resettableTestOutbound, constant.Proxy) {
+	outbound := &resettableTestOutbound{ProxyAdapter: outbound.NewRejectWithOption(outbound.RejectOption{Name: name})}
+	return outbound, adapter.NewProxy(outbound)
+}
+
+func compatibleProxyProvider(t *testing.T, name string, proxies []constant.Proxy) cp.ProxyProvider {
+	t.Helper()
+	healthCheck := provider.NewHealthCheck(proxies, "", 0, 0, true, nil)
+	value, err := provider.NewCompatibleProvider(name, proxies, healthCheck)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return value
+}
 
 func TestProxyOnlyTrafficLeavesOutADirectProxyOfAnyName(t *testing.T) {
 	direct := outbound.NewDirectWithOption(outbound.DirectOption{Name: "直连"})
@@ -54,4 +78,22 @@ func TestProxyOnlyTrafficLeavesOutADirectProxyOfAnyName(t *testing.T) {
 		}
 	}
 	statistic.DefaultManager.ResetStatistic()
+}
+
+func TestResetNetworkVisitsConfiguredAndProviderOutboundsOnce(t *testing.T) {
+	shared, sharedProxy := resettableTestProxy("shared")
+	first, firstProxy := resettableTestProxy("duplicate")
+	second, secondProxy := resettableTestProxy("duplicate")
+	providers := map[string]cp.ProxyProvider{
+		"A": compatibleProxyProvider(t, "A", []constant.Proxy{sharedProxy, firstProxy}),
+		"B": compatibleProxyProvider(t, "B", []constant.Proxy{secondProxy}),
+	}
+	tunnel.UpdateProxies(map[string]constant.Proxy{"shared": sharedProxy}, providers)
+	t.Cleanup(func() { tunnel.UpdateProxies(nil, nil) })
+
+	handleResetNetwork()
+
+	if shared.resets != 1 || first.resets != 1 || second.resets != 1 {
+		t.Fatalf("reset calls: shared=%d providerA=%d providerB=%d; want 1 each", shared.resets, first.resets, second.resets)
+	}
 }

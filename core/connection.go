@@ -2,7 +2,9 @@ package core
 
 import (
 	"github.com/metacubex/mihomo/component/resolver"
+	"github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/dns"
+	"github.com/metacubex/mihomo/tunnel"
 	"github.com/metacubex/mihomo/tunnel/statistic"
 )
 
@@ -58,7 +60,34 @@ func handleClearDnsCache() {
 // TCP gives up on it, and so do the DNS clients' pooled connections.
 func handleResetNetwork() {
 	handleCloseConnections()
+	resetOutbounds()
 	handleClearDnsCache()
+}
+
+type networkResetter interface{ ResetNetwork() }
+
+func resetOutbounds() {
+	reset := make(map[networkResetter]struct{})
+	visit := func(proxy constant.Proxy) {
+		outbound, ok := proxy.Adapter().(networkResetter)
+		if !ok {
+			return
+		}
+		if _, done := reset[outbound]; done {
+			return
+		}
+		reset[outbound] = struct{}{}
+		outbound.ResetNetwork()
+	}
+	for _, proxy := range tunnel.AllProxies() {
+		visit(proxy)
+	}
+	// 作者 long：AllProxies 会按名称折叠节点；仍逐个检查 Provider，避免同名节点漏掉各自的共享连接。
+	for _, provider := range tunnel.ProvidersSnapshot() {
+		for _, proxy := range provider.Proxies() {
+			visit(proxy)
+		}
+	}
 }
 
 func handleCloseConnection(connectionId string) bool {

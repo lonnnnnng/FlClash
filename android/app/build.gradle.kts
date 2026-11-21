@@ -1,5 +1,16 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
+import com.android.build.api.instrumentation.AsmClassVisitorFactory
+import com.android.build.api.instrumentation.ClassContext
+import com.android.build.api.instrumentation.ClassData
+import com.android.build.api.instrumentation.InstrumentationParameters
+import com.android.build.api.instrumentation.InstrumentationScope
+import com.android.build.api.instrumentation.FramesComputationMode
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Label
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.commons.AdviceAdapter
 
 plugins {
     id("com.android.application")
@@ -29,12 +40,13 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseKeyAlias != null &&
     releaseKeyPassword != null
 
-val defaultVersionCode = 1012
-val defaultVersionName = "0.1.12"
+val defaultVersionCode = 1013
+val defaultVersionName = "0.1.13"
 // 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
 val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"
 val performanceBenchmarkEnabled = providers.gradleProperty("kclashPerformanceBenchmark").orNull == "true"
 val menuTraceEnabled = providers.gradleProperty("kclashMenuTrace").orNull == "true"
+val popupDisposeTraceEnabled = providers.gradleProperty("kclashPopupDisposeTrace").orNull == "true"
 val requestedVersionCode = providers.gradleProperty("kclashVersionCode")
     .orNull
     ?.toIntOrNull()
@@ -153,6 +165,52 @@ android {
 
 if (motionBenchmarkEnabled) configurations.named("motionBenchmarkImplementation") {
     extendsFrom(configurations.getByName("debugImplementation"))
+}
+
+// 作者 long：只给显式独立诊断变体插入同步计时，保留依赖方法和调用顺序；正式包及普通R8分母不改写Compose。
+if (performanceBenchmarkEnabled && popupDisposeTraceEnabled) androidComponents {
+    onVariants(selector().withBuildType("performanceBenchmark")) { variant ->
+        variant.instrumentation.transformClassesWith(PopupDisposeTraceFactory::class.java, InstrumentationScope.ALL) {}
+        variant.instrumentation.setAsmFramesComputationMode(FramesComputationMode.COMPUTE_FRAMES_FOR_INSTRUMENTED_METHODS)
+    }
+}
+
+abstract class PopupDisposeTraceFactory : AsmClassVisitorFactory<InstrumentationParameters.None> {
+    override fun isInstrumentable(classData: ClassData): Boolean = classData.className in setOf(
+        "androidx.compose.ui.platform.AbstractComposeView", "androidx.compose.ui.platform.AndroidComposeView", "androidx.compose.ui.window.PopupLayout")
+    override fun createClassVisitor(classContext: ClassContext, nextClassVisitor: ClassVisitor): ClassVisitor =
+        object : ClassVisitor(instrumentationContext.apiVersion.get(), nextClassVisitor) {
+            override fun visitMethod(access: Int, name: String, descriptor: String, signature: String?, exceptions: Array<out String>?): MethodVisitor {
+                val delegate = super.visitMethod(access, name, descriptor, signature, exceptions)
+                val scope = when (classContext.currentClassData.className to name) {
+                    "androidx.compose.ui.platform.AbstractComposeView" to "disposeComposition" -> "composition"
+                    "androidx.compose.ui.platform.AndroidComposeView" to "removeConnectionToComposeViewContext" -> "input-connection"
+                    "androidx.compose.ui.window.PopupLayout" to "dismiss" -> "window"
+                    "androidx.compose.ui.window.PopupLayout" to "onDetachedFromWindow" -> "detach"
+                    else -> return delegate
+                }
+                check(descriptor == "()V") { "Unexpected Compose disposal signature: $name$descriptor" }
+                return object : AdviceAdapter(api, delegate, access, name, descriptor) {
+                    private val start = Label()
+                    override fun onMethodEnter() {
+                        visitLdcInsn("kclash/dispose/$scope")
+                        visitMethodInsn(Opcodes.INVOKESTATIC, "android/os/Trace", "beginSection", "(Ljava/lang/String;)V", false)
+                        visitLabel(start)
+                    }
+                    override fun onMethodExit(opcode: Int) {
+                        if (opcode != Opcodes.ATHROW) visitMethodInsn(Opcodes.INVOKESTATIC, "android/os/Trace", "endSection", "()V", false)
+                    }
+                    override fun visitMaxs(maxStack: Int, maxLocals: Int) {
+                        // 作者 long：异常也必须闭合trace再原样抛出，诊断不能吞异常或破坏后续线程切片栈。
+                        val end = Label(); val handler = Label()
+                        mv.visitLabel(end); mv.visitTryCatchBlock(start, end, handler, null); mv.visitLabel(handler)
+                        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "android/os/Trace", "endSection", "()V", false)
+                        mv.visitInsn(Opcodes.ATHROW)
+                        super.visitMaxs(maxStack, maxLocals)
+                    }
+                }
+            }
+        }
 }
 
 kotlin {

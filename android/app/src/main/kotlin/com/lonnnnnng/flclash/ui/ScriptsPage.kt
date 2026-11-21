@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.Script
@@ -119,24 +120,22 @@ internal fun ScriptRemoteDialog(
     initialLabel: String = "",
     initialUrl: String = script?.url.orEmpty(),
     onDraftChange: (String, String) -> Unit = { _, _ -> },
+    closing: Boolean = false,
+    onClosed: () -> Unit = {},
 ) {
-    var label by remember(script?.id) { mutableStateOf(initialLabel) }
-    // 作者 long：地址可能包含访问参数，只保留当前窗口会话，失败时继续编辑而不是提前关页。
-    var url by remember(script?.id) { mutableStateOf(initialUrl) }
-    ProfileEditorPage(onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text(if (script == null) tr("导入远程脚本") else tr("修改脚本地址")) }, backTag = "script_remote_back",
-        confirmButton = { TextButton(onClick = { onImport(label, url) }, enabled = !busy && url.isNotBlank(), modifier = Modifier.testTag("script_remote_submit")) {
-            if (busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text(if (script == null) tr("导入") else tr("保存"))
-        } }, text = {
-            Column(Modifier.fillMaxWidth().testTag("script_remote_page"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (script == null) OutlinedTextField(label, { label = it; onDraftChange(it, url) }, Modifier.fillMaxWidth(), enabled = !busy,
-                    label = { Text(tr("脚本名称（可选）")) }, singleLine = true)
-                OutlinedTextField(url, { url = it; onDraftChange(label, it) }, Modifier.fillMaxWidth().testTag("script_remote_url"), enabled = !busy,
-                    label = { Text(tr("HTTP(S) 脚本地址")) }, singleLine = true)
-                error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier) }
-                if (script != null) Text(tr("新地址下载成功后才会替换当前脚本。"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        })
+    var value by remember(script?.id) { mutableStateOf(TextFieldValue(initialUrl)) }
+    var submitted by remember(script?.id) { mutableStateOf(false) }
+    LaunchedEffect(busy, error) { if (!busy && error != null) submitted = false }
+    // 作者 long：导入和改源共用URL浮框；名称沿仓库的文件名去重规则生成，下载期间留框，失败保留草稿，成功回执后连续退场。
+    FloatingInputDialog(if (script == null) tr("导入远程脚本") else tr("修改脚本地址"),
+        "script_remote_page", busy || submitted, value.text.isNotBlank(),
+        onDismiss, { if (!submitted && !busy) { submitted = true; onImport(initialLabel, value.text) } },
+        if (script == null) tr("导入") else tr("保存"),
+        error = error, errorTag = "script_remote_error", confirmTag = "script_remote_submit", cancelTag = "script_remote_back",
+        externallyClosing = closing, onExitComplete = onClosed) { enabled, submit ->
+        FloatingInputField(value, { value = it; onDraftChange(initialLabel, it.text) }, "script_remote_url", enabled, submit,
+            placeholder = tr("HTTP(S) 脚本地址"), invalid = error != null, keyboardType = KeyboardType.Uri)
+    }
 }
 
 @Composable

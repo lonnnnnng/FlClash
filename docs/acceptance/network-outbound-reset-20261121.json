@@ -1,0 +1,148 @@
+{
+  "date": "2026-11-21",
+  "scope": "Network-change reset for shared outbounds and sockets created before VPN protection is available",
+  "upstream": {
+    "flutterRepository": "chen08209/FlClash",
+    "flutterCommit": "b13cf52a",
+    "mihomoRepository": "chen08209/Clash.Meta",
+    "mihomoBranch": "FlClash",
+    "mihomoCommit": "5b453f80dbcee6b3ecfb0415bcace24a48c88707"
+  },
+  "source": {
+    "kotlinBranch": "kotlin",
+    "kotlinHeadBefore": "724c105c",
+    "mihomoBranch": "kclash-fixes",
+    "mihomoHeadBefore": "d43bbd751fe5eb95a599a6211423f645269ba57d"
+  },
+  "implementation": {
+    "networkObserverAlreadyCallsCoreResetNetwork": true,
+    "resetsConfiguredOutbounds": true,
+    "resetsEveryProviderNodeIncludingDuplicateNames": true,
+    "deduplicatesSharedAdapterInstances": true,
+    "protocols": ["WireGuard", "Hysteria2", "TUIC"],
+    "installsSocketHookAtCorePackageInitialization": true,
+    "protectsPendingSocketsBeforeTunStackStart": true,
+    "activeProtectRejectionRemainsFailClosed": true
+  },
+  "verification": {
+    "parentGoRace": {
+      "command": "go test -race ./...",
+      "result": "passed",
+      "corePackageElapsedSeconds": 68.297
+    },
+    "mihomoChangedPackageRace": {
+      "command": "go test -race ./adapter/outbound ./transport/tuic",
+      "result": "passed"
+    },
+    "mihomoLifecycleRegressionRace": {
+      "command": "go test -race github.com/metacubex/mihomo/hub/route github.com/metacubex/mihomo/component/http github.com/metacubex/mihomo/component/updater",
+      "result": "passed"
+    },
+    "preVpnSocketBoundary": {
+      "result": "passed",
+      "androidDeviceIntegration": "passed_for_direct_platform_api_only",
+      "sameRawSocketFdProtectedAfterActivation": true,
+      "rejectedSocketRetriedOnNextActivation": true,
+      "closedSocketDropped": true,
+      "activeProtectionStillFailsClosed": true,
+      "concurrentActivationProtectsEverySocket": true,
+      "androidProtectStartupEvidence": "acceptance/vpn-protect-startup-poco-20261121.json"
+    },
+    "androidBuild": {
+      "command": "./gradlew test :app:assembleDebug --no-daemon",
+      "result": "passed",
+      "coreBindTaskExecuted": true,
+      "jvmTestTasksWereUpToDate": true
+    },
+    "motionAcceptanceBuild": {
+      "command": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+      "result": "passed",
+      "appPackage": "com.lonnnnnng.flclash.motion",
+      "appApkSha256": "7389af7253fd443a65865c449534dc5a57dc35977cc4bb5e34d29cecebef8805",
+      "testPackage": "com.lonnnnnng.flclash.motion.test",
+      "testApkSha256": "55f6f0de099465c12eda9b8e460b0c91fc0f91566d24b898d0b09f30a570ee94"
+    },
+    "localProfileImport": {
+      "test": "StabilityWindowPreparationTest#importsOnlyAuthorizedLocalIntoEmptyMotionDatabase",
+      "result": "passed",
+      "tests": 1,
+      "sourceFile": "workspace-root/2.yaml",
+      "sourceSha256": "43c51803ea14a915189a6be7ccd925809bfd0da42f23119eeb479750ff4e9d92",
+      "sourceBytes": 10424,
+      "copiedOver": "USB only",
+      "uploadedToInternet": false
+    },
+    "liveProtocolNetworkSwitch": {
+      "Hysteria2": {
+        "result": "passed",
+        "mode": "TUN VPN",
+        "networkTransition": "Wi-Fi disabled for 4000 ms, then reconnected and validated",
+        "before": {
+          "sourcePort": 44000,
+          "dnsPassed": true,
+          "wireDnsPassed": true,
+          "tlsMillis": 137,
+          "http": 200,
+          "elapsedMillis": 569,
+          "nonDirectBidirectionalTrafficBytes": { "upload": 593, "download": 3689 },
+          "hysteria2LeafHashMatched": true,
+          "underlyingNetworkHandle": 488737001485
+        },
+        "afterReconnect": {
+          "sourcePort": 44001,
+          "dnsPassed": true,
+          "wireDnsPassed": true,
+          "tlsMillis": 150,
+          "http": 200,
+          "elapsedMillis": 328,
+          "nonDirectBidirectionalTrafficBytes": { "upload": 254, "download": 3691 },
+          "hysteria2LeafHashMatched": true,
+          "underlyingNetworkHandle": 501621903373
+        },
+        "underlyingNetworkHandleChanged": true,
+        "motionCorePidBeforeAndAfter": 14105,
+        "runningSinceElapsedMsBeforeAndAfter": 188573715,
+        "coreSessionPreserved": true,
+        "explicitVpnSocketBinding": false,
+        "processBoundNetwork": false
+      },
+      "WireGuard": "not_run_no_node_provided",
+      "TUIC": "not_run_no_node_provided",
+      "cellularSwitch": "not_run_sim_absent"
+    }
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "serial": "31936bb6",
+    "kclashInstalledBefore": false,
+    "motionAcceptanceInstalledDuringTest": true,
+    "motionAcceptanceUninstalledAfterTest": true,
+    "referencePackage": "com.follow.clash",
+    "referenceProcessObserved": true,
+    "referencePackageOperated": false,
+    "referencePidBeforeAndAfter": 12886,
+    "wifiEnabledBeforeAndAfter": true,
+    "validatedWifiAfterTest": true,
+    "vpnAliveAfterTest": false,
+    "originalAllowBypassDefault": false,
+    "allowBypassRestored": false,
+    "simState": "ABSENT"
+  },
+  "limitations": [
+    "Only the supplied Hysteria2 node was tested; WireGuard and TUIC remain unverified because no nodes were supplied.",
+    "Only Wi-Fi offline/reconnect was tested; cellular switching remains unverified because the device SIM state is ABSENT.",
+    "The VPN-before-socket boundary is covered by the Go RawConn test; the live Wi-Fi Hysteria2 run is a separate integration result.",
+    "Android VpnService.protect(DatagramSocket) now has a separate POCO/API36 startup-window test; it is not claimed to be the same fd as the Go RawConn pending queue.",
+    "The POCO Hysteria2 run did not intentionally create a core outbound socket before VPN authorization; the pre-VPN callback handoff remains covered by the Go RawConn test only.",
+    "This change is not evidence for the cause of the historical first-connect TLS failures."
+  ],
+  "deviceChanges": {
+    "kclashAcceptancePackagesInstalled": false,
+    "vpnRunning": false,
+    "networkSettingsRestored": true,
+    "wifiRestoredToEnabled": true,
+    "referencePackageChanged": false
+  },
+  "privateArtifacts": "../acceptance-artifacts/hysteria2-network-switch-poco-20261121/"
+}

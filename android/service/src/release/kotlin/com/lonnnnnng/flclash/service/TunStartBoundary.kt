@@ -11,6 +11,8 @@ object TunStartBoundary {
     object Attempt {
         fun establish(builder: VpnService.Builder) = builder.establish()
         @Suppress("UNUSED_PARAMETER")
+        inline fun beforeCoreProtect(coreStartCallActive: Boolean, protect: (java.net.DatagramSocket) -> Boolean) = Unit
+        @Suppress("UNUSED_PARAMETER")
         inline fun startCore(fd: Int, stack: String, options: String, call: (String, String) -> Boolean) = call(stack, options)
     }
 }

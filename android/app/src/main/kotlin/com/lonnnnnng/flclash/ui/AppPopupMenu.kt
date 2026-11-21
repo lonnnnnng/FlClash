@@ -180,7 +180,7 @@ internal fun AppDropdownMenu(
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) { pendingAction = null; source?.hidden = false; dismiss() } }
         lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer) }
+        onDispose { menuTrace("kclash/menu/cleanup/lifecycle-remove") { lifecycle.removeObserver(observer) } }
     }
     val density = LocalDensity.current
     val direction = LocalLayoutDirection.current
@@ -237,7 +237,7 @@ internal fun AppDropdownMenu(
     }
     LaunchedEffect(active, expanded) {
         // 作者 long：回源期间外部撤销也必须取消旧交接；否则false→true重开时active仍为false，旧选择会借用新展开状态重放。
-        if (!expanded) { pendingAction = null; requestedClose = false }
+        if (!expanded) menuTrace("kclash/menu/cleanup/revoke-request") { pendingAction = null; requestedClose = false }
         if (active) {
             stack.reset(pageKey)
             returnCard = null
@@ -259,18 +259,19 @@ internal fun AppDropdownMenu(
             val duration = if (sourceReady) 500 else 200
             returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
             MenuCloseCaptureProbe.afterAnimation()
-            source?.hidden = false
+            menuTrace("kclash/menu/cleanup/restore-source-before-detach") { source?.hidden = false }
             awaitAppWindowRemoved(popupWindow.view) { present = false }
             // 作者 long：窗口移除也有取消窗口，交接时再核对外部展开与生命周期，防止后台或撤销后重放选择。
             val action = pendingAction.takeIf { expandedLatest && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
-            pendingAction = null
-            sourceImage = null; backdrop = null
-            carry.cancel(); registry.hovered = null
+            menuTrace("kclash/menu/cleanup/drop-action") { pendingAction = null }
+            menuTrace("kclash/menu/cleanup/drop-captured-frames") { sourceImage = null; backdrop = null }
+            menuTrace("kclash/menu/cleanup/cancel-pointer") { carry.cancel() }
+            menuTrace("kclash/menu/cleanup/clear-hover") { registry.hovered = null }
             if (requestedClose) { if (action == null) dismiss() else action() }
             requestedClose = false
         }
     }
-    DisposableEffect(source) { onDispose { source?.hidden = false } }
+    DisposableEffect(source) { onDispose { menuTrace("kclash/menu/cleanup/restore-source-dispose") { source?.hidden = false } } }
     // 作者 long：菜单窗口始终以宿主Window原点布局，锚点使用boundsInWindow，避免把状态栏偏移重复计算。
     val windowOrigin = remember { object : PopupPositionProvider {
         override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset {
@@ -405,7 +406,7 @@ internal fun AppDropdownMenuItem(
         }
     } }
     val latestAction by rememberUpdatedState(action)
-    DisposableEffect(registry, identity) { onDispose { registry?.items?.remove(identity) } }
+    DisposableEffect(registry, identity) { onDispose { menuTrace("kclash/menu/cleanup/unregister-item") { registry?.items?.remove(identity) } } }
     SideEffect {
         registry?.items?.get(identity)?.let { item ->
             if (item.enabled != active || item.submenu != opensSubmenu) registry.items[identity] = item.copy(enabled = active, submenu = opensSubmenu)

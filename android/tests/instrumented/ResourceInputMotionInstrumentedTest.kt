@@ -109,21 +109,21 @@ class ResourceInputMotionInstrumentedTest {
                 runtime.geoSettings.value.urls[GeoResourceType.MMDB] == "https://example.org/geoip.dat"
             }
             compose.onNodeWithTag("resource_GEO:MMDB").performClick()
-            compose.onNodeWithTag("resource_setting_input").assertTextEquals("https://example.org/geoip.dat")
+            compose.onNodeWithTag("resource_setting_input").assertRawInputEquals("https://example.org/geoip.dat")
             capture("geo_url_saved_reopened")
             compose.onNodeWithTag("resource_setting_input").performTextReplacement("https://cancel.example/geoip.dat")
             androidx.test.espresso.Espresso.closeSoftKeyboard()
             androidx.test.espresso.Espresso.pressBack()
             waitForDialogExit()
             compose.onNodeWithTag("resource_GEO:MMDB").performClick()
-            compose.onNodeWithTag("resource_setting_input").assertTextEquals("https://example.org/geoip.dat")
+            compose.onNodeWithTag("resource_setting_input").assertRawInputEquals("https://example.org/geoip.dat")
             compose.onNodeWithTag("resource_setting_reset").performClick()
             waitForDialogExit()
             compose.waitUntil(10_000) {
                 runtime.geoSettings.value.urls[GeoResourceType.MMDB] == GeoResourceType.MMDB.defaultUrl
             }
             compose.onNodeWithTag("resource_GEO:MMDB").performClick()
-            compose.onNodeWithTag("resource_setting_input").assertTextEquals(GeoResourceType.MMDB.defaultUrl)
+            compose.onNodeWithTag("resource_setting_input").assertRawInputEquals(GeoResourceType.MMDB.defaultUrl)
             capture("geo_url_reset_reopened")
             compose.onNodeWithTag("resource_setting_cancel").performClick()
             waitForDialogExit()

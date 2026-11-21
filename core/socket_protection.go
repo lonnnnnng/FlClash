@@ -93,3 +93,80 @@ func protectRawSocket(conn syscall.RawConn, gate *socketProtectionGate) error {
 	}
 	return protectionError
 }
+
+const minimumPendingSocketLimit = 64
+
+// 作者 long：核心可能先于系统 VPN 打开 WireGuard 或 DNS socket；先保留原始 socket，待 Protect 回调就绪后再保护同一 fd。
+type pendingSocketProtector struct {
+	mu      sync.Mutex
+	protect func(syscall.RawConn) error
+	pending []syscall.RawConn
+	limit   int
+}
+
+func newPendingSocketProtector() *pendingSocketProtector {
+	return &pendingSocketProtector{limit: minimumPendingSocketLimit}
+}
+
+func (p *pendingSocketProtector) protectOrHold(conn syscall.RawConn) error {
+	p.mu.Lock()
+	protect := p.protect
+	if protect == nil {
+		p.holdLocked(conn)
+		p.mu.Unlock()
+		return nil
+	}
+	p.mu.Unlock()
+	return protect(conn)
+}
+
+func (p *pendingSocketProtector) activate(protect func(syscall.RawConn) error) {
+	p.mu.Lock()
+	p.protect = protect
+	pending := p.pending
+	p.pending = nil
+	p.limit = minimumPendingSocketLimit
+	p.mu.Unlock()
+
+	for _, conn := range pending {
+		err := protect(conn)
+		if errors.Is(err, errSocketProtectionRejected) || errors.Is(err, errSocketProtectionUnavailable) {
+			p.mu.Lock()
+			p.holdLocked(conn)
+			p.mu.Unlock()
+		}
+	}
+}
+
+func (p *pendingSocketProtector) deactivate() {
+	p.mu.Lock()
+	p.protect = nil
+	p.mu.Unlock()
+}
+
+func (p *pendingSocketProtector) holdLocked(conn syscall.RawConn) {
+	if len(p.pending) >= p.limit {
+		live := p.pending[:0]
+		for _, held := range p.pending {
+			if held.Control(func(uintptr) {}) == nil {
+				live = append(live, held)
+			}
+		}
+		clear(p.pending[len(live):])
+		p.pending = live
+		p.limit = max(minimumPendingSocketLimit, 2*len(live))
+	}
+	p.pending = append(p.pending, conn)
+}
+
+func newSocketProtectionHook(blocked func() error, activeGate func() *socketProtectionGate, pending *pendingSocketProtector) func(syscall.RawConn) error {
+	return func(conn syscall.RawConn) error {
+		if err := blocked(); err != nil {
+			return err
+		}
+		if gate := activeGate(); gate != nil {
+			return protectRawSocket(conn, gate)
+		}
+		return pending.protectOrHold(conn)
+	}
+}

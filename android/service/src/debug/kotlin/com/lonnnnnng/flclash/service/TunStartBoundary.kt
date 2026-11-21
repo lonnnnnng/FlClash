@@ -8,6 +8,7 @@ import android.system.ErrnoException
 import android.system.OsConstants
 import com.lonnnnnng.flclash.service.models.VpnOptions
 import java.io.File
+import java.net.DatagramSocket
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -18,6 +19,25 @@ object TunStartBoundary {
     private var plan: List<Fault>? = null
     private var visits = 0
     private val records = mutableListOf<JSONObject>()
+    private var startupProbeSocket: DatagramSocket? = null
+    private var startupProbeResult: JSONObject? = null
+
+    fun armProtectProbe(packageName: String, explicitlyEnabled: Boolean, socket: DatagramSocket) = synchronized(lock) {
+        check(packageName == "com.lonnnnnng.flclash.motion" && explicitlyEnabled)
+        check(startupProbeSocket == null && startupProbeResult == null)
+        check(!socket.isClosed && socket.isBound)
+        startupProbeSocket = socket
+    }
+
+    fun protectProbeSnapshot(): JSONObject = synchronized(lock) {
+        JSONObject().put("armed", startupProbeSocket != null)
+            .put("result", startupProbeResult?.let { JSONObject(it.toString()) } ?: JSONObject.NULL)
+    }
+
+    fun clearProtectProbe() = synchronized(lock) {
+        startupProbeSocket = null
+        startupProbeResult = null
+    }
 
     fun arm(packageName: String, explicitlyEnabled: Boolean, faults: List<Fault>) = synchronized(lock) {
         check(packageName == "com.lonnnnnng.flclash.motion" && explicitlyEnabled)
@@ -59,6 +79,27 @@ object TunStartBoundary {
 
     class Attempt internal constructor(private val fault: Fault?, private val record: JSONObject?) {
         private fun put(key: String, value: Any) = synchronized(lock) { record?.put(key, value); Unit }
+
+        fun beforeCoreProtect(coreStartCallActive: Boolean, protect: (DatagramSocket) -> Boolean) {
+            synchronized(lock) {
+                // 作者 long：Go启动回调仍在栈上时保护预建socket，避免外部轮询错过毫秒级VPN启动窗。
+                if (!coreStartCallActive || startupProbeResult != null) return
+                val socket = startupProbeSocket ?: return
+                val started = SystemClock.elapsedRealtime()
+                val outcome = runCatching { protect(socket) }
+                startupProbeResult = JSONObject()
+                    .put("phase", "inside-core-start-call")
+                    .put("vpnServiceState", ServiceConfig.vpnState.value.name)
+                    .put("coreStartCallActive", coreStartCallActive)
+                    .put("socketCreatedBeforeVpnStart", true)
+                    .put("socketBound", socket.isBound)
+                    .put("socketLocalPort", socket.localPort)
+                    .put("socketOpenAfterCall", !socket.isClosed)
+                    .put("platformProtectAccepted", outcome.getOrDefault(false))
+                    .put("platformProtectErrorType", outcome.exceptionOrNull()?.javaClass?.simpleName ?: JSONObject.NULL)
+                    .put("callElapsedMs", started)
+            }
+        }
 
         fun establish(builder: VpnService.Builder): ParcelFileDescriptor? {
             if (record == null) return builder.establish()
