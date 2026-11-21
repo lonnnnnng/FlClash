@@ -9,7 +9,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -20,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.data.*
@@ -92,14 +92,14 @@ internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, o
         onDismiss = { editingInterval = false }, onConfirm = { value ->
             val number = value.toIntOrNull() ?: error(tr("请输入小时数"))
             val next = state.settings.copy(intervalHours = number).validated()
-            onSettings(next); editingInterval = false
+            onSettings(next)
         }, numeric = true)
     editingGeo?.let { id ->
         val type = GeoResourceType.valueOf(id)
         ResourceInputDialog(type.name, state.settings.urls.getValue(type), tr("下载地址"), type.defaultUrl,
             onDismiss = { editingGeo = null }, onConfirm = { url ->
                 val next = state.settings.copy(urls = state.settings.urls + (type to url)).validated()
-                onSettings(next); editingGeo = null
+                onSettings(next)
             })
     }
 }
@@ -138,18 +138,33 @@ private fun ResourceOverviewRow(row: ResourceUpdateRow, updating: Boolean, onSyn
 @Composable
 internal fun ResourceInputDialog(title: String, initial: String, label: String, defaultValue: String?, onDismiss: () -> Unit,
     onConfirm: (String) -> Unit, numeric: Boolean = false) {
-    var value by rememberSaveable(title) { mutableStateOf(initial) }
-    var error by remember { mutableStateOf<String?>(null) }
-    AlertDialog(onDismissRequest = onDismiss, title = { Text(title) }, text = {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(value, { value = it; error = null }, Modifier.fillMaxWidth().testTag("resource_setting_input"),
-                label = { Text(label) }, singleLine = true, isError = error != null,
-                keyboardOptions = KeyboardOptions(keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Uri),
-                supportingText = { error?.let { Text(tr(it)) } })
-            if (defaultValue != null) TextButton(onClick = { value = defaultValue; error = null }, modifier = Modifier.testTag("resource_setting_reset")) { Text(tr("恢复默认")) }
-        }
-    }, confirmButton = { TextButton(onClick = {
-        try { onConfirm(value.trim()) } catch (failure: IllegalArgumentException) { error = failure.message ?: "输入无效" }
+    var value by rememberSaveable(title, stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(initial)) }
+    var error by rememberSaveable(title) { mutableStateOf<String?>(null) }
+    var accepted by rememberSaveable(title) { mutableStateOf(false) }
+    val confirm by rememberUpdatedState(onConfirm)
+    fun submit(input: String) {
+        if (accepted) return
+        try {
+            // 作者 long：提交在点击时受理一次；退出只保留外观，不在动画结束或Activity重建时再次写资源设置。
+            confirm(input.trim())
+            accepted = true
+        } catch (failure: IllegalArgumentException) { error = failure.message ?: "输入无效" }
         catch (_: Exception) { error = "输入无效，请检查后重试" }
-    }, modifier = Modifier.testTag("resource_setting_save")) { Text(tr("保存")) } }, dismissButton = { TextButton(onClick = onDismiss) { Text(tr("取消")) } })
+    }
+    val canReset = defaultValue != null && value.text != defaultValue
+    FloatingInputDialog(title = title, tag = "resource_setting_dialog", busy = false, confirmEnabled = true,
+        onDismiss = onDismiss, onConfirm = { submit(value.text) }, confirmLabel = tr("保存"),
+        cancelLabel = if (canReset) tr("恢复默认") else tr("取消"), error = error,
+        errorTag = "resource_setting_error", confirmTag = "resource_setting_save",
+        externallyClosing = accepted, onExitComplete = onDismiss,
+        // 作者 long：与上游InputDialog一致，恢复默认直接提交默认地址；Back和点击遮罩仍只取消，不能误重置。
+        cancelButtonAction = if (canReset) ({ submit(checkNotNull(defaultValue)) }) else null,
+        cancelTag = if (canReset) "resource_setting_reset" else "resource_setting_cancel",
+    ) { enabled, save ->
+        FloatingInputField(value, { next ->
+            if (next.text != value.text) error = null
+            value = next
+        }, "resource_setting_input", enabled, save, placeholder = if (numeric) "" else label, invalid = error != null,
+            keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Uri, suffix = if (numeric) label else null)
+    }
 }

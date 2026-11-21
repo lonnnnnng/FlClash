@@ -2,6 +2,8 @@
 
 > **发布状态（2026-11-20）**：055～068具名改进已进入0.1.11正式版，签名CI及公开APK回验通过；本轮未安装手机。下方分组“未发版”为实施时记录，整体视觉/光学/性能仍PARTIAL。[发布证据](acceptance/release-0.1.11-20261120.json)
 
+> **KUI-VIS-069（2026-11-21，尚未发版）**：工具→资源的更新周期和Geo URL浮框统一到已验Prism样式，数字/URI键盘、小时尾缀、范围/地址错误、恢复默认、IME保存与返回/重开已补。POCO真实MainActivity流程及双主题资源页回归同批2/2，16张截图哈希核验/目视通过；最终设置回读原值，核心STOPPED，验收包已按SHA卸载。[说明](resource-input-motion-alignment.md)、[证据](acceptance/resource-input-motion-poco-20261121.json)。没有做Flutter runtime同态比较，整体视觉与其他页连续转场仍PARTIAL。
+
 > **KUI-VIS-068（2026-11-20）**：068本地配置同行字段、重命名/补age浮框与404ms入场/冻结缩放淡出已对齐；补取消清草稿失败重试和显隐后的IME提交。实时材质加入正负折射、雾化混合、分色及Dock独立镜片/文字层，玻璃默认关闭。921项JVM、POCO最终37/37、84图和22张菜单像素回归通过，三变体构建/双Lint/DEX通过。 五轮部分jank观察下降，但首开普通R8约75ms未明显变化，内存无显著改善；诊断测量约8ms，不能解释全部慢帧。 继续其他页面/输入面板精确排版与完整连续转场；补重叠pane捕获分层、运行按钮轮廓与采样策略，再查菜单首次组合/绘制/窗口交接、关闭释放及RenderThread等待。完整视觉/光学/性能仍PARTIAL。 四个自有包与USB副本已清，原Flutter/原1.yaml/设置保持，未发版。[说明](floating-input-live-optics-alignment.md)、[证据](acceptance/panels-live-optics-poco-20261120.json)
 
 > **067表单Sheet与实时材质（2026-11-20）**：067链接导入已改手机Sheet，订阅同行字段与分隔线/胶囊按钮对齐，Dock和启动按钮接实时GPU背景与触光；玻璃默认关闭。修复开关丢草稿、终态无法关闭及Dock末项遮挡。921项JVM、POCO最终33/33、47图与真实R8连续流程通过，三变体构建/双Lint/DEX通过。 下一步继续其余输入面板、页面外框/字形/间距及完整连续转场，再处理菜单首开/关闭和RenderThread/合成等待；完整视觉与性能仍PARTIAL。 原失败保留，独立四包已清理，原Flutter/1.yaml/设置保持，未发版。[说明](forms-live-material-flutter-alignment.md)、[证据](acceptance/forms-live-material-poco-20261120.json)

@@ -1,5 +1,9 @@
 # Project Context
 
+## KUI-VIS-069 资源设置输入浮框（2026-11-21，当前）
+
+工具→资源中的Geo周期/地址表单已对齐共享404ms Prism浮框，保留小时尾缀、Number/URI键盘、原设置校验与恢复默认语义。POCO真实MainActivity保存/重开/取消/系统Back/重置/返回工具流程和资源页双主题回归最终同批2/2；8目标截图+8双主题回归共16张校验并目视。628项App motion JVM执行，其余模块结果复用；Debug/motion Lint零错误。原设置逐值恢复、核心STOPPED，双包精确清理，Flutter/1.yaml/系统设置保持。未发布；完整Flutter同态/其他页面连续转场仍PARTIAL。见`docs/resource-input-motion-alignment.md`及配套验收JSON。
+
 ## 0.1.11正式发布（2026-11-20，当前）
 
 KClash 0.1.11/code1011 已发布为 GitHub Latest，标签`kclash-v0.1.11`固定`10697f3f`。标签CI 44754219878 的 Go race、JVM/R8、双Lint及签名/版本/ABI/DEX门禁通过；公开ARM64 APK 49,584,177字节，SHA`b7fb8727…488c08da`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机。 公开版当前为0.1.11；下方分组“未发版”保留为实施时的历史切片，功能/视觉剩余范围不变。见`docs/acceptance/release-0.1.11-20261120.json`。

@@ -38,6 +38,7 @@ internal fun FloatingInputDialog(
     confirmTag: String = "${tag}_confirm", externallyClosing: Boolean = false,
     dismissAfterAcknowledgement: Boolean = false,
     onExitComplete: (() -> Unit)? = null,
+    cancelButtonAction: (() -> Unit)? = null, cancelTag: String = "${tag}_cancel",
     field: @Composable (enabled: Boolean, submit: () -> Unit) -> Unit,
 ) {
     val registry = rememberEditorWindowRegistry()
@@ -113,7 +114,8 @@ internal fun FloatingInputDialog(
                             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp).testTag("${tag}_busy"))
                         }
                         Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Button(::cancel, Modifier.weight(1f).heightIn(min = 48.dp).testTag("${tag}_cancel"), enabled = enabled,
+                            Button({ if (cancelButtonAction != null) { focus.clearFocus(force = true); keyboard?.hide(); cancelButtonAction() } else cancel() },
+                                Modifier.weight(1f).heightIn(min = 48.dp).testTag(cancelTag), enabled = enabled,
                                 shape = AppSuperellipseShape(24.dp), colors = ButtonDefaults.buttonColors(containerColor = inputColor,
                                     contentColor = MaterialTheme.colorScheme.onSurface,
                                     disabledContainerColor = if (closing) inputColor else MaterialTheme.colorScheme.onSurface.copy(alpha=.12f),
@@ -134,7 +136,9 @@ internal fun FloatingInputDialog(
 @Composable
 internal fun FloatingInputField(value: TextFieldValue, onChange: (TextFieldValue) -> Unit,
     tag: String, enabled: Boolean, submit: () -> Unit, secret: Boolean = false,
-    placeholder: String = "", invalid: Boolean = false) {
+    placeholder: String = "", invalid: Boolean = false,
+    keyboardType: KeyboardType = if (secret) KeyboardType.Password else KeyboardType.Text,
+    suffix: String? = null) {
     var focused by remember { mutableStateOf(false) }
     var revealed by remember { mutableStateOf(false) }
     val latestSubmit by rememberUpdatedState(submit)
@@ -149,9 +153,10 @@ internal fun FloatingInputField(value: TextFieldValue, onChange: (TextFieldValue
                 enabled = enabled, singleLine = secret && !revealed, maxLines = if (secret && !revealed) 1 else 5,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface), cursorBrush = SolidColor(colors.primary),
                 visualTransformation = if (secret && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
-                keyboardOptions = KeyboardOptions(keyboardType = if (secret) KeyboardType.Password else KeyboardType.Text,
-                    autoCorrectEnabled = !secret, imeAction = ImeAction.Done), keyboardActions = KeyboardActions(onDone = { latestSubmit() }),
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType,
+                    autoCorrectEnabled = !secret && keyboardType == KeyboardType.Text, imeAction = ImeAction.Done), keyboardActions = KeyboardActions(onDone = { latestSubmit() }),
                 decorationBox = { input -> Box { if (value.text.isEmpty()) Text(placeholder, color = colors.onSurfaceVariant); input() } })
+            suffix?.let { Text(it, Modifier.padding(start = 8.dp), color = colors.onSurfaceVariant, style = MaterialTheme.typography.bodyLarge) }
             if (secret) IconButton({ revealed = !revealed }, Modifier.size(44.dp).testTag("${tag}_visibility"), enabled = enabled) {
                 Icon(if (revealed) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, null, Modifier.size(20.dp))
             }

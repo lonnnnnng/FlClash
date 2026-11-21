@@ -1,0 +1,217 @@
+{
+  "id": "KUI-VIS-069",
+  "date": "2026-11-21",
+  "status": "passed-limited-slice",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "night": "yes"
+  },
+  "sourceBaseline": "3d57eceb210fb270550878b9fb09ead5a3fdd252",
+  "implementation": {
+    "scope": "Tools > Resources input panels",
+    "fields": [
+      "Geo update interval",
+      "Geo download URL"
+    ],
+    "motion": "Shared Prism floating dialog, 404ms entry, held-scale fade exit",
+    "behaviors": [
+      "numeric keyboard and hours suffix",
+      "URI keyboard and existing HTTP/HTTPS validation",
+      "invalid input remains editable",
+      "save and IME submission",
+      "default URL action submits and exits",
+      "cancel, outside dismissal and system Back discard edits",
+      "reopen reads last persisted settings",
+      "return to Tools keeps the actual MainActivity navigation host"
+    ],
+    "releasePerformed": false,
+    "glassEnabled": false
+  },
+  "buildAndTests": {
+    "buildLog": "../acceptance-artifacts/resource-input-motion-poco-20261121/build1.log",
+    "tasks": [
+      ":app:assembleMotionBenchmark",
+      ":app:assembleMotionBenchmarkAndroidTest",
+      ":app:testMotionBenchmarkUnitTest",
+      ":service:testDebugUnitTest",
+      ":core:testDebugUnitTest",
+      ":common:testDebugUnitTest"
+    ],
+    "jvm": {
+      "appMotion": {
+        "tests": 628,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "execution": "executed"
+      },
+      "service": {
+        "tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "execution": "UP-TO-DATE reused result"
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "execution": "UP-TO-DATE reused result"
+      },
+      "common": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "execution": "UP-TO-DATE reused result"
+      }
+    },
+    "lint": {
+      "debug": {
+        "errors": 0,
+        "warnings": 75,
+        "hints": 15
+      },
+      "motionBenchmark": {
+        "errors": 0,
+        "warnings": 75,
+        "hints": 15
+      }
+    },
+    "androidTest": {
+      "test": "ResourceInputMotionInstrumentedTest#realToolsResourceInputsValidateSaveResetCancelAndReopenContinuously",
+      "sameBatchRegression": "ResourcesPageInstrumentedTest#overviewSettingsMenusAndFailureSummaryWorkInBothThemes",
+      "passed": 2,
+      "failed": 0,
+      "log": "../acceptance-artifacts/resource-input-motion-poco-20261121/device-final5.log",
+      "finalSettingsRestored": true,
+      "coreStopped": true
+    },
+    "appJvmTotalAcrossModules": 921
+  },
+  "visualEvidence": {
+    "manifest": "../acceptance-artifacts/resource-input-motion-poco-20261121/screenshots-final5.json",
+    "images": 16,
+    "width": 1080,
+    "height": 2400,
+    "allChunksAndHashesVerified": true,
+    "allImagesReviewed": true,
+    "review": "8 target flow images and 8 both-theme ResourcesPage regression images"
+  },
+  "flutterReference": {
+    "sourceRead": "../acceptance-artifacts/docked-search-20261110/flutter-full/lib/views/resources.dart and plugins/prism_ui/lib/input.dart",
+    "runtimeCompared": false,
+    "pixelParityClaimed": false,
+    "observedContract": "centered InputDialog, hours suffix, URI/number keyboards, validation, and resetValue action"
+  },
+  "installedArtifacts": {
+    "com.lonnnnnng.flclash.motion": {
+      "sha256": "77d1d260bf6554df3becf0f9656e0d41010ac61f5e01c04b12525ef7fb8f864b",
+      "installedHashMatched": true,
+      "removed": true
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "sha256": "4ce745b7e017182a646d73034fc7f96c05b6cafc442e1695dc3d515bfc857bc0",
+      "installedHashMatched": true,
+      "removed": true
+    }
+  },
+  "protection": {
+    "flutterOriginal": "com.follow.clash remained installed; no launch, service operation, modification or replacement",
+    "deviceSettingsRestored": {
+      "rotation": "0",
+      "fontScale": "1.0",
+      "night": "yes"
+    },
+    "originalYaml": {
+      "unchanged": true,
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "size": 34220,
+      "mtimeNs": 1794392072317864361,
+      "bytesReadForSha256Only": true,
+      "contentParsedOrUsedForTest": false,
+      "uploaded": false
+    },
+    "remainingInstalledPackageMatch": [
+      "com.follow.clash"
+    ],
+    "originalFlutterServiceRunning": false,
+    "flutterOriginalIdentityMatchedPreviousSnapshot": true,
+    "installedPackageListAfterCleanup": [
+      "com.follow.clash"
+    ]
+  },
+  "failuresPreserved": [
+    "Initial build redirection failed before Gradle because the evidence directory had not been created.",
+    "First UI batch expected a Cancel button while the custom URL correctly exposed Restore default; the test was corrected to use system Back and rerun.",
+    "First screenshot parser expected one test in the combined two-test batch; the count gate was corrected and all 16 final images passed byte/SHA/dimension checks."
+  ],
+  "remaining": [
+    "Other input panels, page typography/spacing and full Flutter page transitions remain incomplete.",
+    "No runtime Flutter page comparison was performed for this slice.",
+    "Menu cold-open/close jank attribution and RenderThread/compositor waiting remain unresolved."
+  ],
+  "notRun": [
+    "Release build/publication",
+    "Core/VPN/network subscription acceptance",
+    "Low API and other OEM",
+    "Glass enabled",
+    "Formal Release build or publication"
+  ],
+  "rawEvidence": {
+    "manifest": {
+      "path": "../acceptance-artifacts/resource-input-motion-poco-20261121/evidence-manifest.json",
+      "files": 35,
+      "sha256": "e5c75c5624436d57975833fa58486db8fa254f6cd3a5486e8c9ecccf1c746c50"
+    },
+    "logs": {
+      "build1.log": {
+        "bytes": 16105,
+        "sha256": "73e3be78390b594c03c92b4cb64ed08561141cd3cb4f72bc90c3ccf591ed5510"
+      },
+      "lint1.log": {
+        "bytes": 13709,
+        "sha256": "2e269abe757cc3b5b94488f21192e16a07ab2f68b66e996eeceb5ffd57988c98"
+      },
+      "testbuild4.log": {
+        "bytes": 8945,
+        "sha256": "51eb3233297b861aa64316e51f59a4510be00e76fa0a9bcee5d0f6607e082542"
+      },
+      "device-final1.log": {
+        "bytes": 580060,
+        "sha256": "d06583a7ef4f6404fb19136ebb0b74b0fef88789637d7f9deb6366dd2426c9ea"
+      },
+      "device-final2.log": {
+        "bytes": 888700,
+        "sha256": "e075a303699abeff474bc037dee8829ce420e8c4785409906d453e22a85b254f"
+      },
+      "device-final3.log": {
+        "bytes": 894406,
+        "sha256": "9d7ee285884ff372166d6f04a89c9dbb0b566daebcbdfecf05a44aa702fe6032"
+      },
+      "device-final4.log": {
+        "bytes": 1291050,
+        "sha256": "550c1b8a6d801ac55a13f65d2890160ed0491be29859321f3883c784c7acbd5a"
+      },
+      "device-final5.log": {
+        "bytes": 2665818,
+        "sha256": "144a56a8fbd0c6d028c02abf719b7068d645599a5847c56ce08cc03f20017cb5"
+      }
+    },
+    "apkSha256": {
+      "motion": "77d1d260bf6554df3becf0f9656e0d41010ac61f5e01c04b12525ef7fb8f864b",
+      "motionTest": "4ce745b7e017182a646d73034fc7f96c05b6cafc442e1695dc3d515bfc857bc0"
+    },
+    "sourceSha256": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ResourcesPage.kt": "d027ff238840b703ba2cdffacedf0e04a9a5d05cfe11fb385b4f92aa3ad3ba4d",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/FloatingInputDialog.kt": "acc277aa2961d7ad8c1ef42ead8bffa95891b654bc9c5da2bfeafd218ec7f5e2",
+      "android/tests/instrumented/ResourcesPageInstrumentedTest.kt": "1de35083c14b04e61035e50587378b563f914ba76648e8da9bc5a5ca156a0317",
+      "android/tests/instrumented/ResourceInputMotionInstrumentedTest.kt": "a1ed20120381d63bc484180ee98914c8257d96d40c41ba341514ed0ed9e98f48"
+    }
+  }
+}

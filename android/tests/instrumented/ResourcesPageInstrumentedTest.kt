@@ -42,7 +42,7 @@ class ResourcesPageInstrumentedTest {
             compose.onNodeWithTag("resource_setting_save").performClick()
             capture("resources_geo_validation_$theme")
             compose.onNodeWithTag("resource_setting_reset").performClick()
-            compose.onNodeWithTag("resource_setting_save").performClick()
+            compose.waitUntil(5_000) { compose.onAllNodesWithTag("resource_setting_dialog").fetchSemanticsNodes().isEmpty() }
             compose.runOnIdle { assertEquals(GeoResourceType.MMDB.defaultUrl, state.settings.urls[GeoResourceType.MMDB]) }
             compose.onNodeWithTag("resource_GEO:MMDB").performTouchInput { longClick() }
             compose.onNodeWithText("同步").performClick()
