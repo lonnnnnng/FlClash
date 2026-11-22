@@ -98,6 +98,19 @@ class ConnectionsInstrumentedTest {
         composeRule.onNodeWithTag("connections_row_0").performTouchInput { click() }
         expandDetailSheet()
         composeRule.onNodeWithText("连接详情").assertIsDisplayed()
+        val sheetBounds = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
+        val toolbarBounds = composeRule.onNodeWithTag("connections_detail_title_toolbar").fetchSemanticsNode().boundsInRoot
+        val titleBounds = composeRule.onNodeWithTag("connections_detail_title").fetchSemanticsNode().boundsInRoot
+        val closeBounds = composeRule.onNodeWithTag("connections_detail_close").fetchSemanticsNode().boundsInRoot
+        val handleBounds = composeRule.onNodeWithTag("connection_detail_handle").fetchSemanticsNode().boundsInRoot
+        val contentBounds = composeRule.onNodeWithTag("connections_detail_dialog").fetchSemanticsNode().boundsInRoot
+        val density = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .targetContext.resources.displayMetrics.density
+        assertEquals(48f * density, toolbarBounds.height, 2f)
+        assertEquals(10f * density, handleBounds.height, 2f)
+        assertEquals(68f * density, contentBounds.top - sheetBounds.top, 2f)
+        assertEquals(sheetBounds.center.x, titleBounds.center.x, 2f)
+        assertTrue("Flutter close action leads the centered title", closeBounds.center.x < titleBounds.center.x)
         composeRule.onNodeWithText("基本信息").assertIsDisplayed()
         assertDetailVisibleAfterScroll("MATCH")
         assertDetailVisibleAfterScroll("api.example.test")

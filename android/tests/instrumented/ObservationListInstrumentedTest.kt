@@ -17,8 +17,10 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -64,7 +66,9 @@ class ObservationListInstrumentedTest {
 
         composeRule.activity.runOnUiThread { composeRule.activity.showLogsEmptyPage() }
         composeRule.activity.runOnUiThread { composeRule.activity.emitLiveRow() }
-        composeRule.onNodeWithText("显示 1/1").assertIsDisplayed()
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithText("显示 1/1").fetchSemanticsNodes().isNotEmpty()
+        }
     }
 
     @Test
@@ -207,6 +211,39 @@ class ObservationListInstrumentedTest {
     }
 
     @Test
+    fun logsCoalesceBurstUpdatesAndKeepThePausedHistoryAnchor() {
+        assertPortraitDefaultFontConfiguration()
+        composeRule.activity.runOnUiThread { composeRule.activity.showLogsHistoryPage(40) }
+        composeRule.onNodeWithText("显示 40/40").assertIsDisplayed()
+
+        composeRule.activity.runOnUiThread { composeRule.activity.appendLiveLogs(5) }
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithText("显示 45/45").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("动态日志 44").assertIsDisplayed()
+
+        composeRule.onNodeWithTag("observation_records").performScrollToIndex(32)
+        val pausedRow = composeRule.onNodeWithText("历史日志 12")
+        val before = pausedRow.fetchSemanticsNode().boundsInRoot.top
+        composeRule.activity.runOnUiThread { composeRule.activity.appendLiveLogs(5) }
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithText("显示 50/50").fetchSemanticsNodes().isNotEmpty()
+        }
+        val after = composeRule.onNodeWithText("历史日志 12").assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot.top
+        assertTrue("追加日志不能把暂停阅读的历史行推离原位置", kotlin.math.abs(after - before) <= 2f)
+
+        composeRule.onNodeWithTag("observation_records").performScrollToIndex(0)
+        composeRule.onNodeWithText("动态日志 49").assertIsDisplayed()
+        composeRule.waitForIdle()
+        composeRule.activity.runOnUiThread { composeRule.activity.appendLiveLogs(2) }
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithText("显示 52/52").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("动态日志 51").assertIsDisplayed()
+    }
+
+    @Test
     fun requestsAndDnsEmptyStatesCaptureDarkAndLightScreens() {
         assertPortraitDefaultFontConfiguration()
         val actual = linkedMapOf<String, String>()
@@ -309,12 +346,12 @@ class ObservationListInstrumentedTest {
         composeRule.onNodeWithTag("dns_row_0").performTouchInput {
             click(Offset(width * 0.9f, height * 0.15f))
         }
-        composeRule.onNodeWithText("DNS 详情").assertIsDisplayed()
+        composeRule.onNodeWithText("DNS详情").assertIsDisplayed()
         composeRule.onNodeWithTag("dns_detail_answer_0").performScrollTo().assertIsDisplayed()
 
         composeRule.activityRule.scenario.recreate()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("DNS 详情").assertIsDisplayed()
+        composeRule.onNodeWithText("DNS详情").assertIsDisplayed()
         composeRule.onNodeWithTag("dns_detail_answer_0").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("dns_detail_close").performClick()
         composeRule.onNodeWithTag("observation_search_field")

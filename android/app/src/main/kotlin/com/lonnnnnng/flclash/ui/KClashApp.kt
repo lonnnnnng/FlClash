@@ -102,6 +102,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.collectAsState
+import kotlinx.coroutines.flow.sample
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -3543,7 +3544,12 @@ private fun ConnectionDetailSheet(
         // 作者 long：复制反馈放在面板内，避免外层 Snackbar 被模态遮罩盖住；失败时不能显示成功。
         copyMessage = runCatching { onCopyText(value) }.fold({ tr("已复制") }, { tr("复制失败") })
     }
-    ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = contentScrollState) { requestDismiss ->
+    ConnectionModalSheet(
+        onDismiss = onDismiss,
+        contentScrollState = contentScrollState,
+        handleHeight = 10.dp,
+        handleVerticalOffset = 3.dp,
+    ) { requestDismiss ->
         Column(
             modifier = Modifier
                 .testTag("connections_detail_content")
@@ -3551,19 +3557,14 @@ private fun ConnectionDetailSheet(
                 .weight(1f)
                 .padding(horizontal = contentHorizontalPadding),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    tr("连接详情"),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.weight(1f).testTag("connections_detail_title"),
-                )
-                IconButton(onClick = requestDismiss, modifier = Modifier.testTag("connections_detail_close")) {
-                    Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.testTag("action:关闭连接详情"))
-                }
-            }
+            ObservationDetailSheetHeader(
+                title = tr("连接详情"),
+                titleTag = "connections_detail_title",
+                closeTag = "connections_detail_close",
+                actionTag = "action:关闭连接详情",
+                onClose = requestDismiss,
+            )
+            Spacer(Modifier.height(10.dp))
             copyMessage?.let { Text(tr(it), modifier = Modifier.testTag("connections_copy_feedback")) }
             Column(
                 modifier = Modifier
@@ -3983,6 +3984,25 @@ internal fun DnsDialog(
     }
 }
 
+private const val LOG_UI_RENDER_INTERVAL_MILLIS = 300L
+
+@OptIn(kotlinx.coroutines.FlowPreview::class)
+@Composable
+private fun rememberRenderedLogs(state: LogsUiState): LogsUiState {
+    val latestState = rememberUpdatedState(state)
+    var renderedState by remember { mutableStateOf(state) }
+    LaunchedEffect(Unit) {
+        // 作者 long：核心保留每条日志供导出和诊断，列表只按上游节拍重绘，避免高频事件反复分配整页行模型。
+        snapshotFlow { latestState.value }
+            .sample(LOG_UI_RENDER_INTERVAL_MILLIS)
+            .collect { renderedState = it }
+    }
+    LaunchedEffect(state.entries.isEmpty()) {
+        if (state.entries.isEmpty()) renderedState = state
+    }
+    return renderedState
+}
+
 @Composable
 internal fun LogsDialog(
     state: LogsUiState,
@@ -3995,8 +4015,9 @@ internal fun LogsDialog(
     var query by rememberSaveable { mutableStateOf("") }
     var searchExpanded by rememberSaveable { mutableStateOf(false) }
     var keywords by rememberSaveable { mutableStateOf(emptyList<String>()) }
-    val logRows = remember(state.entries, state.entryIds) {
-        state.entries.mapIndexed { index, entry -> ObservationLogRow(state.entryIds[index], entry) }
+    val renderedLogs = rememberRenderedLogs(state)
+    val logRows = remember(renderedLogs.entries, renderedLogs.entryIds) {
+        renderedLogs.entries.mapIndexed { index, entry -> ObservationLogRow(renderedLogs.entryIds[index], entry) }
     }
     val filteredBySearch = logRows.filter { matchesLog(it.entry, query, null) }
     val filtered = keywords.fold(filteredBySearch) { rows, keyword ->
@@ -4017,7 +4038,7 @@ internal fun LogsDialog(
     ) {
         Column(Modifier.fillMaxSize()) {
             Text(
-                tr("显示 {0}/{1}", filtered.size, state.entries.size),
+                tr("显示 {0}/{1}", filtered.size, renderedLogs.entries.size),
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp)
                     .testTag("log_result_count"),
                 style = MaterialTheme.typography.labelMedium,
@@ -4039,6 +4060,7 @@ internal fun LogsDialog(
                     )
                 },
                 itemKey = { it.id },
+                itemTag = { index -> "log_row_$index" },
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp,
                     bottom = 16.dp + if (embedded) ObservationDockedSearchInset + LocalMainDockInset.current else 0.dp),
@@ -4073,23 +4095,22 @@ internal fun DnsQueryDetailSheet(
     ConnectionModalSheet(
         onDismiss = onDismiss,
         contentScrollState = contentScrollState,
-
+        handleHeight = 10.dp,
+        handleVerticalOffset = 3.dp,
     ) { requestDismiss ->
         // 作者 long：Flutter DNS 详情列表两侧留白为 16dp，保持基本信息、错误和答案共用该对齐线。
         Column(
             modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 16.dp)
                 .testTag("dns_detail_content"),
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    tr("DNS 详情"),
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.weight(1f).testTag("dns_detail_title"),
-                )
-                IconButton(onClick = requestDismiss, modifier = Modifier.testTag("dns_detail_close")) {
-                    Icon(Icons.Outlined.Close, contentDescription = null, modifier = Modifier.testTag("action:关闭 DNS 详情"))
-                }
-            }
+            ObservationDetailSheetHeader(
+                title = tr("DNS详情"),
+                titleTag = "dns_detail_title",
+                closeTag = "dns_detail_close",
+                actionTag = "action:关闭 DNS 详情",
+                onClose = requestDismiss,
+            )
+            Spacer(Modifier.height(10.dp))
             copyMessage?.let { Text(tr(it), modifier = Modifier.testTag("dns_copy_feedback")) }
             Column(
                 modifier = Modifier.weight(1f, fill = false).verticalScroll(contentScrollState)
@@ -4131,6 +4152,40 @@ internal fun DnsQueryDetailSheet(
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+/** 作者 long：Flutter 紧凑详情头总高68dp，由10dp拖柄区、48dp标题栏和10dp尾隙组成。 */
+@Composable
+private fun ObservationDetailSheetHeader(
+    title: String,
+    titleTag: String,
+    closeTag: String,
+    actionTag: String,
+    onClose: () -> Unit,
+) {
+    Box(Modifier.fillMaxWidth().height(48.dp).testTag("${titleTag}_toolbar")) {
+        Surface(
+            modifier = Modifier.align(Alignment.CenterStart).size(40.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHighest,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ) {}
+        Text(
+            title,
+            modifier = Modifier.align(Alignment.Center).fillMaxWidth().padding(horizontal = 56.dp)
+                .testTag(titleTag),
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        IconButton(
+            onClick = onClose,
+            modifier = Modifier.align(Alignment.CenterStart).size(48.dp).testTag(closeTag),
+        ) {
+            Icon(Icons.Outlined.Close, contentDescription = tr("关闭"), modifier = Modifier.testTag(actionTag))
         }
     }
 }

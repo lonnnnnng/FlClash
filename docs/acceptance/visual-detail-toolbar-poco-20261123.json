@@ -1,0 +1,125 @@
+{
+  "id": "KUI-VIS-083",
+  "date": "2026-11-23",
+  "scope": "Flutter compact observation detail toolbar and DNS detail return",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "reference": {
+    "source": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "files": [
+      "lib/ui/scaffold/scaffold.dart",
+      "plugins/prism_ui/lib/typography.dart",
+      "plugins/prism_ui/lib/metrics.dart",
+      "lib/views/dns_queries.dart"
+    ],
+    "toolbarHeightDp": 48,
+    "totalHeaderHeightDp": 68,
+    "headerBreakdownDp": "10 drag-handle area + 48 toolbar + 10 trailing space",
+    "titleStyle": "17sp/22sp, semibold, centered",
+    "closeAction": "leading circular close button",
+    "runtimeReference": "com.follow.clash was opened read-only. Its DNS page had existing records, so it was not a same-data live comparison with the empty KClash database. No reference settings, preferences, or stored DNS records were changed."
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "android/common/src/main/java/com/lonnnnnng/flclash/common/AppTextCatalog.kt",
+      "android/common/src/main/res/values/app_text.xml",
+      "android/common/src/main/res/values-zh/app_text.xml",
+      "android/tests/instrumented/DnsDetailsInstrumentedTest.kt",
+      "android/tests/instrumented/ConnectionsInstrumentedTest.kt"
+    ],
+    "changes": [
+      "Connection and DNS detail sheets use the Flutter 68dp header: 10dp drag-handle area, 48dp toolbar, and 10dp trailing space.",
+      "The toolbar has a centered title and leading circular close action.",
+      "DNS detail title uses the compact Flutter label and has Chinese/English resources.",
+      "Geometry assertions cover toolbar height, centered title, and close action order."
+    ]
+  },
+  "verification": {
+    "jvmTests": {
+      "command": "./gradlew test :app:compileDebugAndroidTestKotlin --no-daemon -Ptarget-platform=android-arm64",
+      "result": "passed",
+      "tests": 924,
+      "failures": 0
+    },
+    "motionJvmTests": {
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "instrumentedTests": {
+      "package": "com.lonnnnnng.flclash.motion",
+      "command": "adb -s 31936bb6 shell am instrument -w -r -e class '<three named cases>' -e kclashCapturePng true -e kclashCapturePngChunks true com.lonnnnnng.flclash.motion.test/androidx.test.runner.AndroidJUnitRunner",
+      "tests": 3,
+      "passed": 3,
+      "failures": 0,
+      "cases": [
+        "DnsDetailsInstrumentedTest#dnsDetailsMatchDarkAndLightBaselinesAndCopyValues",
+        "ConnectionsInstrumentedTest#connectionsRowOpensDetailsAndClosesWithoutChangingList",
+        "ObservationDetailsInstrumentedTest#dnsListDetailBackKeepsTheSelectedRowPosition"
+      ]
+    },
+    "builds": {
+      "debugAndAndroidTest": "passed",
+      "motionBenchmarkAndAndroidTest": "passed",
+      "releaseUnsigned": {
+        "result": "passed",
+        "versionName": "0.1.16",
+        "versionCode": 1016,
+        "sha256": "5dbd62532d45d5a2740af6a8a9ff1aa587205547393bd1a1d1917bcaa61fc8ab"
+      },
+      "motionBenchmarkApkSha256": "2a215049298afac61c3bb598015f6d555e8b83a3565ce480ad7f1d9235b9a8c0",
+      "motionAndroidTestApkSha256": "101d18e4a6a5e69df6f5e644c686b3e4789af786c36fa7d1be8494ad3de3856e",
+      "debugLint": "0 errors, 11 warnings",
+      "motionLint": "0 errors, 11 warnings",
+      "bilingualResources": "2181 pairs passed"
+    },
+    "visuals": {
+      "artifactDirectory": "../../../acceptance-artifacts/vis083-detail-header-poco-20261123/",
+      "manifest": "visuals.json",
+      "images": 8,
+      "validation": "PNG chunk indices, decoded dimensions, byte counts, and SHA-256 values were verified; dark success, light success, and dark error partial sheets were visually inspected.",
+      "stablePartialHashes": {
+        "answers_dark_partial": "ce7dab59b5452da62081945386d8ef534d128b99b6280e38f2409640560d74e0",
+        "error_dark_partial": "160541a0d025045aef3b39c07bb1c4c840ad78f542e0ec01b658e5805a75dc01",
+        "answers_light_partial": "15ac4326327d454d05cd29d802c7363c1a614c164e2638f256b57f1dd07ef791",
+        "error_light_partial": "1c2352e67eecf7526f15cdc15f360180b7b2da471928174b2739f3e10d89fccf"
+      },
+      "expandedState": "Screenshots retained; full-window hashes remain ungated due to observed capture instability."
+    },
+    "appTextCheck": "2181 bilingual resource pairs, placeholders and English coverage passed",
+    "commonModuleLint": {
+      "result": "failed outside this change's scope",
+      "errors": [
+        "MissingTranslation: app_name in android/common/src/main/res/values/strings.xml",
+        "MissingTranslation: service_channel_name in android/common/src/main/res/values/strings.xml"
+      ],
+      "warnings": 3,
+      "sourceFilesChangedByLint": false
+    }
+  },
+  "deviceState": {
+    "installedKclash": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "kclashLastUpdateTime": "2026-11-22 22:07:32",
+    "flutterReferenceLastUpdateTimeObservedAtEnd": "2026-11-22 14:21:51",
+    "motionPackagesRemoved": true,
+    "foregroundRestoredTo": "com.lonnnnnng.flclash/.MainActivity",
+    "vpnStarted": false,
+    "userRotation": 0,
+    "accelerometerRotation": 1,
+    "fontScale": 1.0
+  },
+  "limits": [
+    "This is a fixed Compose fixture; it does not prove live MainActivity DNS/connection data parity or a same-record Flutter runtime comparison.",
+    "Other page transitions and full Flutter visual coverage remain open.",
+    "Menu Perfetto discarded producer, app-surface FrameTimeline, and GPU/fence attribution remain unresolved; no stable menu performance gain is claimed.",
+    "Glass remains disabled by default."
+  ]
+}

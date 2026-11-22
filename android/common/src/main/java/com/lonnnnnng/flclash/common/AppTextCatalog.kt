@@ -10,6 +10,7 @@ internal object AppTextCatalog {
         put("批量导入", R.string.visual_batch_import)
         put("自动更新间隔", R.string.visual_update_interval)
         put("分钟", R.string.visual_minutes)
+        put("DNS详情", R.string.text_22dbcd7c38fc)
         putAll(part0())
         putAll(part1())
         putAll(part2())

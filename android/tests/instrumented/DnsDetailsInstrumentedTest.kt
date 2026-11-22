@@ -22,6 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.lonnnnnng.flclash.core.CoreDnsQuery
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -93,9 +94,22 @@ class DnsDetailsInstrumentedTest {
         for (isDark in listOf(true, false)) {
             for (isFailed in listOf(false, true)) {
                 composeRule.runOnIdle { dark = isDark; failed = isFailed; rejectCopy = false; copiedText = null }
-                composeRule.onNodeWithText("DNS 详情").assertIsDisplayed()
+                composeRule.onNodeWithText("DNS详情").assertIsDisplayed()
                 composeRule.onNodeWithTag("connections_detail_sheet").assertIsDisplayed()
                 composeRule.onNodeWithTag("connection_detail_scrim").assertExists()
+                val sheetBounds = composeRule.onNodeWithTag("connections_detail_sheet").fetchSemanticsNode().boundsInRoot
+                val toolbarBounds = composeRule.onNodeWithTag("dns_detail_title_toolbar").fetchSemanticsNode().boundsInRoot
+                val titleBounds = composeRule.onNodeWithTag("dns_detail_title").fetchSemanticsNode().boundsInRoot
+                val closeBounds = composeRule.onNodeWithTag("dns_detail_close").fetchSemanticsNode().boundsInRoot
+                val handleBounds = composeRule.onNodeWithTag("connection_detail_handle").fetchSemanticsNode().boundsInRoot
+                val contentBounds = composeRule.onNodeWithTag("dns_detail_scroll").fetchSemanticsNode().boundsInRoot
+                val density = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+                    .targetContext.resources.displayMetrics.density
+                assertEquals(48f * density, toolbarBounds.height, 2f)
+                assertEquals(10f * density, handleBounds.height, 2f)
+                assertEquals(68f * density, contentBounds.top - sheetBounds.top, 2f)
+                assertEquals(sheetBounds.center.x, titleBounds.center.x, 2f)
+                assertTrue("Flutter close action leads the centered title", closeBounds.center.x < titleBounds.center.x)
                 val name = "${if (isFailed) "error" else "answers"}_${if (isDark) "dark" else "light"}"
                 capture("${name}_partial")
                 // 作者 long：通过正式拖柄展开，截图前等待点击波纹结束，避免把瞬时反馈写入稳定基线。
@@ -145,10 +159,10 @@ class DnsDetailsInstrumentedTest {
         )
         assertEquals(
             linkedMapOf(
-                "answers_dark_partial" to "36e99a3601825164798380f3fadcb95ae8db7f04e6f5abdaca72a56ae50a9516",
-                "error_dark_partial" to "3d04c8742c48d42ea61b120ec5fc7101f5d1e4b650701988e9d5f888cbf0eeee",
-                "answers_light_partial" to "298bd79d142df08c2c9711d9845b932f3c02870851b9d66ad8e0685d1f74c700",
-                "error_light_partial" to "cebb47235997844bcea4c0c96d390765b432f626e6226a85a9791b1d2deef815",
+                "answers_dark_partial" to "ce7dab59b5452da62081945386d8ef534d128b99b6280e38f2409640560d74e0",
+                "error_dark_partial" to "160541a0d025045aef3b39c07bb1c4c840ad78f542e0ec01b658e5805a75dc01",
+                "answers_light_partial" to "15ac4326327d454d05cd29d802c7363c1a614c164e2638f256b57f1dd07ef791",
+                "error_light_partial" to "1c2352e67eecf7526f15cdc15f360180b7b2da471928174b2739f3e10d89fccf",
             ),
             actual.filterKeys { it.endsWith("_partial") },
         )

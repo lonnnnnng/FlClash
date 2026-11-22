@@ -101,6 +101,22 @@ class ObservationListTestActivity : ComponentActivity() {
         page = ObservationListTestPage.LOGS
     }
 
+    fun showLogsHistoryPage(count: Int) {
+        logsState = LogsUiState((0 until count).map { index ->
+            CoreEvent.Log("info", "历史日志 $index", 1_795_305_600_000L + index)
+        })
+        page = ObservationListTestPage.LOGS
+    }
+
+    fun appendLiveLogs(count: Int) {
+        val firstIndex = logsState.entries.size
+        val appended = (0 until count).map { offset ->
+            val index = firstIndex + offset
+            CoreEvent.Log("info", "动态日志 $index", 1_795_305_600_000L + index)
+        }
+        logsState = LogsUiState(logsState.entries + appended)
+    }
+
     fun showLogsEmptyPage() {
         logsState = LogsUiState()
         page = ObservationListTestPage.LOGS

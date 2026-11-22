@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="text_22dbcd7c38fc" formatted="false">"DNS详情"</string>
     <!-- 作者 long：中英界面文案共用稳定资源键；花括号参数由 AppText 一次替换，避免参数内容被再次解释。 -->
     <string name="text_000d1ddc0117" formatted="false">"WebDAV 密码不能为空"</string>
     <string name="text_00356056ade9" formatted="false">"第 {0} 行 Provider map 格式无效"</string>

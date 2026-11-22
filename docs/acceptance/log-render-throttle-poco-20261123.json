@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-23",
+  "work_item": "KUI-VIS-082",
+  "title": "日志高频更新节拍与连续列表跟随",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait"
+  },
+  "flutter_reference": {
+    "snapshot": "../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "git_sha": null,
+    "git_sha_note": "该冻结副本没有Git元数据；以下为文件SHA-256，不冒充上游提交SHA。",
+    "files_sha256": {
+      "lib/views/logs.dart": "6c474b0438c7060b59539b67d9dc16dcd6c2d9ca16f52e8c83b6ab3d31b47efb",
+      "lib/common/constant.dart": "d08155ccac3b4501f2f396dbbe71a3ad313cd5ea275c89cadf15000176074882",
+      "plugins/prism_ui/lib/scroll.dart": "c93780f34d5773c5a781ed4c684a8aea8efb721480581030b03482371e346576"
+    },
+    "behavior": "Flutter只在日志视图层按300ms节拍取最新状态；核心日志存储和导出数据不按该节拍丢弃。滚离最新位置时保留历史锚点，返回最新位置后恢复跟随。",
+    "runtime_logs_page_comparison": "未完成。原版日志入口受openLogs导航设置控制；本轮没有修改原版偏好或应用数据。只读观察了原版Tools与空连接页，未据此记作日志页同态运行对照。"
+  },
+  "implementation": {
+    "render_interval_ms": 300,
+    "scope": "仅限制Compose日志列表展示状态的重绘频率。Core事件流、LogsUiState接收、诊断和导出仍使用完整状态；清空日志立即反映。",
+    "automatic_follow": "保留既有稳定key与跟随最新逻辑；新增POCO回归覆盖追加时暂停历史锚点、回到列表顶部后继续跟随。"
+  },
+  "verification": {
+    "jvm": {
+      "command": "./gradlew test :app:compileDebugAndroidTestKotlin :app:lintDebug :app:assembleDebug --no-daemon -Ptarget-platform=android-arm64",
+      "result": "passed",
+      "test_count": 924
+    },
+    "motion_packages": {
+      "command": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+      "result": "passed"
+    },
+    "poco_instrumentation": [
+      {
+        "method": "ObservationListInstrumentedTest#logsCoalesceBurstUpdatesAndKeepThePausedHistoryAnchor",
+        "result": "passed",
+        "runs": 1
+      },
+      {
+        "method": "ObservationListInstrumentedTest#logsPageFiltersByLevelKeywordAndExportsFromToolbar",
+        "result": "passed",
+        "runs": 1
+      },
+      {
+        "method": "ObservationListInstrumentedTest#observationListsRenderNewStateWithoutLeavingThePage",
+        "result": "passed",
+        "runs": 1
+      }
+    ],
+    "release": {
+      "command": "./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64",
+      "result": "passed",
+      "signed": false
+    },
+    "existing_screenshot_baseline": {
+      "method": "ObservationListInstrumentedTest#logsPageCapturesDarkAndLightScreens",
+      "result": "hash_mismatch",
+      "expected": {
+        "dark": "018be45df75a8b7f2d121fdf2af1ff2ce062847b6b16488624857c4d9560e5bf",
+        "light": "cbe7afba7d17037586701e4dea342629ba92c1caf0b5d2f8bded9f8c204425d5"
+      },
+      "actual": {
+        "dark": "68fe6a009de49a11cded799037b0fa1ef1800230f8356b0ec97603c61157a7c3",
+        "light": "70e1071bd49d4ccecf26bdc29d04ebe3c0de1c4182d1c0bc841027ced326a0a5"
+      },
+      "baseline_updated": false,
+      "note": "KUI-VIS-080已记录POCO上观测页旧截图哈希不一致；本轮保留实际差异，不据哈希单独推断布局根因。"
+    },
+    "performance_measurement": "未采集帧率、CPU或功耗对照；300ms节拍是与冻结Flutter源码一致的渲染上限，不将其写成已测得的性能收益。"
+  },
+  "device_state": {
+    "installed_kclash_package": "com.lonnnnnng.flclash",
+    "installed_kclash_version": "0.1.16 / versionCode 1016",
+    "kclash_last_update_time_before_and_after": "2026-11-22 22:07:32",
+    "flutter_reference_package": "com.follow.clash 0.9.4",
+    "flutter_reference_data_or_preferences_modified": false,
+    "motion_packages_removed_after_test": true,
+    "core_or_vpn_started": false,
+    "foreground_restored_to_kclash": true
+  },
+  "remaining": [
+    "Flutter完整日志页同态运行对照与MainActivity真实核心日志端到端采集仍待完成。",
+    "其他页面/面板完整连续转场仍未收口。",
+    "菜单Perfetto discarded producer、app-surface FrameTimeline与GPU/fence wait归因仍未闭环。",
+    "完整Flutter视觉和稳定性能收益仍为PARTIAL；玻璃默认关闭。"
+  ]
+}
