@@ -24,6 +24,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -134,6 +135,91 @@ class DashboardInstrumentedTest {
     }
 
     @Test
+    fun dashboardMetricCardsKeepFixedHeightAcrossLoadingFailureAndLongValues() {
+        assertPortraitDefaultFontConfiguration()
+        val cardTags = listOf(
+            "dashboard_runtime_card",
+            "dashboard_stats_card",
+            "dashboard_profile_card",
+            "dashboard_proxy_groups_card",
+        )
+        fun heights(): Map<String, Float> = cardTags.associateWith { tag ->
+            composeRule.onNodeWithTag(tag).performScrollTo()
+            composeRule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.height
+        }
+        fun captureCards(phase: String) {
+            if (InstrumentationRegistry.getArguments().getString("kclashCapturePng") != "true") return
+            cardTags.forEach { tag ->
+                composeRule.onNodeWithTag(tag).performScrollTo()
+                recordNodePng("dashboard_metrics_${phase}_${tag}", tag)
+            }
+        }
+
+        composeRule.activityRule.scenario.onActivity { it.showMetricLayoutScenario("loading") }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("dashboard_outbound_ip_loading").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_speed_upload_loading").assertExists()
+        composeRule.onNodeWithTag("dashboard_speed_download_loading").assertExists()
+        composeRule.onNodeWithTag("dashboard_proxy_groups_loading_count").assertExists()
+        composeRule.onNodeWithTag("dashboard_profile_metric_loading", useUnmergedTree = true).assertExists()
+        val loadingHeights = heights()
+        captureCards("loading")
+
+        composeRule.activityRule.scenario.onActivity { it.showMetricLayoutScenario("failure") }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("dashboard_stats_card").performScrollTo()
+        composeRule.onNodeWithTag("dashboard_speed_error").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_runtime_card").performScrollTo()
+        composeRule.onNodeWithTag("dashboard_outbound_ip").assertTextEquals("查询失败")
+        composeRule.onNodeWithTag("dashboard_proxy_groups_card").performScrollTo()
+        composeRule.onNodeWithTag("dashboard_proxy_groups_error")
+            .assertTextEquals("代理组数据读取失败，请检查当前配置并重试加载")
+        val failureHeights = heights()
+        captureCards("failure")
+
+        composeRule.activityRule.scenario.onActivity { it.showMetricLayoutScenario("ready") }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("dashboard_runtime_card").performScrollTo()
+        composeRule.onNodeWithTag("dashboard_outbound_ip").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_stats_card").performScrollTo()
+        composeRule.onNodeWithTag("dashboard_speed_value_dashboard_upload_history")
+            .assertTextEquals("9.4 MB/s")
+        composeRule.onNodeWithTag("dashboard_profile_card").performScrollTo()
+        composeRule.onNodeWithTag("dashboard_profile_usage_slot", useUnmergedTree = true).assertExists()
+        val readyHeights = heights()
+        captureCards("long_values")
+
+        composeRule.activityRule.scenario.onActivity { it.showMetricLayoutScenario("empty") }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("dashboard_proxy_groups_empty").assertIsDisplayed()
+        val emptyHeights = heights()
+        captureCards("empty")
+
+        cardTags.forEach { tag ->
+            assertEquals("$tag changed height while loading", loadingHeights.getValue(tag), failureHeights.getValue(tag), 1f)
+            assertEquals("$tag changed height between failure and data", loadingHeights.getValue(tag), readyHeights.getValue(tag), 1f)
+            assertEquals("$tag changed height in empty state", loadingHeights.getValue(tag), emptyHeights.getValue(tag), 1f)
+        }
+        val density = composeRule.activity.resources.displayMetrics.density
+        val flutterMobileHeightsDp = mapOf(
+            "dashboard_runtime_card" to 188f,
+            "dashboard_stats_card" to 196f,
+            "dashboard_profile_card" to 167f,
+            "dashboard_proxy_groups_card" to 118f,
+        )
+        flutterMobileHeightsDp.forEach { (tag, expectedDp) ->
+            assertEquals("$tag differs from Flutter mobile card height", expectedDp, readyHeights.getValue(tag) / density, 3f)
+        }
+
+        composeRule.activityRule.scenario.onActivity { it.setDarkTheme(false); it.showMetricLayoutScenario("loading") }
+        composeRule.waitForIdle()
+        captureCards("light_loading")
+        composeRule.activityRule.scenario.onActivity { it.showMetricLayoutScenario("ready") }
+        composeRule.waitForIdle()
+        captureCards("light_long_values")
+    }
+
+    @Test
     fun dashboardShowsSessionDurationAndSampledHistoryAcrossRecreation() {
         assertPortraitDefaultFontConfiguration()
         composeRule.onNodeWithTag("dashboard_runtime_duration").assertTextEquals("—")
@@ -172,7 +258,12 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithText("数据中心").assertIsDisplayed()
         composeRule.onNodeWithText("AS64512").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("ip_quality_hide").performScrollTo().performClick()
-        composeRule.onNodeWithTag("ip_quality_address").performScrollTo().performClick()
+        composeRule.onNodeWithTag("ip_quality_address_copy").performScrollTo().performClick()
+        composeRule.waitUntil(2_000) {
+            composeRule.activity.lastCopiedOutboundText == "203.0.113.7" &&
+                composeRule.activity.getSystemService(android.content.ClipboardManager::class.java)
+                    .primaryClip?.getItemAt(0)?.text?.toString() == "203.0.113.7"
+        }
         composeRule.runOnIdle {
             val clipboard = composeRule.activity.getSystemService(android.content.ClipboardManager::class.java)
             assertEquals("203.0.113.7", clipboard.primaryClip?.getItemAt(0)?.text?.toString())
@@ -205,7 +296,7 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_ip_refresh").performClick()
         composeRule.onNodeWithTag("dashboard_outbound_ip").assertTextEquals("203.0.113.7")
         composeRule.activityRule.scenario.onActivity { it.finishIpRefresh(false) }
-        composeRule.onNodeWithText("点击图标重试").assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_outbound_ip_retry").assertIsDisplayed()
         composeRule.onNodeWithTag("dashboard_ip_refresh").performClick()
         composeRule.runOnIdle { assertEquals(3, composeRule.activity.ipRefreshCount) }
         composeRule.activityRule.scenario.onActivity { it.finishIpRefresh(true) }
@@ -295,7 +386,8 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_profile_card").performScrollTo().performClick()
         composeRule.onNodeWithTag("dashboard_profile_detail_sync").performClick()
         composeRule.onNodeWithTag("dashboard_profile_detail_sync_loading").assertIsDisplayed()
-        composeRule.onNodeWithTag("dashboard_profile_detail_sync").assertIsNotEnabled()
+        // 作者 long：同步受理后由进度指示器取代按钮，确认旧入口已移除，避免同一请求重复提交。
+        composeRule.onNodeWithTag("dashboard_profile_detail_sync").assertDoesNotExist()
     }
 
     @Test
@@ -540,7 +632,7 @@ class DashboardInstrumentedTest {
         assertPortraitDefaultFontConfiguration()
         composeRule.activityRule.scenario.onActivity { it.showIntranetScenario(loading = true) }
         composeRule.onNodeWithTag("intranet_copy").assertIsNotEnabled()
-        composeRule.onNodeWithTag("intranet_address").assertTextEquals("读取中…")
+        composeRule.onNodeWithTag("intranet_address_loading").assertExists()
         composeRule.activityRule.scenario.onActivity { it.showIntranetScenario(address = null) }
         composeRule.onNodeWithTag("intranet_address").assertTextEquals("无网络")
         composeRule.onNodeWithTag("intranet_copy").assertIsNotEnabled()
@@ -558,7 +650,7 @@ class DashboardInstrumentedTest {
         }
         composeRule.activityRule.scenario.onActivity { it.showIntranetScenario(address = null, error = true) }
         composeRule.onNodeWithTag("intranet_retry").performClick()
-        composeRule.onNodeWithTag("intranet_address").assertTextEquals("读取中…")
+        composeRule.onNodeWithTag("intranet_address_loading").assertExists()
     }
 
     @Test
@@ -804,7 +896,10 @@ class DashboardInstrumentedTest {
         return MessageDigest.getInstance("SHA-256").digest(png).joinToString("") { "%02x".format(it) }
     }
 
-    private fun assertBaselines(actual: Map<String, String>, expected: Map<String, String> = baselines) {
+    private fun assertBaselines(
+        actual: Map<String, String>,
+        expected: Map<String, String> = dashboardBaselinesForCurrentDevice(),
+    ) {
         val mismatches = actual.mapNotNull { (name, hash) ->
             val expectedHash = expected[name]
             if (expectedHash == hash) null else "$name expected=$expectedHash actual=$hash"
@@ -813,14 +908,25 @@ class DashboardInstrumentedTest {
     }
 }
 
-// 作者 long：重置后同机旧包与候选包12图完全一致才更新基线；保留旧失败与对照，不用新哈希掩盖产品回归。
-private val baselines = mapOf(
+// 作者 long：整页截图按设备分开存放；不同屏幕高度不能共用同一张像素基线。
+private val redmiDashboardBaselines = mapOf(
     "default" to "db7eae0fa032bf8ac85cab9fec7f2470452b01215ea691bf5f710ad8c645576b",
     "system_ready" to "19c146d890af962ee0c061ceeebcfe790a0e9fb09d15802caca7cc3451a42e78",
     "running" to "9ab4bdffb02bf7f52f20a5ccb491d7f155eea1ed1c090a1cabfd9916507c1f30",
     "light_default" to "aafa63be99ad719cca196a7c163860232e67ddd12912cb45badf30c133a46af2",
     "light_running" to "fe6f2406676bad10f71ab7f3be05a8c2f46fa9913328c00a406fb5aa32f08bf6",
 )
+
+private val pocoDashboardBaselines = mapOf(
+    "default" to "7c93fdb7a9df31ff52402343ca7c7e87003a186272680e47d45cf764959fe8a1",
+    "system_ready" to "55ef1e703c605400b1ce48837ee4e139d6a5023e9594a236114900612fd93aef",
+    "running" to "76fd7e8e1cb77ee17c3bd53b4beb86eebb3cdd7e3e954ccbf41e6b5fcfa95bc0",
+    "light_default" to "fa0a9fd5e8da77ec950d1e18a4e12835e6d8500d39aaba726b3e9ca2c1927237",
+    "light_running" to "4fba3a50fcd9d9185f7c43ffa2ff5d3a2e90ff0777d84ec53a96503d7906af57",
+)
+
+private fun dashboardBaselinesForCurrentDevice(): Map<String, String> =
+    if (android.os.Build.MODEL == "POCO F2 Pro") pocoDashboardBaselines else redmiDashboardBaselines
 
 private val proxyPickerBaselines = mapOf(
     "summary_dark" to "6107775c00b35d5d0f232cde157ad8e12c0fdab2f582daf38ea74eb873b5b616",

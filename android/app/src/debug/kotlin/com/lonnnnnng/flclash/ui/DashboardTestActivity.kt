@@ -40,6 +40,8 @@ class DashboardTestActivity : ComponentActivity() {
     private var profilePickerRuntimeStopped by mutableStateOf(false)
     private var outboundMode by mutableStateOf(CoreOutboundMode.RULE)
     private var proxyState by mutableStateOf(ProxyGroupsUiState())
+    private var runtimeStats by mutableStateOf(runningStats())
+    private var metricProfile by mutableStateOf(runningProfile())
     private var currentGroupName by mutableStateOf("机场选择")
     private var outboundIpState by mutableStateOf(fixedOutboundIp())
     private var statistics by mutableStateOf(ProfileStatisticsUiState())
@@ -73,6 +75,8 @@ class DashboardTestActivity : ComponentActivity() {
         private set
     var ipRefreshCount = 0
         private set
+    var lastCopiedOutboundText: String? = null
+        private set
     var qualityRefreshCount = 0
         private set
     var proxySelectionCount = 0
@@ -104,14 +108,16 @@ class DashboardTestActivity : ComponentActivity() {
         setContent {
             val running = scenario == DashboardScenario.RUNNING || scenario == DashboardScenario.PROXY_GROUPS
                 || scenario == DashboardScenario.RUNNING_PROFILE_PICKER && !profilePickerRuntimeStopped
+                || scenario == DashboardScenario.DASHBOARD_METRICS
             val homeProfiles = when (scenario) {
                 DashboardScenario.PROFILE_PICKER, DashboardScenario.RUNNING_PROFILE_PICKER -> dashboardPickerProfiles()
                 DashboardScenario.RUNNING, DashboardScenario.PROXY_GROUPS -> listOf(runningProfile())
+                DashboardScenario.DASHBOARD_METRICS -> listOf(metricProfile)
                 else -> emptyList()
             }
             val currentProfileId = when (scenario) {
                 DashboardScenario.PROFILE_PICKER, DashboardScenario.RUNNING_PROFILE_PICKER -> selectedProfileId
-                DashboardScenario.RUNNING, DashboardScenario.PROXY_GROUPS -> 99L
+                DashboardScenario.RUNNING, DashboardScenario.PROXY_GROUPS, DashboardScenario.DASHBOARD_METRICS -> 99L
                 else -> null
             }
             val runtimeState = if (scenario == DashboardScenario.RUNNING_PROFILE_PICKER) {
@@ -179,6 +185,11 @@ class DashboardTestActivity : ComponentActivity() {
                                 outboundIp = outboundIpState,
                                 onRefreshIp = { ipRefreshCount++; outboundIpState = outboundIpState.copy(isLoading = true, error = null) },
                                 onRefreshIpQuality = { qualityRefreshCount++; outboundIpState = outboundIpState.copy(qualityLoading = true, qualityFailures = emptyMap()) },
+                                onCopyOutboundText = { label, text ->
+                                    lastCopiedOutboundText = text
+                                    getSystemService(android.content.ClipboardManager::class.java)
+                                        ?.setPrimaryClip(android.content.ClipData.newPlainText(label, text))
+                                },
                                 onStart = {},
                                 onStop = {
                                     runtimeStopCount++
@@ -186,7 +197,7 @@ class DashboardTestActivity : ComponentActivity() {
                                 },
                             )
                             RuntimeStatsCard(
-                                state = if (running) runningStats() else RuntimeStatsUiState(),
+                                state = if (running) runtimeStats else RuntimeStatsUiState(),
                                 runtimeState = runtimeState,
                             )
                             OutboundModeCard(
@@ -359,7 +370,49 @@ class DashboardTestActivity : ComponentActivity() {
 
     fun showRunningScenario() {
         outboundIpState = fixedOutboundIp()
+        runtimeStats = runningStats()
         scenario = DashboardScenario.RUNNING
+    }
+
+    fun showMetricLayoutScenario(phase: String) {
+        scenario = DashboardScenario.DASHBOARD_METRICS
+        metricProfile = runningProfile().copy(
+            // 作者 long：长配置名用于确认真实字数增加时仍保留单行截断和固定卡片高度。
+            label = if (phase == "ready") "固定诊断样例——很长的配置名称用于校验卡片不会因文字换行而增高" else "固定诊断样例",
+            subscriptionInfo = null,
+        )
+        when (phase) {
+            "loading" -> {
+                runtimeStats = RuntimeStatsUiState(isLoading = true)
+                outboundIpState = OutboundIpUiState(isLoading = true)
+                proxyState = ProxyGroupsUiState(isLoading = true)
+                statistics = ProfileStatisticsUiState(profileId = 99L, isLoading = true)
+            }
+            "failure" -> {
+                val message = "连接统计暂时不可用，正在保留仪表盘指标并等待下一次采样恢复显示"
+                runtimeStats = RuntimeStatsUiState(error = message)
+                outboundIpState = OutboundIpUiState(error = "出口信息暂时不可用，请点击刷新后重试，现有卡片布局保持不变")
+                proxyState = ProxyGroupsUiState(error = "代理组数据读取失败，请检查当前配置并重试加载")
+                statistics = ProfileStatisticsUiState(profileId = 99L, error = message)
+            }
+            "empty" -> {
+                runtimeStats = RuntimeStatsUiState()
+                outboundIpState = OutboundIpUiState()
+                proxyState = ProxyGroupsUiState()
+                statistics = ProfileStatisticsUiState(profileId = 99L,
+                    counts = com.lonnnnnng.flclash.service.ProfileStatistics(99L, 0, 0, 0, 0))
+            }
+            else -> {
+                runtimeStats = runningStats().copy(traffic = CoreTraffic(9_876_543L, 8_765_432L))
+                outboundIpState = OutboundIpUiState(
+                    info = OutboundIpInfo("2001:0db8:85a3:0000:0000:8a2e:0370:7334", "US"),
+                    quality = IpQuality("2001:0db8:85a3:0000:0000:8a2e:0370:7334", IpQualitySource.IDENT_ME, IpType.HOSTING, "示例网络服务商组织名称", 64512),
+                )
+                proxyState = ProxyGroupsUiState(groups = dashboardProxyGroups())
+                statistics = ProfileStatisticsUiState(profileId = 99L,
+                    counts = com.lonnnnnng.flclash.service.ProfileStatistics(99L, 37, 14, 96, 3))
+            }
+        }
     }
 
     fun showProfilePickerScenario() {
@@ -370,6 +423,7 @@ class DashboardTestActivity : ComponentActivity() {
 
     fun showRunningProfilePickerScenario() {
         selectedProfileId = 101L
+        runtimeStats = runningStats()
         isProfileSyncing = false
         profilePickerRuntimeStopped = false
         runtimeStopCount = 0
@@ -377,6 +431,7 @@ class DashboardTestActivity : ComponentActivity() {
     }
 
     fun showProxyGroupsScenario() {
+        runtimeStats = runningStats()
         outboundMode = CoreOutboundMode.RULE
         currentGroupName = "机场选择"
         proxySelectionCount = 0
@@ -414,6 +469,7 @@ private enum class DashboardScenario {
     PROFILE_PICKER,
     RUNNING_PROFILE_PICKER,
     PROXY_GROUPS,
+    DASHBOARD_METRICS,
 }
 
 // 作者 long：主页代理入口只验证正式节点组件与回调，固定数据不读取真实订阅、不发起测速或核心请求。

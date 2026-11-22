@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Devices
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,12 +30,18 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
             }
         }
         Spacer(Modifier.height(8.dp))
-        Text(when {
-            state.local.isLoading -> tr("读取中…")
-            state.local.error != null -> tr("读取失败")
-            state.local.address == null -> tr("无网络")
-            else -> state.local.address
-        }, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.testTag("intranet_address"))
+        Box(Modifier.fillMaxWidth().height(34.dp), contentAlignment = Alignment.CenterStart) {
+            when {
+                state.local.isLoading -> DashboardSkeletonBar(Modifier.testTag("intranet_address_loading"), 132.dp, 22.dp)
+                state.local.error != null -> Text(tr("读取失败"), style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.testTag("intranet_address"), color = MaterialTheme.colorScheme.error, maxLines = 1)
+                state.local.address == null -> Text(tr("无网络"), style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.testTag("intranet_address"), maxLines = 1)
+                else -> Text(state.local.address, style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.testTag("intranet_address"), maxLines = 1, softWrap = false,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            }
+        }
         Spacer(Modifier.height(14.dp))
         val enabled = !state.settingsLoading && !state.saving && state.settingsError == null
         // 作者 long：整行共用一个开关语义和点击事件，屏幕阅读器与直接点开关都不会重复提交。
@@ -54,19 +61,26 @@ internal fun DashboardIntranetIpCard(state: IntranetIpUiState, onAllowLan: (Bool
                     state.sharing.config.mixedPort == 0 -> tr("代理端口未启用")
                     else -> tr("端口 ") + state.sharing.config.mixedPort
                 }, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.testTag("intranet_port"))
+                    modifier = Modifier.testTag("intranet_port"), maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             }
             Switch(state.sharing.config.allowLan, onCheckedChange = null, enabled = enabled)
         }
         val error = state.local.error ?: state.error ?: state.settingsError
-        error?.let {
-            Text(tr(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 8.dp).testTag("intranet_error"))
-            TextButton(onClick = onRetry, enabled = !state.saving, modifier = Modifier.testTag("intranet_retry")) { Text(tr("重试")) }
-        }
-        state.feedback?.let {
-            Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp).testTag("intranet_feedback"))
+        Row(Modifier.fillMaxWidth().padding(top = 4.dp).height(28.dp), verticalAlignment = Alignment.CenterVertically) {
+            when {
+                error != null -> {
+                    Text(tr(error), Modifier.weight(1f).testTag("intranet_error"), color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall, maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    IconButton(onClick = onRetry, enabled = !state.saving, modifier = Modifier.size(28.dp).testTag("intranet_retry")) {
+                        Icon(Icons.Outlined.Refresh, tr("重试"), Modifier.size(18.dp))
+                    }
+                }
+                state.feedback != null -> Text(state.feedback, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag("intranet_feedback"),
+                    maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            }
         }
     }
 }

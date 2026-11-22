@@ -26,20 +26,42 @@ internal fun DashboardMemoryCard(state: MemoryUiState, onRelease: () -> Unit) {
             Icon(Icons.Outlined.ChevronRight, contentDescription = null)
         }
         Spacer(Modifier.height(12.dp))
-        Text(state.snapshot?.rss?.let(::formatBytes) ?: if (state.isLoading) tr("读取中…") else "—",
-            style = MaterialTheme.typography.headlineLarge, modifier = Modifier.testTag("dashboard_memory_total"))
-        state.snapshot?.let { memory ->
-            Spacer(Modifier.height(14.dp))
-            val fraction = if (memory.rss > 0L) (memory.runtimeTotal.toDouble() / memory.rss).toFloat().coerceIn(0f, 1f) else 0f
-            LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.secondary, trackColor = MaterialTheme.colorScheme.primaryContainer)
-            Spacer(Modifier.height(10.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(tr("应用 ") + formatBytes(memory.appResidentBytes()), style = MaterialTheme.typography.bodyMedium)
-                Text(tr("核心 ") + formatBytes(memory.runtimeTotal), style = MaterialTheme.typography.bodyMedium)
+        Box(Modifier.fillMaxWidth().height(38.dp), contentAlignment = Alignment.CenterStart) {
+            when {
+                state.snapshot != null -> Text(state.snapshot.rss.let(::formatBytes),
+                    style = MaterialTheme.typography.headlineLarge, modifier = Modifier.testTag("dashboard_memory_total"),
+                    maxLines = 1, softWrap = false)
+                state.isLoading -> DashboardSkeletonBar(Modifier.testTag("dashboard_memory_total_loading"), 112.dp, 24.dp)
+                else -> Text("—", style = MaterialTheme.typography.headlineLarge, modifier = Modifier.testTag("dashboard_memory_total"), maxLines = 1)
             }
         }
-        state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp)) }
+        Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.CenterStart) {
+            when {
+                state.snapshot != null -> {
+                    val memory = state.snapshot
+                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val fraction = if (memory.rss > 0L) (memory.runtimeTotal.toDouble() / memory.rss).toFloat().coerceIn(0f, 1f) else 0f
+                        LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth().height(4.dp),
+                            color = MaterialTheme.colorScheme.secondary, trackColor = MaterialTheme.colorScheme.primaryContainer)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
+                            maxItemsInEachRow = 2) {
+                            Text(tr("应用 ") + formatBytes(memory.appResidentBytes()), style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                            Text(tr("核心 ") + formatBytes(memory.runtimeTotal), style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                        }
+                    }
+                }
+                state.isLoading -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DashboardSkeletonBar(Modifier.testTag("dashboard_memory_breakdown_loading"), height = 4.dp)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        DashboardSkeletonBar(Modifier.weight(1f), height = 12.dp)
+                        DashboardSkeletonBar(Modifier.weight(1f), height = 12.dp)
+                    }
+                }
+                state.error != null -> Text(tr(state.error), Modifier.testTag("dashboard_memory_error"),
+                    color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall,
+                    maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+            }
+        }
     }
     if (detail) DashboardModalSheet(title = tr("内存信息"), sheetTag = "memory_detail_sheet", closeTag = "memory_detail_close",
         onDismiss = { detail = false }, actions = {

@@ -70,11 +70,14 @@ internal fun DashboardServiceStatusCard(
         }
         Spacer(Modifier.height(12.dp))
         val shown = state.settings.enabled.take(2)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().height(44.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             shown.forEach { target ->
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(target.label, style = MaterialTheme.typography.bodyLarge)
-                    ServiceResultText(state.entries[target] ?: ServiceEntry(), "service_card_${target.id}")
+                Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(target.label, style = MaterialTheme.typography.bodyLarge, maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    Box(Modifier.fillMaxWidth().height(20.dp), contentAlignment = Alignment.CenterStart) {
+                        ServiceResultText(state.entries[target] ?: ServiceEntry(), "service_card_${target.id}")
+                    }
                 }
             }
         }
@@ -85,8 +88,14 @@ internal fun DashboardServiceStatusCard(
             entries.size == shown.size && entries.all { it.result != null && !it.loading } -> tr("全部可用")
             else -> null
         }
-        verdict?.let { Text(it, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 10.dp)) }
-        state.error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
+        Box(Modifier.fillMaxWidth().padding(top = 4.dp).height(18.dp), contentAlignment = Alignment.CenterStart) {
+            when {
+                state.error != null -> Text(tr(state.error), color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelMedium, maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                verdict != null -> Text(verdict, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+            }
+        }
     }
     // 作者 long：把页种类固定到本次内容快照，退场正文不能读取已经切换的 manage 状态。
     val showingManagement = manage
@@ -168,6 +177,12 @@ internal fun DashboardServiceStatusCard(
 @Composable
 private fun ServiceResultText(entry: ServiceEntry, tag: String) {
     val failed = entry.failed || entry.result?.status in listOf(ServiceStatus.FAILED, ServiceStatus.TIMEOUT, ServiceStatus.UNAVAILABLE)
-    Text(entry.statusText(), style = MaterialTheme.typography.bodyMedium,
-        color = if (failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag(tag))
+    if (entry.loading) {
+        DashboardSkeletonBar(Modifier.testTag(tag), 44.dp, 14.dp)
+    } else {
+        Text(entry.statusText(), style = MaterialTheme.typography.bodyMedium,
+            color = if (failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag(tag), maxLines = 1, softWrap = false,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+    }
 }

@@ -47,10 +47,16 @@ internal fun OutboundIpPanel(
     active: Boolean,
     onRefresh: () -> Unit,
     onRefreshQuality: () -> Unit,
+    onCopyText: ((String, String) -> Unit)? = null,
 ) {
     var detailIp by rememberSaveable { mutableStateOf<String?>(null) }
     var hidden by rememberSaveable { mutableStateOf(false) }
     val info = state.info
+    val context = LocalContext.current
+    val copy: (String, String) -> Unit = onCopyText ?: { label, value ->
+        context.getSystemService(ClipboardManager::class.java)
+            ?.setPrimaryClip(ClipData.newPlainText(label, value))
+    }
     LaunchedEffect(active, info?.ip) {
         if (detailIp != info?.ip) detailIp = null
     }
@@ -65,34 +71,59 @@ internal fun OutboundIpPanel(
                 Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp))
             }
         }
-        Column(Modifier.weight(1f).padding(start = 4.dp)) {
-            Text(
+        Column(Modifier.weight(1f).padding(start = 4.dp).height(58.dp)) {
+            Box(Modifier.fillMaxWidth().height(28.dp), contentAlignment = Alignment.CenterStart) {
                 when {
-                    info != null -> if (hidden) "*****" else info.ip
-                    state.error != null -> tr("查询失败")
-                    else -> tr("正在查询出口…")
-                },
-                Modifier.testTag("dashboard_outbound_ip").then(
-                    if (info != null) Modifier.clickable { detailIp = info.ip }
-                    else Modifier,
-                ),
-                style = MaterialTheme.typography.titleMedium,
-                color = if (state.error != null && info == null && active) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
+                    info != null -> Text(
+                        if (hidden) "*****" else info.ip,
+                        Modifier.fillMaxWidth().testTag("dashboard_outbound_ip")
+                            .clickable { detailIp = info.ip },
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                    state.isLoading -> DashboardSkeletonBar(Modifier.testTag("dashboard_outbound_ip_loading"), 136.dp, 16.dp)
+                    state.error != null -> Text(
+                        tr("查询失败"), Modifier.fillMaxWidth().testTag("dashboard_outbound_ip"),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (active) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                    else -> Text("—", Modifier.testTag("dashboard_outbound_ip"), style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                }
+            }
+            Box(Modifier.fillMaxWidth().height(16.dp), contentAlignment = Alignment.CenterStart) {
                 when {
-                    state.error != null -> tr("点击图标重试")
-                    info == null -> tr("出口 IP")
-                    state.quality != null -> "${state.quality.type.label} · ${tr(state.quality.levelLabel)}"
-                    state.qualityLoading -> tr("正在查询 IP 类型…")
-                    else -> tr("IP 类型查询失败")
-                },
-                style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (info != null) Text(
-                state.quality?.organization ?: state.quality?.asn?.let { "AS$it" } ?: "—",
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+                    info == null && state.isLoading -> DashboardSkeletonBar(width = 82.dp, height = 9.dp)
+                    state.error != null -> Text(tr("点击图标重试"), Modifier.testTag("dashboard_outbound_ip_retry"),
+                        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1)
+                    info == null -> Text(tr("出口 IP"), style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                    state.quality != null -> Text("${state.quality.type.label} · ${tr(state.quality.levelLabel)}",
+                        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    state.qualityLoading -> DashboardSkeletonBar(width = 112.dp, height = 9.dp)
+                    else -> Text(tr("IP 类型查询失败"), style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                }
+            }
+            Box(Modifier.fillMaxWidth().height(14.dp), contentAlignment = Alignment.CenterStart) {
+                when {
+                    info != null -> Text(
+                        state.quality?.organization ?: state.quality?.asn?.let { "AS$it" } ?: "—",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    )
+                    state.isLoading -> DashboardSkeletonBar(width = 68.dp, height = 8.dp)
+                    else -> Text("", Modifier.testTag("dashboard_outbound_ip_organization"), style = MaterialTheme.typography.bodySmall)
+                }
+            }
         }
     }
     // 作者 long：详情只跟随点击时的 IP；停止或出口已变化时关闭，禁止把新出口数据填进旧 IP 面板。
@@ -104,7 +135,7 @@ internal fun OutboundIpPanel(
                     Icon(Icons.Outlined.Refresh, null)
                 }
             }) {
-            IpQualityContent(state, hidden, { hidden = it })
+            IpQualityContent(state, hidden, { hidden = it }, copy)
         }
     }
 }
@@ -112,12 +143,22 @@ internal fun OutboundIpPanel(
 
 // 作者 long：首页与服务出口使用相同质量字段和复制规则，避免同一个 IP 在两个入口显示不同含义。
 @Composable
-internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHiddenChange: (Boolean) -> Unit) {
+internal fun IpQualityContent(
+    state: OutboundIpUiState,
+    hidden: Boolean,
+    onHiddenChange: (Boolean) -> Unit,
+    onCopyText: ((String, String) -> Unit)? = null,
+) {
     val info = state.info ?: return
+    val context = LocalContext.current
+    val copy: (String, String) -> Unit = onCopyText ?: { label, value ->
+        context.getSystemService(ClipboardManager::class.java)
+            ?.setPrimaryClip(ClipData.newPlainText(label, value))
+    }
     Text(tr("检测结果仅供参考"), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     val quality = state.quality
     DashboardDetailSection(tr("基本信息")) {
-        IpDetailRow(tr("IP 地址"), if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address")
+        IpDetailRow(tr("IP 地址"), if (hidden) "*****" else info.ip, copyText = info.ip, tag = "ip_quality_address", onCopyText = copy)
         if (quality != null || state.qualityLoading) {
             // 作者 long：加载占位只替换值，不插入额外进度行；旧结果刷新保留原值，面板不会因spinner增删而跳动。
             IpDetailRow(tr("质量等级"), tr(quality?.levelLabel.orEmpty()), tag = "ip_quality_level", loading = quality == null, placeholderWidth = 40,
@@ -127,8 +168,8 @@ internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHidde
         } else Text(tr("IP 类型查询失败"), Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.error)
     }
     if (quality != null || state.qualityLoading) DashboardDetailSection(tr("网络")) {
-        IpDetailRow(tr("组织"), quality?.organization ?: "—", quality?.organization, tag = "ip_quality_organization", loading = quality == null, placeholderWidth = 120)
-        IpDetailRow("ASN", quality?.asn?.let { "AS$it" } ?: "—", quality?.asn?.let { "AS$it" }, tag = "ip_quality_asn", loading = quality == null, placeholderWidth = 56)
+            IpDetailRow(tr("组织"), quality?.organization ?: "—", quality?.organization, tag = "ip_quality_organization", loading = quality == null, placeholderWidth = 120, onCopyText = copy)
+        IpDetailRow("ASN", quality?.asn?.let { "AS$it" } ?: "—", quality?.asn?.let { "AS$it" }, tag = "ip_quality_asn", loading = quality == null, placeholderWidth = 56, onCopyText = copy)
         IpDetailRow(tr("查询来源"), quality?.source?.label.orEmpty(), tag = "ip_quality_source", loading = quality == null, placeholderWidth = 72)
     }
     if (state.qualityFailures.isNotEmpty()) {
@@ -148,14 +189,14 @@ internal fun IpQualityContent(state: OutboundIpUiState, hidden: Boolean, onHidde
 
 @Composable
 private fun IpDetailRow(label: String, value: String, copyText: String? = null, tag: String? = null,
-    loading: Boolean = false, placeholderWidth: Int = 40, loadingTag: String? = null) {
-    val context = LocalContext.current
+    loading: Boolean = false, placeholderWidth: Int = 40, loadingTag: String? = null,
+    onCopyText: (String, String) -> Unit = { _, _ -> }) {
     Surface(Modifier.fillMaxWidth(), color = Color.Transparent) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 48.dp)
                 .then(if (tag != null) Modifier.testTag(tag) else Modifier)
                 .then(if (copyText != null) Modifier.clickable {
-                    context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText(label, copyText))
+                    onCopyText(label, copyText)
                 } else Modifier).padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -166,8 +207,13 @@ private fun IpDetailRow(label: String, value: String, copyText: String? = null, 
                     .then(if (loadingTag != null) Modifier.testTag(loadingTag) else Modifier))
                 else Text(value, style = MaterialTheme.typography.bodyMedium)
             }
-            // 作者 long：复制按钮有无不能改变值列宽度，否则组织和ASN到达后会重新换行。
-            Box(Modifier.size(18.dp)) { if (copyText != null) Icon(Icons.Outlined.ContentCopy, null, Modifier.size(18.dp)) }
+            // 作者 long：首页地址行同时支持点文字和点图标复制，独立48dp入口避免辅助工具点击空白区域无效。
+            if (copyText != null) {
+                IconButton(
+                    onClick = { onCopyText(label, copyText) },
+                    modifier = Modifier.size(32.dp).testTag("${tag ?: label}_copy"),
+                ) { Icon(Icons.Outlined.ContentCopy, tr("复制") + label, Modifier.size(18.dp)) }
+            } else Box(Modifier.size(18.dp))
         }
     }
 }

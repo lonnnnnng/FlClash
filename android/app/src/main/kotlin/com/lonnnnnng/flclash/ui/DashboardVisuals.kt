@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -74,8 +75,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import java.text.NumberFormat
 import java.util.Locale
@@ -115,6 +120,24 @@ private fun dashboardBlockColor(): Color = if (LocalKClashDarkTheme.current) {
 }
 
 @Composable
+internal fun DashboardSkeletonBar(
+    modifier: Modifier = Modifier,
+    width: Dp? = null,
+    height: Dp = 12.dp,
+    tag: String? = null,
+) {
+    Box(
+        modifier = Modifier
+            .then(if (width == null) Modifier.fillMaxWidth() else Modifier.width(width))
+            .height(height)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.72f))
+            .then(modifier)
+            .then(if (tag == null) Modifier else Modifier.testTag(tag)),
+    )
+}
+
+@Composable
 internal fun DashboardSurface(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
@@ -145,9 +168,14 @@ internal fun DashboardSurface(
 }
 
 @Composable
-private fun DashboardHeader(title: String, icon: ImageVector, trailing: @Composable () -> Unit = {}) {
+private fun DashboardHeader(
+    title: String,
+    icon: ImageVector,
+    height: Dp = 20.dp,
+    trailing: @Composable () -> Unit = {},
+) {
     Row(
-        Modifier.fillMaxWidth(),
+        Modifier.fillMaxWidth().height(height),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -177,66 +205,83 @@ internal fun DashboardProxyGroupsCard(
         modifier = Modifier.testTag("dashboard_proxy_groups_card"),
         onClick = if (groups.isEmpty()) null else ({ showPicker = true }),
     ) {
-        DashboardHeader(tr("策略组"), Icons.Outlined.Layers) {
+        DashboardHeader(tr("策略组"), Icons.Outlined.Layers, height = 26.dp) {
             if (groups.isNotEmpty()) Icon(Icons.Outlined.ChevronRight, null, Modifier.size(20.dp))
         }
         Spacer(Modifier.height(12.dp))
-        state.error?.let { message ->
-            Row(Modifier.fillMaxWidth().testTag("dashboard_proxy_groups_error"), verticalAlignment = Alignment.CenterVertically) {
-                Text(tr(message), Modifier.weight(1f), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-                TextButton(onRefresh, enabled = state.canRefresh(runtimeState), modifier = Modifier.testTag("dashboard_proxy_groups_retry")) { Text(tr("重试")) }
-            }
-        }
-        if (groups.isEmpty()) {
-            Column(
-                Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 36.dp)
-                    .testTag("dashboard_proxy_groups_empty"),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                Box(
-                    Modifier.size(64.dp).background(dashboardBlockColor(), AppSuperellipseShape(24.dp)),
-                    contentAlignment = Alignment.Center,
-                ) { Icon(Icons.Outlined.Layers, null, Modifier.size(26.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    if (state.isLoading) tr("正在加载代理组") else if (state.error != null) tr("代理组加载失败") else tr("没有代理组"),
-                    modifier = Modifier,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                if (currentProfileId == null) Text(
-                    tr("添加有效配置后显示代理组"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        } else {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Row(Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
-                    Text(
-                        groups.size.toString(),
-                        Modifier.testTag("dashboard_proxy_groups_count"),
-                        style = TextStyle(fontSize = 36.sp, lineHeight = 40.sp, fontWeight = FontWeight.SemiBold),
-                    )
-                    Text(tr(" 组"), Modifier.padding(bottom = 4.dp), style = MaterialTheme.typography.bodySmall)
+        Box(
+            Modifier.fillMaxWidth().height(44.dp)
+                .testTag(if (groups.isEmpty()) "dashboard_proxy_groups_empty" else "dashboard_proxy_groups_summary"),
+            contentAlignment = Alignment.CenterStart,
+        ) {
+            when {
+                state.isLoading && groups.isEmpty() -> Row(
+                    Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    DashboardSkeletonBar(Modifier.testTag("dashboard_proxy_groups_loading_count"), 44.dp, 24.dp)
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        repeat(3) { DashboardSkeletonBar(Modifier.size(32.dp), 32.dp, 32.dp) }
+                    }
                 }
-                val shown = groups.take(4)
-                val rest = groups.size - shown.size
-                val badgeCount = shown.size + if (rest > 0) 1 else 0
-                Box(Modifier.width((badgeCount * 40 - (badgeCount - 1) * 8).dp).height(40.dp)) {
-                    repeat(badgeCount) { index ->
-                        Box(
-                            Modifier.offset(x = (index * 32).dp).size(40.dp)
-                                .border(3.dp, dashboardCardColor(), AppSuperellipseShape(14.dp))
-                                .padding(3.dp).background(dashboardBlockColor(), AppSuperellipseShape(11.dp)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            // 作者 long：摘要仅使用已提供的组名回退，保留完整字素，不能把emoji截成非法代理字符。
-                            Text(
-                                if (index < shown.size) groupInitial(shown[index].name) else "+$rest",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                state.error != null && groups.isEmpty() -> Row(
+                    Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        tr(state.error), Modifier.weight(1f).testTag("dashboard_proxy_groups_error"),
+                        style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp),
+                        color = MaterialTheme.colorScheme.error,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    IconButton(
+                        onClick = onRefresh,
+                        enabled = state.canRefresh(runtimeState),
+                        modifier = Modifier.size(32.dp).testTag("dashboard_proxy_groups_retry"),
+                    ) { Icon(Icons.Outlined.Sync, tr("重试"), Modifier.size(18.dp)) }
+                }
+                groups.isEmpty() -> Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        tr("没有代理组"),
+                        style = TextStyle(fontSize = 14.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold),
+                    )
+                    if (currentProfileId == null) Text(
+                        tr("添加有效配置后显示代理组"),
+                        style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                    )
+                }
+                else -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            groups.size.toString(),
+                            Modifier.testTag("dashboard_proxy_groups_count"),
+                            style = TextStyle(fontSize = 32.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold),
+                            maxLines = 1,
+                        )
+                        Text(tr(" 组"), Modifier.padding(bottom = 3.dp), style = MaterialTheme.typography.bodySmall)
+                    }
+                    val shown = groups.take(4)
+                    val rest = groups.size - shown.size
+                    val badgeCount = shown.size + if (rest > 0) 1 else 0
+                    Box(Modifier.width((badgeCount * 36 - (badgeCount - 1) * 8).dp).height(36.dp)) {
+                        repeat(badgeCount) { index ->
+                            Box(
+                                Modifier.offset(x = (index * 28).dp).size(36.dp)
+                                    .border(3.dp, dashboardCardColor(), AppSuperellipseShape(13.dp))
+                                    .padding(3.dp).background(dashboardBlockColor(), AppSuperellipseShape(10.dp)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                // 作者 long：摘要只缩放头像，不裁掉完整代理组名或改变卡片的内容高度。
+                                Text(
+                                    if (index < shown.size) groupInitial(shown[index].name) else "+$rest",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                )
+                            }
                         }
                     }
                 }
@@ -276,6 +321,48 @@ internal fun DashboardProxyGroupsCard(
 }
 
 @Composable
+private fun RuntimeStateChip(state: CoreRuntimeStatus, suspended: Boolean) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        color = when {
+            state == CoreRuntimeStatus.FAILED -> colors.errorContainer
+            state.isRunning -> colors.primaryContainer
+            else -> dashboardBlockColor()
+        },
+        shape = CircleShape,
+    ) {
+        Text(
+            when {
+                state.isRunning && suspended -> tr("按需暂停")
+                state.isRunning -> tr("运行中")
+                state == CoreRuntimeStatus.STOPPED -> tr("未运行")
+                state == CoreRuntimeStatus.FAILED -> tr("启动失败")
+                state == CoreRuntimeStatus.STOPPING -> tr("停止中")
+                else -> tr("启动中")
+            },
+            Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold),
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun DashboardRuntimeCell(label: String, value: String, tag: String, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(label, style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+        Text(
+            value,
+            Modifier.testTag(tag),
+            style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
 internal fun RuntimeCard(
     state: CoreRuntimeStatus,
     onStart: () -> Unit,
@@ -284,6 +371,7 @@ internal fun RuntimeCard(
     outboundIp: OutboundIpUiState = OutboundIpUiState(),
     onRefreshIp: () -> Unit = {},
     onRefreshIpQuality: () -> Unit = {},
+    onCopyOutboundText: ((String, String) -> Unit)? = null,
     onDemandSuspended: Boolean = false,
 ) {
     val busy = state == CoreRuntimeStatus.STARTING || state == CoreRuntimeStatus.STOPPING
@@ -302,7 +390,7 @@ internal fun RuntimeCard(
         colors = CardDefaults.cardColors(containerColor = dashboardCardColor()),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        AppLiveMaterialHost(Modifier.fillMaxWidth().heightIn(min = 240.dp), background = {
+        AppLiveMaterialHost(Modifier.fillMaxWidth().heightIn(min = 188.dp), background = {
             Box(Modifier.matchParentSize().background(dashboardCardColor()))
             // 作者 long：主控背景只作装饰，出口信息由独立状态提供，不能从运行状态推测国家或质量。
             Canvas(Modifier.align(Alignment.TopEnd).offset(x = 60.dp, y = (-66).dp).size(240.dp)) {
@@ -319,41 +407,35 @@ internal fun RuntimeCard(
             }
         }, foreground = {
             Column(Modifier.padding(start = 20.dp, top = 18.dp, end = 16.dp, bottom = 18.dp)) {
-                DashboardHeader(tr("状态"), Icons.Outlined.Tune)
                 Row(
-                    Modifier.fillMaxWidth().padding(top = 16.dp),
+                    Modifier.fillMaxWidth().height(26.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Outlined.Tune, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(tr("状态"), style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold))
+                    RuntimeStateChip(state, onDemandSuspended)
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Surface(
-                            color = when {
-                                state == CoreRuntimeStatus.FAILED -> colors.errorContainer
-                                state.isRunning -> colors.primaryContainer
-                                else -> tone
-                            },
-                            shape = CircleShape,
-                        ) {
-                            Text(
-                                when {
-                                    state.isRunning && onDemandSuspended -> tr("按需暂停")
-                                    state.isRunning -> tr("运行中")
-                                    state == CoreRuntimeStatus.STOPPED -> tr("未运行")
-                                    state == CoreRuntimeStatus.FAILED -> tr("启动失败")
-                                    state == CoreRuntimeStatus.STOPPING -> tr("停止中")
-                                    else -> tr("启动中")
-                                },
-                                Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold),
+                    Column(Modifier.weight(1f)) {
+                        OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality, onCopyOutboundText)
+                        Spacer(Modifier.height(16.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                            DashboardRuntimeCell(
+                                label = tr("运行时长"),
+                                value = formatRuntimeDuration(uptimeMillis.takeIf { state.isRunning }),
+                                tag = "dashboard_runtime_duration",
+                                modifier = Modifier.weight(1f),
                             )
-                        }
-                        OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality)
-                        Column {
-                            Text(tr("运行时间"), style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
-                            Text(
-                                formatRuntimeDuration(uptimeMillis.takeIf { state.isRunning }),
-                                Modifier.testTag("dashboard_runtime_duration"),
-                                style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+                            DashboardRuntimeCell(
+                                label = tr("组织"),
+                                value = outboundIp.info?.let { outboundIp.quality?.organization ?: outboundIp.quality?.asn?.let { asn -> "AS$asn" } } ?: "—",
+                                tag = "dashboard_runtime_organization",
+                                modifier = Modifier.weight(1.2f),
                             )
                         }
                     }
@@ -393,9 +475,11 @@ internal fun RuntimeCard(
 @Composable
 internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRuntimeStatus) {
     val active = runtimeState.isRunning
+    val loading = active && state.isLoading && state.trafficHistory.isEmpty()
+    val error = state.error
     DashboardSurface(Modifier.testTag("dashboard_stats_card")) {
         // 作者 long：Flutter 手机网络速度卡只展示上下行，连接数量属于默认隐藏的连接统计卡。
-        DashboardHeader(tr("网络速度"), Icons.Outlined.Speed)
+        DashboardHeader(tr("网络速度"), Icons.Outlined.Speed, height = 26.dp)
         val fontScale = LocalDensity.current.fontScale
         val history = if (active) state.trafficHistory else emptyList()
         val upload = history.map { it.up }
@@ -404,18 +488,16 @@ internal fun RuntimeStatsCard(state: RuntimeStatsUiState, runtimeState: CoreRunt
             // 作者 long：大字号时将速度块纵排，保持数值与单位完整，避免两栏压缩后只能读到省略号。
             if (fontScale > 1.4f || maxWidth < 260.dp) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    DashboardSpeedTile(tr("上传"), Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, if (active) state.totalTraffic.up else 0, upload, "dashboard_upload_history", Modifier.fillMaxWidth())
-                    DashboardSpeedTile(tr("下载"), Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, if (active) state.totalTraffic.down else 0, download, "dashboard_download_history", Modifier.fillMaxWidth())
+                    DashboardSpeedTile(tr("上传"), Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, if (active) state.totalTraffic.up else 0, upload, "dashboard_upload_history", Modifier.fillMaxWidth(), loading, error)
+                    DashboardSpeedTile(tr("下载"), Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, if (active) state.totalTraffic.down else 0, download, "dashboard_download_history", Modifier.fillMaxWidth(), loading, error)
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    DashboardSpeedTile(tr("上传"), Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, if (active) state.totalTraffic.up else 0, upload, "dashboard_upload_history", Modifier.weight(1f))
-                    DashboardSpeedTile(tr("下载"), Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, if (active) state.totalTraffic.down else 0, download, "dashboard_download_history", Modifier.weight(1f))
+                    DashboardSpeedTile(tr("上传"), Icons.Outlined.ArrowUpward, if (active) state.traffic.up else 0, if (active) state.totalTraffic.up else 0, upload, "dashboard_upload_history", Modifier.weight(1f), loading, error)
+                    DashboardSpeedTile(tr("下载"), Icons.Outlined.ArrowDownward, if (active) state.traffic.down else 0, if (active) state.totalTraffic.down else 0, download, "dashboard_download_history", Modifier.weight(1f), loading, error)
                 }
             }
         }
-        // 作者 long：每秒统计是后台采样，沿用Flutter直接更新数值；插入加载行会让整张卡片反复跳高。
-        state.error?.let { Text(tr(it), Modifier.padding(top = 10.dp), color = MaterialTheme.colorScheme.error) }
     }
 }
 
@@ -446,7 +528,7 @@ internal fun DashboardConnectionStatsCard(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .heightIn(min = 66.dp)
+                        .height(66.dp)
                         .appFocusRing(AppSuperellipseShape(26.dp))
                         .clip(AppSuperellipseShape(26.dp))
                         .clickable(onClick = onClick)
@@ -465,6 +547,8 @@ internal fun DashboardConnectionStatsCard(
                         dashboardCount(count),
                         style = TextStyle(fontSize = 22.sp, lineHeight = 28.sp, fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
                         maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
                     )
                     Text(
                         label,
@@ -479,6 +563,9 @@ internal fun DashboardConnectionStatsCard(
 }
 
 private fun dashboardCount(count: Int): String =
+    NumberFormat.getIntegerInstance(Locale.US).format(count)
+
+private fun dashboardCount(count: Long): String =
     NumberFormat.getIntegerInstance(Locale.US).format(count)
 
 @Composable
@@ -552,21 +639,86 @@ internal fun OutboundModeCard(
 }
 
 @Composable
-private fun DashboardSpeedTile(label: String, icon: ImageVector, speed: Long, total: Long, samples: List<Long>, chartTag: String, modifier: Modifier) {
-    Surface(modifier, shape = AppSuperellipseShape(22.dp), color = dashboardBlockColor()) {
-        Column {
-            Column(Modifier.padding(start = 16.dp, top = 14.dp, end = 16.dp, bottom = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+private fun DashboardSpeedTile(
+    label: String,
+    icon: ImageVector,
+    speed: Long,
+    total: Long,
+    samples: List<Long>,
+    chartTag: String,
+    modifier: Modifier,
+    loading: Boolean,
+    error: String?,
+) {
+    val direction = if (label == tr("上传")) "upload" else "download"
+    Surface(
+        modifier.aspectRatio(1.45f).testTag("dashboard_speed_tile_$direction"),
+        shape = AppSuperellipseShape(22.dp),
+        color = dashboardBlockColor(),
+    ) {
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val chartHeight = (maxHeight - 96.dp).coerceIn(12.dp, 30.dp)
+            Column(Modifier.fillMaxSize().padding(start = 14.dp, top = 12.dp, end = 14.dp, bottom = 10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(icon, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
-                    Text(label, style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(label, style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 }
-                val formatted = formatBytes(speed)
-                val numericEnd = formatted.indexOfFirst { it.isLetter() }.takeIf { it >= 0 } ?: formatted.length
-                Text(formatted.take(numericEnd), style = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"))
-                Text("${formatted.drop(numericEnd)}/s", style = TextStyle(fontSize = 13.sp, lineHeight = 18.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(tr("累计 {0}", formatBytes(total)), style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Box(Modifier.fillMaxWidth().height(34.dp), contentAlignment = Alignment.CenterStart) {
+                    when {
+                        loading -> DashboardSkeletonBar(Modifier.testTag("dashboard_speed_${direction}_loading"), 86.dp, 20.dp)
+                        error != null && samples.isEmpty() -> Text(
+                            "—", Modifier.testTag("dashboard_speed_value_$chartTag"),
+                            style = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"),
+                            maxLines = 1,
+                        )
+                        else -> {
+                            val formatted = formatBytes(speed)
+                            val numericEnd = formatted.indexOfFirst { it.isLetter() }.takeIf { it >= 0 } ?: formatted.length
+                            val number = formatted.take(numericEnd).trimEnd()
+                            val unit = formatted.drop(numericEnd)
+                            // 作者 long：主值与速率单位沿用 Flutter 的字级分层，单位缩小后仍留在固定数值槽内。
+                            Text(
+                                buildAnnotatedString {
+                                    withStyle(SpanStyle(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")) {
+                                        append(number)
+                                    }
+                                    withStyle(SpanStyle(
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )) {
+                                        append(" $unit/s")
+                                    }
+                                },
+                                Modifier.testTag("dashboard_speed_value_$chartTag"),
+                                style = TextStyle(fontSize = 28.sp, lineHeight = 34.sp, fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Clip,
+                            )
+                        }
+                    }
+                }
+                Box(Modifier.fillMaxWidth().height(16.dp), contentAlignment = Alignment.CenterStart) {
+                    if (loading) DashboardSkeletonBar(width = 72.dp, height = 10.dp)
+                    else Text(tr("累计 {0}", formatBytes(total)), Modifier.testTag("dashboard_speed_total_$chartTag"), style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                Spacer(Modifier.weight(1f))
+                Box(Modifier.fillMaxWidth().height(chartHeight), contentAlignment = Alignment.CenterStart) {
+                    when {
+                        loading -> DashboardSkeletonBar(Modifier.testTag("dashboard_speed_chart_loading_$chartTag"), height = 8.dp)
+                        error != null && samples.isEmpty() && direction == "upload" -> Text(
+                            tr(error), Modifier.fillMaxWidth().testTag("dashboard_speed_error"),
+                            style = TextStyle(fontSize = 10.sp, lineHeight = 13.sp),
+                            color = MaterialTheme.colorScheme.error,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        else -> DashboardTrafficChart(samples, chartTag)
+                    }
+                }
             }
-            DashboardTrafficChart(samples, chartTag)
         }
     }
 }
@@ -600,6 +752,7 @@ internal fun DashboardProfileCard(
         onDispose { onDetailVisible(null) }
     }
     val hasProfiles = profiles.isNotEmpty()
+    val profileStatistics = statistics.counts?.takeIf { it.profileId == profile?.id }
     // 作者 long：选择与同步后的应用交给管理器串行处理，稳定运行态也可以更新订阅。
     val runtimeTransitioning = runtimeState == CoreRuntimeStatus.STARTING ||
         runtimeState == CoreRuntimeStatus.STOPPING
@@ -653,32 +806,63 @@ internal fun DashboardProfileCard(
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        profile?.subscriptionInfo?.takeIf { it.usage != null }?.let { info ->
-            val used = info.upload + info.download
-            Spacer(Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(tr("已用 {0}", formatBytes(used)), style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(tr("共 {0}", formatBytes(info.total)), style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp)
-                    .height(4.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                    .testTag("dashboard_profile_usage_track"),
-            ) {
-                Box(
-                    Modifier
-                        .fillMaxWidth(info.usage ?: 0f)
-                        .height(4.dp)
-                        .background(MaterialTheme.colorScheme.primary),
-                )
+        if (profile != null) {
+            Spacer(Modifier.height(8.dp))
+            // 作者 long：统计槽按 Flutter 手机上游卡片留出同等高度，加载和订阅数据缺失时仍保持卡片几何稳定。
+            Box(Modifier.fillMaxWidth().height(43.dp).testTag("dashboard_profile_usage_slot")) {
+                val info = profile.subscriptionInfo?.takeIf { it.usage != null }
+                when {
+                    info != null -> Column(Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().height(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(tr("已用 {0}", formatBytes(info.upload + info.download)), style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                            Text(tr("共 {0}", formatBytes(info.total)), style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp), color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                        }
+                        Box(
+                            Modifier.fillMaxWidth().padding(top = 6.dp).height(4.dp).clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                .testTag("dashboard_profile_usage_track"),
+                        ) {
+                            Box(Modifier.fillMaxWidth(info.usage ?: 0f).height(4.dp).background(MaterialTheme.colorScheme.primary))
+                        }
+                    }
+                    profileStatistics != null -> Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        // 作者 long：无订阅用量时保留首页三项配置统计，和上游手机卡片的内容结构一致。
+                        listOf(
+                            Triple(dashboardCount(profileStatistics.groups), tr("策略组"), 0),
+                            Triple(dashboardCount(profileStatistics.proxies), tr("代理"), 1),
+                            Triple(dashboardCount(profileStatistics.rules), tr("规则"), 2),
+                        ).forEach { (value, label, index) ->
+                            Column {
+                                Text(value, Modifier.testTag("dashboard_profile_metric_value_$index"),
+                                    style = TextStyle(fontSize = 20.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold), maxLines = 1)
+                                Text(label, style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+                                    modifier = Modifier.testTag("dashboard_profile_metric_label_$index"),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                            }
+                        }
+                    }
+                    profile.type == ProfileType.URL -> Column(
+                        Modifier.fillMaxWidth().align(Alignment.CenterStart),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            repeat(3) { index ->
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    DashboardSkeletonBar(Modifier.then(if (index == 0) Modifier.testTag("dashboard_profile_metric_loading") else Modifier), 32.dp, 16.dp)
+                                    DashboardSkeletonBar(width = 40.dp, height = 10.dp)
+                                }
+                            }
+                        }
+                    }
+                    else -> Unit
+                }
             }
         }
 

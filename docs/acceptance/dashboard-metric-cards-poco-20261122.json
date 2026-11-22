@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-22",
+  "scope": "仪表盘指标卡高度、加载骨架、错误/长值状态及Flutter手机端尺寸对照",
+  "status": "DONE_VERIFIED_ON_POCO; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2400",
+    "physicalDensityDpi": 440,
+    "overrideDensityDpi": 396,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "flutterReference": {
+    "package": "com.follow.clash",
+    "versionName": "0.9.3",
+    "handling": "POCO上只读运行截图；未修改参考包或其数据",
+    "screenshot": "../../../acceptance-artifacts/dashboard-metrics-poco-20261122/flutter-reference-current.png",
+    "screenshotSha256": "069466be545e8120f24fdb538032d0f8368ba7bf34daebc885a5905d80d26840",
+    "review": "现场核对运行、网速、配置卡外框及内容密度；不据此声明全页像素一致"
+  },
+  "implementation": {
+    "productionFiles": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/OutboundIpPanel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/IntranetIpPanel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MemoryPanel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ServiceStatusPanel.kt"
+    ],
+    "changes": [
+      "加载、失败、长值和空态使用固定槽位与骨架，避免异步文案撑高卡片",
+      "配置统计槽由41dp调至43dp，使卡片高度接近POCO上Flutter手机端",
+      "网速主值28sp、单位13sp次级色；代理组错误文案与重试入口收紧"
+    ],
+    "metricCards": ["runtime", "network_speed", "profile", "proxy_groups"],
+    "targetHeightsDp": {
+      "runtime": 188,
+      "network_speed": 196,
+      "profile": 167,
+      "proxy_groups": 118
+    },
+    "capturedCardBoundsPx": {
+      "runtime": [1000, 465],
+      "network_speed": [1000, 486],
+      "profile": [1000, 413],
+      "proxy_groups": [1000, 293]
+    }
+  },
+  "build": {
+    "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --max-workers=2 -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "jvmTests": {
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debugApkSha256": "78cb31a0660f5e6142037b9b85bf6464fcbe57e42092ea42bc92f8b46e5d6650",
+    "androidTestApkSha256": "a37e348091e45deb017d8878720891439e0a3bdb212017480d0eec6bb1b82ea0",
+    "lint": {
+      "debug": "0 errors, 75 warnings, 15 hints",
+      "release": "0 errors, 71 warnings, 14 hints"
+    }
+  },
+  "instrumented": {
+    "deviceCommand": "adb -s 31936bb6 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardRunningStateScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardLightThemeScreenshotMatrixMatchesBaseline,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardMetricCardsKeepFixedHeightAcrossLoadingFailureAndLongValues,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfileDetailSyncShowsProgressAndPreventsRepeatedSync,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#intranetCardHandlesLoadingOfflineSaveFailureAndRetry,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "result": "OK (9 tests); failures=0, errors=0, skipped=0",
+    "heightStates": ["loading", "failure", "long_values", "empty"],
+    "maximumHeightDeltaPx": 1,
+    "pocoDashboardBaselines": {
+      "default": "7c93fdb7a9df31ff52402343ca7c7e87003a186272680e47d45cf764959fe8a1",
+      "system_ready": "55ef1e703c605400b1ce48837ee4e139d6a5023e9594a236114900612fd93aef",
+      "running": "76fd7e8e1cb77ee17c3bd53b4beb86eebb3cdd7e3e954ccbf41e6b5fcfa95bc0",
+      "light_default": "fa0a9fd5e8da77ec950d1e18a4e12835e6d8500d39aaba726b3e9ca2c1927237",
+      "light_running": "4fba3a50fcd9d9185f7c43ffa2ff5d3a2e90ff0777d84ec53a96503d7906af57"
+    }
+  },
+  "screenshots": {
+    "count": 29,
+    "metricCardStates": 24,
+    "fixedDashboardStates": 5,
+    "manifest": "../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/screenshots.sha256",
+    "allChunksBytesAndHashesVerified": true,
+    "visuallyReviewed": [
+      "all 24 metric-card states in dark and light themes",
+      "all five fixed dashboard states",
+      "POCO Flutter reference screenshot"
+    ],
+    "artifacts": "../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/",
+    "logs": [
+      "../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/build-final3.log",
+      "../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/lint-final3.log",
+      "../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/instrumentation.log",
+      "../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/instrumentation-final3.log"
+    ]
+  },
+  "limitations": [
+    "Kotlin界面验收使用固定Debug Compose宿主，不经过MainActivity/Hilt/Room/核心/VPN或实网",
+    "Flutter截图用于POCO手机卡片外框与密度的运行参考；未进行多状态同步录制或全页像素对比",
+    "本批不覆盖其它子页、连续转场和菜单慢帧归因"
+  ]
+}
