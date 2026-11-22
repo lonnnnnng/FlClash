@@ -70,11 +70,43 @@
     "imported_profile_preserved_after_in_place_update": true,
     "flutter_reference_package_modified": false
   },
+  "release": {
+    "tag": "kclash-v0.1.15",
+    "source_commit": "64de62977760523334406c0eb9d20e3038a53905",
+    "workflow_run_id": 45015331766,
+    "workflow_url": "https://github.com/lonnnnnng/FlClash/actions/runs/45015331766",
+    "workflow_duration": "9m7s",
+    "workflow_result": "success",
+    "latest": true,
+    "published_at": "2026-11-22T11:11:30Z",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.15",
+    "apk": {
+      "name": "KClash-0.1.15-android-arm64-v8a.apk",
+      "bytes": 49617685,
+      "sha256": "23a00e784feb6fe906602884525d9de99f0dd28627a8c4cc68d03c6f6748e1d5",
+      "remote_digest_verified": true,
+      "sha256sums_verified": true,
+      "package": "com.lonnnnnng.flclash",
+      "version_name": "0.1.15",
+      "version_code": 1015,
+      "min_sdk": 24,
+      "target_sdk": 37,
+      "abis": ["arm64-v8a"],
+      "signature_scheme_v2_verified": true,
+      "certificate_sha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+      "downloaded_and_verified": true,
+      "installed_on_device": false
+    },
+    "sha256sums": {
+      "bytes": 102,
+      "sha256": "dbac924da8836e420536986622bc17bf7d106772d198442201e1003bff6c1f4f"
+    }
+  },
   "security_boundary": "HTTP response content is unencrypted in transit; users should use HTTPS when their source supports it.",
   "limitations": [
     "The successful UI import used the preceding global base-config policy, which had the same all-host cleartext behavior; the final Manifest-only policy was separately verified by the POCO instrumentation test.",
     "The already-imported row retains its previously stored suggested label; the corrected filename parser applies to subsequent imports. The user asked not to retry the now-expired link.",
-    "The local Release APK is unsigned; formal signing and publication use the tag workflow."
+    "The formally signed Release APK was downloaded and verified but not installed on the phone."
   ],
-  "release_published": false
+  "release_published": true
 }

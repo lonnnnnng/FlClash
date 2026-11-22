@@ -2,7 +2,9 @@
 
 > **KClash 0.1.14 正式发布（2026-11-22）**：标签`kclash-v0.1.14`固定提交`435eac6c`，versionCode 1014，已发布为 GitHub Latest。标签 CI `44989503023` 的签名 ARM64 Release 构建、包名/版本/minSdk/ABI/DEX/R8/证书门禁全部通过。公开 APK 49,616,705 字节，SHA-256 `5537d8a3339f710f6cd31ed57b8e891964bec2d93fb30dae0de670c2cdc5fbc6` 与 GitHub digest、`SHA256SUMS`一致；沿用既有正式证书。POCO F2 Pro/API36 的指标卡验收随本版发布；Release APK 已独立下载、验签并核对，未安装手机。[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.14)，[验收证据](acceptance/release-0.1.14-20261122.json)
 
-> **订阅 HTTP 来源策略与响应文件名（2026-11-22，POCO，本地待发版）**：移除 main/debug 两份 `network_security_config.xml` 和 Manifest 引用，改用 `usesCleartextTraffic=true`，用户配置的公网/局域网 HTTP 源不再受域名名单约束。最终 Manifest 的 `NetworkSecurityPolicy` POCO 真机用例1/1，Debug/AndroidTest/Release-R8、924项JVM、双Lint、ML Kit Release DEX检查通过。POCO 上用户给的局域网订阅通过订阅表单实际下载并导入，回执“订阅已添加”，配置列表出现远程项；HTTP头快照由开发机GET核对为200/15138字节，未保存正文。另修正 `Content-Disposition` 的 UTF-8 `filename*` 解析，单测覆盖`日常分流`名称。旧过期地址曾返回404/空正文；未再访问。HTTP正文不加密，优先使用HTTPS。验收后同签名 Debug 覆盖安装保留Room，核心/VPN未启动，原`1.yaml`和 Flutter 参考包未操作。[验收证据](acceptance/subscription-http-policy-poco-20261122.json)，[发布说明](releases/kclash-v0.1.15.md)。
+> **KClash 0.1.15 正式发布（2026-11-22）**：标签`kclash-v0.1.15`固定提交`64de6297`，versionCode 1015，已发布为 GitHub Latest。标签 CI `45015331766` 于 9分07秒完成签名 ARM64 Release 构建、APK 元数据/ABI/R8/DEX/既有证书检查和 Release 发布。公开 APK 49,617,685 字节，SHA-256 `23a00e784feb6fe906602884525d9de99f0dd28627a8c4cc68d03c6f6748e1d5` 与 GitHub digest、`SHA256SUMS`一致；V2签名证书延续既有身份。版本移除订阅 HTTP 域名白名单并修复 UTF-8 `filename*` 显示；POCO 真机已导入一份远程配置，最终 Manifest 策略用例1/1通过，正式 Release APK已回下载验证但未安装手机。[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.15)，[工作流](https://github.com/lonnnnnng/FlClash/actions/runs/45015331766)，[验收证据](acceptance/subscription-http-policy-poco-20261122.json)
+
+> **订阅 HTTP 来源策略与响应文件名（2026-11-22，POCO，已随0.1.15发布）**：移除 main/debug 两份 `network_security_config.xml` 和 Manifest 引用，改用 `usesCleartextTraffic=true`，用户配置的公网/局域网 HTTP 源不再受域名名单约束。最终 Manifest 的 `NetworkSecurityPolicy` POCO 真机用例1/1，Debug/AndroidTest/Release-R8、924项JVM、双Lint、ML Kit Release DEX检查通过。POCO 上用户给的局域网订阅通过订阅表单实际下载并导入，回执“订阅已添加”，配置列表出现远程项；HTTP头快照由开发机GET核对为200/15138字节，未保存正文。另修正 `Content-Disposition` 的 UTF-8 `filename*` 解析，单测覆盖`日常分流`名称。旧过期地址曾返回404/空正文；未再访问。HTTP正文不加密，优先使用HTTPS。验收后同签名 Debug 覆盖安装保留Room，核心/VPN未启动，原`1.yaml`和 Flutter 参考包未操作。[验收证据](acceptance/subscription-http-policy-poco-20261122.json)，[发布说明](releases/kclash-v0.1.15.md)。
 
 > **KUI-VIS-079（2026-11-22，仪表盘指标卡固定布局与字体层级，POCO复验）**：状态、网速、配置和代理组卡片在加载、错误、长值与空态间使用固定高度槽；异步值用骨架托底，长IPv6/名称单行省略，代理组错误态去重。配置统计槽由41dp调至43dp，修正与Flutter手机卡片约6px的高度差。POCO F2 Pro/API36上采集深浅主题24张指标图及5张固定态整页图，29张PNG分片/字节/SHA均核验并目视；四卡跨状态高度差≤1px，最终9项Instrumentation全通过，631项JVM单测及Debug/Release Lint通过。Flutter 0.9.3只读运行截图用于手机卡片外框与密度对照，参考包未修改。Kotlin侧仍为固定Compose夹具，不经过MainActivity/核心/VPN；全应用视觉和连续转场仍PARTIAL。[验收证据](acceptance/dashboard-metric-cards-poco-20261122.json)，[截图与日志](../../../acceptance-artifacts/dashboard-metrics-poco-final-20261122/)，[Flutter参考截图](../../../acceptance-artifacts/dashboard-metrics-poco-20261122/flutter-reference-current.png)。
 
@@ -931,19 +933,19 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.14/code1014**，标签`kclash-v0.1.14`指向`435eac6c`；公开ARM64 APK SHA`5537d8a3…c5fbc6`，沿用既有正式证书 |
-| 发布范围 | 0.1.14标签CI签名构建、包名/版本/minSdk/ABI/DEX/R8与证书门禁通过，GitHub Latest及回下载资产SHA/digest/`SHA256SUMS`一致。本地631项JVM、双Lint通过；公开APK已独立验签。版本包含KUI-VIS-079；KUI-VIS-080/081及本地订阅HTTP策略改动仍待0.1.15发布。完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.14-20261122.json) |
+| 当前公开版本 | **0.1.15/code1015**，标签`kclash-v0.1.15`指向`64de6297`；公开ARM64 APK SHA`23a00e78…748e1d5`，沿用既有正式证书 |
+| 发布范围 | 0.1.15标签CI `45015331766`签名构建、包名/版本/minSdk/ABI/DEX/R8与证书门禁通过，GitHub Latest及回下载APK SHA/digest/`SHA256SUMS`一致。924项JVM、双Lint、POCO HTTP策略1/1、ML Kit DEX通过；订阅HTTP白名单已移除，UTF-8 `filename*`解析修复已发布。完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/subscription-http-policy-poco-20261122.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 订阅HTTP全局策略POCO 1/1、filename* 中文解析单测、四模块924项JVM、Debug/Test、Release-R8、双Lint和ML Kit DEX门禁通过；POCO实网订阅实际新增远程配置。KUI-VIS-080的ObservationList整类4个旧PNG哈希差异仍保留。详见[订阅HTTP证据](acceptance/subscription-http-policy-poco-20261122.json) |
+| 最新自动化记录 | 订阅HTTP全局策略POCO 1/1、filename* 中文解析单测、四模块924项JVM、Debug/Test、Release-R8、双Lint、ML Kit DEX和0.1.15签名CI全通过；POCO实网订阅实际新增远程配置。KUI-VIS-080的ObservationList整类4个旧PNG哈希差异仍保留。详见[订阅HTTP证据](acceptance/subscription-http-policy-poco-20261122.json) |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | POCO F2 Pro现安装0.1.14 Debug；同签名覆盖安装和独立策略Instrumentation后，刚导入的一份远程配置仍在，核心/VPN未启动。`com.follow.clash`未操作，原1.yaml/2.yaml未读取。 |
-| 正在推进 | 订阅HTTP策略与文件名解析已本地验收，待0.1.15标签CI签名发布；全应用Flutter同态、其他子页与连续转场仍待。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
+| 正在推进 | 0.1.15已发布；全应用Flutter同态、其他子页与连续转场仍待。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [订阅HTTP来源策略](acceptance/subscription-http-policy-poco-20261122.json)、[0.1.14发布](acceptance/release-0.1.14-20261122.json)、[081组织布局/弹框暗色点击态](acceptance/dashboard-runtime-refinements-poco-20261122.json)、[080仪表盘/观测页细节](acceptance/dashboard-runtime-observation-polish-poco-20261122.json)。 |
+| 最新证据 | [0.1.15发布及订阅HTTP来源策略](acceptance/subscription-http-policy-poco-20261122.json)、[0.1.14发布](acceptance/release-0.1.14-20261122.json)、[081组织布局/弹框暗色点击态](acceptance/dashboard-runtime-refinements-poco-20261122.json)、[080仪表盘/观测页细节](acceptance/dashboard-runtime-observation-polish-poco-20261122.json)。 |
 
 ## 4. 目标架构图
 
