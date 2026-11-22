@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-22",
+  "scope": "仪表盘指标卡固定高度、加载骨架、错误与长文字状态，以及Flutter字号层级对齐",
+  "status": "DONE_VERIFIED_FOR_FIXED_DASHBOARD_METRIC_CARDS; FULL_FLUTTER_VISUAL_PARITY_REMAINS_PARTIAL",
+  "baseCommit": "b1c1964bac7f077f7998930ee9362133d2e0bda1",
+  "device": {
+    "serial": "wsvwypiz7xwslvl7",
+    "model": "Redmi Note 8 Pro",
+    "api": 36,
+    "abi": "arm64-v8a",
+    "resolution": "1080x2340",
+    "physicalDensityDpi": 440,
+    "overrideDensityDpi": 396,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "implementation": {
+    "productionFiles": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/DashboardVisuals.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/OutboundIpPanel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/IntranetIpPanel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MemoryPanel.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ServiceStatusPanel.kt"
+    ],
+    "debugHost": "android/app/src/debug/kotlin/com/lonnnnnng/flclash/ui/DashboardTestActivity.kt",
+    "test": "android/tests/instrumented/DashboardInstrumentedTest.kt",
+    "behavior": [
+      "网速双列保持Flutter约1.06纵横比；数值、累计值和曲线各自占固定槽，首次采样显示骨架，错误复用曲线区域",
+      "出口IP质量、组织、内网IP、内存分项和服务状态异步区域使用固定尺寸槽，长错误及IPv6单行省略",
+      "配置用量、代理组数量/摘要加载显示骨架；空态、错误、长名称与重试不改变卡片外框高度",
+      "网速数字为28sp/34sp，单位为13sp/次级色，对齐Flutter title1/footnote；代理组错误态仅保留一条错误文案与重试入口"
+    ],
+    "flutterReference": [
+      "lib/views/dashboard/widgets/traffic.dart",
+      "lib/views/dashboard/widgets/card.dart",
+      "lib/views/dashboard/widgets/profiles.dart"
+    ],
+    "referenceMode": "只读Flutter源码；未运行Flutter参考包、未改动com.follow.clash"
+  },
+  "build": {
+    "command": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon --max-workers=2 -Ptarget-platform=android-arm64",
+    "result": "BUILD SUCCESSFUL",
+    "jvmTests": {
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debugApkSha256": "7ae75b117cb52d06e1694889e5b12dbc12b5bcd2ca3b53a0b49754818b448df8",
+    "androidTestApkSha256": "6f7b0c8c5b55627e90f9fbc7ecd69f8715f72628e55c34fdb3642905cf95c4c0",
+    "lint": {
+      "debug": "0 errors, 75 warnings, 15 hints",
+      "release": "0 errors, 71 warnings, 14 hints"
+    }
+  },
+  "test": {
+    "deviceCommand": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardMetricCardsKeepFixedHeightAcrossLoadingFailureAndLongValues,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardIpDetailsHideCopyRefreshAndStop,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardProfileDetailSyncShowsProgressAndPreventsRepeatedSync,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#intranetCardHandlesLoadingOfflineSaveFailureAndRetry,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#memoryCardAndDetailsCaptureDarkAndLight,com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#serviceStatusCardAndDetailsCaptureBothThemes com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "result": "OK (6 tests); failures=0, errors=0, skipped=0",
+    "methods": [
+      "dashboardMetricCardsKeepFixedHeightAcrossLoadingFailureAndLongValues",
+      "dashboardIpDetailsHideCopyRefreshAndStop",
+      "dashboardProfileDetailSyncShowsProgressAndPreventsRepeatedSync",
+      "intranetCardHandlesLoadingOfflineSaveFailureAndRetry",
+      "memoryCardAndDetailsCaptureDarkAndLight",
+      "serviceStatusCardAndDetailsCaptureBothThemes"
+    ],
+    "geometry": {
+      "states": ["loading", "failure", "long_values", "empty"],
+      "cards": ["runtime", "network_speed", "profile", "proxy_groups"],
+      "maximumHeightDeltaPx": 1
+    },
+    "initialFailure": "首次相邻回归4/5：同步按钮忙态被进度指示器替换，旧测试错误要求按钮仍存在且禁用。断言改为检查忙态指示器可见且入口移除，后续最终6项同批全通过；原始失败日志保留。"
+  },
+  "screenshots": {
+    "count": 24,
+    "captureCommand": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.DashboardInstrumentedTest#dashboardMetricCardsKeepFixedHeightAcrossLoadingFailureAndLongValues -e kclashCapturePng true -e kclashCapturePngChunks true com.lonnnnnng.flclash.test/androidx.test.runner.AndroidJUnitRunner",
+    "captureDebugApkSha256": "952cf2a5eab25180e8ce665f62c9525809f6468b91ce754c6dbe5dc651934116",
+    "captureNote": "截图来自字级修正后的采集构建；最终构建仅多一条解释同一字级策略的中文注释，已在最终APK上复跑全部6项真机测试。",
+    "sha256Manifest": "../../../acceptance-artifacts/dashboard-metrics-typography-20261122/screenshots.sha256",
+    "manifestSha256": "782b1b8e3d927fa5643ebe93a471af5abdb51acc3b3e80e131c90f915b917026",
+    "allChunksBytesAndHashesVerified": true,
+    "visuallyReviewed": [
+      "dashboard_metrics_loading_dashboard_stats_card.png",
+      "dashboard_metrics_long_values_dashboard_stats_card.png",
+      "dashboard_metrics_light_long_values_dashboard_stats_card.png",
+      "dashboard_metrics_failure_dashboard_proxy_groups_card.png",
+      "dashboard_metrics_light_long_values_dashboard_profile_card.png",
+      "dashboard_metrics_light_long_values_dashboard_runtime_card.png"
+    ],
+    "cardBoundsPx": {
+      "runtime": [1000, 594],
+      "networkSpeed": [1000, 587],
+      "profile": [1000, 420],
+      "proxyGroups": [1000, 342]
+    },
+    "artifacts": "../../../acceptance-artifacts/dashboard-metrics-typography-20261122/"
+  },
+  "installation": {
+    "debugInstalledBaseApkSha256": "7ae75b117cb52d06e1694889e5b12dbc12b5bcd2ca3b53a0b49754818b448df8",
+    "androidTestInstalledBaseApkSha256": "6f7b0c8c5b55627e90f9fbc7ecd69f8715f72628e55c34fdb3642905cf95c4c0",
+    "matchesBuiltArtifacts": true,
+    "bothPackagesRemovedAfterAcceptance": true
+  },
+  "cleanup": {
+    "activeKclashServices": false,
+    "tunInterfacePresent": false,
+    "fontScale": "1.0",
+    "screenResolution": "1080x2340",
+    "deviceSettingsChanged": false,
+    "configurationOrSubscriptionTouched": false,
+    "flutterBaselineTouched": false
+  },
+  "limitations": [
+    "本组使用固定Debug Compose宿主和固定数据，不经过正式MainActivity/Hilt/Room/核心/VPN或实网",
+    "未运行Flutter参考包并排对照；字号与布局取自Flutter源码，完整页面、其它子页及连续转场仍PARTIAL",
+    "菜单Perfetto discarded来源、GPU/fence归因及稳定性能收益不在本组验收范围"
+  ]
+}

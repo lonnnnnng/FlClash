@@ -61,7 +61,7 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
     onGlobalRulesFromSnapshot: ((List<ExtensionRule>, List<ExtensionRule>) -> Unit)? = null,
     onRetryPending: () -> Unit = {}, onDiscardPending: () -> Unit = {}) {
     val ownerId = state.draft?.profileId ?: state.profile?.id
-    var subpage by rememberSaveable(ownerId) { mutableStateOf(0) }
+    var subpage by rememberSaveable(ownerId) { mutableIntStateOf(0) }
     var query by rememberSaveable(subpage) { mutableStateOf("") }
     var formId by rememberSaveable { mutableStateOf<String?>(null) }
     // 作者 long：表单持有打开时的原规则身份与原值；列表回读失去该ID不能把“编辑”解释为“新增”。
@@ -196,8 +196,8 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                                 }, onDrop = { persist(ordered) }, onCancel = { ordered = rules })
                         } }
                         if (!global) {
-                            ProfileSectionRow(tr("默认目标"), profile.matchTarget ?: tr("跟随配置"), Icons.Outlined.Route, canChange,
-                                Modifier.testTag("extension_match_target")) { showTarget = true }
+                            ProfileSectionRow(tr("默认目标"), modifier = Modifier.testTag("extension_match_target"),
+                                detail = profile.matchTarget ?: tr("跟随配置"), icon = Icons.Outlined.Route, enabled = canChange) { showTarget = true }
                             if (profile.matchTarget != null && profile.matchTarget !in state.targets) Text(tr("默认目标已不在配置中，请重新选择"), color = MaterialTheme.colorScheme.error)
                             TextButton(onClick = { subpage = 1; selected = emptySet(); sorting = false }, modifier = Modifier.testTag("extension_global_control")) { Text(tr("管理全局附加规则")) }
                         }
@@ -216,8 +216,10 @@ internal fun ProfileExtensionEditor(state: ProfileExtensionUiState, scripts: Lis
                     }
                     if (subpage == 0) {
                         HorizontalDivider(Modifier.padding(top = 12.dp))
-                        ProfileSectionRow("DNS", tr("覆盖当前配置的 DNS 设置"), Icons.Outlined.Dns, canEditSource && canChange, Modifier.testTag("profile_extension_dns"), onDns)
-                        ProfileSectionRow("Provider", tr("代理和规则资源"), Icons.Outlined.Cloud, canEditSource && canChange, Modifier.testTag("profile_extension_providers"), onProviders)
+                        ProfileSectionRow("DNS", modifier = Modifier.testTag("profile_extension_dns"), detail = tr("覆盖当前配置的 DNS 设置"),
+                            icon = Icons.Outlined.Dns, enabled = canEditSource && canChange, onClick = onDns)
+                        ProfileSectionRow("Provider", modifier = Modifier.testTag("profile_extension_providers"), detail = tr("代理和规则资源"),
+                            icon = Icons.Outlined.Cloud, enabled = canEditSource && canChange, onClick = onProviders)
                     }
                     Spacer(Modifier.height(16.dp))
                 }
@@ -377,7 +379,8 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
                     }
                 }
                 if (type !in setOf("MATCH", "FINAL")) OutlinedTextField(content, { content = it }, readOnly = !editable, label = { Text(tr("匹配内容")) }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_content"))
-                ProfileSectionRow(tr("目标"), target, Icons.Outlined.Route, editable, Modifier.testTag("extension_rule_target")) { selectTarget = true }
+                ProfileSectionRow(tr("目标"), modifier = Modifier.testTag("extension_rule_target"), detail = target,
+                    icon = Icons.Outlined.Route, enabled = editable) { selectTarget = true }
                 Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(noResolve, { noResolve = it }, enabled = editable); Text("no-resolve") }
             }
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

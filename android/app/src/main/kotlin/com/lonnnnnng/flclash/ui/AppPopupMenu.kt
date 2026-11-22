@@ -418,7 +418,7 @@ internal fun AppDropdownMenuItem(
         registry?.items?.set(identity, AppMenuCarriedItem(coordinates.boundsInWindow(), active, opensSubmenu) { latestAction() })
     }.graphicsLayer {
         val child = stack?.levels?.firstOrNull { it.owner?.identity === identity }
-        alpha = if (child != null && level !== stack?.levels?.lastOrNull()) 0f
+        alpha = if (child != null && level !== stack.levels.lastOrNull()) 0f
             else if (!isBack && level?.owner != null) ((checkNotNull(stack).unfold.value - .05f) / .35f).coerceIn(0f, 1f) else 1f
     }.appFocusRing(shape).clip(shape)
         .background(if (registry?.hovered == identity) MaterialTheme.colorScheme.onSurface.copy(alpha = .08f) else Color.Transparent)

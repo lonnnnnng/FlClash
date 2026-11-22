@@ -190,20 +190,24 @@ internal fun ProfileEditorDialog(
             Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
                     Column {
-                        ProfileSectionRow("Dialers", overview?.let { if (it.dialers > 0) tr("{0} 个代理", it.dialers) else tr("无") },
-                            Icons.Outlined.SwapVert, !saving, Modifier.testTag("custom_profile_dialers")) {
+                        ProfileSectionRow("Dialers", modifier = Modifier.testTag("custom_profile_dialers"),
+                            detail = overview?.let { if (it.dialers > 0) tr("{0} 个代理", it.dialers) else tr("无") },
+                            icon = Icons.Outlined.SwapVert, enabled = !saving) {
                             openSection { onOpenDialersEditor(profile) }
                         }
-                        ProfileSectionRow("NTP", overview?.let { if (it.ntpEnabled) tr("已启用") else tr("未启用") },
-                            Icons.Outlined.Schedule, !saving, Modifier.testTag("custom_profile_ntp")) {
+                        ProfileSectionRow("NTP", modifier = Modifier.testTag("custom_profile_ntp"),
+                            detail = overview?.let { if (it.ntpEnabled) tr("已启用") else tr("未启用") },
+                            icon = Icons.Outlined.Schedule, enabled = !saving) {
                             moreSection = "ntp"; onOpenMoreEditor(profile)
                         }
-                        ProfileSectionRow(tr("域名嗅探"), overview?.let { if (it.snifferEnabled) tr("已启用") else tr("未启用") },
-                            Icons.Outlined.Radar, !saving, Modifier.testTag("custom_profile_sniffer")) {
+                        ProfileSectionRow(tr("域名嗅探"), modifier = Modifier.testTag("custom_profile_sniffer"),
+                            detail = overview?.let { if (it.snifferEnabled) tr("已启用") else tr("未启用") },
+                            icon = Icons.Outlined.Radar, enabled = !saving) {
                             moreSection = "sniffer"; onOpenMoreEditor(profile)
                         }
-                        ProfileSectionRow(tr("脚本"), if (profile.scriptId == null) tr("未绑定") else tr("已绑定"), Icons.Outlined.Code,
-                            !saving, Modifier.testTag("custom_profile_script")) { openSection { onOpenScriptBinding(profile) } }
+                        ProfileSectionRow(tr("脚本"), modifier = Modifier.testTag("custom_profile_script"),
+                            detail = if (profile.scriptId == null) tr("未绑定") else tr("已绑定"),
+                            icon = Icons.Outlined.Code, enabled = !saving) { openSection { onOpenScriptBinding(profile) } }
                     }
                 }
             }

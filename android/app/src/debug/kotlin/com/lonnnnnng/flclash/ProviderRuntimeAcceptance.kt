@@ -57,8 +57,9 @@ private data class ProviderRuntimeSnapshot(
     val changedNode get() = "provider-saved-$token"
 }
 
-/** 作者 long：真实系统恢复不能由instrumentation重启制造；本宿主只在Debug通过DUMP权限开放，并用密文轮次限定恢复范围。 */
+/** 作者 long：真实系统恢复不能由instrumentation重启制造；固定标题仅标识Debug验收宿主，不属于产品本地化文案。 */
 @AndroidEntryPoint
+@Suppress("SetTextI18n")
 class ProviderRuntimeAcceptanceActivity : ComponentActivity() {
     private val entry by lazy { EntryPointAccessors.fromApplication(application, ConnectionAcceptanceEntryPoint::class.java) }
     private val model: ProfileStatisticsViewModel by viewModels()

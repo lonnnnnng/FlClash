@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-22",
+  "tag": "kclash-v0.1.16",
+  "versionName": "0.1.16",
+  "versionCode": 1016,
+  "sourceCommit": "pending",
+  "publication": {
+    "status": "pending-tag-workflow",
+    "latest": false,
+    "releaseUrl": null,
+    "workflowRunId": null,
+    "remoteApkSha256": null
+  },
+  "build": {
+    "commands": [
+      "./gradlew test --console=plain --max-workers=2",
+      "./gradlew :app:lintDebug --console=plain --max-workers=2",
+      "./gradlew :app:lintRelease --console=plain --max-workers=2",
+      "./gradlew :app:assembleRelease --no-daemon --console=plain --max-workers=2 -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.16 -PkclashVersionCode=1016"
+    ],
+    "unitTests": {
+      "tests": 924,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lintDebug": "No issues found",
+    "lintRelease": "No issues found",
+    "releaseApk": {
+      "path": "android/app/build/outputs/apk/release/app-release.apk",
+      "bytes": 49590649,
+      "sha256": "b7aafb3ccb16b4edae8a23fceebf8b6a9412d282e8831c659f45e5d757453214",
+      "packageName": "com.lonnnnnng.flclash",
+      "minSdk": 24,
+      "targetSdk": 37,
+      "abi": ["arm64-v8a"],
+      "signatureScheme": "v2",
+      "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+      "mlKitReleaseDexCheck": "passed"
+    },
+    "buildNotes": [
+      "Release is signed locally with the existing formal identity.",
+      "Kapt prints an unrecognized-options warning from Hilt/Kotlin processing; kaptReleaseKotlin succeeds and generated injection code compiles."
+    ]
+  },
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36,
+    "orientation": "portrait",
+    "installedVersion": "0.1.16",
+    "installedVersionCode": 1016,
+    "installation": "fresh install; package was absent before this run",
+    "installedApkSha256": "b7aafb3ccb16b4edae8a23fceebf8b6a9412d282e8831c659f45e5d757453214",
+    "installedApkMatchesLocalRelease": true,
+    "notificationPermission": "granted for first-launch smoke test",
+    "smoke": {
+      "dashboardFirstLaunch": "passed",
+      "toolsPage": "passed",
+      "networkActivityEmptyState": "passed",
+      "systemBackToTools": "passed",
+      "fatalExceptions": 0,
+      "coreOrVpnStarted": false,
+      "configurationImported": false
+    },
+    "screenshots": [
+      "../../../acceptance-artifacts/release-0.1.16-poco-20261122/dashboard.png",
+      "../../../acceptance-artifacts/release-0.1.16-poco-20261122/tools.png",
+      "../../../acceptance-artifacts/release-0.1.16-poco-20261122/observation.png"
+    ]
+  },
+  "referenceApp": {
+    "package": "com.follow.clash",
+    "modifiedOrInstalled": false
+  },
+  "limitations": [
+    "真机只做安装、首次启动、首页/工具页/网络活动空态和系统返回冒烟；没有有效配置，未启动核心或VPN。",
+    "正式GitHub Release标签CI、远端APK下载/摘要/签名复核与远端资产安装尚待完成。",
+    "Kapt执行时输出Hilt选项未识别的非阻断编译警告；Kotlin编译、R8、APK签名、ML Kit DEX门禁和Debug/Release Lint均通过。"
+  ]
+}

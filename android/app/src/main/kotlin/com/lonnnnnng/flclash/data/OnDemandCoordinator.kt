@@ -72,10 +72,6 @@ class OnDemandCoordinator @Inject constructor(
     @Synchronized fun setForeground(visible: Boolean) { foreground = visible; refresh() }
 
     @Synchronized fun refresh() {
-        generation++
-        initialReadTimeout?.cancel()
-        callback?.let { runCatching { connectivity.unregisterNetworkCallback(it) } }
-        callback = null
         val foregroundPermission = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         val backgroundPermission = Build.VERSION.SDK_INT < 29 || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
         val location = context.getSystemService(LocationManager::class.java)
@@ -83,15 +79,27 @@ class OnDemandCoordinator @Inject constructor(
             location.isProviderEnabled(LocationManager.GPS_PROVIDER) || location.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         val canRead = foregroundPermission && locationEnabled && (foreground || backgroundPermission)
         val observe = store.read().isNotEmpty() && canRead
-        // 作者 long：只为仍存在的同一底层Wi-Fi保留已知名称；全断网时立即清空，不能等待永远不会来的新回调。
-        val existing = if (observe) runCatching { connectivity.allNetworks.mapNotNull { network ->
-            connectivity.getNetworkCapabilities(network)?.takeIf {
-                it.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && it.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
-            }?.let { network to it }
-        }.toMap() }.getOrDefault(emptyMap()) else emptyMap()
-        tracker.refresh(existing.filterValues { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }.keys)
+
+        if (!observe) {
+            generation++
+            initialReadTimeout?.cancel()
+            initialReadTimeout = null
+            callback?.let { runCatching { connectivity.unregisterNetworkCallback(it) } }
+            callback = null
+            tracker.refresh(emptySet())
+            mutableNetwork.value = OnDemandNetworkState(null, foregroundPermission, backgroundPermission, locationEnabled)
+            return
+        }
+
+        // 作者 long：监听资格未变时复用既有能力回调，避免刷新设置时短暂清掉当前Wi-Fi名称。
         mutableNetwork.value = OnDemandNetworkState(tracker.current, foregroundPermission, backgroundPermission, locationEnabled)
-        if (!observe) return
+        if (callback != null) return
+
+        generation++
+        initialReadTimeout?.cancel()
+        initialReadTimeout = null
+        tracker.refresh(emptySet())
+        mutableNetwork.value = mutableNetwork.value.copy(ssid = null)
         val token = generation
         val observer = if (Build.VERSION.SDK_INT >= 31) LocationCallback(token) else LegacyCallback(token)
         callback = observer

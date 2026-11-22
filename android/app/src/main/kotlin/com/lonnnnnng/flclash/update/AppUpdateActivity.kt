@@ -3,10 +3,10 @@ package com.lonnnnnng.flclash.update
 import com.lonnnnnng.flclash.ui.tr
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.net.toUri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,7 +40,7 @@ class AppUpdateActivity : ComponentActivity() {
             UpdatePanel(state, repository.currentVersion, browserError, ::finish,
                 { browserError = null; lifecycleScope.launch { repository.check() } }, {
                     state.release?.let { release ->
-                        try { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(release.releaseUrl))) }
+                        try { startActivity(Intent(Intent.ACTION_VIEW, release.releaseUrl.toUri())) }
                         catch (_: ActivityNotFoundException) { browserError = "未找到浏览器，请安装浏览器后重试" }
                     }
                 })

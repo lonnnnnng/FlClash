@@ -40,8 +40,8 @@ val hasReleaseSigning = releaseStoreFile.exists() &&
     releaseKeyAlias != null &&
     releaseKeyPassword != null
 
-val defaultVersionCode = 1014
-val defaultVersionName = "0.1.14"
+val defaultVersionCode = 1016
+val defaultVersionName = "0.1.16"
 // 作者 long：性能诊断显式启用独立包名的非Debug运行时；默认构建/正式Release不携带验收宿主。
 val motionBenchmarkEnabled = providers.gradleProperty("kclashMotionBenchmark").orNull == "true"
 val performanceBenchmarkEnabled = providers.gradleProperty("kclashPerformanceBenchmark").orNull == "true"
@@ -137,22 +137,22 @@ android {
 
     sourceSets {
         if (performanceBenchmarkEnabled) getByName("performanceBenchmark") {
-            kotlin.srcDir("src/release/kotlin")
+            kotlin.directories.add("src/release/kotlin")
         }
         if (motionBenchmarkEnabled) getByName("motionBenchmark") {
             // 作者 long：同一个固定对象宿主用于Debug/非Debug对照，禁止另写简化动画冒充产品性能。
-            kotlin.srcDir("src/debug/kotlin")
+            kotlin.directories.add("src/debug/kotlin")
             manifest.srcFile("src/debug/AndroidManifest.xml")
         }
         // 作者 long：Flutter 参考工程已有的 GeoIP/GeoSite 数据作为 Android 首次启动的离线核心资源，
         // 避免 geo-auto-update 在 VPN 尚未建立前依赖外网下载而阻断配置应用。
-        getByName("main").assets.srcDir(rootProject.file("assets/data"))
+        getByName("main").assets.directories.add(rootProject.file("assets/data").absolutePath)
         // 作者 long：AGP 9 的内置 Kotlin 只从 Kotlin 源集读取这些跨目录单元测试。
-        getByName("test").kotlin.srcDirs("../tests/app")
+        getByName("test").kotlin.directories.add("../tests/app")
         // 作者 long：Room DAO 只有在 Android SQLite 实现上才能验证，单独接入真机 instrumentation 源集。
-        getByName("androidTest").kotlin.srcDirs("../tests/instrumented")
+        getByName("androidTest").kotlin.directories.add("../tests/instrumented")
         // 作者 long：Compose 测试运行在独立 APK 中，必须把 Android 与测试协程的 ServiceLoader 条目一起打入该 APK。
-        getByName("androidTest").resources.srcDirs("../tests/instrumented/resources")
+        getByName("androidTest").resources.directories.add("../tests/instrumented/resources")
     }
 
     packaging {
@@ -160,6 +160,15 @@ android {
         // 作者 long：Compose instrumentation 会同时加载 Android 协程实现和测试调度器，合并 ServiceLoader 条目才能让两套实现都可见。
         resources.merges += "/META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler"
         resources.merges += "/META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory"
+    }
+
+    bundle {
+        language { enableSplit = false }
+    }
+
+    lint {
+        // 作者 long：Release 仅提供 ARM64，Mihomo native core 也只构建该 ABI，不宣称支持 ChromeOS x86_64。
+        disable += "ChromeOsAbiSupport"
     }
 }
 
@@ -232,13 +241,13 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(platform(libs.compose.bom))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation(libs.compose.ui)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.icons.extended)
+    implementation(libs.compose.ui.tooling.preview)
+    debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
     // 作者 long：Compose instrumentation 的测试协程需要和 Debug 应用共享 ServiceLoader 平台 handler，Release 不携带测试工件。
     debugImplementation(libs.kotlinx.coroutines.test)
     implementation(libs.hilt.android)
@@ -251,11 +260,11 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp)
     // 作者 long：策略组图标复用同一图片管线，远程位图与 SVG 都保留加载失败的回退状态。
-    implementation("io.coil-kt.coil3:coil-compose:3.6.3")
-    implementation("io.coil-kt.coil3:coil-svg:3.6.3")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.6.3")
+    implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.zxing.core)
-    implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation(libs.mlkit.barcode.scanning)
     implementation(libs.camera.camera2)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
@@ -265,10 +274,10 @@ dependencies {
     androidTestImplementation(libs.androidxTestRunnerLib)
     androidTestImplementation(libs.androidxTestExtJunitLib)
     // 作者 long：Activity 宿主测试需要在 Android 13+ 启动前授予通知权限，避免权限对话框遮挡 Compose 页面断言。
-    androidTestImplementation("androidx.test:rules:1.7.0")
+    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.kotlinx.coroutines.android)
     // 作者 long：Android 16 已移除旧版 InputManager.getInstance()，Espresso 3.7.0 改用 Context.getSystemService()。
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+    androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(libs.compose.ui.test.junit4)
 }

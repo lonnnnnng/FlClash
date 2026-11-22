@@ -19,7 +19,7 @@ android {
 
     sourceSets {
         // 作者 long：服务层测试覆盖 VPN 配置和流量格式化，必须显式接入 Kotlin 测试源集。
-        getByName("test").kotlin.srcDirs("../tests/service")
+        getByName("test").kotlin.directories.add("../tests/service")
     }
 }
 

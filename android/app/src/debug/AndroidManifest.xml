@@ -43,7 +43,6 @@
             android:name=".ui.AccessControlTestActivity"
             android:configChanges="orientation|screenSize|fontScale"
             android:exported="false"
-            android:screenOrientation="unspecified"
             android:theme="@android:style/Theme.Material.Light.NoActionBar" />
         <activity
             android:name=".ui.DashboardTestActivity"

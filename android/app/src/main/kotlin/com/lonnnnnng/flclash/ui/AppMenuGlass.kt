@@ -5,6 +5,7 @@ import android.graphics.BitmapShader
 import android.graphics.Paint
 import android.graphics.RuntimeShader
 import android.graphics.Shader
+import androidx.core.graphics.scale
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.geometry.Offset
@@ -62,7 +63,7 @@ internal fun DrawScope.drawAppGlassFallback(frame: AppMenuMorphFrame, backdrop: 
 internal suspend fun prepareAppMenuBackdrop(bitmap: Bitmap, density: Float): AppMenuBackdrop = withContext(Dispatchers.Default) {
     val processing = currentCoroutineContext()
     val divisor = max(4f, max(bitmap.width, bitmap.height) / 2048f).coerceAtMost(8f)
-    val raw = Bitmap.createScaledBitmap(bitmap, max(1, (bitmap.width / divisor).roundToInt()), max(1, (bitmap.height / divisor).roundToInt()), true)
+    val raw = bitmap.scale(max(1, (bitmap.width / divisor).roundToInt()), max(1, (bitmap.height / divisor).roundToInt()), true)
     val original = IntArray(raw.width * raw.height)
     raw.getPixels(original, 0, raw.width, 0, 0, raw.width, raw.height)
     fun blurred(blur: Float): Bitmap {

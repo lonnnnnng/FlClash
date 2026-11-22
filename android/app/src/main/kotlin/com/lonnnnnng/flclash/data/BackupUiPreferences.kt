@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.data
 
 import android.content.Context
+import android.annotation.SuppressLint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,6 +13,7 @@ class BackupUiPreferences @Inject constructor(@ApplicationContext context: Conte
     fun read(): BackupRestoreStrategy = preferences.getString("strategy", null)?.let { saved ->
         BackupRestoreStrategy.entries.firstOrNull { it.name == saved }
     } ?: BackupRestoreStrategy.COMPATIBLE
+    @SuppressLint("UseKtx")
     fun write(value: BackupRestoreStrategy) {
         check(preferences.edit().putString("strategy", value.name).commit()) { "恢复策略保存失败" }
     }

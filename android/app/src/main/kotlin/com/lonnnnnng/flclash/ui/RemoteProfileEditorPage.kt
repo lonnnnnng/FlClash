@@ -105,8 +105,9 @@ internal fun RemoteProfileEditorDialog(
                 ProfileSectionRow(tr("编辑正文"), icon = Icons.Outlined.Description,
                     enabled = !locked && state?.document != null && state.replacement?.isEncrypted != true,
                     modifier = Modifier.testTag("remote_profile_document_edit"), onClick = onOpenDocument)
-                ProfileSectionRow(tr("从文件替换"), state?.replacement?.name, Icons.Outlined.UploadFile,
-                    !locked && state?.document != null, Modifier.testTag("remote_profile_replace_pick")) {
+                ProfileSectionRow(tr("从文件替换"), modifier = Modifier.testTag("remote_profile_replace_pick"),
+                    detail = state?.replacement?.name, icon = Icons.Outlined.UploadFile,
+                    enabled = !locked && state?.document != null) {
                     onBeginPick()?.let { token ->
                         if (onLaunchPick != null) { onLaunchPick(token); return@let }
                         pickToken = token

@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash
 
 import com.lonnnnnng.flclash.ui.tr
 import android.Manifest
+import android.app.ActivityManager
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,6 +14,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -44,6 +47,11 @@ import javax.inject.Inject
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
+
+// 作者 long：taskId仅从API 29提供；旧系统仍需通过id定位当前任务以保持隐藏最近任务的设置有效。
+@Suppress("DEPRECATION")
+internal fun ActivityManager.RecentTaskInfo.kclashTaskId(): Int =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) taskId else id
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -305,7 +313,7 @@ class MainActivity : ComponentActivity() {
             viewModel.generalSettings.collect { settings ->
                 // 作者 long：隐藏只影响本应用任务，不删除其他任务；回读当前任务ID后更新，恢复开关也能重新出现在最近任务。
                 runCatching { getSystemService(android.app.ActivityManager::class.java).appTasks
-                    .firstOrNull { it.taskInfo?.id == taskId }?.setExcludeFromRecents(settings.hidden) }
+                    .firstOrNull { it.taskInfo?.kclashTaskId() == taskId }?.setExcludeFromRecents(settings.hidden) }
                     .onFailure { viewModel.reportError(tr("无法更新最近任务显示，请重新打开应用后重试")) }
             }
         }
@@ -340,8 +348,12 @@ class MainActivity : ComponentActivity() {
             observingNetwork = runCatching {
                 val connectivity = getSystemService(android.net.ConnectivityManager::class.java)
                 synchronized(ipNetworkProperties) {
-                    // 作者 long：后台可能错过断网通知，恢复时先移除已消失的链路，不能无条件清掉仍有效的出口。
-                    if (ipNetworkProperties.keys.retainAll(connectivity.allNetworks.toSet())) outboundIpViewModel.networkChanged()
+                    // 作者 long：后台可能错过断网通知；只验证已跟踪链路，保留仍有效的出口并避免全网枚举。
+                    val stale = ipNetworkProperties.keys.filter { connectivity.getNetworkCapabilities(it) == null }
+                    if (stale.isNotEmpty()) {
+                        stale.forEach(ipNetworkProperties::remove)
+                        outboundIpViewModel.networkChanged()
+                    }
                 }
                 connectivity.registerNetworkCallback(
                     android.net.NetworkRequest.Builder()
@@ -400,7 +412,7 @@ class MainActivity : ComponentActivity() {
         if (preferences.getBoolean("requested", false) && !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
             openLocationAppSettings()
         } else {
-            preferences.edit().putBoolean("requested", true).apply()
+            preferences.edit { putBoolean("requested", true) }
             // 作者 long：精确与大致定位同批请求；后台授权必须在前台授权之后单独处理，Android 11起不能合并请求。
             locationPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
@@ -408,7 +420,7 @@ class MainActivity : ComponentActivity() {
 
     private fun openLocationAppSettings() {
         runCatching { startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-            android.net.Uri.parse("package:$packageName"))) }.onFailure { viewModel.reportError(tr("无法打开应用定位权限设置")) }
+            "package:$packageName".toUri())) }.onFailure { viewModel.reportError(tr("无法打开应用定位权限设置")) }
     }
 
     private fun requestBatteryOptimization() {

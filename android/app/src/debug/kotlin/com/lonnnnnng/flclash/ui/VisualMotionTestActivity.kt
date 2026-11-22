@@ -13,10 +13,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.data.*
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 /** 作者 long：自然时钟宿主只组合正式页面和固定领域对象，不接Room/网络/核心；外部录屏不能用Compose测试时钟替代真实帧。 */
 class VisualMotionTestActivity : ComponentActivity() {
@@ -51,9 +54,20 @@ class VisualMotionTestActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 作者 long：非空图库使用有效PNG字节验证解码与转场，避免把失败占位图冒充已加载图片。
-        val image = android.graphics.Bitmap.createBitmap(32, 32, android.graphics.Bitmap.Config.ARGB_8888).apply { eraseColor(android.graphics.Color.RED) }
-        val encoded = java.io.ByteArrayOutputStream().also { image.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
-        val gallery = ResourceIconSet("motion", "非空参考图库", icons = listOf(ResourceIcon("Red", "data:image/png;base64," + android.util.Base64.encodeToString(encoded, android.util.Base64.NO_WRAP))), updatedAt = 1)
+        val encoded = runBlocking(Dispatchers.IO) {
+            val image = createBitmap(32, 32, config = android.graphics.Bitmap.Config.ARGB_8888).apply {
+                eraseColor(android.graphics.Color.RED)
+            }
+            try {
+                java.io.ByteArrayOutputStream().use { output ->
+                    check(image.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output))
+                    android.util.Base64.encodeToString(output.toByteArray(), android.util.Base64.NO_WRAP)
+                }
+            } finally {
+                image.recycle()
+            }
+        }
+        val gallery = ResourceIconSet("motion", "非空参考图库", icons = listOf(ResourceIcon("Red", "data:image/png;base64,$encoded")), updatedAt = 1)
         setContent {
             val profiles = if (empty) emptyList() else listOf(
                 Profile.remote(901, "https://example.test/never-requested", "常用线路 · 很长的订阅配置名称用于检查排版").copy(

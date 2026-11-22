@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.data
 
 import android.content.Context
+import android.annotation.SuppressLint
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
@@ -79,6 +80,7 @@ class AndroidWebDavCredentialStore(context: Context) : WebDavCredentialStore {
         check(committed) { "无法保存 WebDAV 凭据" }
     }
 
+    @SuppressLint("UseKtx")
     override fun clear() = synchronized(lock) {
         check(preferences.edit().clear().commit()) { "无法清除 WebDAV 凭据" }
     }

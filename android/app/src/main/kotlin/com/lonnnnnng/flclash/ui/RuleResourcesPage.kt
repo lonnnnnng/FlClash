@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -53,7 +54,7 @@ internal fun RuleResourcesPage(
         confirmButton = {
             if (sorting) TextButton(onClick = { sorting = false }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort_done")) { Text(tr("完成")) }
             else {
-            if (state.rows.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort")) { Icon(Icons.Outlined.Sort, null) }
+            if (state.rows.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, null) }
             IconButton(onClick = onSyncAll, enabled = !state.busy && state.rows.any { it.url.isNotBlank() }) { Icon(Icons.Outlined.Sync, null) }
             Box {
                 IconButton(onClick = { addMenu = true }, enabled = !state.busy, modifier = Modifier.testTag("rule_resources_add")) { Icon(Icons.Outlined.Add, null) }
@@ -74,7 +75,7 @@ internal fun RuleResourcesPage(
                     ResourceOrderItem(it.id, it.label, (if (it.url.isBlank()) tr("本地") else tr("远程")) + " · " + it.behavior)
                 }, state.busy, "rule_resources", onReorder, Modifier.fillMaxWidth().weight(1f))
                 else {
-                ProfileSearchField(query, { query = it }, "rule_resources_search", tr("搜索规则资源"))
+                ProfileSearchField(query, { query = it }, "rule_resources_search", placeholder = tr("搜索规则资源"))
                 val rows = state.rows.filter { query.isBlank() || it.label.contains(query, true) }
                 if (!state.loading && rows.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(if (query.isBlank()) tr("暂无规则资源") else tr("没有匹配的结果"), color = MaterialTheme.colorScheme.onSurfaceVariant)

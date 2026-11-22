@@ -35,7 +35,6 @@ class WebViewProfileScriptEvaluator(
             }
         }
 
-    @SuppressLint("SetJavaScriptEnabled")
     private suspend fun evaluateOnMain(script: String, configJson: String): String =
         suspendCancellableCoroutine { continuation ->
             val webView = WebView(appContext)
@@ -85,6 +84,8 @@ class WebViewProfileScriptEvaluator(
             )
         }
 
+    // 作者 long：配置脚本由用户主动添加；执行页无文件/网络访问，且只暴露结果回调。
+    @SuppressLint("SetJavaScriptEnabled")
     private fun configure(view: WebView) {
         view.settings.javaScriptEnabled = true
         view.settings.allowFileAccess = false

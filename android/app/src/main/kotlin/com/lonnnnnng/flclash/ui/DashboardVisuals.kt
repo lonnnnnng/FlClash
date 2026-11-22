@@ -62,6 +62,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -572,7 +573,7 @@ internal fun OutboundModeCard(
         Triple(CoreOutboundMode.GLOBAL, tr("全局"), DashboardModeGlyphs.proxies),
         Triple(CoreOutboundMode.DIRECT, tr("直连"), DashboardModeGlyphs.target),
     )
-    var lastPressed by remember { mutableStateOf(-1) }
+    var lastPressed by remember { mutableIntStateOf(-1) }
     DashboardSurface(Modifier.testTag("dashboard_outbound_mode_card")) {
         DashboardHeader(tr("出站模式"), DashboardModeGlyphs.split)
         Row(

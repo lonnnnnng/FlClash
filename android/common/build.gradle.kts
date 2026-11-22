@@ -19,7 +19,7 @@ android {
 
     sourceSets {
         // 作者 long：公共状态测试必须继续复用仓库级测试目录，避免包名迁移后静默变成 NO-SOURCE。
-        getByName("test").kotlin.srcDirs("../tests/common")
+        getByName("test").kotlin.directories.add("../tests/common")
     }
 }
 

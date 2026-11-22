@@ -54,7 +54,7 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
     var selecting by rememberSaveable { mutableStateOf(false) }
     var sorting by rememberSaveable { mutableStateOf(false) }
     var sortSnapshot by rememberSaveable { mutableStateOf(emptyList<String>()) }
-    var sortVersion by rememberSaveable { mutableStateOf(0L) }
+    var sortVersion by rememberSaveable { mutableLongStateOf(0L) }
     var form by rememberSaveable { mutableStateOf<String?>(null) }
     var originalValue by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingId by rememberSaveable { mutableStateOf<String?>(null) }

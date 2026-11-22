@@ -57,12 +57,14 @@ internal fun CustomProfileOverview(
     Surface(shape = RoundedCornerShape(24.dp), color = dashboardCardColor()) {
         Column {
             if (readable?.groups.isNullOrEmpty()) {
-                ProfileSectionRow(tr("添加策略组"), tr("将代理和资源组合为可切换的出站策略"), Icons.Outlined.Hub, enabled,
-                    Modifier.testTag("custom_profile_groups"), { onGroup?.invoke(-1) ?: onGroups() })
+                ProfileSectionRow(tr("添加策略组"), modifier = Modifier.testTag("custom_profile_groups"),
+                    detail = tr("将代理和资源组合为可切换的出站策略"), icon = Icons.Outlined.Hub, enabled = enabled,
+                    onClick = { onGroup?.invoke(-1) ?: onGroups() })
             } else {
                 readable.groups.forEachIndexed { index, group ->
-                    ProfileSectionRow(group.name, tr("{0} · {1} 个成员 · {2} 个资源", group.type, group.members, group.resources), Icons.Outlined.Hub,
-                        enabled, Modifier.testTag("custom_profile_group_$index"), { onGroup?.invoke(index) ?: onGroups() })
+                    ProfileSectionRow(group.name, modifier = Modifier.testTag("custom_profile_group_$index"),
+                        detail = tr("{0} · {1} 个成员 · {2} 个资源", group.type, group.members, group.resources),
+                        icon = Icons.Outlined.Hub, enabled = enabled, onClick = { onGroup?.invoke(index) ?: onGroups() })
                 }
             }
         }

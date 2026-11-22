@@ -132,7 +132,7 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
         val request = pickerState?.request ?: return@LaunchedEffect
         if (request.owner != owner) return@LaunchedEffect
         if (request.phase in setOf(FilePickerRequest.RESULT, FilePickerRequest.DONE)) {
-            durable?.complete(request.token, { result ->
+            durable.complete(request.token, { result ->
                 latestSelect(checkNotNull(result.bytes).toString(Charsets.UTF_8))
                 // 作者 long：父组JSON和选择器关闭状态先写入原会话密文，再清结果，死亡不会丢图或交给另一个组。
                 latestPersist()
@@ -196,14 +196,14 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     } }
     SideEffect { report?.invoke(naturalHeight) }
     ProfileEditorPage(onDismissRequest = dismiss, title = { Text(tr("图标")) }, backTag = "group_icon_back",
-        bottomBar = { DockedProfileSearch(query, { query = it }, "group_icon_search", tr("搜索图标"), enabled = !imageBusy) },
+        bottomBar = { DockedProfileSearch(query, { query = it }, "group_icon_search", placeholder = tr("搜索图标"), enabled = !imageBusy) },
         confirmButton = {
             IconButton(onClick = ::launchImage, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_local")) { Icon(Icons.Outlined.Image, null) }
             IconButton(onClick = { link = true }, enabled = !imageBusy, modifier = Modifier.testTag("group_icon_link")) { Icon(Icons.Outlined.Link, null) }
         }, text = {
             Column(Modifier.fillMaxWidth().onSizeChanged { bodyHeight = it.height }, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
-                if (pickerState?.recoveryFailed == true) TextButton({ durable?.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text(tr("重试恢复")) }
+                if (pickerState?.recoveryFailed == true) TextButton({ durable.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text(tr("重试恢复")) }
                 if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
                 if (sources.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     sources.forEach { item ->

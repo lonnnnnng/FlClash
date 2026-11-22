@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.PixelCopy
 import android.view.View
+import androidx.core.graphics.createBitmap
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.runtime.*
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -79,7 +80,7 @@ internal suspend fun captureAppMenuBackdrop(view: View, density: Float): AppMenu
     val decor = window.decorView
     if (decor.width <= 0 || decor.height <= 0) return null
     val captured: Bitmap? = suspendCancellableCoroutine { continuation ->
-        val bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
         runCatching { PixelCopy.request(window, bitmap, { result ->
             if (continuation.isActive) continuation.resume(if (result == PixelCopy.SUCCESS) bitmap else null)
         }, Handler(Looper.getMainLooper())) }.onFailure { if (continuation.isActive) continuation.resume(null) }

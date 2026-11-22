@@ -47,8 +47,8 @@ internal fun mainDestinations(hasProxyDestination: Boolean): List<MainDestinatio
 internal fun MainPageScaffold(
     selectedDestination: MainDestination,
     onDestinationSelected: (MainDestination) -> Unit,
-    destinations: List<MainDestination> = MainDestination.entries,
     modifier: Modifier = Modifier,
+    destinations: List<MainDestination> = MainDestination.entries,
     snackbarHost: @Composable () -> Unit = {},
     topBarActions: @Composable RowScope.() -> Unit = {},
     topBarTitle: String? = null,

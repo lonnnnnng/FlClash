@@ -42,7 +42,9 @@ internal fun ProfileManagementHost(controller: ProfileManagementController, prof
             "rename" -> {
                 // 作者 long：保存树只留选区，文字唯一来自业务草稿；两次异步落盘先后不一致也不能显示旧名称却提交新名称。
                 // 作者 long：独立保存树恢复普通MutableState，不能声明成需要专用运行时类型的MutableIntState。
+                @Suppress("AutoboxingStateCreation")
                 var start by rememberSaveable(draft.session) { mutableStateOf(0) }
+                @Suppress("AutoboxingStateCreation")
                 var end by rememberSaveable(draft.session) { mutableStateOf(0) }
                 var composition by remember(draft.session) { mutableStateOf<TextRange?>(null) }
                 val value = TextFieldValue(draft.label, TextRange(start.coerceIn(0, draft.label.length), end.coerceIn(0, draft.label.length)), composition)

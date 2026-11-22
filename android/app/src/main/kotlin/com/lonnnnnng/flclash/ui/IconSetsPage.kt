@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -54,7 +55,7 @@ internal fun IconSetsPage(sets: List<ResourceIconSet>, busy: Boolean, error: Str
         confirmButton = {
         if (sorting) TextButton(onClick = { sorting = false }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort_done")) { Text(tr("完成")) }
         else {
-        if (sets.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort")) { Icon(Icons.Outlined.Sort, null) }
+        if (sets.size > 1 && onReorder != null) IconButton(onClick = { sorting = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_sort")) { Icon(Icons.AutoMirrored.Outlined.Sort, null) }
         Box {
             IconButton(onClick = { addMenu = true }, enabled = !busy, modifier = Modifier.testTag("icon_sets_add")) { Icon(Icons.Outlined.AddCircleOutline, null) }
             DropdownMenu(addMenu, { addMenu = false }) {

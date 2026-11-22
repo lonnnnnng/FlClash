@@ -74,12 +74,12 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                 if (!catalog?.proxies.isNullOrEmpty()) {
                     Text(tr("代理"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                     ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                        catalog!!.proxies.forEachIndexed { index, name ->
+                        catalog.proxies.forEachIndexed { index, name ->
                             val definition = proxyDefs?.get(name)
                             val id = ProfileProxyResources.idOf(definition)
                             val resource = profiles.firstOrNull { it.id == id && it.type != ProfileType.CUSTOM }
                             val missing = definition?.isJsonObject != true || ProfileProxyResources.isReference(definition) && resource == null
-                            ProviderResourceRow(name, if (missing) tr("资源缺失，请重新选择") else resource?.lastUpdateAt?.let { tr("更新于 ") + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
+                            ProviderResourceRow(name, if (missing) tr("资源缺失，请重新选择") else resource?.lastUpdateAt?.let { tr("更新于 ") + DateUtils.getRelativeTimeSpanString(it) }, missing,
                                 "profile_provider_proxy_$name", onClick = { if (missing) info = tr("代理资源“{0}”不可用，请重新选择订阅或文件配置。", name) else editing = name },
                                 enabled = !saving, trailing = {
                                     if (missing) IconButton(onClick = { info = tr("代理资源“{0}”不可用，请重新选择订阅或文件配置。", name) }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }
@@ -94,12 +94,12 @@ internal fun ProfileProvidersPage(profile: Profile, proxySection: String, ruleSe
                 if (!catalog?.rules.isNullOrEmpty()) {
                     Text(tr("规则"), Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp), style = MaterialTheme.typography.titleSmall)
                     ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
-                        catalog!!.rules.forEachIndexed { index, name ->
+                        catalog.rules.forEachIndexed { index, name ->
                             val definition = ruleDefs?.get(name)
                             val id = RuleResources.idOf(definition)
                             val resource = rules.firstOrNull { it.id == id }
                             val missing = definition?.isJsonObject != true || id != null && resource == null
-                            ProviderResourceRow(name, if (missing) tr("资源缺失，请重新选择") else resource?.updatedAt?.let { tr("更新于 ") + DateUtils.getRelativeTimeSpanString(it) }?.toString(), missing,
+                            ProviderResourceRow(name, if (missing) tr("资源缺失，请重新选择") else resource?.updatedAt?.let { tr("更新于 ") + DateUtils.getRelativeTimeSpanString(it) }, missing,
                                 "profile_provider_rule_$name", enabled = !saving,
                                 onClick = if (missing) ({ info = tr("规则资源“{0}”不可用，请重新选择规则资源。", name) }) else null, trailing = {
                                     if (missing) IconButton(onClick = { info = tr("规则资源“{0}”不可用，请重新选择规则资源。", name) }) { Icon(Icons.Outlined.Info, null, tint = MaterialTheme.colorScheme.error) }

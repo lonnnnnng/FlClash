@@ -29,30 +29,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref || github.ref }}
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # 作者 long：SDK37采用主次版本包名，需要与本地一致的23.0命令行工具解析仓库。
           cmdline-tools-version: '16111833'
-          # 作者 long：新版SDK源已移除旧tools包；只安装构建实际需要的平台工具，避免初始化中断。
-          packages: platform-tools
+          # 作者 long：包安装在下一步经Android CLI完成，避免setup action继续调用已弃用的sdkmanager。
+          accept-android-sdk-licenses: false
+          packages: ''
           log-accepted-android-sdk-licenses: false
 
       - name: Install Android build tools
         shell: bash
         run: |
-          sdkmanager "platforms;android-37.0" "build-tools;36.0.0" "ndk;28.2.13676358"
+          set -euo pipefail
+          android_cli="$ANDROID_HOME/cmdline-tools/16111833/bin/android"
+          test -x "$android_cli"
+          # 作者 long：CI通过Android CLI安装与项目compileSdk/NDK一致的组件，并在首次安装时接受对应许可。
+          "$android_cli" --sdk="$ANDROID_HOME" sdk install \
+            "platforms/android-37.0" "build-tools/36.0.0" "ndk/28.2.13676358" "platform-tools" < <(yes)
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -155,7 +161,7 @@ jobs:
           echo "apk_name=$artifact_apk" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.metadata.outputs.release_tag }}
           name: KClash ${{ steps.metadata.outputs.version_name }}

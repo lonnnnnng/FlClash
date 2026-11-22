@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.data
 
 import android.content.Context
+import android.annotation.SuppressLint
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,6 +28,7 @@ class AppearanceSettingsStore @Inject constructor(@ApplicationContext context: C
         AppTheme.entries.firstOrNull { it.name == preferences.getString("theme", null) } ?: AppTheme.SYSTEM,
         preferences.getBoolean("glass", false),
     )
+    @SuppressLint("UseKtx")
     @Synchronized fun write(value: AppearanceSettings) {
         check(preferences.edit().putString("language", value.language.name).putString("theme", value.theme.name)
             .putBoolean("glass", value.glass).commit()) {

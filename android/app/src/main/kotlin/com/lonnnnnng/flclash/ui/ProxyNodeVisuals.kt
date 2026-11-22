@@ -57,6 +57,7 @@ private object ProxyNodeStyle {
 internal fun ProxyNodeCard(
     name: String,
     type: String?,
+    modifier: Modifier = Modifier,
     cardSize: ProxyNodeCardSize = ProxyNodeCardSize.STANDARD,
     insideGroup: Boolean = false,
     inUse: Boolean,
@@ -66,7 +67,6 @@ internal fun ProxyNodeCard(
     delay: ProxyDelayUiState?,
     selectionTag: String,
     delayTag: String,
-    modifier: Modifier = Modifier,
     groupType: String = "Selector",
     addable: Boolean = false,
     profileId: Long? = null,

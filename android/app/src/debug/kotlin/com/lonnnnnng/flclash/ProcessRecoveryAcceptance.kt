@@ -44,7 +44,8 @@ private fun recoveryReport(token: String, phase: String, detail: JSONObject = JS
         .put("epochMs", System.currentTimeMillis()).toString())
 }
 
-/** 作者 long：独立Debug宿主避免instrumentation退出杀进程，系统拉起必须先由外部观察，再打开verify读取。 */
+/** 作者 long：独立Debug宿主通过系统真实重建验收；固定标签仅区分测试宿主，不属于产品资源。 */
+@Suppress("SetTextI18n")
 class ProcessRecoveryAcceptanceActivity : ComponentActivity() {
     private val entry by lazy { EntryPointAccessors.fromApplication(application, ConnectionAcceptanceEntryPoint::class.java) }
     private val backup by lazy { recoveryBackup(this) }
@@ -185,7 +186,8 @@ class ProcessRecoveryAcceptanceActivity : ComponentActivity() {
                 }
                 val status = line().split(' ').getOrNull(1)?.toIntOrNull()
                 check(status == 200)
-                while (line().isNotEmpty()) Unit
+                var responseHeader = line()
+                while (responseHeader.isNotEmpty()) responseHeader = line()
                 val connection = observing.await()
                 JSONObject().put("http", status).put("attributedSocket", true).put("uploadPositive", connection.upload > 0)
                     .put("downloadPositive", connection.download > 0).put("hasNonDirectChain", connection.chains.any { it != "DIRECT" })

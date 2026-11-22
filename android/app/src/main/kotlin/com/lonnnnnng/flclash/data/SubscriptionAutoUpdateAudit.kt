@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.data
 
 import android.content.Context
 import android.os.SystemClock
+import androidx.core.content.edit
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -34,6 +35,8 @@ object SubscriptionAutoUpdateAudit {
             put(entry)
         }
         // 作者 long：在Worker返回前落盘，避免进程结束后只剩WorkInfo成功却无法归因本次下载与应用。
-        com.lonnnnnng.flclash.common.auditedPreferences(context, STORE).edit().putString("runs", runs.toString()).commit()
+        com.lonnnnnng.flclash.common.auditedPreferences(context, STORE).edit(commit = true) {
+            putString("runs", runs.toString())
+        }
     }
 }

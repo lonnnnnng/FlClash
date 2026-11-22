@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import android.content.Context
+import androidx.core.content.edit
 
 internal enum class DashboardSection(
     private val titleText: String,
@@ -110,16 +111,14 @@ internal object DashboardLayoutStore {
     }
 
     fun save(context: Context, layout: DashboardLayoutState) {
-        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
-            .edit()
-            .putString(KEY_ORDER, layout.order.joinToString(",") { it.name })
-            .putString(KEY_VISIBLE, layout.visible.joinToString(",") { it.name })
-            .putString(KEY_KNOWN_SECTIONS, DashboardSection.entries.joinToString(",") { it.name })
-            .apply()
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME).edit {
+            putString(KEY_ORDER, layout.order.joinToString(",") { it.name })
+            putString(KEY_VISIBLE, layout.visible.joinToString(",") { it.name })
+            putString(KEY_KNOWN_SECTIONS, DashboardSection.entries.joinToString(",") { it.name })
+        }
     }
 
     internal fun clear(context: Context) {
-        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
-            .edit().clear().apply()
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME).edit { clear() }
     }
 }

@@ -45,7 +45,8 @@ internal fun stabilityReport(context: Context, token: String, command: String, r
         .put("count", chunks.size).put("base64", chunk).toString()) }
 }
 
-/** 作者 long：长窗仅允许独立motion包，原1.yaml副本由正式Repository导入；URL只作获准HTTPS目标，不新增或改写正式包配置。 */
+/** 作者 long：长窗仅允许独立motion包，URL只作获准HTTPS目标；固定标题仅用于测试宿主识别。 */
+@Suppress("SetTextI18n")
 class StabilityWindowAcceptanceActivity : ComponentActivity() {
     private val entry by lazy { EntryPointAccessors.fromApplication(application, ConnectionAcceptanceEntryPoint::class.java) }
     private lateinit var token: String

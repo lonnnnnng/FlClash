@@ -3,12 +3,12 @@ package com.lonnnnnng.flclash.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.view.PreviewView
+import androidx.core.net.toUri
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -177,7 +177,7 @@ internal fun ProfileQrScannerPage(onClose: () -> Unit, onImport: (DeepLinkProfil
                     if (!granted) { requested = true; permission.launch(Manifest.permission.CAMERA) }
                 },
                 onSettings = {
-                    runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))) }
+                    runCatching { context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri())) }
                         .onFailure { hint = tr("无法打开设置，请在系统设置中允许相机权限") }
                 },
                 onTorch = {

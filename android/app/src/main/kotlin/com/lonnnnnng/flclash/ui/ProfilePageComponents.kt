@@ -254,10 +254,10 @@ internal fun ProfileSourceMenu(
 @Composable
 internal fun ProfileSectionRow(
     title: String,
+    modifier: Modifier = Modifier,
     detail: String? = null,
     icon: ImageVector,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     Row(modifier.fillMaxWidth().clickable(enabled = enabled, onClick = onClick)
@@ -288,12 +288,12 @@ internal fun ProfileExtensionPage(
             Text(label, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleMedium)
             Surface(shape = AppSuperellipseShape(24.dp), color = dashboardCardColor()) {
                 Column {
-                    ProfileSectionRow("DNS", tr("覆盖当前配置的 DNS 设置"), Icons.Outlined.Dns, canMutate,
-                        Modifier.testTag("profile_extension_dns"), onDns)
-                    ProfileSectionRow("Provider", tr("代理和规则资源"), Icons.Outlined.Cloud, canMutate,
-                        Modifier.testTag("profile_extension_providers"), onProviders)
-                    ProfileSectionRow(tr("脚本"), tr("选择绑定的 JavaScript"), Icons.Outlined.Code, canMutate,
-                        Modifier.testTag("profile_extension_script"), onScript)
+                    ProfileSectionRow("DNS", modifier = Modifier.testTag("profile_extension_dns"),
+                        detail = tr("覆盖当前配置的 DNS 设置"), icon = Icons.Outlined.Dns, enabled = canMutate, onClick = onDns)
+                    ProfileSectionRow("Provider", modifier = Modifier.testTag("profile_extension_providers"),
+                        detail = tr("代理和规则资源"), icon = Icons.Outlined.Cloud, enabled = canMutate, onClick = onProviders)
+                    ProfileSectionRow(tr("脚本"), modifier = Modifier.testTag("profile_extension_script"),
+                        detail = tr("选择绑定的 JavaScript"), icon = Icons.Outlined.Code, enabled = canMutate, onClick = onScript)
                 }
             }
         }

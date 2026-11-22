@@ -27,6 +27,7 @@ class StateWriteAuditTest {
         val values = sink.records.filter { it["kind"] == "value" }
         assertEquals(20, values.size)
         values.forEach { assertEquals("source.${it["n"]}", it["source"]) }
+        values.forEach { assertTrue(it["threadId"] is Long && (it["threadId"] as Long) > 0L) }
         assertEquals(20, values.map { it["operation"] }.toSet().size)
         StateWriteAudit.event("outside"); assertNull(sink.records.last()["source"])
     }

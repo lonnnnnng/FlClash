@@ -285,7 +285,7 @@ internal fun ProxyGroupsCard(
     }
     var toolsExpanded by remember(currentProfileId, runtimeState, state.isLoading) { mutableStateOf(false) }
     var toolsMenuPage by remember(currentProfileId, runtimeState, state.isLoading) { mutableStateOf(ProxyToolsMenuPage.ROOT) }
-    var locateSelectedRequest by rememberSaveable(currentProfileId) { mutableStateOf(0) }
+    var locateSelectedRequest by rememberSaveable(currentProfileId) { mutableIntStateOf(0) }
     var locateTargetGroup by rememberSaveable(currentProfileId) { mutableStateOf<String?>(null) }
     var searchExpanded by rememberSaveable(currentProfileId) { mutableStateOf(picker) }
     var proxyQuery by rememberSaveable(currentProfileId) { mutableStateOf("") }
@@ -689,16 +689,17 @@ private fun ProxyGroupsListPage(
         )
         val previousScrollLayout = remember { mutableStateOf<ProxyListScrollLayout?>(null) }
         val previousLayout = previousScrollLayout.value
-        val semanticAnchor = if (previousLayout != null && previousLayout != scrollLayout) {
-            proxyListScrollAnchor(
-                items = previousLayout.items,
-                firstVisibleItemIndex = listState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
-            )
-        } else {
-            null
-        }
         LaunchedEffect(scrollLayout) {
+            // 作者 long：滚动锚点只在布局切换时读取，避免手指滚动每帧触发整页组合。
+            val semanticAnchor = if (previousLayout != null && previousLayout != scrollLayout) {
+                proxyListScrollAnchor(
+                    items = previousLayout.items,
+                    firstVisibleItemIndex = listState.firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset,
+                )
+            } else {
+                null
+            }
             semanticAnchor?.let { anchor ->
                 val target = proxyListScrollItemIndex(scrollLayout.items, anchor)
                 if (target != null) listState.scrollToItem(target, anchor.scrollOffset.coerceAtLeast(0))
@@ -742,7 +743,7 @@ private fun ProxyGroupsListPage(
                 listState.animateScrollToItem(index, -(headerHeights[groupName] ?: fallbackHeaderHeight))
             }
         }
-        var handledLocateRequest by rememberSaveable { mutableStateOf(locateRequest) }
+        var handledLocateRequest by rememberSaveable { mutableIntStateOf(locateRequest) }
         LaunchedEffect(locateRequest) {
             if (locateRequest != handledLocateRequest) {
                 handledLocateRequest = locateRequest
@@ -1019,24 +1020,25 @@ private fun ProxyGroupNodesPage(
         val scrollLayout = ProxyGridScrollLayout(group.name, visibleProxies, columnCount, options.cardSize)
         val previousScrollLayout = remember { mutableStateOf<ProxyGridScrollLayout?>(null) }
         val previousLayout = previousScrollLayout.value
-        val semanticAnchor = if (previousLayout != null && previousLayout != scrollLayout) {
-            proxyGridScrollAnchor(
-                groupName = previousLayout.groupName,
-                proxyNames = previousLayout.proxyNames,
-                firstVisibleItemIndex = gridState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffset = gridState.firstVisibleItemScrollOffset,
-            )
-        } else {
-            null
-        }
         LaunchedEffect(scrollLayout) {
+            // 作者 long：网格成员顺序或列数变化时才捕获锚点，滚动过程留在布局阶段处理。
+            val semanticAnchor = if (previousLayout != null && previousLayout != scrollLayout) {
+                proxyGridScrollAnchor(
+                    groupName = previousLayout.groupName,
+                    proxyNames = previousLayout.proxyNames,
+                    firstVisibleItemIndex = gridState.firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = gridState.firstVisibleItemScrollOffset,
+                )
+            } else {
+                null
+            }
             semanticAnchor?.let { anchor ->
                 val target = proxyGridScrollItemIndex(scrollLayout.proxyNames, anchor, columnCount)
                 if (target != null) gridState.scrollToItem(target, anchor.scrollOffset.coerceAtLeast(0))
             }
         }
         SideEffect { previousScrollLayout.value = scrollLayout }
-        var handledLocateRequest by rememberSaveable { mutableStateOf(locateRequest) }
+        var handledLocateRequest by rememberSaveable { mutableIntStateOf(locateRequest) }
         LaunchedEffect(isCurrentPage, locateRequest) {
             if (isCurrentPage && locateRequest != handledLocateRequest) {
                 handledLocateRequest = locateRequest

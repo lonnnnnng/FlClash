@@ -22,7 +22,7 @@ android {
 
     sourceSets {
         // 作者 long：Bridge 协议解析测试必须跟核心模块一起编译，避免只验证服务层假数据。
-        getByName("test").kotlin.srcDirs("../tests/core")
+        getByName("test").kotlin.directories.add("../tests/core")
     }
 
     compileOptions {

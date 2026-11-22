@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.data
 
 import android.content.Context
+import android.annotation.SuppressLint
 import com.lonnnnnng.flclash.core.ServiceTarget
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -28,6 +29,7 @@ class AndroidServiceSettingsStore @Inject constructor(@ApplicationContext contex
         fun targets(key: String) = preferences.getString(key, null).orEmpty().split(',').mapNotNull { id -> ServiceTarget.entries.firstOrNull { it.id == id } }
         return ServiceSettings(targets("order"), targets("disabled").toSet()).normalized()
     }
+    @SuppressLint("UseKtx")
     override fun write(settings: ServiceSettings) {
         check(preferences.edit().putString("order", settings.order.joinToString(",") { it.id })
             .putString("disabled", settings.disabled.joinToString(",") { it.id }).commit()) { "无法保存服务设置" }

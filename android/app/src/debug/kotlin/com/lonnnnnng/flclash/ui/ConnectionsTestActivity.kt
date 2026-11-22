@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -33,7 +34,7 @@ class ConnectionsTestActivity : ComponentActivity() {
     var lastCopiedValue: String? = null
         private set
     private var scenario by mutableStateOf(ConnectionsScenario.STOPPED)
-    private var fontScaleValue by mutableStateOf(1f)
+    private var fontScaleValue by mutableFloatStateOf(1f)
     private var darkThemeOverride by mutableStateOf<Boolean?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {

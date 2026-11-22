@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.common
 
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.ThreadContextElement
@@ -22,6 +23,11 @@ object StateWriteAudit {
     fun install(value: Sink?) { sink = value }
     val enabled get() = sink != null
     private val current = ThreadLocal<Origin?>()
+    // 作者 long：审计记录需要跨JVM和Android版本稳定标识线程，使用进程内编号避免依赖弃用的Thread.id。
+    private val nextThreadId = AtomicLong()
+    private val auditThreadId = object : ThreadLocal<Long>() {
+        override fun initialValue() = nextThreadId.incrementAndGet()
+    }
     data class Origin(val id: String, val source: String, val sites: List<String>)
     private class Context(val origin: Origin) : ThreadContextElement<Origin?>, AbstractCoroutineContextElement(Key) {
         companion object Key : CoroutineContext.Key<Context>
@@ -47,7 +53,7 @@ object StateWriteAudit {
             val origin = current.get()
             val sites = callSites()
             target.append(detail + mapOf("kind" to kind, "operation" to origin?.id, "source" to origin?.source,
-                "originSites" to origin?.sites, "sites" to sites, "threadId" to Thread.currentThread().id))
+                "originSites" to origin?.sites, "sites" to sites, "threadId" to auditThreadId.get()))
         } catch (_: Exception) { runCatching { target.dropped() } }
     }
     private fun callSites() = Throwable().stackTrace.asSequence().filter {

@@ -90,6 +90,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -108,6 +112,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.clip
@@ -350,7 +355,7 @@ fun KClashApp(
         val token = resourcesViewModel?.beginIconsFilePick() ?: return@launch
         iconFileToken = token
         try { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }
-        catch (_: Exception) { iconFileToken = null; resourcesViewModel?.receiveIconsFilePick(token, null) }
+        catch (_: Exception) { iconFileToken = null; resourcesViewModel.receiveIconsFilePick(token, null) }
     } }
     val ruleResources = ruleResourcesViewModel?.state?.collectAsState()?.value ?: RuleResourcesUiState(loading = false)
     var showRuleResources by rememberSaveable { mutableStateOf(false) }
@@ -367,7 +372,7 @@ fun KClashApp(
         val token = ruleResourcesViewModel?.beginFilePick() ?: return@launch
         ruleFileToken = token
         try { ruleFilePicker.launch(arrayOf("*/*")) }
-        catch (_: Exception) { ruleFileToken = null; ruleResourcesViewModel?.receiveFilePick(token, null) }
+        catch (_: Exception) { ruleFileToken = null; ruleResourcesViewModel.receiveFilePick(token, null) }
     } }
     val proxyScrollStateHolder = rememberSaveableStateHolder()
     val observationStateHolder = rememberSaveableStateHolder()
@@ -443,9 +448,9 @@ fun KClashApp(
     val density = LocalDensity.current
     var isDashboardEditing by rememberSaveable { mutableStateOf(false) }
     var dashboardDraggingSection by remember { mutableStateOf<DashboardSection?>(null) }
-    var dashboardDragY by remember { mutableStateOf(0f) }
-    var dashboardDragTop by remember { mutableStateOf(0f) }
-    var dashboardDragHeight by remember { mutableStateOf(0) }
+    var dashboardDragY by remember { mutableFloatStateOf(0f) }
+    var dashboardDragTop by remember { mutableFloatStateOf(0f) }
+    var dashboardDragHeight by remember { mutableIntStateOf(0) }
     val dashboardSwayProgress = rememberDashboardEditSwayProgress(isDashboardEditing)
     val selectedProfile = profilesState.profiles.firstOrNull { it.id == profilesState.currentProfileId }
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
@@ -482,7 +487,7 @@ fun KClashApp(
             }
         }
     }
-    var selectedDestinationIndex by rememberSaveable { mutableStateOf(MainDestination.DASHBOARD.ordinal) }
+    var selectedDestinationIndex by rememberSaveable { mutableIntStateOf(MainDestination.DASHBOARD.ordinal) }
     val providerRecoveryProfileId by profileStatisticsViewModel?.restoredProviderProfileId?.collectAsState()
         ?: remember { mutableStateOf<Long?>(null) }
     LaunchedEffect(providerRecoveryProfileId, profilesState.profilesLoaded, selectedProfile?.id) {
@@ -534,7 +539,7 @@ fun KClashApp(
     var pendingAccessExitToolsSubpage by rememberSaveable { mutableStateOf<ToolsSubpage?>(null) }
     var pendingProfilesToolbarAction by remember { mutableStateOf<ProfilesToolbarAction?>(null) }
     // 作者 long：观测页会随顶层导航离开组合，页签状态必须提升到主页面保存，避免用户返回观测时丢失当前页签。
-    var selectedObservationTabIndex by rememberSaveable { mutableStateOf(ObservationTab.REQUESTS.ordinal) }
+    var selectedObservationTabIndex by rememberSaveable { mutableIntStateOf(ObservationTab.REQUESTS.ordinal) }
     val showProxyDestination = profilesState.profiles.isNotEmpty() || proxyGroupsState.groups.isNotEmpty()
     val navigationDestinations = mainDestinations(showProxyDestination)
     val requestedDestination = MainDestination.values()[
@@ -1327,7 +1332,7 @@ fun KClashApp(
                                         onRetryApps = accessControlViewModel::retryLoad,
                                         onOpenAppSettings = {
                                             runCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                                android.net.Uri.parse("package:${context.packageName}"))) }
+                                                "package:${context.packageName}".toUri())) }
                                                 .onFailure { accessControlViewModel.reportAppsSettingsUnavailable() }
                                         },
                                     )
@@ -2050,7 +2055,7 @@ internal fun ProfilesPanel(
         )
     }
 
-    if (extensionSession?.recoveryFailed == true && extensionController != null) {
+    if (extensionSession?.recoveryFailed == true) {
         AlertDialog(onDismissRequest = {}, title = { Text(tr("扩展草稿")) }, text = { Text(tr(extensionSession.error.orEmpty())) },
             confirmButton = { TextButton(extensionController::retryRecovery, enabled = !extensionSession.loading) { Text(tr("重试恢复")) } })
     } else extensionProfileId?.let { id ->
@@ -4187,8 +4192,8 @@ private fun <T> ObservationList(
     filterKey: Any?,
     emptyContent: @Composable () -> Unit,
     itemKey: (T) -> Any,
+    modifier: Modifier = Modifier,
     itemTag: ((Int) -> String)? = null,
-    modifier: Modifier = Modifier.heightIn(max = 480.dp),
     contentPadding: PaddingValues = PaddingValues(),
     row: @Composable (T) -> Unit,
 ) {
@@ -4291,6 +4296,7 @@ internal fun ProfileCard(
     canMutate: Boolean,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
+    modifier: Modifier = Modifier,
     onRename: () -> Unit = {},
     onUpdate: () -> Unit,
     onSetAutoUpdate: (Boolean) -> Unit = {},
@@ -4308,7 +4314,6 @@ internal fun ProfileCard(
     exportBusy: Boolean = false,
     onPreview: () -> Unit = {},
     onExtend: () -> Unit = {},
-    modifier: Modifier = Modifier,
     canEdit: Boolean = canMutate,
     canDelete: Boolean = canMutate,
     proxyGroupCount: Int? = null,
@@ -4885,12 +4890,12 @@ internal fun ProfileDnsOverrideDialog(
                     )
                 }
                 item { Text(tr("每行一个 DNS 服务器"), style = MaterialTheme.typography.titleSmall) }
-                item { dnsListField(tr("默认 DNS"), defaultNameserver) { defaultNameserver = it } }
-                item { dnsListField("Nameserver", nameserver) { nameserver = it } }
-                item { dnsListField("Fallback", fallback) { fallback = it } }
-                item { dnsListField(tr("代理服务器 DNS"), proxyServerNameserver) { proxyServerNameserver = it } }
-                item { dnsListField(tr("直连 DNS"), directNameserver) { directNameserver = it } }
-                item { dnsListField(tr("Fake-IP 过滤"), fakeIpFilter) { fakeIpFilter = it } }
+                item { DnsListField(tr("默认 DNS"), defaultNameserver) { defaultNameserver = it } }
+                item { DnsListField("Nameserver", nameserver) { nameserver = it } }
+                item { DnsListField("Fallback", fallback) { fallback = it } }
+                item { DnsListField(tr("代理服务器 DNS"), proxyServerNameserver) { proxyServerNameserver = it } }
+                item { DnsListField(tr("直连 DNS"), directNameserver) { directNameserver = it } }
+                item { DnsListField(tr("Fake-IP 过滤"), fakeIpFilter) { fakeIpFilter = it } }
             }
         },
         confirmButton = {
@@ -4970,7 +4975,7 @@ internal fun ProfileDialersEditorDialog(
 }
 
 @Composable
-private fun dnsListField(label: String, value: String, onValueChange: (String) -> Unit) {
+private fun DnsListField(label: String, value: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,

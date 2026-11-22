@@ -108,7 +108,7 @@ class ApplicationSettingsBackupStore(
         listOf<() -> Unit>({ general?.write(value.general) }, { network?.write(value.network) }, { dns?.write(value.dns) },
             { vpn?.write(value.vpnEnabled) }, { lan?.write(value.allowLan) }, { backupUi?.write(value.restoreStrategy) },
             { value.onDemandSsids?.let { onDemand?.write(it) } }).forEach { restore ->
-            try { restore() } catch (error: Exception) { if (failure == null) failure = error else failure!!.addSuppressed(error) }
+            try { restore() } catch (error: Exception) { if (failure == null) failure = error else failure.addSuppressed(error) }
         }
         failure?.let { throw it }
     }

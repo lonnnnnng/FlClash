@@ -2,6 +2,7 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlin.math.PI
@@ -17,7 +18,7 @@ internal fun scalarDialogSpring(progress: Float): Float {
 
 @Stable
 internal class ScalarDialogMotion(restoredClosing: Boolean = false) {
-    var progress by mutableStateOf(0f)
+    var progress by mutableFloatStateOf(0f)
         private set
     var closing by mutableStateOf(restoredClosing)
         private set

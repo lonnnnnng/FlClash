@@ -256,12 +256,15 @@ private fun CustomRuleForm(initial: CustomRuleDraft?, catalog: CustomRuleCatalog
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             (error ?: saveError)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("custom_rule_form_error")) }
             ProfileFormSection {
-                ProfileSectionRow(tr("规则类型"), type, Icons.AutoMirrored.Outlined.Rule, !saving, Modifier.testTag("custom_rule_type")) { picker = "type" }
+                ProfileSectionRow(tr("规则类型"), modifier = Modifier.testTag("custom_rule_type"), detail = type,
+                    icon = Icons.AutoMirrored.Outlined.Rule, enabled = !saving) { picker = "type" }
                 if (type != "MATCH") {
-                    if (type == "RULE-SET") ProfileSectionRow(tr("规则资源"), payload.ifBlank { tr("选择规则资源") }, Icons.Outlined.Cloud, !saving, Modifier.testTag("custom_rule_provider")) { picker = "provider" }
+                    if (type == "RULE-SET") ProfileSectionRow(tr("规则资源"), modifier = Modifier.testTag("custom_rule_provider"),
+                        detail = payload.ifBlank { tr("选择规则资源") }, icon = Icons.Outlined.Cloud, enabled = !saving) { picker = "provider" }
                     else OutlinedTextField(payload, { payload = it; error = null }, enabled = !saving, singleLine = true, label = { Text(tr("规则内容")) }, modifier = Modifier.fillMaxWidth().testTag("custom_rule_payload"))
                 }
-                ProfileSectionRow(tr("分流策略"), target.ifBlank { tr("选择目标") }, Icons.Outlined.Route, !saving, Modifier.testTag("custom_rule_target")) { picker = "target" }
+                ProfileSectionRow(tr("分流策略"), modifier = Modifier.testTag("custom_rule_target"),
+                    detail = target.ifBlank { tr("选择目标") }, icon = Icons.Outlined.Route, enabled = !saving) { picker = "target" }
             }
             catalog.issue(fields.raw())?.let { Text(tr(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("custom_rule_reference_issue")) }
             if (type in CustomRules.parameterTypes) ProfileFormSection {

@@ -46,8 +46,8 @@ internal fun ToolsPanel(
     onOpenLanguage: () -> Unit,
     onOpenTheme: () -> Unit,
     onShowUnavailable: (String) -> Unit,
-    onOpenDeveloper: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    onOpenDeveloper: (() -> Unit)? = null,
     onOpenBackup: () -> Unit = { onShowUnavailable(tr("备份与恢复")) },
     onOpenScripts: () -> Unit = { onShowUnavailable(tr("自定义资源")) },
     onOpenResources: () -> Unit = { onShowUnavailable(tr("资源")) },
@@ -102,9 +102,7 @@ internal fun ToolsPanel(
 
         if (onOpenDeveloper != null) ToolSection(title = tr("其他")) {
             // 作者 long：额外验收工具仅在 Debug 显式入口下出现，普通启动保持 Flutter Tools 的页面清单。
-            if (onOpenDeveloper != null) {
-                ToolMenuRow(tr("开发者模式"), Icons.Outlined.Code, "tools_item_developer", onOpenDeveloper)
-            }
+            ToolMenuRow(tr("开发者模式"), Icons.Outlined.Code, "tools_item_developer", onOpenDeveloper)
         }
     }
 }

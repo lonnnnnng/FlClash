@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.data
 
 import android.content.Context
+import android.annotation.SuppressLint
 import com.lonnnnnng.flclash.service.GeoResourceSettings
 import com.lonnnnnng.flclash.service.GeoResourceSettingsStore
 import com.lonnnnnng.flclash.service.GeoResourceType
@@ -19,6 +20,7 @@ class AndroidGeoResourceSettingsStore @Inject constructor(@ApplicationContext co
             GeoResourceType.entries.associateWith { preferences.getString(it.name, it.defaultUrl) ?: it.defaultUrl }).validated()
     }.getOrDefault(GeoResourceSettings())
 
+    @SuppressLint("UseKtx")
     @Synchronized override fun write(settings: GeoResourceSettings) {
         val value = settings.validated()
         val editor = preferences.edit().putBoolean("auto_update", value.autoUpdate).putInt("interval_hours", value.intervalHours)

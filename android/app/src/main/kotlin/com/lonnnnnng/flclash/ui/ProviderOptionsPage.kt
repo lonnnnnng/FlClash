@@ -27,6 +27,15 @@ import com.lonnnnnng.flclash.service.ProxyProviderOverride
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.net.URI
+import androidx.compose.runtime.saveable.listSaver
+
+// 作者 long：Provider表单恢复为不可变快照，集合逐项编码才能跨Activity重建安全保存。
+private val ProviderOptionValuesSaver = listSaver<Map<String, String>, String>(
+    save = { values -> values.flatMap { (key, value) -> listOf(key, value) } },
+    restore = { entries ->
+        entries.chunked(2).mapNotNull { pair -> pair.getOrNull(1)?.let { pair[0] to it } }.toMap()
+    },
+)
 
 /** 作者 long：资源选项有独立确认边界，子页增删只改草稿；持久化失败时仍保留整份草稿供修正重试。 */
 @Composable
@@ -35,7 +44,9 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
     validateFilters: suspend (List<String>) -> List<String> = { values -> values.map { "" } }) {
     var filterJson by rememberSaveable(name) { mutableStateOf(initial.toJson().toString()) }
     val filters = remember(filterJson) { ProxyProviderOverride.fromJson(JsonParser.parseString(filterJson).asJsonObject) }
-    var values by rememberSaveable(name) { mutableStateOf(HashMap(ProviderOption.entries.mapNotNull { option -> option.value(initial)?.let { option.name to it } }.toMap())) }
+    var values by rememberSaveable(name, stateSaver = ProviderOptionValuesSaver) {
+        mutableStateOf(ProviderOption.entries.mapNotNull { option -> option.value(initial)?.let { option.name to it } }.toMap())
+    }
     var adding by rememberSaveable(name) { mutableStateOf(false) }
     var pickingFilters by rememberSaveable(name) { mutableStateOf(false) }
     var choosingIp by rememberSaveable(name) { mutableStateOf(false) }
@@ -55,7 +66,7 @@ internal fun ProviderOptionsPage(name: String, initial: ProxyProviderOverride, s
     val dirty = filters != initial || values != initialValues
     val close = { if (!busy) { if (dirty) discard = true else onDismiss() } }
     fun set(option: ProviderOption, value: String?) {
-        values = HashMap(values).apply { if (value == null) remove(option.name) else put(option.name, value) }
+        values = if (value == null) values - option.name else values + (option.name to value)
         localError = null
     }
     fun changeFilters(updated: ProxyProviderOverride) { filterJson = updated.toJson().toString(); localError = null }

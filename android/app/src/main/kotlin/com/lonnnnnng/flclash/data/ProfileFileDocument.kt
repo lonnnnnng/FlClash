@@ -1,8 +1,8 @@
 package com.lonnnnnng.flclash.data
 
 import android.content.Context
-import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.core.net.toUri
 import java.io.InputStream
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +24,7 @@ fun interface ProfileFileDocumentReader {
 class AndroidProfileFileDocumentReader(private val context: Context) : ProfileFileDocumentReader {
     override suspend fun read(uri: String): ProfileFileDocument = readLimited(uri, MAX_PROFILE_FILE_BYTES)
     override suspend fun readLimited(uri: String, maxBytes: Int): ProfileFileDocument = withContext(Dispatchers.IO) {
-        val source = Uri.parse(uri)
+        val source = uri.toUri()
         val resolver = context.contentResolver
         val bytes = resolver.openInputStream(source)?.use { readProfileFileBytes(it, maxBytes = maxBytes) }
             ?: error("无法读取所选配置文件")

@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import com.lonnnnnng.flclash.MainActivity
+import com.lonnnnnng.flclash.kclashTaskId
 import com.lonnnnnng.flclash.ConnectionAcceptanceEntryPoint
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ServiceConfig
@@ -32,7 +33,7 @@ class GeneralSettingsHostInstrumentedTest {
             compose.onNodeWithTag("general_hidden").performClick()
             compose.waitUntil(15_000) { manager.generalSettings.value.hidden != original.hidden }
             val tasks = compose.activity.getSystemService(android.app.ActivityManager::class.java)
-            compose.waitUntil(10_000) { tasks.appTasks.firstOrNull { it.taskInfo?.id == compose.activity.taskId }?.taskInfo?.baseIntent?.flags?.let {
+            compose.waitUntil(10_000) { tasks.appTasks.firstOrNull { it.taskInfo?.kclashTaskId() == compose.activity.taskId }?.taskInfo?.baseIntent?.flags?.let {
                 (it and android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS != 0) == !original.hidden
             } == true }
             compose.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("general_ports"))

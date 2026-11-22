@@ -8,7 +8,7 @@ state=running sha256=f2b020de1527a30dbc896f66f9bf70db2169d3e909e9010d970881f2f5b
 
 # Light theme.
 state=light_default sha256=049197a800eb107905ca031932e7d000ff447a08f7b3a5c5e7844cceee91e5df
-state=light_running sha256=d0ab3b47109a0cecf6f4f55d4607734bfdba3002ebd75d1d79f6e1f952c14434
+state=light_running sha256=d0ab3b47109a0cecf4f6f55d4607734bfdba3002ebd75d1d79f6e1f952c14434
 
 # Proxy summary card and picker, portrait default font. Fixed Debug fixture; no core/network.
 state=proxy_summary_dark sha256=d63207b70f8623523c463d364c729647322bfba90734d69ac5d42134d45689dc

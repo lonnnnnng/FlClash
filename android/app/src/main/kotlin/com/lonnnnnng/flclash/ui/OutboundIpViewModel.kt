@@ -85,7 +85,7 @@ class OutboundIpViewModel @Inject constructor(
                             val sameSession = mutableState.value.info != null &&
                                 (currentStamp == null || currentStamp?.epoch == stamp.epoch)
                             currentStamp = stamp
-                            if (held) lastAnswer = answer?.copy(stamp = stamp) else {
+                            if (held) lastAnswer = answer.copy(stamp = stamp) else {
                                 // 作者 long：自动组可能自行换节点；后台更新期间保留上次成功展示，避免整块国家/IP闪回加载态。
                                 invalidate(keepInfo = sameSession)
                             }
@@ -184,7 +184,7 @@ class OutboundIpViewModel @Inject constructor(
                     return
                 }
                 currentStamp = stamp
-                lastAnswer = answer?.copy(stamp = stamp)
+                lastAnswer = answer.copy(stamp = stamp)
             }
             if (token == generation && mutableState.value.info?.ip == ip) {
                 mutableState.update { it.copy(quality = quality, qualityLoading = false, qualityFailures = emptyMap()) }

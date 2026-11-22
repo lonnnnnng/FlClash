@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import android.content.Context
+import androidx.core.content.edit
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import kotlin.math.ceil
@@ -76,20 +77,18 @@ internal object ProxyPageOptionsStore {
     }
 
     fun save(context: Context, options: ProxyPageOptions) {
-        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
-            .edit()
-            .putString(KEY_DISPLAY_MODE, options.displayMode.name)
-            .putString(KEY_SORT, options.sort.name)
-            .putString(KEY_GRID_DENSITY, options.gridDensity.name)
-            .putString(KEY_CARD_SIZE, options.cardSize.name)
-            .putString(KEY_ICON_STYLE, options.iconStyle.name)
-            .putBoolean(KEY_HIDE_TIMEOUT, options.hideTimeout)
-            .apply()
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME).edit {
+            putString(KEY_DISPLAY_MODE, options.displayMode.name)
+            putString(KEY_SORT, options.sort.name)
+            putString(KEY_GRID_DENSITY, options.gridDensity.name)
+            putString(KEY_CARD_SIZE, options.cardSize.name)
+            putString(KEY_ICON_STYLE, options.iconStyle.name)
+            putBoolean(KEY_HIDE_TIMEOUT, options.hideTimeout)
+        }
     }
 
     internal fun clear(context: Context) {
-        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME)
-            .edit().clear().apply()
+        com.lonnnnnng.flclash.common.auditedPreferences(context.applicationContext, PREFERENCES_NAME).edit { clear() }
     }
 
     private inline fun <reified T : Enum<T>> android.content.SharedPreferences.enumValue(
