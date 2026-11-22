@@ -1,5 +1,11 @@
 # NTP 标量输入弹框对齐
 
+## 2026-11-23 MainActivity 路由复验
+
+KUI-VIS-088在POCO F2 Pro/API36使用当前kotlin分支Motion APK复跑真实MainActivity：Profiles→临时CUSTOM→More→NTP，保存服务器、拒绝端口0、提交端口124/间隔60、Activity重建恢复草稿、清除服务器覆盖、重新进入及Room读取均通过1/1。原有库行/正文/脚本/偏好/选择保持；临时Profile/body清理，核心保持STOPPED。12张1080×2400截图38个分片的字节数、SHA、PNG头和CRC通过。
+
+本轮同步录制了Kotlin真实MainActivity和隔离Flutter NtpView宿主的自然交互，分别117.536秒与85.989秒。隔离Flutter宿主使用内存夹具，原版com.follow.clash未修改；录屏证明交互过程，不代表完整Flutter MainActivity路线、同态逐帧转场或性能。Kotlin录像本地可读，但设备端文件后续已不存在，未声称设备回读哈希。详见[KUI-VIS-088验收记录](acceptance/ntp-route-poco-20261123.json)。
+
 2026-11-20，KUI-VIS-060，用户指定POCO F2 Pro（31936bb6/API36），仅竖屏/默认字号，玻璃默认关闭。承接059，范围为服务器、端口、同步间隔、拨号代理四个标量输入；原Flutter包不操作，Flutter源码只作参考。
 
 ## 实现与来源

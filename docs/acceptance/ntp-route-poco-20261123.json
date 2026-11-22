@@ -1,0 +1,160 @@
+{
+  "id": "KUI-VIS-088",
+  "date": "2026-11-23",
+  "scope": "Real MainActivity NTP editor route, scalar draft restoration and Room readback with isolated Flutter component comparison",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "densityOverrideDpi": 396,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "theme": "dark",
+    "glassEnabled": false
+  },
+  "source": {
+    "repository": "lonnnnnng/FlClash",
+    "branch": "kotlin",
+    "commit": "9a302fedbeddf460792d28ce105322e6251ef99d",
+    "productSourceChanged": false
+  },
+  "build": {
+    "command": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "passed",
+    "durationSeconds": 13,
+    "motionApk": {
+      "path": "../../android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+      "package": "com.lonnnnnng.flclash.motion",
+      "versionName": "0.1.16-motion",
+      "versionCode": 1016,
+      "bytes": 67542073,
+      "sha256": "514296060acd668030c9e0adbcbb82c1fa58bb8ae05829f4d915bb2e222fdf59"
+    },
+    "androidTestApk": {
+      "path": "../../android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "bytes": 3307923,
+      "sha256": "0aa68dbcdc63872223b3b5d7d77e242f775f798de8b8015dfeb20bbcc8097b52"
+    },
+    "log": "../../../acceptance-artifacts/ntp-route-poco-20261123/build-motion.log",
+    "logSha256": "854fd59be4c3ccaee735f2e1c3151b1b60c70bf3fcb8a657b77f5729e3543c20"
+  },
+  "authorizedLocalYaml": {
+    "source": "workspace root 1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "uploadedOnlyToIsolatedMotionPackage": true,
+    "uploadedToInternet": false,
+    "contentsIncludedInEvidence": false,
+    "deviceTestCopyRemovedAfterHashVerification": true,
+    "workspaceSourceAndMetadataUnchanged": true
+  },
+  "instrumentation": {
+    "class": "com.lonnnnnng.flclash.ui.MainNtpScalarNaturalInstrumentedTest",
+    "method": "ntpScalarDialogsSaveReopenAndRestoreWithRealRoom",
+    "tests": 1,
+    "passed": 1,
+    "failures": 0,
+    "skipped": 0,
+    "durationSeconds": 63.744,
+    "log": "../../../acceptance-artifacts/ntp-route-poco-20261123/main-route/instrumentation.log",
+    "logSha256": "52cde6a475b6f4b854f3813438e4299264c0062eada963b0cf8264844c6f98aa",
+    "screenshotsJson": "../../../acceptance-artifacts/ntp-route-poco-20261123/main-route/screenshots.json",
+    "screenshotsJsonSha256": "2601e527d9de4970c06b82520296c387f15b49f51b02430f3eda0ddddd708a04",
+    "screenshots": {
+      "count": 12,
+      "chunks": 38,
+      "resolution": "1080x2400",
+      "byteCountsAndSha256Verified": true,
+      "pngHeadersAndEveryChunkCrcVerified": true,
+      "companionUiHierarchySnapshots": {
+        "count": 22,
+        "directory": "../../../acceptance-artifacts/ntp-route-poco-20261123/device-xml/",
+        "deviceAndLocalSha256MatchedBeforeRemoval": true
+      },
+      "states": [
+        "NTP empty page in real Profiles-to-CUSTOM-to-More route",
+        "NTP server dialog and visible IME",
+        "draft after Activity recreation",
+        "saved server row, invalid port feedback and corrected fields",
+        "server clear, parent reopen and Activity recreation readback",
+        "opening and early close motion frames"
+      ]
+    },
+    "coveredFlow": [
+      "Read only the authorized workspace 1.yaml and copy its bytes to a temporary isolated CUSTOM profile",
+      "Use real MainActivity profile navigation and open the NTP page",
+      "Save a server value, reject port 0, then persist port 124 and interval 60",
+      "Recreate Activity while the server draft is open and verify draft restoration",
+      "Verify the empty dialer proxy value, clear only the temporary server override, reopen NTP and recreate Activity",
+      "Read persisted overrides back from Room and remove the temporary profile/body"
+    ],
+    "preservation": {
+      "existingRowsBodiesScriptsPreferencesAndSelectionUnchanged": true,
+      "temporaryProfileAndBodyRemoved": true,
+      "runtime": "STOPPED",
+      "originalProfileBodySha256Unchanged": true
+    }
+  },
+  "continuousRecording": {
+    "kotlinPath": "../../../acceptance-artifacts/ntp-route-poco-20261123/ntp-main-natural.mp4",
+    "kotlinBytes": 40532725,
+    "kotlinSha256": "70a3cb8460ca9ecd99d39e5777db08c26bfe25a0dd3eb3c328c5b9055ec8ba3a",
+    "kotlinDurationSeconds": 117.535689,
+    "flutterPath": "../../../acceptance-artifacts/ntp-route-poco-20261123/ntp-flutter-natural.mp4",
+    "flutterBytes": 6390805,
+    "flutterSha256": "18d38bd0fa9086c241e1a954b240b61d8e5e561949c240b54226f55fceb14ccf",
+    "flutterDeviceReadbackHashMatched": true,
+    "flutterDurationSeconds": 85.988678,
+    "resolution": "1080x2400",
+    "performanceEvidence": false,
+    "kotlinDeviceReadbackHashMatched": false,
+    "contactSheets": [
+      "../../../acceptance-artifacts/ntp-route-poco-20261123/ntp-main-contact.png",
+      "../../../acceptance-artifacts/ntp-route-poco-20261123/ntp-flutter-contact.png"
+    ]
+  },
+  "flutterReference": {
+    "hostPackage": "com.lonnnnnng.kclash.reference.flutter_ntp_provider_reference",
+    "hostApkSha256": "ff276826fb851026ae23d8f2b881d762116c77930bd4ab00a428f295c106ff97",
+    "runtime": "Isolated NtpView host with an in-memory profile fixture; the original com.follow.clash package and profile database were not modified.",
+    "sourceScope": "The capture compares NTP empty, add-panel, same-field and server-dialog component states. It does not represent the upstream Flutter MainActivity route.",
+    "comparison": "Resting page and sheet geometry are close. Dialog placement and dark scrim differ slightly, and opening/dismissing the dialog differs in timing. This run does not claim pixel equality or full-app route equivalence.",
+    "originalComFollowClash": {
+      "versionName": "0.9.4",
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-22 14:21:51",
+      "modified": false
+    }
+  },
+  "deviceStateAfterCleanup": {
+    "productionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "ordinaryTestPackagePresentAndUnchanged": true,
+    "originalFlutterPackage": "com.follow.clash 0.9.4",
+    "originalFlutterFirstInstallTime": "2026-11-07 02:44:08",
+    "originalFlutterLastUpdateTime": "2026-11-22 14:21:51",
+    "originalFlutterPackageChanged": false,
+    "motionAndIsolatedReferencePackagesAbsent": true,
+    "testYamlCopyRemovedAfterSha256Verification": true,
+    "flutterRecordingCopyRemovedAfterSha256Verification": true,
+    "menuTraceCopyRemovedAfterSha256Verification": true,
+    "deviceUiHierarchyCopiesRemovedAfterLocalSha256Match": 22,
+    "vpnOrProxyServiceRunning": false,
+    "perfettoSessions": 0,
+    "accelerometerRotation": 1,
+    "userRotation": 0,
+    "fontScale": 1.0,
+    "workspaceYamlSha256AndMetadataUnchanged": true
+  },
+  "limits": [
+    "The Kotlin path exercises real MainActivity, the production Room repository and the selected profile lifecycle inside the motion acceptance package.",
+    "Flutter is an isolated component host. Its recording is not a paired test of the complete upstream route, and the differing flows/durations are not a frame-by-frame transition comparison.",
+    "The Kotlin recording was pulled and parsed locally, but its device copy was no longer present during the later device-side check; no device-side Kotlin recording SHA readback is claimed.",
+    "No product source changed in this slice. The motion/test and Flutter reference APKs were temporary acceptance hosts."
+  ],
+  "next": "Compare remaining child pages and panels using same-state component fixtures and real MainActivity routes where practical; retain the complete-upstream-route limitation until a compatible Flutter runtime fixture is available."
+}

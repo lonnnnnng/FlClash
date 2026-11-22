@@ -1,0 +1,135 @@
+{
+  "id": "KUI-VIS-089-DIAGNOSTIC",
+  "date": "2026-11-23",
+  "scope": "Joint Perfetto capture for repeated dropdown first-open and close frames, per-token UI/RenderThread scheduling, GPU buffer waits and kernel fence events",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "build": "current installed system image",
+    "glassEnabled": false
+  },
+  "source": {
+    "branch": "kotlin",
+    "commit": "9a302fedbeddf460792d28ce105322e6251ef99d",
+    "scope": "VisualMotionTestActivity motion diagnostic fixture, not release/R8 or real MainActivity",
+    "productSourceChanged": false
+  },
+  "capture": {
+    "trace": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint.perfetto-trace",
+    "traceBytes": 34061019,
+    "traceSha256": "e5ca93a3d058b2af83615a8caa9a8cd10f026d593d0ea6922c511af7129fb5e5",
+    "deviceReadbackSha256": "e5ca93a3d058b2af83615a8caa9a8cd10f026d593d0ea6922c511af7129fb5e5",
+    "config": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint.pbtxt",
+    "processor": "Perfetto v59.1-1e9c61e98",
+    "devicePerfetto": "v51.2",
+    "bufferBytes": 134217728,
+    "durationSeconds": 35,
+    "dataSources": [
+      "linux.ftrace scheduler, dma_fence and KGSL events",
+      "linux.process_stats",
+      "android.surfaceflinger.frametimeline",
+      "atrace gfx/view/wm for motion app and test package"
+    ],
+    "instrumentation": {
+      "class": "com.lonnnnnng.flclash.ui.VisualMotionNaturalInstrumentedTest",
+      "method": "darkMenuFirstOpenAndCloseFrameTimeline",
+      "passes": 1,
+      "menuOpenCycles": 10,
+      "menuCloseCycles": 10,
+      "log": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-instrumentation.log"
+    },
+    "integrity": {
+      "traceStats": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-integrity.csv",
+      "traceLocalBufferChunksWritten": 1111,
+      "traceLocalBufferChunksRead": 1110,
+      "traceLocalBufferChunksDiscarded": 0,
+      "traceLocalBufferChunksOverwritten": 0,
+      "traceLocalBufferDataLossCounters": 0,
+      "globalTracedChunksDiscarded": 31,
+      "interpretation": "The session-local ring buffer reports no discarded or overwritten chunks. The global traced_chunks_discarded stat remains nonzero and its producer/owner is unresolved; no attribution is claimed for that global count."
+    }
+  },
+  "frameTimeline": {
+    "csv": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-frame-threads.csv",
+    "perTokenSql": "../../../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21/frame-thread-attribution.sql",
+    "markedPopupFrames": 439,
+    "appDeadlineMissedFrames": 37,
+    "droppedFrameClassifications": 12,
+    "bufferStuffingClassifications": 253,
+    "categoriesMayOverlap": true,
+    "breakdown": {
+      "firstOpen": {
+        "frames": 13,
+        "appDeadlineMissed": 4,
+        "droppedFrame": 1,
+        "medianAppDeadlineFrameMs": 48.0145,
+        "medianUiThreadScheduledMsOnMissedFrames": 30.293,
+        "maxUiThreadScheduledMsOnMissedFrames": 78.314,
+        "medianRenderThreadScheduledMsOnMissedFrames": 11.529,
+        "limits": "Only 2 of the 4 first-open missed frames have a matching RenderThread slice."
+      },
+      "warmOpens": {
+        "frames": 106,
+        "appDeadlineMissed": 23,
+        "droppedFrame": 6,
+        "medianAppDeadlineFrameMs": 34.15,
+        "medianUiThreadScheduledMsOnMissedFrames": 31.528,
+        "maxUiThreadScheduledMsOnMissedFrames": 68.05,
+        "medianRenderThreadScheduledMsOnMissedFrames": 7.341
+      },
+      "closes": {
+        "frames": 320,
+        "appDeadlineMissed": 10,
+        "droppedFrame": 5,
+        "medianAppDeadlineFrameMs": 29.9285,
+        "medianUiThreadScheduledMsOnMissedFrames": 16.7635,
+        "maxUiThreadScheduledMsOnMissedFrames": 19.923,
+        "medianRenderThreadScheduledMsOnMissedFrames": 4.8305
+      }
+    },
+    "interpretation": "In this dark isolated motion-host capture, App Deadline Missed rows coincide with high scheduled main/UI-thread work (about 16.8-31.5ms median across the three groups). This supports UI-thread work as a contributor to deadline misses in this fixture, but the trace does not identify a Kotlin method or establish the same cause in release/R8 or real MainActivity. Dropped Frame rows have low matched UI and RenderThread running time and remain unattributed."
+  },
+  "gpuAndFences": {
+    "fenceEvents": {
+      "dmaFenceWaitStart": 17,
+      "dmaFenceWaitEnd": 17,
+      "pairedByContextAndSequence": 17,
+      "medianWaitMs": 0.077083,
+      "maxWaitMs": 25.8675,
+      "overlapWithMarkedOpenCloseIntervals": 0,
+      "thread": "crtc_commit"
+    },
+    "renderThreadBufferWait": {
+      "sql": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-render-buffer.sql",
+      "perFrameCsv": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-render-buffer.csv",
+      "matchedFrames": 439,
+      "closeFramesWithWait": 155,
+      "medianWallMsWhenPresentOnCloseFrame": 1.051,
+      "maxWallMsOnCloseFrame": 4.977,
+      "appDeadlineMissedCloseFramesWithWait": 0,
+      "interpretation": "DrawFrames-descendant waitForBufferRelease slices occur on many close frames but none of the 10 close App Deadline Missed frames; they reflect buffer pacing/backpressure in this trace and are not evidence that GPU wait caused the observed deadline misses."
+    },
+    "kgslEvents": {
+      "queued": 2157,
+      "submitted": 1115,
+      "retired": 1117,
+      "frameTokenCorrelation": "Not established"
+    }
+  },
+  "conclusion": "This is a useful partial attribution: session-local trace buffer integrity is clean; the repeated global discarded counter remains unexplained; App Deadline Missed frames correlate with main/UI-thread CPU occupancy in this motion fixture; GPU completion/buffer backpressure appears but did not overlap the marked close deadline misses; dropped-frame and release-build causes remain open. It does not establish stable performance improvement.",
+  "artifacts": {
+    "menuWindows": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-menu-windows.csv",
+    "kernelFencePairs": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-waits.csv",
+    "userspaceWaitSlices": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-userspace-waits.csv"
+  },
+  "deviceState": {
+    "productionPackage": "com.lonnnnnng.flclash 0.1.16",
+    "originalFlutterPackage": "com.follow.clash 0.9.4",
+    "productionAndOriginalFlutterPackagesModified": false,
+    "runtime": "STOPPED",
+    "workspaceYamlUnchanged": true,
+    "rotationSettingsRestored": true
+  },
+  "next": "Continue remaining page/panel and continuous-transition comparisons. For performance work, isolate main-thread work on an R8 MainActivity path and separately explain the producer/service-level discarded counter before any optimization-benefit claim."
+}

@@ -1,4 +1,6 @@
 # KClash Kotlin 重写路线图
+> **KUI-VIS-088（2026-11-23，NTP真实主流程与Flutter组件对照，POCO）**：当前Motion APK的真实MainActivity经Profiles→CUSTOM→More→NTP，四标量保存/清除、错误反馈、IME、草稿Activity重建、Room回读与测试配置清理通过1/1。12张截图的38个分片/PNG CRC及哈希通过；Kotlin自然录像117.536秒、隔离Flutter组件录像85.989秒。参考宿主仅为内存NtpView，不代表完整Flutter MainActivity或相同路线逐帧对照。Flutter、Kotlin联系人图和录像见本地验收附件；原版Flutter应用和用户正文保持未修改，核心停止。[验收证据](acceptance/ntp-route-poco-20261123.json)。
+> **KUI-VIS-089（2026-11-23，菜单联合Perfetto诊断，POCO）**：Motion测试宿主暗色DropdownMenu连续10轮开合，单份35秒trace按Surface FrameTimeline窗口/token关联UI/RenderThread，并采集KGSL与dma_fence。菜单窗439帧；App Deadline Missed帧的UI线程running中位约16.8–31.5ms（分首次/暖开/关闭），支持隔离宿主中主线程繁忙是deadline miss贡献项，但未锁定具体Kotlin调用或证明正式R8/MainActivity同因。17对内核fence等待均在标记菜单区间之外；10个关闭deadline miss均未见DrawFrames内waitForBufferRelease；GPU/缓冲等待未解释关闭超时帧。trace本地ring buffer弃失/覆盖为0；global traced_chunks_discarded=31仍无owner归因，丢帧类也未解释。不能宣称稳定性能收益。[验收证据](acceptance/menu-joint-attribution-poco-20261123.json)。
 
 > **KUI-VIS-087（2026-11-23，Sniffer 真实父子路由与连续录屏，POCO）**：当前提交`0e1d9b5839eddd6cfef9e44582987d2edaa5e217`构建的Motion/AndroidTest APK在POCO F2 Pro/API36上，将真实MainActivity→配置→CUSTOM编辑→更多→Sniffer→HTTP→端口走通两次，最终录屏批次1/1；覆盖IME搜索、快速Back、两端口与目标值保存、退出重开、Activity重建、Room回读及原库/正文/脚本/偏好/选择保护。12张1080×2400截图分片、字节数、SHA和PNG头通过校验；56.2秒H.264连续录像SHA已设备端回读，录像仅证明自然交互、不作性能证据。Flutter同态页来自隔离`SnifferView`宿主与内存CUSTOM夹具，原版`com.follow.clash`只读未改；空态/静止添加面板位置接近，展开搜索+IME仍有少量垂直停靠差异，不能据此宣称完整Flutter MainActivity路由或全页像素一致。首次两个失败分别是共享Downloads权限和通知权限系统弹窗，均在UI流程前解决，失败记录保留。正式0.1.16、普通测试包、原版Flutter安装时间、工作区`1.yaml`及用户数据保持；Motion/隔离Flutter包与本轮文件已清理，服务停止。本组未改产品代码，未重跑JVM/Release/Lint。完整视觉仍PARTIAL；其他子页/面板与精确转场、菜单discarded来源及GPU/fence/RenderThread归因仍未闭环，玻璃默认关闭。[验收证据](acceptance/sniffer-route-poco-20261123.json)，[录像、12张截图及日志](../../acceptance-artifacts/sniffer-route-poco-20261123/main-route/)。
 
@@ -952,14 +954,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | KUI-VIS-087当前提交Motion/AndroidTest APK构建后，真实MainActivity Sniffer父子导航最终批次1/1，两次通过；12张PNG和56.2秒录屏已核验。此次未改产品源码，未重跑JVM/Release/Lint。完整Flutter主应用路由与展开搜索面板几何仍部分待核。公开Latest仍为0.1.16，详见[KUI-VIS-087验收](acceptance/sniffer-route-poco-20261123.json)。 |
+| 最新自动化记录 | KUI-VIS-088真实MainActivity NTP保存/回读最终1/1、12张PNG与两段交互录屏已核验；同日联合菜单Perfetto分析Motion宿主439帧，发现App Deadline Missed与UI线程运行时间升高相关，证据不代表正式R8/真实MainActivity收益。产品源码未改，公开Latest仍为0.1.16。[088](acceptance/ntp-route-poco-20261123.json)、[089诊断](acceptance/menu-joint-attribution-poco-20261123.json)。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | POCO F2 Pro已安装0.1.16正式签名Release；安装前包缺席，首次安装时间在公开资产更新后保持。未导入配置或启动核心/VPN；`com.follow.clash`仅只读打开空配置页，包版本/安装时间未变、数据未改；原1.yaml/2.yaml未读取。 |
-| 正在推进 | 0.1.16已发布；KUI-VIS-084主导航淡入、085 NTP父页空态、086配置空态与范围回归、087 Sniffer真实MainActivity父子路由/Room回读/连续录屏已验。完整Flutter主应用路由不等价；展开搜索+IME仍有小幅垂直停靠差异，其他子页和面板的连续转场仍待。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence/RenderThread归因未闭环，不作性能收益声明；玻璃默认关闭。 |
+| 正在推进 | 0.1.16已发布；KUI-VIS-084～088逐项已验，NTP真实MainActivity父子路由/Room回读通过，Flutter只完成隔离组件对照。其他子页/面板几何、完整Flutter主应用同态路由与连续转场仍待。菜单诊断仅在Motion宿主发现App Deadline Missed伴随UI线程running升高；具体代码热点和正式R8/MainActivity复现未完成，Dropped Frame/global discarded owner/GPU-fence帧归因仍开放；无稳定性能收益声明。玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [KUI-VIS-087 Sniffer真实父子路由与连续录屏](acceptance/sniffer-route-poco-20261123.json)、[086配置空态与NTP/Sniffer范围回归](acceptance/profile-empty-nullstatus-poco-20261123.json)、[0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)。 |
+| 最新证据 | [KUI-VIS-088 NTP真实路由](acceptance/ntp-route-poco-20261123.json)、[KUI-VIS-089菜单联合trace](acceptance/menu-joint-attribution-poco-20261123.json)、[KUI-VIS-087 Sniffer真实父子路由](acceptance/sniffer-route-poco-20261123.json)、[0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)。 |
 
 ## 4. 目标架构图
 
@@ -1510,7 +1512,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 KClash 0.1.16/code1016 是当前 GitHub Latest，签名构建和公开APK资产见[0.1.16发布证据](acceptance/release-0.1.16-20261122.json)。以下0.1.13记录为历史：标签`kclash-v0.1.13`固定`5c8161d9`，恢复CI `44921344965`的正式签名Release、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和`SHA256SUMS`一致，沿用既有证书。首次标签运行因Gradle构建步骤缺少签名密码/别名环境变量而失败，修正提交`b01fa1ed`后从原标签源码恢复；首个运行没有创建Release。详见[历史0.1.13发布证据](acceptance/release-0.1.13-20261122.json)。
 
-最新视觉切片为KUI-VIS-086：配置空态补真实Flutter页面与Kotlin MainActivity空态运行对照，四角插图/中性按钮和位置几何通过；NTP/Sniffer共用按钮范围回归也通过。KUI-VIS-085 NTP父页空态、KUI-VIS-084主导航淡入证据继续保留。四模块924项JVM及Debug/Release/Motion Lint、Debug/Release-R8构建均通过。Flutter参考包只读打开空配置页，数据未改；非空Profiles旧截图矩阵两项哈希差异保留。完整其它子页/连续转场仍PARTIAL。菜单trace discarded来源及GPU/fence归因未完成，无稳定收益声明；玻璃默认关闭。本批未发版，正式版仍0.1.16。[本组证据](acceptance/profile-empty-nullstatus-poco-20261123.json)。
+最新视觉切片为KUI-VIS-088：POCO真实MainActivity NTP编辑流程覆盖草稿Activity重建、输入校验、Room回读和临时数据清理，并留12张图及两段交互录像；Flutter为隔离NtpView宿主，不能据此声称完整上游主应用等价。KUI-VIS-089补采35秒联合Perfetto trace，在Motion诊断宿主关联439条菜单窗口帧；App Deadline Missed伴随UI线程running升高，但具体代码热点和正式R8/真实MainActivity复现未完成。trace buffer自身无丢帧，global discarded计数owner与Dropped Frame/GPU-fence成因仍未结论。其他子页、面板、完整连续转场仍PARTIAL，无稳定性能收益声明。本批未改产品代码，未发版，公开Latest仍0.1.16。[NTP验收](acceptance/ntp-route-poco-20261123.json)、[菜单诊断](acceptance/menu-joint-attribution-poco-20261123.json)。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 
