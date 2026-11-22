@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **KUI-VIS-087（2026-11-23，Sniffer 真实父子路由与连续录屏，POCO）**：当前提交`0e1d9b5839eddd6cfef9e44582987d2edaa5e217`构建的Motion/AndroidTest APK在POCO F2 Pro/API36上，将真实MainActivity→配置→CUSTOM编辑→更多→Sniffer→HTTP→端口走通两次，最终录屏批次1/1；覆盖IME搜索、快速Back、两端口与目标值保存、退出重开、Activity重建、Room回读及原库/正文/脚本/偏好/选择保护。12张1080×2400截图分片、字节数、SHA和PNG头通过校验；56.2秒H.264连续录像SHA已设备端回读，录像仅证明自然交互、不作性能证据。Flutter同态页来自隔离`SnifferView`宿主与内存CUSTOM夹具，原版`com.follow.clash`只读未改；空态/静止添加面板位置接近，展开搜索+IME仍有少量垂直停靠差异，不能据此宣称完整Flutter MainActivity路由或全页像素一致。首次两个失败分别是共享Downloads权限和通知权限系统弹窗，均在UI流程前解决，失败记录保留。正式0.1.16、普通测试包、原版Flutter安装时间、工作区`1.yaml`及用户数据保持；Motion/隔离Flutter包与本轮文件已清理，服务停止。本组未改产品代码，未重跑JVM/Release/Lint。完整视觉仍PARTIAL；其他子页/面板与精确转场、菜单discarded来源及GPU/fence/RenderThread归因仍未闭环，玻璃默认关闭。[验收证据](acceptance/sniffer-route-poco-20261123.json)，[录像、12张截图及日志](../../acceptance-artifacts/sniffer-route-poco-20261123/main-route/)。
+
 > **KUI-VIS-086（2026-11-23，配置空态整页对齐与 NTP/Sniffer 范围回归，POCO）**：Flutter `NullStatus` 配置页空态的圆形文档徽章/四角装饰、上移锚点、中性 raised surface 按钮已对齐；按钮为44dp高、约114dp宽，垂直位置与Flutter运行画面实测一致。仅配置页使用新增专用插图，其他空态不变。此前NTP的44dp紧凑动作扩散到Sniffer共用编辑器，已收回到NTP分支；Sniffer维持Material默认40dp。POCO F2 Pro/API36四条定向用例4/4通过，覆盖真实MainActivity空页几何/截图、忙碌和运行期按钮门闩、NTP页以及Sniffer尺寸回归；四模块924项JVM零失败/错误/跳过，Debug/Release/Motion Lint各0错误/11警告，Debug、Release-R8和Motion APK构建成功。真实Flutter与Kotlin MainActivity空配置页各1张1080x2400截图已核验并目视。Profiles非空截图矩阵另有自定义卡片和远程用量两项既有哈希差异，本轮未改这两条非空渲染分支，原因未归因并保留原始XML。正式KClash版本/安装时间、Flutter参考包和用户配置保持；Motion包已回收，服务停止。[验收证据](acceptance/profile-empty-nullstatus-poco-20261123.json)，[真机截图和XML](../../../acceptance-artifacts/profile-empty-nullstatus-poco-20261123/)。
 
 > **KUI-VIS-085（2026-11-23，NTP父页空态与Flutter组件对照，POCO）**：修正NTP空态插图为Flutter圆角方形时钟牌，使用clock glyph及固定波形/点/加号装饰组合，尺寸按视口保持160dp（窄屏120dp）；仅影响NTP，Sniffer及其它空态不变。页面空态整体下移10dp，添加按钮改为44dp高并收紧水平内边距。POCO F2 Pro/API36固定Compose宿主深浅主题按钮宽度120–140dp/高度44dp、NTP标题、YAML入口、非空新增入口隐藏及插图尺寸断言通过；最终1/1。Flutter独立NtpView空Profile宿主与Kotlin固定宿主深浅整页截图各2张，尺寸/字节/SHA核验并目视。Debug/Motion JVM共1555项全绿，Debug/Release/Motion Lint各0错误/11警告，Release-R8和Motion/Test APK构建通过。原版`com.follow.clash`当时无Profile，未修改其数据；对照截图来自固定上游NtpView隔离宿主。顶部工具按钮材质及少量字形/间距仍可见差异。Kotlin截图也来自固定Compose宿主，不证明Room/MainActivity实时数据或完整连续路由等价。菜单trace discarded来源、app-surface FrameTimeline与GPU/fence等待仍未归因，无稳定性能收益结论；玻璃默认关闭。[验收证据](acceptance/ntp-parent-empty-parity-poco-20261123.json)，[深浅主题对照图](../../../acceptance-artifacts/ntp-parent-empty-poco-20261123/)。
@@ -950,14 +952,14 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | KUI-VIS-086统一构建：四模块924项JVM零失败、Debug/Release/Motion Lint各0错误/11警告，Debug与未签名Release-R8 APK成功；POCO空配置页及NTP/Sniffer定向4/4。非空 Profiles 两项旧截图哈希差异仍保留。公开Latest仍为0.1.16，详见[发布证据](acceptance/release-0.1.16-20261122.json)与[本轮验收](acceptance/profile-empty-nullstatus-poco-20261123.json)。 |
+| 最新自动化记录 | KUI-VIS-087当前提交Motion/AndroidTest APK构建后，真实MainActivity Sniffer父子导航最终批次1/1，两次通过；12张PNG和56.2秒录屏已核验。此次未改产品源码，未重跑JVM/Release/Lint。完整Flutter主应用路由与展开搜索面板几何仍部分待核。公开Latest仍为0.1.16，详见[KUI-VIS-087验收](acceptance/sniffer-route-poco-20261123.json)。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | POCO F2 Pro已安装0.1.16正式签名Release；安装前包缺席，首次安装时间在公开资产更新后保持。未导入配置或启动核心/VPN；`com.follow.clash`仅只读打开空配置页，包版本/安装时间未变、数据未改；原1.yaml/2.yaml未读取。 |
-| 正在推进 | 0.1.16已发布；KUI-VIS-084主导航淡入、KUI-VIS-085 NTP父页空态、KUI-VIS-086 配置空态与NTP/Sniffer范围回归已验。完整子页/面板与自然连续转场仍待；下一项核对Sniffer整页父子导航矩阵。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
+| 正在推进 | 0.1.16已发布；KUI-VIS-084主导航淡入、085 NTP父页空态、086配置空态与范围回归、087 Sniffer真实MainActivity父子路由/Room回读/连续录屏已验。完整Flutter主应用路由不等价；展开搜索+IME仍有小幅垂直停靠差异，其他子页和面板的连续转场仍待。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence/RenderThread归因未闭环，不作性能收益声明；玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [KUI-VIS-086配置空态与NTP/Sniffer范围回归](acceptance/profile-empty-nullstatus-poco-20261123.json)、[0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)、[0.1.15订阅HTTP来源策略](acceptance/subscription-http-policy-poco-20261122.json)、[081组织布局/弹框暗色点击态](acceptance/dashboard-runtime-refinements-poco-20261122.json)。 |
+| 最新证据 | [KUI-VIS-087 Sniffer真实父子路由与连续录屏](acceptance/sniffer-route-poco-20261123.json)、[086配置空态与NTP/Sniffer范围回归](acceptance/profile-empty-nullstatus-poco-20261123.json)、[0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)。 |
 
 ## 4. 目标架构图
 

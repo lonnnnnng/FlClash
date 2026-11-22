@@ -1,0 +1,167 @@
+{
+  "id": "KUI-VIS-087",
+  "date": "2026-11-23",
+  "scope": "Sniffer real MainActivity parent-child route, Room round-trip, continuous navigation recording, and isolated Flutter component comparison",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "densityOverrideDpi": 396,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "glassEnabled": false
+  },
+  "source": {
+    "repository": "lonnnnnng/FlClash",
+    "branch": "kotlin",
+    "commit": "0e1d9b5839eddd6cfef9e44582987d2edaa5e217",
+    "productSourceChanged": false
+  },
+  "build": {
+    "command": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "passed",
+    "durationSeconds": 10,
+    "gradleTasks": {
+      "total": 198,
+      "executed": 1,
+      "upToDate": 197
+    },
+    "log": "../../../acceptance-artifacts/sniffer-route-poco-20261123/build-motion.log",
+    "logSha256": "6ad0c051eb25ec417d4ea91566e9ac60939110293e58e84b5d211312c64ea6ac",
+    "motionApk": {
+      "package": "com.lonnnnnng.flclash.motion",
+      "versionName": "0.1.16-motion",
+      "versionCode": 1016,
+      "bytes": 67542073,
+      "sha256": "52f77c168cf4f67bae6f1cea1baa164255411e4a61032d67aa338e8c73b92381"
+    },
+    "androidTestApk": {
+      "package": "com.lonnnnnng.flclash.motion.test",
+      "bytes": 3307923,
+      "sha256": "0aa68dbcdc63872223b3b5d7d77e242f775f798de8b8015dfeb20bbcc8097b52"
+    }
+  },
+  "authorizedLocalYaml": {
+    "source": "workspace root 1.yaml",
+    "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+    "bytes": 34220,
+    "mtimeEpochSeconds": 1794392072,
+    "uploadedOnlyToIsolatedMotionPackage": true,
+    "uploadedToInternet": false,
+    "deviceCopiesRemovedAfterHashVerification": true,
+    "contentsIncludedInEvidence": false
+  },
+  "instrumentation": {
+    "class": "com.lonnnnnng.flclash.ui.MainSnifferNaturalInstrumentedTest",
+    "method": "snifferPortsSaveReopenAndRapidBackUseRealNavigation",
+    "successfulRuns": 2,
+    "finalRecordedRun": {
+      "tests": 1,
+      "passed": 1,
+      "failures": 0,
+      "skipped": 0,
+      "log": "../../../acceptance-artifacts/sniffer-route-poco-20261123/main-route/instrumentation.log",
+      "logSha256": "676099172f7fb73c3f9114886c0ba8d150f2f8067cd547b001a70894d5f56a23",
+      "pngCount": 12,
+      "allPngChunksBytesDimensionsAndSha256Verified": true,
+      "screenshotsJson": "../../../acceptance-artifacts/sniffer-route-poco-20261123/main-route/screenshots.json",
+      "screenshotsJsonSha256": "486e086d710510fec3a828a3cf90ddcf2ec7a947d30f023ccba51d2adef23def"
+    },
+    "coveredFlow": [
+      "MainActivity Profiles tab to a temporary CUSTOM profile",
+      "Profile editor to More to Sniffer to HTTP to ports",
+      "Rapid Back during real page entry",
+      "Add panel search with visible IME and protocol selection",
+      "Edit two ports, save independently, and save destination override=false",
+      "Save Sniffer YAML and return through the real parent route",
+      "Reopen the port list, recreate Activity, and read committed values from Room"
+    ],
+    "preservation": {
+      "existingRowsBodiesScriptsPreferencesAndSelectionUnchanged": true,
+      "temporaryProfileAndBodyRemoved": true,
+      "runtime": "STOPPED",
+      "originalProfileBodySha256Unchanged": true
+    },
+    "nonFinalAttempts": [
+      {
+        "log": "../../../acceptance-artifacts/sniffer-route-poco-20261123/current/instrumentation.log",
+        "result": "Failed before UI interaction: app UID could not read shared Downloads under scoped storage (EACCES). No profile was created."
+      },
+      {
+        "log": "../../../acceptance-artifacts/sniffer-route-poco-20261123/current/instrumentation2.log",
+        "result": "First-run Android notification permission dialog owned the active window, so the test could not see the underlying Profiles navigation. Its finally block removed the temporary row and body and confirmed preservation."
+      }
+    ]
+  },
+  "continuousRecording": {
+    "path": "../../../acceptance-artifacts/sniffer-route-poco-20261123/main-route/natural-main.mp4",
+    "format": "H.264",
+    "resolution": "1080x2400",
+    "durationSeconds": 56.201489,
+    "bytes": 23368793,
+    "sha256": "e02e04ec5b076eff444ed2cd4f6aea60dd51511e083080ae09dc6ff7d6921836",
+    "deviceCopyRemovedAfterReadbackHashMatch": true,
+    "performanceEvidence": false,
+    "contactSheet": "../../../acceptance-artifacts/sniffer-route-poco-20261123/main-route-contact.png",
+    "contactSheetSha256": "20b38d07300e0408765c41e37e1a2280f30278cacea084ba1d11cecd03efecb8"
+  },
+  "flutterReference": {
+    "hostPackage": "com.lonnnnnng.kclash.reference.flutter_sniffer_full_reference",
+    "hostSourceSha256": "8c35ca48fcd1e4ca15673060271487d60f3b7aaf01d60c373f2a5c0d18a131fa",
+    "apkSha256": "7ee1b1602207d8010e8a78f0d94f827fb169164861851b088e99bd866f1dc7d3",
+    "flutterSdk": "3.50.0",
+    "upstreamCiSdk": "3.47.6",
+    "runtime": "Isolated host with an in-memory CUSTOM profile fixture and original SnifferView; it is not the upstream Flutter MainActivity route.",
+    "originalComFollowClash": {
+      "versionName": "0.9.4",
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-22 14:21:51",
+      "modified": false
+    },
+    "capturedStates": {
+      "emptySniffer": {
+        "file": "../../../acceptance-artifacts/sniffer-route-poco-20261123/flutter-sniffer-empty.png",
+        "sha256": "c95e2951cb9d869b642b221461f072b18b5ab3458f5a151350217077fdc6b558"
+      },
+      "addPanel": {
+        "file": "../../../acceptance-artifacts/sniffer-route-poco-20261123/flutter-sniffer-add.png",
+        "sha256": "2b0f2e636ff53d4afbcb4e13d05569fa93cbdff3adc55a070deee27fc2769225"
+      },
+      "searchIme": {
+        "file": "../../../acceptance-artifacts/sniffer-route-poco-20261123/flutter-sniffer-search-ime.png",
+        "sha256": "f62aaff7463cf3acc3b9d9e72acccf4fadc201be95d28ae2c36512d20bbd41cd"
+      },
+      "noMatchAfterHttpSelection": {
+        "file": "../../../acceptance-artifacts/sniffer-route-poco-20261123/flutter-sniffer-http.png",
+        "sha256": "f905f6d3c07830db95b0e7d6b30cbce4facf673914a43fdc1f5417d9af350b1c"
+      },
+      "configuredHttpRow": {
+        "file": "../../../acceptance-artifacts/sniffer-route-poco-20261123/flutter-sniffer-list.png",
+        "sha256": "0047e50089a6b2a906f7fb1ffb9c0dded6aa4dd72794bb49e2b8dad22b5c582d"
+      }
+    },
+    "comparison": "At the same dark-theme 1080x2400 device size, the resting empty/add-panel states are close in placement. The expanded search-and-IME state retains a small vertical detent/search-dock offset between Flutter and Kotlin. Random Flutter illustration variants differ by design; this run does not claim pixel equivalence across variants, themes, or the complete upstream route."
+  },
+  "deviceState": {
+    "productionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "flutterReferencePackageUnchanged": true,
+    "motionPackagesAbsentAfterAcceptance": true,
+    "flutterHostAbsentAfterAcceptance": true,
+    "ordinaryTestPackagePreserved": true,
+    "vpnOrProxyServiceRunning": false,
+    "accelerometerRotation": 1,
+    "userRotation": 0,
+    "workspaceYamlSha256AndMetadataUnchanged": true
+  },
+  "limits": [
+    "This closes the real Kotlin MainActivity parent-child route and persisted Room readback for the named Sniffer flow; it does not establish full upstream Flutter MainActivity route parity.",
+    "The Flutter reference is an isolated SnifferView host. Remaining exact panel geometry and other subpage transitions are still open.",
+    "Menu trace discarded producer, app-surface FrameTimeline coverage, GPU/fence attribution, and stable performance gains remain unresolved; this recording is not performance evidence.",
+    "Glass remains disabled by default."
+  ],
+  "next": "Continue remaining subpage and panel Flutter comparisons, then return to menu tracing only when one joint trace can provide app-surface FrameTimeline and usable GPU/fence evidence."
+}

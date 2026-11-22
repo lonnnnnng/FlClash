@@ -146,5 +146,5 @@
     "The Flutter illustration chooses random shape/accent variants. This comparison matches the observed runtime variant and does not claim pixel equivalence for all random variants or themes.",
     "Menu trace discarded producer, app-surface FrameTimeline coverage, GPU/fence attribution, and stable menu performance gains remain unresolved. Glass remains disabled by default."
   ],
-  "next": "Continue the Sniffer full-page parent/child route and remaining panel transition comparison on POCO, then return to menu tracing when adequate app-surface frame coverage can be collected."
+  "next": "KUI-VIS-087 has revalidated the real Kotlin Sniffer parent-child route and Room readback. Continue remaining subpage/panel Flutter comparisons and expand the natural transition matrix; menu thread/GPU attribution remains pending."
 }

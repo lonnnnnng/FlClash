@@ -1,5 +1,17 @@
 # 域名嗅探页面、列表草稿与真实转场
 
+## 2026-11-23 KUI-VIS-087 真实父子路由复验
+
+当前提交 `0e1d9b5` 的 Motion 与 AndroidTest APK 在 POCO F2 Pro/API36 上重新运行 `MainSnifferNaturalInstrumentedTest#snifferPortsSaveReopenAndRapidBackUseRealNavigation` 两次通过，最终录制批次 1/1。真实 MainActivity 路径覆盖配置列表、临时 CUSTOM、更多、Sniffer、HTTP、端口、IME 搜索、快速返回、独立保存、退出重开、Activity 重建和 Room 回读。原有配置行/正文/脚本/偏好/选择保持，临时 profile/body 清除，runtime 停止。12 张截图分片完整性和 PNG SHA/尺寸核验通过；56.2 秒自然交互录像设备端 SHA 回读一致。
+
+首次尝试的 Downloads 读取遇 scoped-storage `EACCES`，第二次被首次启动通知权限窗挡住 UI 树；均未进入业务流程，第二次 finally 核对并清理了临时对象。只给隔离 Motion 包授予通知权限后重跑通过。两类失败均独立保留，不算入通过次数。
+
+同一 POCO 深色画面上，对照隔离 Flutter `SnifferView` 内存夹具。Sniffer 空态和添加面板静止档位位置接近；展开搜索并显示 IME 时，面板上沿与搜索 Dock 仍可见少量垂直偏差，留作后续视觉收敛。Flutter 空态插图存在随机形态，截图不同不作为 Kotlin 缺陷。此宿主不包含上游完整 MainActivity 导航；原版 `com.follow.clash` 未操作。自然录像不作掉帧/CPU/GPU 证据，本组没有产品代码变化，也没有重跑 JVM、Release 或 Lint。
+
+正式包、普通测试包、原版 Flutter 包、工作区 `1.yaml`（34220 字节、SHA `7536dd03…aeee8d7`、mtime 保持）、Room/偏好与设备方向设置保持。Motion/隔离 Flutter 包及本轮 USB 暂存文件均已清理，服务停止。菜单 discarded 来源、足量 app-surface FrameTimeline、GPU/fence 与 RenderThread 归因仍未闭环；完整 Flutter 视觉和其他页面/面板转场仍 `PARTIAL`。
+
+[验收 JSON](acceptance/sniffer-route-poco-20261123.json)，[本轮截图、录像和日志](../../acceptance-artifacts/sniffer-route-poco-20261123/)。
+
 ## 2026-11-23 共用空态按钮范围复验
 
 NTP 页44dp紧凑添加动作先前复用了 Sniffer 也使用的空态代码，导致 Sniffer 按钮从 Material 默认40dp变高。本轮把紧凑内边距和高度条件限制为 NTP；Sniffer 继续使用默认 Material 高度与内边距。POCO F2 Pro/API36 的 `vis086SnifferEmptyActionKeepsDefaultButtonGeometry` 通过，实测40dp；NTP `vis085NtpParentEmptyPageMatchesFlutterReferenceInBothThemes` 仍通过。配置页空态视觉及这两条共享组件边界结果见[KUI-VIS-086验收](acceptance/profile-empty-nullstatus-poco-20261123.json)。本复验不覆盖 Sniffer 整页或完整父子连续转场，仍需继续。
