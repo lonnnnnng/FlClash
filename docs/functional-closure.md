@@ -7,7 +7,9 @@
 
 2026-11-18增补：在线 age 订阅完整链路已在POCO API36真实UI验收1/1；授权源轮换到新identity，测试覆盖缺钥、错钥无写入、正确密钥解密导入、Mihomo运行加载和非直连HTTP200。见[验收说明](online-age-subscription-acceptance.md)与[脱敏JSON](acceptance/online-age-subscription-poco-20261118.json)。较早记录中的“明文/无密钥”只反映当时状态。
 
-2026-11-22更新发布：KClash 0.1.13/code1013 已发布为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`。恢复CI 44921344965 的签名构建、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和SHA256SUMS一致，沿用既有证书。Release APK已回下载核验，未安装手机；本版包含KCORE-011及KUI-VIS-073，功能边界保持。见[发布证据](acceptance/release-0.1.13-20261122.json)。
+2026-11-22最新发布：KClash 0.1.14/code1014 已发布为 GitHub Latest，标签`kclash-v0.1.14`固定`435eac6c`。标签CI 44989503023 的签名构建、版本/ABI/DEX/R8及证书门禁通过；公开ARM64 APK 49,616,705字节，SHA`5537d8a3…c5fbc6`与GitHub digest和SHA256SUMS一致，沿用既有证书。Release APK已独立下载、校验并验签，未安装手机；本版包含KUI-VIS-079仪表盘卡片紧凑与固定高度调整。见[发布证据](acceptance/release-0.1.14-20261122.json)。
+
+2026-11-22历史发布：KClash 0.1.13/code1013 曾为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`；签名、版本/ABI/DEX门禁及远端APK校验见[发布证据](acceptance/release-0.1.13-20261122.json)。
 
 2026-11-17历史快照：当时正式版本为0.1.5/code1005，按用户要求直接本机签名构建发布，未重跑单测、完整Lint、Go或真机；TUN受控原生异常补偿最终5/5、前后10笔实网通过，原RULE路径新增TLS失败另列。见[0.1.5发布记录](acceptance/release-0.1.5-20261112.json)。
 

@@ -1,0 +1,137 @@
+{
+  "date": "2026-11-22",
+  "release": {
+    "tag": "kclash-v0.1.14",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.14",
+    "sourceCommit": "435eac6ce1add3c29a70ac5c364a3d92ccd51195",
+    "featureCommit": "54db98a4b4f416ea9aa7beaa8c052b87e1e37dc1",
+    "workflowRunId": 44989503023,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/44989503023",
+    "workflowEvent": "push",
+    "sourceRef": "kclash-v0.1.14",
+    "latest": true,
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-11-22T05:39:28Z",
+    "publishedAtAsiaShanghai": "2026-11-22T13:39:28+08:00",
+    "assets": [
+      {
+        "name": "KClash-0.1.14-android-arm64-v8a.apk",
+        "size": 49616705,
+        "digest": "sha256:5537d8a3339f710f6cd31ed57b8e891964bec2d93fb30dae0de670c2cdc5fbc6",
+        "state": "uploaded",
+        "browserDownloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.14/KClash-0.1.14-android-arm64-v8a.apk"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 102,
+        "digest": "sha256:e78f18bd068f28007bb25f140aa6cc4c237030d5c44e757db5493ffe1adde0c6",
+        "state": "uploaded",
+        "browserDownloadUrl": "https://github.com/lonnnnnng/FlClash/releases/download/kclash-v0.1.14/SHA256SUMS"
+      }
+    ]
+  },
+  "ci": {
+    "result": "success",
+    "duration": "11m50s",
+    "event": "push",
+    "checks": [
+      "Signed ARM64 Release APK build",
+      "Package ID, versionCode, versionName, minSdk, targetSdk, ABI and debuggable checks",
+      "ML Kit registrar DEX checks",
+      "SnakeYAML R8 mapping/usage checks",
+      "Existing release certificate check",
+      "GitHub Release and SHA256SUMS publication"
+    ],
+    "nonBlockingWarnings": [
+      "GitHub Actions reported Node.js 20 and setup-java v4 deprecation notices; the run succeeded."
+    ]
+  },
+  "package": {
+    "versionName": "0.1.14",
+    "versionCode": 1014,
+    "packageName": "com.lonnnnnng.flclash",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "signatureSchemeV2Verified": true,
+    "signerCount": 1,
+    "abis": ["arm64-v8a"],
+    "minSdk": 24,
+    "targetSdk": 37,
+    "debuggable": false,
+    "remoteDigestVerified": true,
+    "sha256SumsVerified": true,
+    "downloadedDexVerified": true
+  },
+  "localPreflight": {
+    "result": "passed",
+    "gradleCommands": [
+      "./gradlew :app:testDebugUnitTest :app:assembleRelease --no-daemon --max-workers=2 -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.14 -PkclashVersionCode=1014",
+      "./gradlew :app:lintDebug :app:lintRelease --no-daemon --max-workers=2 -Ptarget-platform=android-arm64 -PkclashVersionName=0.1.14 -PkclashVersionCode=1014"
+    ],
+    "appJvmTests": {
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "debug": "0 errors, 75 warnings, 15 hints",
+      "release": "0 errors, 71 warnings, 14 hints"
+    },
+    "localUnsignedReleaseApk": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "bytes": 49606453,
+      "sha256": "81e29b4e4bc103ea86a8c8c475d961398fd642d56dff943ecd4b868e760b4e78"
+    },
+    "goRace": "not_run; this release increment contains no Mihomo/core source changes"
+  },
+  "featureAcceptance": [
+    "docs/acceptance/dashboard-metric-cards-poco-20261122.json"
+  ],
+  "deviceAcceptance": {
+    "releasePackageInstalled": false,
+    "reason": "The signed Release APK was downloaded and verified; it was not installed on a phone.",
+    "featureDevice": "POCO F2 Pro / API 36; debug dashboard fixtures were accepted before version preparation."
+  },
+  "protection": {
+    "originalYamlReadDuringRelease": false,
+    "originalYamlUploaded": false,
+    "flutterOriginalModified": false
+  },
+  "rawEvidenceRoot": "../../../acceptance-artifacts/release-0.1.14-20261122",
+  "rawEvidence": {
+    "KClash-0.1.14-android-arm64-v8a.apk": {
+      "sha256": "5537d8a3339f710f6cd31ed57b8e891964bec2d93fb30dae0de670c2cdc5fbc6",
+      "bytes": 49616705
+    },
+    "SHA256SUMS": {
+      "sha256": "e78f18bd068f28007bb25f140aa6cc4c237030d5c44e757db5493ffe1adde0c6",
+      "bytes": 102
+    },
+    "signature.txt": {
+      "sha256": "3fd9715bfedff52f1b2d6f2dd58a69f748509aca366a345e92db1b68d4497798",
+      "bytes": 974
+    },
+    "badging.txt": {
+      "sha256": "ac17e72e26b6dfec9d3f03cdacd84d184289b9618566f80156796685a941fda0",
+      "bytes": 5941
+    },
+    "checksum-verification.txt": {
+      "sha256": "5d0eeb0575decd40bf75b1f53c1467693b355186b1f15a6b321b6d33fc5ec5ed",
+      "bytes": 40
+    },
+    "native-abis.txt": {
+      "sha256": "5c16bcbcf8d275f3f4cb1d32db66e0a52b554afe1d2c9ddc2501c56093aa8df0",
+      "bytes": 185
+    }
+  },
+  "logs": {
+    "localPreflight": "../../../acceptance-artifacts/release-0.1.14-20261122/local-preflight.log",
+    "lint": "../../../acceptance-artifacts/release-0.1.14-20261122/lint.log",
+    "downloadedAssets": "../../../acceptance-artifacts/release-0.1.14-20261122/downloaded/"
+  },
+  "remaining": [
+    "The signed Release APK was not installed on a phone.",
+    "No Go race test was rerun because the release increment did not change the Mihomo/core sources."
+  ]
+}
