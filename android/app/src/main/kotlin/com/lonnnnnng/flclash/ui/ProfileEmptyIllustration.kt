@@ -17,9 +17,11 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.PI
@@ -203,5 +205,82 @@ internal fun ProfileEmptyIllustration(glyph: AppGlyph = AppGlyphs.profiles, outl
         AppGlyphIcon(glyph, Modifier.size(glyphExtent).offset(y = glyphExtent * -pose.glyphRise).graphicsLayer {
             scaleX = pose.glyphScale; scaleY = pose.glyphScale; alpha = pose.glyphAlpha
         }, if (flutterPalette) colors.primary else colors.onPrimaryContainer, fillProgress = pose.glyphFill)
+    }
+}
+
+private enum class NtpEmptyAccentKind { WAVE, DOT, PLUS, DASH }
+
+private data class NtpEmptyAccent(
+    val kind: NtpEmptyAccentKind,
+    val x: Float,
+    val y: Float,
+    val extent: Float,
+    val rotation: Float = 0f,
+)
+
+private val ntpEmptyFlutterAccents = listOf(
+    NtpEmptyAccent(NtpEmptyAccentKind.WAVE, -.38f, -.38f, .15f),
+    NtpEmptyAccent(NtpEmptyAccentKind.DOT, .40f, .34f, .06f),
+    NtpEmptyAccent(NtpEmptyAccentKind.DOT, .46f, .18f, .035f),
+    NtpEmptyAccent(NtpEmptyAccentKind.PLUS, -.43f, .20f, .09f, .4f),
+)
+
+@Composable
+internal fun ProfileNtpEmptyIllustration(extent: Dp) {
+    val progress = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { progress.animateTo(1f, tween(900, easing = LinearEasing)) }
+    val pose = emptyIllustrationPose(EmptyIllustrationEntrance.SPIN, progress.value)
+    val colors = MaterialTheme.colorScheme
+    val tile = remember { Path().apply {
+        addRoundRect(RoundRect(Rect(.05f, .05f, .95f, .95f), CornerRadius(.28f, .28f)))
+    } }
+    val wave = remember { Path().apply {
+        moveTo(-.5f, 0f)
+        quadraticTo(-.25f, -.5f, 0f, 0f)
+        quadraticTo(.25f, .5f, .5f, 0f)
+    } }
+    Box(Modifier.size(extent).testTag("profile_ntp_empty_illustration"), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.fillMaxSize()) {
+            val side = size.minDimension
+            val center = Offset(size.width / 2f, size.height / 2f)
+            withTransform({
+                translate(center.x, center.y)
+                rotate(pose.bodyRotation, Offset.Zero)
+                scale(side * .72f * pose.bodyScale, side * .72f * pose.bodyScale, Offset.Zero)
+                translate(-.5f, -.5f)
+            }) {
+                drawPath(tile, colors.primary.copy(alpha = .15f))
+            }
+
+            // 作者 long：Flutter 每次随机选择装饰布局；NTP 固定为当前参考宿主实测的波形样式，保证重开后版式稳定。
+            ntpEmptyFlutterAccents.forEachIndexed { index, accent ->
+                val begin = .4f + index * .08f
+                val enter = emptyIllustrationPhase(progress.value, begin, begin + .35f, emptyIllustrationBack)
+                val drift = .7f + .3f * enter
+                val radius = side * accent.extent * enter
+                val point = center + Offset(accent.x * side * drift, accent.y * side * drift)
+                val rotation = accent.rotation - 45f * (1f - enter)
+                if (radius > 0f) withTransform({
+                    translate(point.x, point.y)
+                    rotate(rotation, Offset.Zero)
+                    scale(radius, radius, Offset.Zero)
+                }) {
+                    when (accent.kind) {
+                        NtpEmptyAccentKind.WAVE -> drawPath(wave, colors.primary.copy(alpha = .4f), style = Stroke(.2f, cap = StrokeCap.Round))
+                        NtpEmptyAccentKind.DOT -> drawCircle(colors.primary, .5f)
+                        NtpEmptyAccentKind.PLUS -> {
+                            drawLine(colors.primary, Offset(-.37f, 0f), Offset(.37f, 0f), .26f, StrokeCap.Round)
+                            drawLine(colors.primary, Offset(0f, -.37f), Offset(0f, .37f), .26f, StrokeCap.Round)
+                        }
+                        NtpEmptyAccentKind.DASH -> drawLine(colors.primary.copy(alpha = .4f), Offset(-.38f, 0f), Offset(.38f, 0f), .24f, StrokeCap.Round)
+                    }
+                }
+            }
+        }
+        AppGlyphIcon(AppGlyphs.clock, Modifier.size(extent * .4f).graphicsLayer {
+            scaleX = pose.glyphScale
+            scaleY = pose.glyphScale
+            alpha = pose.glyphAlpha
+        }, colors.primary, fillProgress = pose.glyphFill)
     }
 }

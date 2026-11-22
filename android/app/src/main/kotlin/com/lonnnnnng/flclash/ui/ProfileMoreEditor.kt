@@ -112,15 +112,21 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                     // 作者 long：Flutter空态在窄屏收紧标题间距，并让添加按钮与说明文字保持独立呼吸距离。
                     val compact = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() < 560.dp }
                     BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(Modifier.offset(y = -(maxHeight * .14f)).padding(horizontal = 16.dp, vertical = 24.dp).widthIn(max = 320.dp).verticalScroll(rememberScrollState()).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
-                            ProfileEmptyIllustration(if (ntp) AppGlyphs.clock else AppGlyphs.eye,
-                                extent = if (compact) 120.dp else 160.dp, flutterPalette = true)
+                        // 作者 long：Flutter NullStatus 用略偏上的整体锚点；NTP单独下移以匹配父页插图、说明和按钮的视觉中心。
+                        val ntpVisualOffset = if (ntp) 10.dp else 0.dp
+                        Column(Modifier.offset(y = -(maxHeight * .14f) + ntpVisualOffset).padding(horizontal = 16.dp, vertical = 24.dp).widthIn(max = 320.dp).verticalScroll(rememberScrollState()).testTag("profile_more_empty"), horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (ntp) {
+                                ProfileNtpEmptyIllustration(if (compact) 120.dp else 160.dp)
+                            } else {
+                                ProfileEmptyIllustration(AppGlyphs.eye, extent = if (compact) 120.dp else 160.dp, flutterPalette = true)
+                            }
                             Text(tr("暂无设置项"), Modifier.padding(top = if (compact) 12.dp else 16.dp), style = MaterialTheme.typography.titleMedium)
                             Text(tr("仅作用于当前配置，未添加的项使用默认值。"), Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
                                 textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FilledTonalButton(onClick = { adding = true }, enabled = !state.isSaving && currentContent,
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                                 colors = ButtonDefaults.filledTonalButtonColors(containerColor = dashboardCardColor(), contentColor = MaterialTheme.colorScheme.onSurface),
-                                modifier = Modifier.padding(top = 24.dp).testTag("profile_more_empty_add")) {
+                                modifier = Modifier.padding(top = 24.dp).height(44.dp).testTag("profile_more_empty_add")) {
                                 AppGlyphIcon(AppGlyphs.addCircle); Spacer(Modifier.width(8.dp)); Text(tr("添加设置项"))
                             }
                         }

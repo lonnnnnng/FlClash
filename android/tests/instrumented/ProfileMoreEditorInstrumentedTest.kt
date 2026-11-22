@@ -3,6 +3,7 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.test.platform.app.InstrumentationRegistry
@@ -553,6 +554,30 @@ class ProfileMoreEditorInstrumentedTest {
             compose.onNodeWithTag("more_field_enable").assertIsDisplayed()
         } finally {
             compose.mainClock.autoAdvance = true
+        }
+    }
+
+    @Test fun vis085NtpParentEmptyPageMatchesFlutterReferenceInBothThemes() {
+        render()
+        for (theme in listOf("light", "dark")) {
+            compose.runOnIdle {
+                dark = theme == "dark"
+                section = "ntp"
+                state = ProfileMoreEditorUiState(Profile.custom(if (dark) 985 else 984, "NTP视觉验收"))
+            }
+            compose.onNodeWithTag("profile_editor_page").assertIsDisplayed()
+            compose.onNodeWithText("NTP").assertIsDisplayed()
+            compose.onNodeWithTag("profile_more_yaml").assertIsDisplayed()
+            compose.onNodeWithTag("profile_more_add").assertDoesNotExist()
+            compose.onNodeWithTag("profile_ntp_empty_illustration").assertWidthIsEqualTo(160.dp)
+            compose.onNodeWithTag("profile_ntp_empty_illustration").assertHeightIsEqualTo(160.dp)
+            val addAction = compose.onNodeWithTag("profile_more_empty_add")
+            addAction.assertIsEnabled()
+            addAction.assertHeightIsEqualTo(44.dp)
+            val addBounds = addAction.fetchSemanticsNode().boundsInRoot
+            val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+            assertTrue("Flutter空态按钮保持紧凑宽度：${addBounds.width / density}dp", addBounds.width / density in 120f..140f)
+            capture("vis085_ntp_parent_empty_$theme")
         }
     }
 

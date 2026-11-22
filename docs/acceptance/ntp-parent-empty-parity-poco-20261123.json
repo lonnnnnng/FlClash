@@ -1,0 +1,142 @@
+{
+  "id": "KUI-VIS-085",
+  "date": "2026-11-23",
+  "scope": "NTP parent empty state, illustration and add action geometry",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "physicalDensityDpi": 440,
+    "densityOverrideDpi": 396,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "glassEnabled": false
+  },
+  "reference": {
+    "frozenFlutterSource": "../../acceptance-artifacts/docked-search-20261110/flutter-full",
+    "flutterSourceFiles": {
+      "lib/views/config/ntp.dart": "d77597a82fb5083a92dde9e02e7f798267bc4c68ee0b4a765c2e2b123b6dddbf",
+      "lib/views/config/override.dart": "1b1f2d81cfb2e161e3176848d17f0d46da170ba822614b1aba80bb4b43102c38",
+      "plugins/prism_ui/lib/null_status.dart": "9529f18bfa85b2358ad43bb1ab6551053b02eb75f9f8f54ca2221382d80e784e",
+      "plugins/prism_ui/lib/null_status_illustration.dart": "8e6ba53e0ba88f6dc82f37a09c5ecd8e21bc1b06d9bf368587b9be420e025228e",
+      "lib/ui/icons/app_glyphs.dart": "4a2a252feea72f93a73538c1f874f6a477474b5483189ac429b47829c9efb029"
+    },
+    "isolatedReferenceHost": {
+      "package": "com.lonnnnnng.kclash.reference.flutter_ntp_provider_reference",
+      "sourceSha256": "6e7a549d28db4fe876b01e641dd955bfef6de87a2e948dfed36eb057f68f234f",
+      "apkSha256": "ff276826fb851026ae23d8f2b881d762116c77930bd4ab00a428f295c106ff97",
+      "description": "Unmodified upstream NtpView with an in-memory empty Profile, used because the installed original Flutter app currently has no profiles and cannot open NTP without adding data."
+    },
+    "observedVariant": "Rounded-square clock tile with wave, dot, and plus accents; 160dp illustration, centered empty text, and a 44dp compact add action.",
+    "originalFlutterPackage": {
+      "package": "com.follow.clash",
+      "versionName": "0.9.4",
+      "versionCode": 2026113907,
+      "firstInstallTime": "2026-11-07 02:44:08",
+      "lastUpdateTime": "2026-11-22 14:21:51",
+      "modified": false
+    }
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt"
+    ],
+    "changes": [
+      "NTP now uses a dedicated rounded-square clock illustration at 72% of the 160dp canvas, with the matching clock glyph and a deterministic wave/dot/plus accent layout; other empty states keep their existing illustration.",
+      "The NTP parent empty-state group moves down 10dp and its add action is constrained to 44dp high with compact horizontal padding.",
+      "A POCO instrumentation case checks the NTP title, visible YAML action, absence of the nonempty-only toolbar add action, illustration size, enabled empty-state add action, and 120-140dp button width in light and dark themes."
+    ]
+  },
+  "verification": {
+    "instrumentedTests": {
+      "result": "passed",
+      "tests": 1,
+      "passed": 1,
+      "failures": 0,
+      "case": "ProfileMoreEditorInstrumentedTest#vis085NtpParentEmptyPageMatchesFlutterReferenceInBothThemes",
+      "log": "../../../acceptance-artifacts/ntp-parent-empty-poco-20261123/kotlin-instrumentation-final.log"
+    },
+    "jvmTests": {
+      "debug": 924,
+      "motionBenchmark": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": {
+      "result": "passed",
+      "releaseUnsignedApk": {
+        "versionName": "0.1.16",
+        "versionCode": 1016,
+        "bytes": 49576541,
+        "sha256": "37f96a68381a03b62eeafbe4b1ed5c17dab65a380cc156a65fe600772a3922fb"
+      },
+      "motionBenchmarkApk": {
+        "sha256": "f882031af38eef7b8b374ada36de2249081e375449ed54f628ee61810ffbb481",
+        "bytes": 67534729
+      },
+      "motionBenchmarkAndroidTestApk": {
+        "sha256": "5909989a3f2920481e7bdfd114939290eb6d4abf53e45687c53e38691464de67",
+        "bytes": 3307111
+      }
+    },
+    "lint": {
+      "debug": "0 errors, 11 warnings",
+      "release": "0 errors, 11 warnings",
+      "motionBenchmark": "0 errors, 11 warnings"
+    },
+    "visuals": {
+      "artifactDirectory": "../../../acceptance-artifacts/ntp-parent-empty-poco-20261123/",
+      "images": {
+        "flutterLight": {
+          "file": "flutter/ntp-empty-light.png",
+          "bytes": 75732,
+          "dimensions": [1080, 2400],
+          "sha256": "8e910b8b01469012b64c7f216fad1dbcccf8bcfa61bef4577ca3cace5862a239"
+        },
+        "flutterDark": {
+          "file": "flutter/ntp-empty-dark.png",
+          "bytes": 75533,
+          "dimensions": [1080, 2400],
+          "sha256": "0eb7d4b64be9b7739584c25da30acaccc905382535e0ac46f0ee32ac50c6758b"
+        },
+        "kotlinLight": {
+          "file": "kotlin/vis085_ntp_parent_empty_light.png",
+          "bytes": 67982,
+          "dimensions": [1080, 2400],
+          "sha256": "255de00c522b83707d6cda98ca1df793c7794d046c4626934ef4fe8e5e017355"
+        },
+        "kotlinDark": {
+          "file": "kotlin/vis085_ntp_parent_empty_dark.png",
+          "bytes": 69546,
+          "dimensions": [1080, 2400],
+          "sha256": "4bf78cbea37769e0bab251d16645804df3cc38356f81ae960ef82025e10bfa58"
+        }
+      },
+      "inspection": "The selected Flutter random shape/layout variant and Kotlin static empty-state pages were visually inspected side by side. Illustration silhouette, title/description placement, and compact add action now align closely. The toolbar button material and small typography metrics retain visible differences."
+    }
+  },
+  "deviceState": {
+    "installedProductionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "flutterReferencePackage": "com.follow.clash 0.9.4, unchanged",
+    "isolatedFlutterHostRemovedAfterAcceptance": true,
+    "motionPackagesRemovedAfterAcceptance": true,
+    "ordinaryTestPackagePreserved": true,
+    "foregroundRestoredTo": "com.lonnnnnng.flclash/.MainActivity",
+    "vpnStarted": false,
+    "userDataOrProfilesChanged": false
+  },
+  "limits": [
+    "The installed original Flutter app has no profiles, so its NTP page was not reachable without modifying reference data. Visual reference screenshots came from the isolated NtpView host using an in-memory empty Profile.",
+    "Kotlin rendering and assertions use a fixed Compose host, not MainActivity backed by Room or live profile data. Full MainActivity/Flutter page runtime and continuous navigation comparison remain open.",
+    "The NTP empty illustration's selected Flutter geometry is one randomly selected upstream variant; other randomly sampled Flutter shape/accent combinations are not claimed equivalent.",
+    "Menu discarded producer, app-surface FrameTimeline coverage, GPU/fence attribution, and stable performance gain remain unresolved. Glass remains disabled by default."
+  ],
+  "next": "Compare a reachable full subpage and its real parent/child transition using isolated, data-matched hosts, then resume menu trace capture when adequate app-surface frame coverage is available."
+}

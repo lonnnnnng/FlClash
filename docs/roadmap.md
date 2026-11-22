@@ -1,5 +1,7 @@
 # KClash Kotlin 重写路线图
 
+> **KUI-VIS-085（2026-11-23，NTP父页空态与Flutter组件对照，POCO）**：修正NTP空态插图为Flutter圆角方形时钟牌，使用clock glyph及固定波形/点/加号装饰组合，尺寸按视口保持160dp（窄屏120dp）；仅影响NTP，Sniffer及其它空态不变。页面空态整体下移10dp，添加按钮改为44dp高并收紧水平内边距。POCO F2 Pro/API36固定Compose宿主深浅主题按钮宽度120–140dp/高度44dp、NTP标题、YAML入口、非空新增入口隐藏及插图尺寸断言通过；最终1/1。Flutter独立NtpView空Profile宿主与Kotlin固定宿主深浅整页截图各2张，尺寸/字节/SHA核验并目视。Debug/Motion JVM共1555项全绿，Debug/Release/Motion Lint各0错误/11警告，Release-R8和Motion/Test APK构建通过。原版`com.follow.clash`当时无Profile，未修改其数据；对照截图来自固定上游NtpView隔离宿主。顶部工具按钮材质及少量字形/间距仍可见差异。Kotlin截图也来自固定Compose宿主，不证明Room/MainActivity实时数据或完整连续路由等价。菜单trace discarded来源、app-surface FrameTimeline与GPU/fence等待仍未归因，无稳定性能收益结论；玻璃默认关闭。[验收证据](acceptance/ntp-parent-empty-parity-poco-20261123.json)，[深浅主题对照图](../../../acceptance-artifacts/ntp-parent-empty-poco-20261123/)。
+
 > **KUI-VIS-084（2026-11-23，主导航淡入转场与状态保持，POCO）**：按Flutter当前选中的“淡入”将主导航切换改为220ms `easeInOut` 交叉淡入淡出，不再横向平移；代理组内部横向翻页仍保留独立300ms参数。POCO F2 Pro/API36两条定向用例2/2通过，覆盖深浅主题中间帧、页面原位、Dock固定、草稿/滚动恢复与快速反向导航；12张PNG清单的字节数、尺寸、SHA-256均核验。Debug/Motion JVM共1555项零失败/错误/跳过，Debug/Release/Motion Lint各0错误/11警告，Release-R8及Motion/Test APK构建通过。Motion Lint在组合构建中曾发生Kotlin FIR分析异常，单独重跑通过，初次异常原因未确认。验收使用固定Compose导航宿主，不代表完整MainActivity业务页面或Flutter同态实流；其他子页转场仍待验。菜单trace discarded来源、足量app-surface FrameTimeline与GPU/fence归因仍未闭环，无稳定性能收益结论；玻璃默认关闭。[验收证据](acceptance/main-navigation-fade-poco-20261123.json)，[真机截图和日志](../../../acceptance-artifacts/main-nav-fade-poco-20261123/)。
 
 > **KClash 0.1.14 正式发布（2026-11-22）**：标签`kclash-v0.1.14`固定提交`435eac6c`，versionCode 1014，已发布为 GitHub Latest。标签 CI `44989503023` 的签名 ARM64 Release 构建、包名/版本/minSdk/ABI/DEX/R8/证书门禁全部通过。公开 APK 49,616,705 字节，SHA-256 `5537d8a3339f710f6cd31ed57b8e891964bec2d93fb30dae0de670c2cdc5fbc6` 与 GitHub digest、`SHA256SUMS`一致；沿用既有正式证书。POCO F2 Pro/API36 的指标卡验收随本版发布；Release APK 已独立下载、验签并核对，未安装手机。[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.14)，[验收证据](acceptance/release-0.1.14-20261122.json)
@@ -951,7 +953,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | POCO F2 Pro已安装0.1.16正式签名Release；安装前包缺席，首次安装时间在公开资产更新后保持。未导入配置或启动核心/VPN；`com.follow.clash`未操作，原1.yaml/2.yaml未读取。 |
-| 正在推进 | 0.1.16已发布；KUI-VIS-084已对齐主导航淡入并完成固定Compose宿主验收。完整Flutter页面同态及其它子页转场仍待；下一项核对NTP设置页空态。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
+| 正在推进 | 0.1.16已发布；KUI-VIS-084主导航淡入和KUI-VIS-085 NTP父页空态已完成具名宿主验收。完整MainActivity/Flutter运行对照、其它子页和自然连续转场仍待；下一项核对Sniffer整页后续接真实父子导航矩阵。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
 | 最新证据 | [0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)、[0.1.15订阅HTTP来源策略](acceptance/subscription-http-policy-poco-20261122.json)、[081组织布局/弹框暗色点击态](acceptance/dashboard-runtime-refinements-poco-20261122.json)、[080仪表盘/观测页细节](acceptance/dashboard-runtime-observation-polish-poco-20261122.json)。 |
 
@@ -1504,7 +1506,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 KClash 0.1.13/code1013 已发布为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`。恢复CI `44921344965`的正式签名Release、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和`SHA256SUMS`一致，沿用既有证书。Release APK已回下载核验，未安装手机。首次标签运行因Gradle构建步骤缺少签名密码/别名环境变量而失败，修正提交`b01fa1ed`后以明确版本和源码引用手动恢复；首个运行没有创建Release。详见[发布证据](acceptance/release-0.1.13-20261122.json)。
 
-最新视觉切片为KUI-VIS-084：主导航淡入在POCO固定Compose宿主上2/2，深浅主题12张帧图哈希/尺寸通过；1555项JVM、Debug/Release/Motion Lint和Release-R8/Motion APK构建通过。NTP设置页空态与父页外框是下一项；完整MainActivity/Flutter运行并排仍未完成。菜单discarded来源、app-surface FrameTimeline覆盖和GPU/fence归因仍PARTIAL，不宣称性能收益；玻璃默认关闭。本组未发版，当前正式版仍为0.1.16。[本组证据](acceptance/main-navigation-fade-poco-20261123.json)。
+最新视觉切片为KUI-VIS-085：Flutter NTP隔离页面与Kotlin固定Compose父页深浅对照、NTP空态插图及紧凑添加按钮在POCO 1/1通过；KUI-VIS-084主导航淡入另为2/2。Debug/Motion共1555项JVM、三变体Lint、Release-R8及Motion APK构建均通过。原版Flutter当前无配置，未改其数据；两页对照使用各自隔离宿主。NTP工具栏材质/少量字形仍有视觉差，完整MainActivity运行对照和其它子页/连续转场未完成。菜单trace discarded来源及GPU/fence归因仍PARTIAL，无稳定收益声明；玻璃默认关闭。本批未发版，正式版仍0.1.16。[本组证据](acceptance/ntp-parent-empty-parity-poco-20261123.json)。
 
 历史前组功能验收为协议阶段取证与历史任务收口：配置/偏好长期稳定性、Provider运行态恢复按用户接受现状收口，历史异常留档、不再单独追根；连同名单保护共3/6项收口。网络仍活跃：最终协议包8笔HTTPS为5成功/3失败，同会话四笔2成功/2失败；失败均WS Stream返回/首写成功后等待VLESS响应头未完成，记录无丢弃，不能认定远端或链路根因。KCORE-010截断附加头吞错红绿修正，KDIAG-003保存提前错误等待已修，二者不追认为旧TLS原因。907 JVM/双层Go race/Debug-Release-R8/双Lint/motion-Test/DEX通过，Redmi诊断4/4；正式数据与原1.yaml保持、无服务，应用内更新暂缓、未新发版。见[证据](acceptance/protocol-stage-redmi-20261111.json)。以下为历史分组证据。
 
