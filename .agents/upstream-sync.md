@@ -9,7 +9,7 @@
 ## Workflow
 
 1. `git fetch --prune upstream`，记录目标提交和变更范围。
-2. 在 `upstream/main` 或 `main` 中确认 Android 用户可见的功能、状态、错误和交互。
+2. 从固定上游提交读取所需文件，例如 `git show <sha>:lib/views/...`；需要跨文件检查时使用独立临时目录。Kotlin 分支不保存 Flutter 源码副本，禁止为查看参考代码把 Flutter 应用提交合入当前分支。
 3. 更新 Android 功能矩阵，标记手机适用、桌面专属、暂缓或需要重新设计的项目。
 4. 在 Kotlin 主线按 Compose、Room、Repository、CoreRuntimeManager 和 Service 边界实现。
 5. 运行相关单元、UI、instrumented 和真实设备验收；同步更新上下文或 ADR。

@@ -25,7 +25,7 @@ Release 预发布检查（没有独立签名身份时输出未签名 APK）：
 ./gradlew :app:assembleRelease :app:lintRelease --no-daemon -Ptarget-platform=android-arm64
 ```
 
-`.github/workflows/kotlin-android.yml` 仅响应推送 `kclash-vMAJOR.MINOR.PATCH` 标签：一个 job 拉取标签源码，签名构建 arm64 Release APK，核对包名/版本/ABI/签名与必要的 R8 DEX 门禁，再直接更新 GitHub Release 和 SHA256SUMS。普通分支推送、PR 和手动 dispatch 都不会触发该工作流；提交 tag 是正式发布动作，须先得到用户明确发版指示。该发布流水线不运行 JVM/Go 回归或双变体 Lint，这些检查应在发版前由本地/指定验收流程完成。签名身份及本机保管方式见 `docs/adr/0013-kclash-release-signing.md`；Flutter 发布 workflow 不作为 Kotlin 主线的构建入口。
+`.github/workflows/kotlin-android.yml` 仅响应推送 `kclash-vMAJOR.MINOR.PATCH` 标签：一个 job 拉取标签源码，签名构建 arm64 Release APK，核对包名/版本/ABI/签名与必要的 R8 DEX 门禁，再直接更新 GitHub Release 和 SHA256SUMS。普通分支推送、PR 和手动 dispatch 都不会触发该工作流；提交 tag 是正式发布动作，须先得到用户明确发版指示。该发布流水线不运行 JVM/Go 回归或双变体 Lint，这些检查应在发版前由本地/指定验收流程完成。签名身份及本机保管方式见 `docs/adr/0013-kclash-release-signing.md`。本分支只保留这条 Kotlin 发布工作流。
 
 Release生成后执行`python3 tool/check_mlkit_release.py <APK>`核对清单注册器与最终DEX公共无参构造器。Debug不经过R8，不能用Debug扫码通过代替此门禁；升级ML Kit/AGP后还须在Redmi正式包打开取景、释放/恢复及相册识别。缺陷和历史红绿见`docs/release-mlkit-registrar-defect.md`。
 

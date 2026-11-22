@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/images/icon.png" alt="KClash" width="80">
+<img src="assets/branding/kclash-icon-1024.png" alt="KClash" width="80">
 
 # KClash
 
@@ -16,7 +16,7 @@
 
 </div>
 
-KClash 是本仓库的 Android Kotlin 主线，将 [FlClash](https://github.com/chen08209/FlClash) 的 Android 体验重写为原生应用。Flutter 工程仅作为功能行为和 UI/UX 参考，不属于 Kotlin 版本的运行时。
+KClash 是本仓库的 Android Kotlin 主线，将 [FlClash](https://github.com/chen08209/FlClash) 的 Android 体验重写为原生应用。Flutter 源码保留在上游仓库，仅作为功能行为和 UI/UX 参考；本分支不包含 Flutter 运行时。
 
 ## 功能
 
@@ -101,7 +101,7 @@ Debug APK 输出到 `android/app/build/outputs/apk/debug/app-debug.apk`。运行
 ## 项目边界
 
 - Kotlin Android 应用在 `kotlin` 分支开发。
-- Flutter [FlClash 仓库](https://github.com/chen08209/FlClash)只作功能行为与视觉交互参考，不将其应用提交合入 Kotlin 主线。
+- Flutter [FlClash 仓库](https://github.com/chen08209/FlClash)只作功能行为与视觉交互参考；按记录的上游提交只读查看源码，不将其应用提交合入 Kotlin 主线。
 - Mihomo 改动仅通过 `chen08209/Clash.Meta` 的 FlClash 分支及配置的 `lonnnnnng/Clash.Meta` fork / `kclash-fixes` 分支同步。
 
 ## 许可证与反馈

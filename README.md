@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/images/icon.png" alt="KClash" width="80">
+<img src="assets/branding/kclash-icon-1024.png" alt="KClash" width="80">
 
 # KClash
 
@@ -16,7 +16,7 @@ Native Android proxy client built with Kotlin, Jetpack Compose and the Mihomo co
 
 </div>
 
-KClash is the Android Kotlin mainline in this repository. It rebuilds the Android experience of [FlClash](https://github.com/chen08209/FlClash) as a native application. The Flutter project is a behavior and UI reference; Flutter application code is not part of the Kotlin runtime.
+KClash is the Android Kotlin mainline in this repository. It rebuilds the Android experience of [FlClash](https://github.com/chen08209/FlClash) as a native application. Flutter application source is kept on the upstream repository and is read only as a behavior and UI reference; this branch contains no Flutter runtime.
 
 ## Features
 
@@ -101,7 +101,7 @@ The unsigned APK is written to `android/app/build/outputs/apk/release/app-releas
 ## Project boundaries
 
 - The Kotlin Android application is developed on the `kotlin` branch.
-- The Flutter [FlClash repository](https://github.com/chen08209/FlClash) is used only as a functional and visual reference; its application commits are not merged into the Kotlin mainline.
+- The Flutter [FlClash repository](https://github.com/chen08209/FlClash) is used only as a functional and visual reference. Read source from the recorded upstream commit; do not merge its application commits into the Kotlin mainline.
 - Mihomo changes follow the `chen08209/Clash.Meta` FlClash branch through the configured `lonnnnnng/Clash.Meta` fork and its `kclash-fixes` branch.
 
 ## License and support

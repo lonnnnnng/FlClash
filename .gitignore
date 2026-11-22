@@ -23,16 +23,7 @@ migrate_working_dir/
 # is commented out by default.
 .vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-/.widget_preview/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
+# Build outputs
 /build/
 /dist/
 
@@ -67,16 +58,6 @@ app.*.map.json
 #FlClash
 /libclash/
 /android/app/src/main/jniLibs/
-/services/helper/target
-/macos/**/Package.resolved
-/macos/build/
 /env.json
 /core_sha256.json
-/plugins/rust_api/.claude/
 /issue-triage/
-devtools_options.yaml
-
-# FVM Version Cache
-.fvm/
-.fvmrc
-/coverage/lcov.info
