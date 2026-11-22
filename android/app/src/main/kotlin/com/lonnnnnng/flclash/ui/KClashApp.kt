@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
@@ -1845,16 +1846,28 @@ internal fun ProfilesPanel(
             Text(tr("正在处理配置…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (state.profiles.isEmpty()) {
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 contentAlignment = Alignment.Center,
             ) {
+                val compact = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() < 560.dp }
+                val addButtonColor = dashboardCardColor()
+                val addButtonColors = androidx.compose.material3.ButtonDefaults.filledTonalButtonColors(
+                    containerColor = addButtonColor,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    disabledContainerColor = addButtonColor,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .38f),
+                )
                 Column(
-                    modifier = Modifier.widthIn(max = 320.dp).padding(horizontal = 32.dp, vertical = 24.dp).testTag("profiles_empty"),
+                    modifier = Modifier.offset(y = -(maxHeight * .09f))
+                        .widthIn(max = 320.dp)
+                        .padding(horizontal = 32.dp, vertical = 24.dp)
+                        .verticalScroll(rememberScrollState())
+                        .testTag("profiles_empty"),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    ProfileEmptyIllustration()
-                    Spacer(Modifier.height(16.dp))
+                    ProfileNullStatusIllustration(if (compact) 120.dp else 160.dp)
+                    Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
                     Text(tr("暂无配置"), Modifier, color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
@@ -1867,8 +1880,15 @@ internal fun ProfilesPanel(
                     Spacer(Modifier.height(24.dp))
                     // 作者 long：空态和顶栏共享同一受理条件，启停/导入期间不能通过第二个入口重复开启配置操作。
                     AppMenuSourceContent(localAddSource) {
-                        androidx.compose.material3.FilledTonalButton(onClick = onShowAddDialog, enabled = canMutateProfiles,
-                            modifier = Modifier.testTag("profiles_empty_add").appMenuSource(localAddSource, androidx.compose.material3.ButtonDefaults.filledTonalButtonColors().containerColor).onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() }) {
+                        androidx.compose.material3.FilledTonalButton(
+                            onClick = onShowAddDialog,
+                            enabled = canMutateProfiles,
+                            contentPadding = PaddingValues(horizontal = 11.dp),
+                            colors = addButtonColors,
+                            modifier = Modifier.heightIn(min = 44.dp).testTag("profiles_empty_add")
+                                .appMenuSource(localAddSource, addButtonColor)
+                                .onGloballyPositioned { localAddAnchor = it.boundsInWindow().roundToIntRect() },
+                        ) {
                             AppGlyphIcon(AppGlyphs.addCircle)
                             Spacer(Modifier.size(8.dp))
                             Text(tr("添加配置"))

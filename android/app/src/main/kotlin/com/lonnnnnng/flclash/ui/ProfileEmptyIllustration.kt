@@ -208,6 +208,79 @@ internal fun ProfileEmptyIllustration(glyph: AppGlyph = AppGlyphs.profiles, outl
     }
 }
 
+private enum class ProfileNullAccentKind { PLUS, DOT, DASH, RING }
+
+private data class ProfileNullAccent(
+    val kind: ProfileNullAccentKind,
+    val x: Float,
+    val y: Float,
+    val extent: Float,
+    val rotationRadians: Float = 0f,
+)
+
+private val profileNullAccents = listOf(
+    ProfileNullAccent(ProfileNullAccentKind.PLUS, .38f, -.36f, .09f),
+    ProfileNullAccent(ProfileNullAccentKind.DOT, .46f, -.10f, .04f),
+    ProfileNullAccent(ProfileNullAccentKind.DASH, -.40f, .30f, .12f, -.8f),
+    ProfileNullAccent(ProfileNullAccentKind.RING, -.38f, -.36f, .06f),
+)
+
+/** 作者 long：Flutter 的空态随机选择装饰；配置页固定当前确认的圆徽章组合，避免页面重建后跳位。 */
+@Composable
+internal fun ProfileNullStatusIllustration(extent: Dp) {
+    val progress = remember { Animatable(0f) }
+    LaunchedEffect(extent) {
+        progress.snapTo(0f)
+        progress.animateTo(1f, tween(900, easing = LinearEasing))
+    }
+    val pose = emptyIllustrationPose(EmptyIllustrationEntrance.SPIN, progress.value)
+    val colors = MaterialTheme.colorScheme
+    val circle = remember { Path().apply { addOval(Rect(0f, 0f, 1f, 1f)) } }
+    Box(Modifier.size(extent).testTag("profile_empty_illustration"), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.fillMaxSize()) {
+            val side = size.minDimension
+            val center = Offset(size.width / 2f, size.height / 2f)
+            withTransform({
+                translate(center.x, center.y)
+                rotate(pose.bodyRotation, Offset.Zero)
+                scale(side * .72f * pose.bodyScale, side * .72f * pose.bodyScale, Offset.Zero)
+                translate(-.5f, -.5f)
+            }) {
+                drawPath(circle, colors.primary.copy(alpha = .15f))
+            }
+
+            profileNullAccents.forEachIndexed { index, accent ->
+                val begin = .4f + index * .08f
+                val enter = emptyIllustrationPhase(progress.value, begin, begin + .35f, emptyIllustrationBack)
+                val drift = .7f + .3f * enter
+                val point = center + Offset(accent.x * side * drift, accent.y * side * drift)
+                val diameter = side * accent.extent * enter
+                if (diameter <= 0f) return@forEachIndexed
+                withTransform({
+                    translate(point.x, point.y)
+                    rotate(accent.rotationRadians * 180f / PI.toFloat() - 45f * (1f - enter), Offset.Zero)
+                    scale(diameter, diameter, Offset.Zero)
+                }) {
+                    when (accent.kind) {
+                        ProfileNullAccentKind.PLUS -> {
+                            drawLine(colors.primary, Offset(-.37f, 0f), Offset(.37f, 0f), .26f, StrokeCap.Round)
+                            drawLine(colors.primary, Offset(0f, -.37f), Offset(0f, .37f), .26f, StrokeCap.Round)
+                        }
+                        ProfileNullAccentKind.DOT -> drawCircle(colors.primary, .5f, center = Offset.Zero)
+                        ProfileNullAccentKind.DASH -> drawLine(colors.primary.copy(alpha = .4f), Offset(-.38f, 0f), Offset(.38f, 0f), .24f, StrokeCap.Round)
+                        ProfileNullAccentKind.RING -> drawCircle(colors.primary, .36f, center = Offset.Zero, style = Stroke(.28f))
+                    }
+                }
+            }
+        }
+        AppGlyphIcon(AppGlyphs.profiles, Modifier.size(extent * .4f).offset(y = extent * -pose.glyphRise).graphicsLayer {
+            scaleX = pose.glyphScale
+            scaleY = pose.glyphScale
+            alpha = pose.glyphAlpha
+        }, colors.primary, fillProgress = pose.glyphFill)
+    }
+}
+
 private enum class NtpEmptyAccentKind { WAVE, DOT, PLUS, DASH }
 
 private data class NtpEmptyAccent(

@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -12,8 +13,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Assert.assertEquals
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
@@ -42,7 +45,7 @@ class ProfilesVisualInstrumentedTest {
 
         // 作者 long：此组基线经重置后的旧包/候选包逐图哈希对照；环境变化独立记录在KUI-019，不能冒充Flutter像素一致。
         val expected = mapOf(
-            "empty" to "234b267203e8a9dfd3a4b7627bd619c90cabed345e5f43293e05988acf1ff71b",
+            "empty" to "c4b673b74fd5644547ec86093c6ed62a5956128c300c11ad212d88036e98ea4a",
             "custom_selected" to "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04",
             "remote_usage" to "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
         )
@@ -52,6 +55,28 @@ class ProfilesVisualInstrumentedTest {
             else "$state expected=$baseline actual=$hash"
         }
         check(mismatches.isEmpty()) { "profiles screenshot baseline mismatch: ${mismatches.joinToString("; ")}" }
+    }
+
+    @Test
+    fun profileEmptyMatchesFlutterNullStatusGeometry() {
+        assertPortraitDefaultFontConfiguration()
+        val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+        val title = composeRule.onNodeWithText("暂无配置").fetchSemanticsNode().boundsInRoot
+        val description = composeRule.onNodeWithText("添加一个配置文件后即可开始使用").fetchSemanticsNode().boundsInRoot
+        val button = composeRule.onNodeWithTag("profiles_empty_add").fetchSemanticsNode().boundsInRoot
+
+        assertEquals("Flutter NullStatus标题位置", 451f, title.top / density, 8f)
+        assertEquals("Flutter NullStatus说明位置", 481f, description.top / density, 8f)
+        assertEquals("Flutter bar按钮位置", 525f, button.top / density, 8f)
+        assertEquals("Flutter bar按钮高度", 44f, button.height / density, 1.5f)
+        assertEquals("Flutter bar按钮宽度", 114f, button.width / density, 3f)
+        composeRule.onNodeWithTag("profiles_empty_add").assertIsEnabled()
+        composeRule.onNodeWithTag("profile_empty_illustration").assertIsDisplayed()
+        assertEquals(
+            "Flutter空配置页固定宿主截图",
+            "c4b673b74fd5644547ec86093c6ed62a5956128c300c11ad212d88036e98ea4a",
+            captureHash("empty"),
+        )
     }
 
     @Test

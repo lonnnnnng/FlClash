@@ -581,6 +581,14 @@ class ProfileMoreEditorInstrumentedTest {
         }
     }
 
+    @Test fun vis086SnifferEmptyActionKeepsDefaultButtonGeometry() {
+        section = "sniffer"
+        render()
+        val bounds = compose.onNodeWithTag("profile_more_empty_add").fetchSemanticsNode().boundsInRoot
+        val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+        assertEquals("Sniffer空态按钮继续沿用Material默认高度", 40f, bounds.height / density, .1f)
+    }
+
     private fun openQuickPorts() {
         compose.onNodeWithTag("more_list_add_menu").performClick()
         compose.onNodeWithTag("more_list_quick").performClick()

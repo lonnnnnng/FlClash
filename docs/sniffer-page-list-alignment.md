@@ -1,5 +1,9 @@
 # 域名嗅探页面、列表草稿与真实转场
 
+## 2026-11-23 共用空态按钮范围复验
+
+NTP 页44dp紧凑添加动作先前复用了 Sniffer 也使用的空态代码，导致 Sniffer 按钮从 Material 默认40dp变高。本轮把紧凑内边距和高度条件限制为 NTP；Sniffer 继续使用默认 Material 高度与内边距。POCO F2 Pro/API36 的 `vis086SnifferEmptyActionKeepsDefaultButtonGeometry` 通过，实测40dp；NTP `vis085NtpParentEmptyPageMatchesFlutterReferenceInBothThemes` 仍通过。配置页空态视觉及这两条共享组件边界结果见[KUI-VIS-086验收](acceptance/profile-empty-nullstatus-poco-20261123.json)。本复验不覆盖 Sniffer 整页或完整父子连续转场，仍需继续。
+
 2026-11-20，KUI-VIS-056。用户指定 POCO F2 Pro（31936bb6 / API36），竖屏、默认字号，玻璃默认关闭。本组推进域名嗅探整页与协议子页；完整 Flutter 视觉和菜单性能继续为 PARTIAL。
 
 ## 实现与来源

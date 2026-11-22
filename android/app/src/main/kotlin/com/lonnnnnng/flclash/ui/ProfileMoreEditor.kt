@@ -124,9 +124,12 @@ internal fun ProfileMoreEditor(state: ProfileMoreEditorUiState, section: String,
                             Text(tr("仅作用于当前配置，未添加的项使用默认值。"), Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
                                 textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FilledTonalButton(onClick = { adding = true }, enabled = !state.isSaving && currentContent,
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                contentPadding = if (ntp) PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                                    else ButtonDefaults.ContentPadding,
                                 colors = ButtonDefaults.filledTonalButtonColors(containerColor = dashboardCardColor(), contentColor = MaterialTheme.colorScheme.onSurface),
-                                modifier = Modifier.padding(top = 24.dp).height(44.dp).testTag("profile_more_empty_add")) {
+                                modifier = Modifier.padding(top = 24.dp)
+                                    .then(if (ntp) Modifier.height(44.dp) else Modifier)
+                                    .testTag("profile_more_empty_add")) {
                                 AppGlyphIcon(AppGlyphs.addCircle); Spacer(Modifier.width(8.dp)); Text(tr("添加设置项"))
                             }
                         }

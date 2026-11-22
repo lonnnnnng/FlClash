@@ -1,0 +1,150 @@
+{
+  "id": "KUI-VIS-086",
+  "date": "2026-11-23",
+  "scope": "Flutter profile empty page parity and NTP/Sniffer shared-action scope regression",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "physicalDensityDpi": 440,
+    "densityOverrideDpi": 396,
+    "orientation": "portrait",
+    "fontScale": 1.0,
+    "glassEnabled": false
+  },
+  "reference": {
+    "package": "com.follow.clash",
+    "versionName": "0.9.4",
+    "versionCode": 2026113907,
+    "firstInstallTime": "2026-11-07 02:44:08",
+    "lastUpdateTime": "2026-11-22 14:21:51",
+    "modified": false,
+    "source": {
+      "flclashUpstreamMain": "afe71360",
+      "prismUiSubmodule": "6c47901cc80b5325bdb9650579ca2e000a60b39e",
+      "profilePage": "lib/views/profiles/profiles.dart",
+      "nullStatus": "plugins/prism_ui/lib/null_status.dart"
+    },
+    "observedPageState": "Empty Profiles page in the installed Flutter app; no profile data was added or changed."
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileEmptyIllustration.kt",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileMoreEditor.kt",
+      "android/tests/instrumented/ProfilesVisualInstrumentedTest.kt",
+      "android/tests/instrumented/ProfileMoreEditorInstrumentedTest.kt"
+    ],
+    "changes": [
+      "The Profiles empty state uses a dedicated circular document illustration with a deterministic four-accent layout, rather than the shared cookie outline used by unrelated pages.",
+      "The content group follows Flutter NullStatus upper-center alignment, keeps the 160dp/compact 120dp illustration, and remains vertically scrollable on short content areas.",
+      "The add action uses a neutral raised-surface fill and Flutter bar geometry: 44dp height and approximately 114dp width, with the existing busy/runtime gate preserved.",
+      "The 44dp compact padding is scoped to NTP only; Sniffer retains the Material default 40dp empty action. Other empty states are unchanged."
+    ]
+  },
+  "verification": {
+    "targetedInstrumentedTests": {
+      "result": "passed",
+      "tests": 4,
+      "passed": 4,
+      "failures": 0,
+      "cases": [
+        "ProfilesVisualInstrumentedTest#profileEmptyMatchesFlutterNullStatusGeometry",
+        "MainPageStatesInstrumentedTest#profilesEmptyAddUsesSameBusyAndTransitionGateAsToolbar",
+        "ProfileMoreEditorInstrumentedTest#vis085NtpParentEmptyPageMatchesFlutterReferenceInBothThemes",
+        "ProfileMoreEditorInstrumentedTest#vis086SnifferEmptyActionKeepsDefaultButtonGeometry"
+      ],
+      "artifacts": "../../../acceptance-artifacts/profile-empty-nullstatus-poco-20261123/"
+    },
+    "profilesScreenshotMatrix": {
+      "result": "partial",
+      "tests": 1,
+      "failures": 1,
+      "emptyState": {
+        "result": "passed",
+        "expectedSha256": "c4b673b74fd5644547ec86093c6ed62a5956128c300c11ad212d88036e98ea4a"
+      },
+      "unresolvedNonEmptyBaselines": {
+        "customSelected": {
+          "expectedSha256": "cd7cd44392fb23dd888b2ea6a18b9d2e84bbe31eda87311e41f1992c91122e04",
+          "actualSha256": "a46378a684ad6edf7becfa5804268bfd992d60f1f146705d6bdc2c02d4b45b97"
+        },
+        "remoteUsage": {
+          "expectedSha256": "08490e43e5dfbea0b859bcd14aa1457365df30db38d7a0b0fe2912a0108b72b5",
+          "actualSha256": "3f6daf642d8f11ceb2546c3a5d295870ef93cb67ca9bf792bebd807f6c6edfad"
+        }
+      },
+      "interpretation": "The two mismatches are non-empty profile cards, which do not execute the empty-state implementation changed here. Their visual/hash cause is not attributed or changed in this task.",
+      "xml": "../../../acceptance-artifacts/profile-empty-nullstatus-poco-20261123/profiles-visual-matrix-known-nonempty-mismatch.xml"
+    },
+    "jvmTests": {
+      "modules": ["app", "common", "core", "service"],
+      "tests": 924,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": {
+      "result": "passed",
+      "debugApk": {
+        "bytes": 85531783,
+        "sha256": "bec712c0d95e780783be9fef2bc1b0107958a17d81476a749881a6b694642aef"
+      },
+      "releaseUnsignedR8Apk": {
+        "versionName": "0.1.16",
+        "versionCode": 1016,
+        "bytes": 49575253,
+        "sha256": "3b3d7ef0d8384823f0883f0f009473d3c744699f9206c037330af82e494cd6e6"
+      },
+      "motionBenchmarkApk": {
+        "bytes": 67542073,
+        "sha256": "389dcd5146bbf8901393e7f9dfee5ff5c86ed4f50059b81e190ea76c0a7e3d71"
+      },
+      "motionBenchmarkAndroidTestApk": {
+        "bytes": 3307923,
+        "sha256": "0aa68dbcdc63872223b3b5d7d77e242f775f798de8b8015dfeb20bbcc8097b52"
+      }
+    },
+    "lint": {
+      "debug": "0 errors, 11 warnings",
+      "release": "0 errors, 11 warnings",
+      "motionBenchmark": "0 errors, 11 warnings"
+    }
+  },
+  "visuals": {
+    "inspection": "Dark POCO MainActivity and Flutter Profiles page were captured side by side at runtime. The circular document badge, four accents, title/description anchor, neutral action material, and button geometry visually align. The screenshot is a runtime page capture, while geometry assertions also run in a fixed Compose host.",
+    "artifactDirectory": "../../../acceptance-artifacts/profile-empty-nullstatus-poco-20261123/",
+    "flutter": {
+      "file": "flutter-profile-empty.png",
+      "bytes": 74508,
+      "dimensions": [1080, 2400],
+      "sha256": "a5b84eb6f206f149d4cceb9e07f761a4944235f6e79c3ab64c84b83d43adaf4a"
+    },
+    "kotlinMainActivity": {
+      "file": "kotlin-profile-empty-mainactivity.png",
+      "bytes": 79199,
+      "dimensions": [1080, 2400],
+      "sha256": "4c5cc8b82f1aeab778566970a3478d605e09e00fe4d2fd80760b473f74ae7c85"
+    },
+    "fixedComposeEmptyStateSha256": "c4b673b74fd5644547ec86093c6ed62a5956128c300c11ad212d88036e98ea4a"
+  },
+  "deviceState": {
+    "installedProductionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "flutterReferencePackage": "com.follow.clash 0.9.4, unchanged",
+    "motionPackagesAbsentAfterAcceptance": true,
+    "ordinaryTestPackagePreserved": true,
+    "foregroundRestoredTo": "com.lonnnnnng.flclash/.MainActivity",
+    "vpnOrProxyServiceRunning": false,
+    "userDataOrProfilesChanged": false
+  },
+  "limits": [
+    "This slice covers the empty Profiles state and a NTP/Sniffer shared-component regression; it does not close all remaining subpages, panels, or continuous page transitions.",
+    "The Flutter illustration chooses random shape/accent variants. This comparison matches the observed runtime variant and does not claim pixel equivalence for all random variants or themes.",
+    "Menu trace discarded producer, app-surface FrameTimeline coverage, GPU/fence attribution, and stable menu performance gains remain unresolved. Glass remains disabled by default."
+  ],
+  "next": "Continue the Sniffer full-page parent/child route and remaining panel transition comparison on POCO, then return to menu tracing when adequate app-surface frame coverage can be collected."
+}
