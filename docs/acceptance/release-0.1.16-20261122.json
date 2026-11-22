@@ -4,13 +4,21 @@
   "tag": "kclash-v0.1.16",
   "versionName": "0.1.16",
   "versionCode": 1016,
-  "sourceCommit": "pending",
+  "sourceCommit": "8c03b8176781aab0e10444f98e054939aee04212",
   "publication": {
-    "status": "pending-tag-workflow",
-    "latest": false,
-    "releaseUrl": null,
-    "workflowRunId": null,
-    "remoteApkSha256": null
+    "status": "published",
+    "latest": true,
+    "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.16",
+    "workflowRunId": 45029620594,
+    "workflowConclusion": "success",
+    "workflowDuration": "12m52s",
+    "asset": {
+      "name": "KClash-0.1.16-android-arm64-v8a.apk",
+      "bytes": 49584393,
+      "sha256": "96ba622f08065337964e5cfd692b58b69a49ead79cd97af0867ac3caa7abd67b",
+      "githubDigestMatches": true,
+      "sha256SumsMatches": true
+    }
   },
   "build": {
     "commands": [
@@ -52,15 +60,17 @@
     "installedVersion": "0.1.16",
     "installedVersionCode": 1016,
     "installation": "fresh install; package was absent before this run",
-    "installedApkSha256": "b7aafb3ccb16b4edae8a23fceebf8b6a9412d282e8831c659f45e5d757453214",
-    "installedApkMatchesLocalRelease": true,
+    "prePublicationCandidateSha256": "b7aafb3ccb16b4edae8a23fceebf8b6a9412d282e8831c659f45e5d757453214",
+    "installedApkSha256": "96ba622f08065337964e5cfd692b58b69a49ead79cd97af0867ac3caa7abd67b",
+    "installedApkMatchesPublishedRelease": true,
+    "firstInstallTimePreservedAcrossPublishedAssetUpdate": true,
     "notificationPermission": "granted for first-launch smoke test",
     "smoke": {
       "dashboardFirstLaunch": "passed",
       "toolsPage": "passed",
       "networkActivityEmptyState": "passed",
       "systemBackToTools": "passed",
-      "fatalExceptions": 0,
+    "fatalExceptions": 0,
       "coreOrVpnStarted": false,
       "configurationImported": false
     },
@@ -76,7 +86,7 @@
   },
   "limitations": [
     "真机只做安装、首次启动、首页/工具页/网络活动空态和系统返回冒烟；没有有效配置，未启动核心或VPN。",
-    "正式GitHub Release标签CI、远端APK下载/摘要/签名复核与远端资产安装尚待完成。",
+      "真机未导入配置，也未启动核心/VPN；本轮是安装与页面冒烟，不是代理实网验收。",
     "Kapt执行时输出Hilt选项未识别的非阻断编译警告；Kotlin编译、R8、APK签名、ML Kit DEX门禁和Debug/Release Lint均通过。"
   ]
 }

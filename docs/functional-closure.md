@@ -7,7 +7,9 @@
 
 2026-11-18增补：在线 age 订阅完整链路已在POCO API36真实UI验收1/1；授权源轮换到新identity，测试覆盖缺钥、错钥无写入、正确密钥解密导入、Mihomo运行加载和非直连HTTP200。见[验收说明](online-age-subscription-acceptance.md)与[脱敏JSON](acceptance/online-age-subscription-poco-20261118.json)。较早记录中的“明文/无密钥”只反映当时状态。
 
-2026-11-22最新发布：KClash 0.1.14/code1014 已发布为 GitHub Latest，标签`kclash-v0.1.14`固定`435eac6c`。标签CI 44989503023 的签名构建、版本/ABI/DEX/R8及证书门禁通过；公开ARM64 APK 49,616,705字节，SHA`5537d8a3…c5fbc6`与GitHub digest和SHA256SUMS一致，沿用既有证书。Release APK已独立下载、校验并验签，未安装手机；本版包含KUI-VIS-079仪表盘卡片紧凑与固定高度调整。见[发布证据](acceptance/release-0.1.14-20261122.json)。
+2026-11-22最新发布：KClash 0.1.16/code1016 已发布为 GitHub Latest，标签`kclash-v0.1.16`固定`8c03b817`。标签CI `45029620594`签名构建、版本/ABI/DEX/R8及证书门禁通过；公开ARM64 APK 49,584,393字节，SHA`96ba622f…a7abd67b`与GitHub digest和SHA256SUMS一致，沿用既有证书。POCO F2 Pro/API36上公开资产已安装，回拉SHA一致；首次启动、Dashboard、工具页、网络活动空态和系统返回冒烟通过，未启动核心/VPN。924项JVM与Debug/Release Lint均通过。见[发布证据](acceptance/release-0.1.16-20261122.json)。
+
+2026-11-22历史发布：KClash 0.1.15/code1015 已发布为 GitHub Latest，标签`kclash-v0.1.15`固定`64de6297`；订阅HTTP来源白名单已移除并修复 UTF-8 `filename*`解析，详见[发布证据](acceptance/subscription-http-policy-poco-20261122.json)。
 
 2026-11-22历史发布：KClash 0.1.13/code1013 曾为 GitHub Latest，标签`kclash-v0.1.13`固定`5c8161d9`；签名、版本/ABI/DEX门禁及远端APK校验见[发布证据](acceptance/release-0.1.13-20261122.json)。
 
