@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-22",
+  "work_item": "KUI-VIS-081",
+  "source_head": "950600d27e758a13a0b4b0cd0066626d42d3a0ea",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait"
+  },
+  "changes": [
+    "Only the upper outbound IP row reserves space for the runtime control; the lower runtime statistics row uses the full card width.",
+    "The organization column starts farther left and receives 1.5x the runtime-duration column width.",
+    "The runtime control moves upward by 18dp while retaining its 88dp hit area.",
+    "Language and theme picker option surfaces are transparent with zero tonal and shadow elevation; radio selection and ripple feedback remain."
+  ],
+  "instrumented_methods_passed": [
+    "DashboardInstrumentedTest#dashboardLongOrganizationFitsOneLineWithoutOverlappingRuntimeButton",
+    "RuntimeToggleShapeInstrumentedTest (all methods passed; includes fixed 18dp upward placement)",
+    "FormMaterialInstrumentedTest#darkAppearancePickerOptionsDoNotDrawElevatedPressedSurfaces"
+  ],
+  "assertions": [
+    "CHINA UNICOM SHANGHAI reaches the end of its visible line and remains one line.",
+    "The organization text bounds do not intersect the runtime button bounds.",
+    "The dark theme option's empty area matches the dialog background; pressing it does not alter pixels outside the option bounds.",
+    "Canceling the pressed picker option leaves the stored theme unchanged."
+  ],
+  "build": {
+    "jvm_tests": "app, service, core, and common testDebugUnitTest passed",
+    "debug_and_android_test_apks": "passed",
+    "release_r8": "assembleRelease passed; unsigned local output",
+    "lint": "lintDebug and lintRelease passed"
+  },
+  "device_state": {
+    "installed_package": "com.lonnnnnng.flclash",
+    "version": "0.1.14-debug / versionCode 1014",
+    "vpn_or_core_service_running": false,
+    "theme_preference": "system, restored after visual check",
+    "flutter_reference_package_modified": false
+  },
+  "debug_apk_sha256": "ecc691139b133ea1d8cbb3fa26f978eafa6e2c260ef566ca5fcc526ae89946a5",
+  "release_unsigned_apk_sha256": "d33dd7ab073eba5d5aca81345a9451b95b1e15148c39e6d73c897d14d6fe32ae",
+  "visual_artifacts": {
+    "directory": "../../../acceptance-artifacts/dashboard-runtime-refinements-poco-20261122/",
+    "dashboard_long_organization_png_sha256": "de55199d62e861ebff6c4e08e5347c5642121fa881e6002cf2e331af82e94a5a",
+    "dark_theme_picker_png_sha256": "005f588d36949fb2f8b024f0cd35d28111ebfb3bba8d1689d23c7b7012ae0df1",
+    "appearance_picker_test_xml_sha256": "4f477689ee771ad87b603fc554ee29f954349b8de3e826ffee915725e84f65d2"
+  },
+  "release_published": false,
+  "limitations": [
+    "The dashboard screenshot is an empty-profile real MainActivity state; no proxy session was started.",
+    "Appearance picker pressed-state assertions use a fixed dark Compose host; the actual POCO tool page was also visually checked at rest."
+  ]
+}

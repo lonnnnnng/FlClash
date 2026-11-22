@@ -121,8 +121,12 @@ class RuntimeToggleShapeInstrumentedTest {
         val height = card.fetchSemanticsNode().boundsInRoot.height
         val bounds = toggle.fetchSemanticsNode().boundsInRoot
         val cardBounds = card.fetchSemanticsNode().boundsInRoot
-        assertEquals("运行按钮中心与整张状态卡垂直中心对齐", (cardBounds.top + cardBounds.bottom) / 2f,
-            (bounds.top + bounds.bottom) / 2f, 2f)
+        val expectedLiftPx = 18f * compose.activity.resources.displayMetrics.density
+        assertEquals("按钮向上移动固定距离，避免压住下方统计行",
+            expectedLiftPx,
+            (cardBounds.top + cardBounds.bottom - bounds.top - bounds.bottom) / 2f,
+            2f,
+        )
         for (theme in listOf(false, true)) for (material in listOf(false, true)) {
             compose.runOnIdle { dark = theme; glass = material; status = CoreRuntimeStatus.STOPPED }
             toggle.performClick().assertIsNotEnabled()

@@ -1,5 +1,6 @@
 package com.lonnnnnng.flclash.ui
 
+import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,8 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
+import com.lonnnnnng.flclash.data.AppearanceSettingsStore
+import com.lonnnnnng.flclash.data.AppTheme
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.*
 import org.junit.Rule
@@ -221,5 +224,82 @@ class FormMaterialInstrumentedTest {
         compose.runOnIdle { glass = true }
         assertEquals(plainHeight, card.fetchSemanticsNode().boundsInRoot.height, 1f)
         capture("runtime_glass")
+    }
+
+    @Test fun darkAppearancePickerOptionsDoNotDrawElevatedPressedSurfaces() {
+        assertPortraitDefaultFontConfiguration()
+        val store = AppearanceSettingsStore(compose.activity.applicationContext)
+        val before = store.read()
+        store.write(before.copy(theme = AppTheme.DARK))
+        var language by mutableStateOf(false)
+        compose.setContent { KClashTheme(darkTheme = true) { AppearancePicker(language, store, {}) } }
+
+        try {
+            val options = listOf(
+                false to "appearance_theme_light",
+                true to "appearance_language_english",
+            )
+            options.forEach { (isLanguage, tag) ->
+                compose.runOnIdle { language = isLanguage }
+                val option = compose.onNodeWithTag(tag)
+                option.assertIsDisplayed()
+                val idle = option.captureToImage().asAndroidBitmap()
+                var pickerIdle: Bitmap? = null
+                var pickerBounds: androidx.compose.ui.geometry.Rect? = null
+                var optionBounds: androidx.compose.ui.geometry.Rect? = null
+                if (!isLanguage) {
+                    val picker = compose.onNodeWithTag("theme_picker")
+                    val pickerPosition = picker.fetchSemanticsNode().boundsInRoot
+                    val optionPosition = option.fetchSemanticsNode().boundsInRoot
+                    pickerBounds = pickerPosition
+                    optionBounds = optionPosition
+                    val dialog = picker.captureToImage().asAndroidBitmap()
+                    pickerIdle = dialog
+                    val density = compose.activity.resources.displayMetrics.density
+                    val sampleY = (optionPosition.center.y - pickerPosition.top).toInt().coerceIn(0, dialog.height - 1)
+                    val optionBackgroundX = (optionPosition.right - 8.dp.value * density - pickerPosition.left)
+                        .toInt().coerceIn(0, dialog.width - 1)
+                    val dialogBackgroundX = (pickerPosition.width - 8.dp.value * density)
+                        .toInt().coerceIn(0, dialog.width - 1)
+                    assertEquals(
+                        "深色主题选项空白处应与弹框同底色，不应形成凸起阴影面",
+                        dialog.getPixel(dialogBackgroundX, sampleY),
+                        dialog.getPixel(optionBackgroundX, sampleY),
+                    )
+                }
+                recordVisualPng("appearance_dark_${tag}_idle", ByteArrayOutputStream().also {
+                    idle.compress(Bitmap.CompressFormat.PNG, 100, it)
+                }.toByteArray())
+
+                option.performTouchInput { down(center) }
+                compose.mainClock.advanceTimeBy(180)
+                val pressed = option.captureToImage().asAndroidBitmap()
+                recordVisualPng("appearance_dark_${tag}_pressed", ByteArrayOutputStream().also {
+                    pressed.compress(Bitmap.CompressFormat.PNG, 100, it)
+                }.toByteArray())
+                if (!isLanguage) {
+                    val pressedPicker = compose.onNodeWithTag("theme_picker").captureToImage().asAndroidBitmap()
+                    val bounds = checkNotNull(optionBounds)
+                    val pickerOrigin = checkNotNull(pickerBounds)
+                    val density = compose.activity.resources.displayMetrics.density
+                    val y = (bounds.center.y - pickerOrigin.top).toInt().coerceIn(0, pressedPicker.height - 1)
+                    val outsideLeft = (bounds.left - pickerOrigin.left - 2.dp.value * density)
+                        .toInt().coerceIn(0, pressedPicker.width - 1)
+                    val outsideRight = (bounds.right - pickerOrigin.left + 2.dp.value * density)
+                        .toInt().coerceIn(0, pressedPicker.width - 1)
+                    val idlePicker = checkNotNull(pickerIdle)
+                    assertEquals("按压不能在选项左侧生成阴影", idlePicker.getPixel(outsideLeft, y), pressedPicker.getPixel(outsideLeft, y))
+                    assertEquals("按压不能在选项右侧生成阴影", idlePicker.getPixel(outsideRight, y), pressedPicker.getPixel(outsideRight, y))
+                }
+                option.performTouchInput { cancel() }
+                compose.waitForIdle()
+                assertTrue("按压时选项行保持相同布局边界", option.fetchSemanticsNode().boundsInRoot.height > 0f)
+                assertEquals("取消按压不提交外观偏好", AppTheme.DARK, store.read().theme)
+            }
+            compose.onNodeWithTag("theme_picker").assertDoesNotExist()
+            compose.onNodeWithTag("language_picker").assertIsDisplayed()
+        } finally {
+            store.write(before)
+        }
     }
 }

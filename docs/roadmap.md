@@ -6,6 +6,8 @@
 
 > **KUI-VIS-080（2026-11-22，仪表盘运行卡、观测页刷新与测速状态，POCO）**：无已选配置时禁用启动，运行态仍可停止；运行操作只显示图标并以整卡内容区垂直居中。出口国家简称大号英文缩写并保持点击刷新，IP类型/质量行移除重复组织，组织只在运行时统计行显示，统计列间距收至12dp。观测页外层取消重复状态栏inset；请求、连接、DNS、日志新状态均在当前列表直接呈现，沿用既有事件流与连接轮询频率；测速结果去掉淡入交接，loading期间仍显示指示器，结果首帧直接按成功绿色绘制。POCO F2 Pro/API36七个定向方法通过；全ObservationList类11项中7项通过，另4项是既有固定PNG哈希与POCO渲染不一致，未改动旧基线。四模块JVM、Debug/Test APK、Release-R8、双Lint与2180对双语资源校验通过。真机空配置首页截图已目视，核心/VPN未启动；本批尚未发版。[验收证据](acceptance/dashboard-runtime-observation-polish-poco-20261122.json)，[真机截图与测试XML](../../../acceptance-artifacts/dashboard-runtime-polish-poco-20261122/)。完整Flutter页面对照、其他子页连续转场及菜单Perfetto discarded/GPU/fence归因仍待推进，玻璃默认关闭。
 
+> **KUI-VIS-081（2026-11-22，组织长值布局与外观选项暗色点击态，POCO）**：上方出口详情单独避让启动按钮，下方统计行恢复整卡宽度；组织列左移并扩至运行时长列的1.5倍。启动按钮在原位置基础上上移18dp。POCO真实首页长组织 `CHINA UNICOM Shanghai network` 完整单行显示且与按钮不重叠；固定长值回归验证可见字符到行末、边界不交叠，运行按钮几何断言保持固定偏移。语言/主题选项改透明底、零tonal/shadow elevation，保留Radio选择和ripple；深色Compose回归比较选项闲置底色与弹框、按压区域外像素及取消后的偏好值；POCO工具页弹框静态画面已目视。POCO F2 Pro/API36三个目标测试组通过；四模块JVM、Debug/Test、Release-R8与双Lint通过。主题已恢复跟随系统，核心/VPN未启动，本批未发版。[验收证据](acceptance/dashboard-runtime-refinements-poco-20261122.json)，[首页与主题弹框截图、测试XML](../../../acceptance-artifacts/dashboard-runtime-refinements-poco-20261122/)。
+
 > **KUI-VIS-078（2026-11-22，DNS 详情分组视觉与返回连续性）**：DNS 基本信息、错误、答案按 Flutter 分组 surface、16dp 内容线与56dp最小行高整理；空发起方/上游/答案节隐藏，复制成功/失败反馈保留。POCO F2 Pro/API36深浅主题成功/失败八态、长域名折行和错误文案已采图目视；100行列表打开第50行详情、滚动后系统返回，原行位置误差不超过1px。DNS/观测页/首页详情合并定向9/9、631项JVM、Debug/Release-R8、双Lint通过。半屏四态SHA作为稳定像素门禁；展开态整窗哈希跨复采不稳定，保留截图人工查看并以内容/可见性/几何/复制断言验收，不推定像素差来源。[验收证据](acceptance/dns-detail-parity-poco-20261122.json)，[截图和原始日志](../../../acceptance-artifacts/dns-details-parity-poco-20261122/)。这是固定Compose夹具，未接MainActivity实时DNS/核心/VPN，也未运行Flutter并排对照；其它子页/连续转场、菜单discarded来源和GPU/fence归因仍未闭环，玻璃默认关闭。
 
 > **KUI-VIS-077（2026-11-22，活动连接详情分组视觉续验）**：网络活动页详情按 Flutter `DetailRow` 对齐标签/值字体色彩、56dp 最小行高、16dp 内容边距、分组 surface、像素对齐分隔线及代理链小徽标；首页连接卡详情保留旧紧凑版。POCO F2 Pro/API36 深浅主题展开态上/下段四张截图已逐张目视，链路、长字段和分组均可读；新增长列表详页回归与56dp/16dp几何断言，ObservationDetails 6/6、首页旧样式回归1/1；631项App JVM、Debug/Release-R8和双Lint通过。UI XML/截图及SHA详见[验收证据](acceptance/visual-connection-detail-style-poco-20261122.json)。这仍是固定Compose连接夹具，未接 MainActivity 运行连接源，也未运行Flutter并排对照；其它子页/转场、菜单Perfetto discarded来源和GPU/fence归因仍未闭环，玻璃默认关闭。
@@ -928,18 +930,18 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
 | 当前公开版本 | **0.1.14/code1014**，标签`kclash-v0.1.14`指向`435eac6c`；公开ARM64 APK SHA`5537d8a3…c5fbc6`，沿用既有正式证书 |
-| 发布范围 | 0.1.14标签CI签名构建、包名/版本/minSdk/ABI/DEX/R8与证书门禁通过，GitHub Latest及回下载资产SHA/digest/`SHA256SUMS`一致。本地631项JVM、双Lint通过；公开APK已独立验签。版本包含KUI-VIS-079；KUI-VIS-080仍是未发布的本地修改。完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.14-20261122.json) |
+| 发布范围 | 0.1.14标签CI签名构建、包名/版本/minSdk/ABI/DEX/R8与证书门禁通过，GitHub Latest及回下载资产SHA/digest/`SHA256SUMS`一致。本地631项JVM、双Lint通过；公开APK已独立验签。版本包含KUI-VIS-079；KUI-VIS-080/081为后续未发布的本地修改。完整视觉/性能仍PARTIAL。详见[发布证据](acceptance/release-0.1.14-20261122.json) |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | 080 首页运行卡/出口IP与观测页更新、测速状态定向方法通过；四模块JVM、Debug/Test、Release-R8、双Lint与双语资源检查通过。POCO空配置首页目视，VPN/核心未启动。ObservationList整类4个固定PNG哈希在POCO不匹配，作为既有基线差异保留；详情为固定Compose宿主，不代表实网流量。详见[080证据](acceptance/dashboard-runtime-observation-polish-poco-20261122.json) |
+| 最新自动化记录 | 081 长组织单行/按钮不交叠与语言/主题暗色选项像素回归通过；四模块JVM、Debug/Test、Release-R8与双Lint通过。POCO空配置首页和工具弹框目视，核心/VPN未启动；080的ObservationList整类4个固定PNG哈希差异仍保留。详见[081证据](acceptance/dashboard-runtime-refinements-poco-20261122.json) |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
 | 数据保护 | 本组只在POCO F2 Pro安装0.1.14 Debug作空配置视觉检查；未启动核心/VPN，`com.follow.clash`未操作。原1.yaml/2.yaml未读取。现设备显示0份配置。 |
-| 正在推进 | KUI-VIS-080五项界面修正本地完成；全应用Flutter同态、其他子页与连续转场仍待。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
+| 正在推进 | KUI-VIS-080/081首页与外观弹框细节本地完成；全应用Flutter同态、其他子页与连续转场仍待。菜单discarded来源、足量app-surface FrameTimeline与GPU/fence归因未闭环，不作性能收益声明；玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [0.1.14发布](acceptance/release-0.1.14-20261122.json)、[080仪表盘/观测页细节](acceptance/dashboard-runtime-observation-polish-poco-20261122.json)、[079仪表盘卡片](acceptance/dashboard-metric-cards-poco-20261122.json)、[KCORE-011实网与保护](acceptance/network-outbound-reset-20261121.json)。080截图`../acceptance-artifacts/dashboard-runtime-polish-poco-20261122/`；079截图及日志`../acceptance-artifacts/dashboard-metrics-poco-final-20261122/`。 |
+| 最新证据 | [0.1.14发布](acceptance/release-0.1.14-20261122.json)、[081组织布局/弹框暗色点击态](acceptance/dashboard-runtime-refinements-poco-20261122.json)、[080仪表盘/观测页细节](acceptance/dashboard-runtime-observation-polish-poco-20261122.json)、[079仪表盘卡片](acceptance/dashboard-metric-cards-poco-20261122.json)。081截图`../acceptance-artifacts/dashboard-runtime-refinements-poco-20261122/`。 |
 
 ## 4. 目标架构图
 

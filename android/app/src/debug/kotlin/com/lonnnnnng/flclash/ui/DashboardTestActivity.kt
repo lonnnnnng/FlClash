@@ -375,6 +375,13 @@ class DashboardTestActivity : ComponentActivity() {
         scenario = DashboardScenario.RUNNING
     }
 
+    fun showLongOrganizationScenario() {
+        showRunningScenario()
+        outboundIpState = outboundIpState.copy(
+            quality = checkNotNull(outboundIpState.quality).copy(organization = "CHINA UNICOM SHANGHAI"),
+        )
+    }
+
     fun showMetricLayoutScenario(phase: String) {
         scenario = DashboardScenario.DASHBOARD_METRICS
         metricProfile = runningProfile().copy(

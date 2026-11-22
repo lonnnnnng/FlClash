@@ -404,7 +404,7 @@ internal fun RuntimeCard(
             }
         }, foreground = {
             Box(Modifier.fillMaxSize().padding(start = 20.dp, top = 18.dp, end = 16.dp, bottom = 18.dp)) {
-                Column(Modifier.fillMaxWidth().padding(end = 98.dp)) {
+                Column(Modifier.fillMaxWidth()) {
                     Row(
                         Modifier.fillMaxWidth().height(26.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -419,20 +419,23 @@ internal fun RuntimeCard(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.fillMaxWidth()) {
-                            OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality, onCopyOutboundText)
+                            // 作者 long：按钮只占用出口详情上半区的右侧空间；下方组织信息可完整利用卡片宽度。
+                            Box(Modifier.fillMaxWidth().padding(end = 98.dp)) {
+                                OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality, onCopyOutboundText)
+                            }
                             Spacer(Modifier.height(16.dp))
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 DashboardRuntimeCell(
                                     label = tr("运行时长"),
                                     value = formatRuntimeDuration(uptimeMillis.takeIf { state.isRunning }),
                                     tag = "dashboard_runtime_duration",
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(0.5f),
                                 )
                                 DashboardRuntimeCell(
                                     label = tr("组织"),
                                     value = outboundIp.info?.let { outboundIp.quality?.organization ?: outboundIp.quality?.asn?.let { asn -> "AS$asn" } } ?: "—",
                                     tag = "dashboard_runtime_organization",
-                                    modifier = Modifier.weight(1.2f),
+                                    modifier = Modifier.weight(1.5f),
                                 )
                             }
                         }
@@ -442,7 +445,7 @@ internal fun RuntimeCard(
                 Surface(
                     onClick = if (state.isRunning) onStop else onStart,
                     enabled = canToggle,
-                    modifier = Modifier.align(Alignment.CenterEnd).size(88.dp).testTag("dashboard_runtime_toggle")
+                    modifier = Modifier.align(Alignment.CenterEnd).offset(y = (-18).dp).size(88.dp).testTag("dashboard_runtime_toggle")
                         .appElasticPress(enabled = canToggle)
                         .appLiveButton(toggleShape, AppGlassStyle.tinted(LocalKClashDarkTheme.current,
                             if (state.isRunning) colors.primary else colors.primaryContainer), canToggle)

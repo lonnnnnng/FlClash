@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsDisplayed
@@ -313,6 +315,24 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_outbound_ip_organization").assertDoesNotExist()
         composeRule.onNodeWithTag("dashboard_runtime_organization").performScrollTo().assertTextEquals("示例网络")
         composeRule.onAllNodesWithText("示例网络", useUnmergedTree = true).assertCountEquals(1)
+    }
+
+    @Test
+    fun dashboardLongOrganizationFitsOneLineWithoutOverlappingRuntimeButton() {
+        assertPortraitDefaultFontConfiguration()
+        composeRule.activityRule.scenario.onActivity { it.showLongOrganizationScenario() }
+
+        val organization = composeRule.onNodeWithTag("dashboard_runtime_organization")
+        organization.assertTextEquals("CHINA UNICOM SHANGHAI")
+        val layouts = mutableListOf<TextLayoutResult>()
+        organization.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        assertEquals("组织名称保持单行", 1, layouts.single().lineCount)
+        assertEquals("组织名称完整显示到行末", "CHINA UNICOM SHANGHAI".length,
+            layouts.single().getLineEnd(0, visibleEnd = true))
+
+        val organizationBounds = organization.fetchSemanticsNode().boundsInRoot
+        val toggleBounds = composeRule.onNodeWithTag("dashboard_runtime_toggle").fetchSemanticsNode().boundsInRoot
+        assertTrue("组织文本与启动按钮不能重叠", !organizationBounds.overlaps(toggleBounds))
     }
 
     @Test

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -71,9 +72,15 @@ internal fun AppearancePicker(language: Boolean, store: AppearanceSettingsStore,
                 entries.forEach { name ->
                     val selected = name == if (language) settings.language.name else settings.theme.name
                     val label = when (name) { "CHINESE" -> "中文"; "ENGLISH" -> "English"; "LIGHT" -> "浅色"; "DARK" -> "深色"; else -> "跟随系统" }
-                    Surface(onClick = { save(if (language) settings.copy(language = AppLanguage.valueOf(name)) else settings.copy(theme = AppTheme.valueOf(name))) },
-                        enabled = !busy, color = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.fillMaxWidth().testTag("appearance_${if (language) "language" else "theme"}_${name.lowercase()}")) {
+                    Surface(
+                        onClick = { save(if (language) settings.copy(language = AppLanguage.valueOf(name)) else settings.copy(theme = AppTheme.valueOf(name))) },
+                        enabled = !busy,
+                        color = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        tonalElevation = 0.dp,
+                        shadowElevation = 0.dp,
+                        modifier = Modifier.fillMaxWidth().testTag("appearance_${if (language) "language" else "theme"}_${name.lowercase()}"),
+                    ) {
                         Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
                             RadioButton(selected, null)
                             Text(tr(label), modifier = Modifier.padding(start = 12.dp, top = 12.dp))
