@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-22",
+  "work_item": "订阅 HTTP 来源策略与文件名解析",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36
+  },
+  "changes": [
+    "删除 Debug 和 Release 的 Network Security Config 及域名白名单。",
+    "应用 Manifest 改为 android:usesCleartextTraffic=true，允许用户配置的公网和局域网 HTTP 订阅。",
+    "Content-Disposition 优先解码 RFC 5987 filename*，正确显示 UTF-8 中文文件名。"
+  ],
+  "http_policy": {
+    "previous_release_allowlist": ["clash.tkbond.us"],
+    "previous_debug_allowlist": ["localhost", "clash.tkbond.us"],
+    "final_manifest": "usesCleartextTraffic=true; networkSecurityConfig absent",
+    "instrumented_method": "NetworkSecurityPolicyInstrumentedTest#userProvidedHttpHostsAreNotRestrictedByDomainAllowlist",
+    "poco_result": "passed"
+  },
+  "subscription_endpoint_probe": {
+    "host": "192.168.1.2:9999",
+    "expired_previous_credential": {
+      "http_status": 404,
+      "response_bytes": 0
+    },
+    "replacement_credential": {
+      "http_status": 200,
+      "response_bytes": 15138,
+      "body_saved_to_workspace": false
+    },
+    "credential_or_path": "[REDACTED]"
+  },
+  "ui_import": {
+    "entry": "配置 > 添加订阅链接",
+    "result": "success",
+    "feedback": "订阅已添加",
+    "remote_profile_visible": true,
+    "core_or_vpn_started": false
+  },
+  "filename_header_regression": {
+    "content_disposition_shape": "filename=\"config.yaml\"; filename*=UTF-8''<percent-encoded UTF-8 name>.yaml",
+    "expected_suggested_label": "日常分流",
+    "unit_test": "SubscriptionClientTest#follows an http redirect before reading subscription bytes",
+    "result": "passed"
+  },
+  "build": {
+    "jvm_tests": {
+      "modules": ["app", "service", "core", "common"],
+      "tests": 924,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debug_and_android_test_apks": "passed",
+    "release_r8": "passed",
+    "debug_and_release_lint": "passed",
+    "mlkit_release_dex_gate": "passed",
+    "release_apk_signed_locally": false
+  },
+  "artifacts": {
+    "debug_apk_sha256": "22de60857f893db7bb1be562aee9ec4a4442109f955624310762648131639003",
+    "android_test_apk_sha256": "051161517d86364ae1ec9e4e5fb95fe3401d51b17472b418191e334fddfc5cae",
+    "release_unsigned_apk_sha256": "355905fd4427a75c4f4911840ab4f5724b7a80377e90f021c1173aa59753add8"
+  },
+  "device_state": {
+    "installed_package": "com.lonnnnnng.flclash",
+    "version": "0.1.14-debug / versionCode 1014",
+    "imported_profile_preserved_after_in_place_update": true,
+    "flutter_reference_package_modified": false
+  },
+  "security_boundary": "HTTP response content is unencrypted in transit; users should use HTTPS when their source supports it.",
+  "limitations": [
+    "The successful UI import used the preceding global base-config policy, which had the same all-host cleartext behavior; the final Manifest-only policy was separately verified by the POCO instrumentation test.",
+    "The already-imported row retains its previously stored suggested label; the corrected filename parser applies to subsequent imports. The user asked not to retry the now-expired link.",
+    "The local Release APK is unsigned; formal signing and publication use the tag workflow."
+  ],
+  "release_published": false
+}

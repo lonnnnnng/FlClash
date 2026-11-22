@@ -28,7 +28,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
-        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.KClash">
         <!-- 作者 long：完整语义解析只能在无主库权限的独立UID执行，不承接核心恢复。 -->

@@ -26,6 +26,10 @@ class SubscriptionClientTest {
             userAgents.add(exchange.requestHeaders.getFirst("User-Agent").orEmpty())
             val bytes = "proxy-groups: []\n".toByteArray()
             exchange.responseHeaders.add("Content-Type", "text/yaml")
+            exchange.responseHeaders.add(
+                "Content-Disposition",
+                "attachment; filename=\"config.yaml\"; filename*=UTF-8''%E6%97%A5%E5%B8%B8%E5%88%86%E6%B5%81.yaml",
+            )
             exchange.sendResponseHeaders(200, bytes.size.toLong())
             exchange.responseBody.use { it.write(bytes) }
         }
@@ -36,6 +40,7 @@ class SubscriptionClientTest {
                 URI("http://127.0.0.1:${server.address.port}/redirect").toURL().toString(),
             )
             assertArrayEquals("proxy-groups: []\n".toByteArray(), result.bytes)
+            assertEquals("日常分流", result.suggestedLabel)
             // 作者 long：重定向前后都保留 Android 客户端标记，避免订阅入口或最终下载地址返回不同格式。
             assertEquals(2, userAgents.size)
             assertTrue(userAgents.all {

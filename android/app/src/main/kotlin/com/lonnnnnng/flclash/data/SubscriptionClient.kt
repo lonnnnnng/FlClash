@@ -4,6 +4,8 @@ import com.lonnnnnng.flclash.BuildConfig
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLDecoder
+import java.nio.charset.Charset
 
 data class SubscriptionDownload(
     val bytes: ByteArray,
@@ -52,11 +54,7 @@ class HttpSubscriptionClient(private val generalSettingsStore: com.lonnnnnng.flc
                 if (bytes.isEmpty()) throw IOException("订阅内容为空")
                 return SubscriptionDownload(
                     bytes = bytes,
-                    suggestedLabel = connection.getHeaderField("Content-Disposition")
-                        ?.substringAfter("filename=", "")
-                        ?.trim(' ', '"', '\'')
-                        ?.substringBeforeLast('.')
-                        ?.takeIf { it.isNotBlank() },
+                    suggestedLabel = suggestedSubscriptionLabel(connection.getHeaderField("Content-Disposition")),
                     subscriptionInfo = SubscriptionInfo.parseHeader(
                         connection.getHeaderField("subscription-userinfo"),
                     ),
@@ -66,6 +64,40 @@ class HttpSubscriptionClient(private val generalSettingsStore: com.lonnnnnng.flc
             }
         }
         throw IOException("订阅重定向次数过多")
+    }
+
+    private fun suggestedSubscriptionLabel(contentDisposition: String?): String? {
+        if (contentDisposition.isNullOrBlank()) return null
+        // 作者 long：订阅服务可同时提供兼容旧客户端的 filename 和 UTF-8 filename*，优先扩展参数才能保留中文名。
+        val extendedName = contentDispositionParameter(contentDisposition, "filename*")
+            ?.let(::decodeExtendedFilename)
+        val filename = extendedName ?: contentDispositionParameter(contentDisposition, "filename") ?: return null
+        val safeFilename = filename.substringAfterLast('/').substringAfterLast('\\').trim()
+        return safeFilename.substringBeforeLast('.', safeFilename).takeIf { it.isNotBlank() }
+    }
+
+    private fun contentDispositionParameter(header: String, parameter: String): String? {
+        val pattern = Regex(
+            "(?:^|;)\\s*${Regex.escape(parameter)}\\s*=\\s*(?:\"([^\"]*)\"|([^;]*))",
+            RegexOption.IGNORE_CASE,
+        )
+        val match = pattern.find(header) ?: return null
+        return (match.groups[1]?.value ?: match.groups[2]?.value)
+            ?.replace("\\\"", "\"")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun decodeExtendedFilename(value: String): String? {
+        val charsetSeparator = value.indexOf('\'')
+        val languageSeparator = value.indexOf('\'', charsetSeparator + 1)
+        if (charsetSeparator <= 0 || languageSeparator < 0) return null
+        val charset = runCatching { Charset.forName(value.substring(0, charsetSeparator)) }.getOrNull() ?: return null
+        val encodedFilename = value.substring(languageSeparator + 1)
+        return runCatching {
+            // 作者 long：filename* 的加号可表示文件名原字符，需保留后再按声明字符集解码百分号字节。
+            URLDecoder.decode(encodedFilename.replace("+", "%2B"), charset.name())
+        }.getOrNull()
     }
 
     private fun requireHttpProtocol(url: URL) {
