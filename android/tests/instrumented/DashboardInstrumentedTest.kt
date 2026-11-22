@@ -255,7 +255,7 @@ class DashboardInstrumentedTest {
         composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
         composeRule.onNodeWithTag("dashboard_outbound_ip").performClick()
         composeRule.onNodeWithTag("ip_quality_sheet").assertIsDisplayed()
-        composeRule.onNodeWithText("数据中心").assertIsDisplayed()
+        composeRule.onNodeWithText("示例网络").assertIsDisplayed()
         composeRule.onNodeWithText("AS64512").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("ip_quality_hide").performScrollTo().performClick()
         composeRule.onNodeWithTag("ip_quality_address_copy").performScrollTo().performClick()
@@ -272,7 +272,7 @@ class DashboardInstrumentedTest {
         // 作者 long：已有质量结果刷新时继续显示原值且禁用刷新，不能为了忙态插入进度行改变面板几何。
         composeRule.onNodeWithTag("ip_quality_refresh").assertIsNotEnabled()
         composeRule.onNodeWithTag("ip_quality_loading").assertDoesNotExist()
-        composeRule.onNodeWithText("数据中心").assertExists()
+        composeRule.onNodeWithText("示例网络").assertExists()
         composeRule.runOnIdle {
             assertEquals(1, composeRule.activity.qualityRefreshCount)
             assertEquals(0, composeRule.activity.ipRefreshCount)
@@ -300,6 +300,19 @@ class DashboardInstrumentedTest {
         composeRule.onNodeWithTag("dashboard_ip_refresh").performClick()
         composeRule.runOnIdle { assertEquals(3, composeRule.activity.ipRefreshCount) }
         composeRule.activityRule.scenario.onActivity { it.finishIpRefresh(true) }
+    }
+
+    @Test
+    fun dashboardCountryCodeRefreshesAndOrganizationAppearsOnlyInRuntimeRow() {
+        assertPortraitDefaultFontConfiguration()
+        composeRule.activityRule.scenario.onActivity { it.showRunningScenario() }
+
+        composeRule.onNodeWithTag("dashboard_ip_refresh").assertHasClickAction().performClick()
+        composeRule.runOnIdle { assertEquals(1, composeRule.activity.ipRefreshCount) }
+        composeRule.onNodeWithText("US", useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag("dashboard_outbound_ip_organization").assertDoesNotExist()
+        composeRule.onNodeWithTag("dashboard_runtime_organization").performScrollTo().assertTextEquals("示例网络")
+        composeRule.onAllNodesWithText("示例网络", useUnmergedTree = true).assertCountEquals(1)
     }
 
     @Test

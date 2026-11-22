@@ -2,11 +2,6 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.ui.theme.proxyDelaySuccessColor
-import com.lonnnnnng.flclash.ui.theme.proxyDelayWarningColor
 
 // 作者 long：节点几何由文字行高决定，测速只扩展命中范围，不把按钮默认高度计入详情行。
 private object ProxyNodeStyle {
@@ -219,40 +213,30 @@ private fun ProxyDelayAction(
                 .appFocusRing(AppSuperellipseShape(4.dp), standsOff = true)
                 .testTag(delayTag),
         ) {
-            // 作者 long：Flutter 的 FadeBox 会在测速图标、运行中、结果和失败文案之间交叉淡入淡出；
-            // 保持固定的 13dp 行高，只替换内容，避免状态切换把相邻节点的卡片高度推开。
-            AnimatedContent(
-                targetState = proxyDelayAnimationKey(delay),
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(200)) togetherWith
-                        fadeOut(animationSpec = tween(150))
-                },
-                label = "proxyDelayFade",
-            ) { state ->
-                when (state.kind) {
-                    ProxyDelayAnimationKey.QUEUED -> Icon(
-                        Icons.Outlined.Schedule,
-                        contentDescription = null,
-                        modifier = Modifier.size(13.dp).testTag("proxy_delay_queued_icon"),
-                        tint = colors.onSurfaceVariant.copy(alpha = 0.58f),
-                    )
-                    ProxyDelayAnimationKey.TESTING -> CircularProgressIndicator(
-                        Modifier.size(13.dp).testTag("proxy_delay_running_indicator"),
-                        strokeWidth = 2.dp,
-                    )
-                    ProxyDelayAnimationKey.ACTION -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
-                    else -> Text(
-                        state.label,
-                        style = ProxyNodeStyle.delay,
-                        color = when {
-                            !enabled -> colors.onSurface.copy(alpha = 0.38f)
-                            delay?.value == null -> colors.onSurfaceVariant
-                            delay.value <= 0 -> colors.error
-                            delay.value < 600 -> proxyDelaySuccessColor()
-                            else -> proxyDelayWarningColor()
-                        },
-                    )
-                }
+            // 作者 long：测速结果按核心返回值一次性着色，避免淡入内容先以中性色出现；测速阶段仍保留旋转指示。
+            val state = proxyDelayAnimationKey(delay)
+            when (state.kind) {
+                ProxyDelayAnimationKey.QUEUED -> Icon(
+                    Icons.Outlined.Schedule,
+                    contentDescription = null,
+                    modifier = Modifier.size(13.dp).testTag("proxy_delay_queued_icon"),
+                    tint = colors.onSurfaceVariant.copy(alpha = 0.58f),
+                )
+                ProxyDelayAnimationKey.TESTING -> CircularProgressIndicator(
+                    Modifier.size(13.dp).testTag("proxy_delay_running_indicator"),
+                    strokeWidth = 2.dp,
+                )
+                ProxyDelayAnimationKey.ACTION -> Icon(Icons.Outlined.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
+                else -> Text(
+                    state.label,
+                    Modifier.testTag("proxy_delay_result"),
+                    style = ProxyNodeStyle.delay,
+                    color = when {
+                        delay?.value == null -> if (enabled) colors.onSurfaceVariant else colors.onSurface.copy(alpha = 0.38f)
+                        delay.value <= 0 -> colors.error
+                        else -> proxyDelaySuccessColor()
+                    },
+                )
             }
         }
     }

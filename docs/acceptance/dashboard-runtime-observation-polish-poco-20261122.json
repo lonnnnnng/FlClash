@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-22",
+  "work_item": "KUI-VIS-080",
+  "source_head": "4ade8e160d2b8a796bac21087a3562cfae6c6947",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait"
+  },
+  "changes": [
+    "No selected profile disables the dashboard start action; a running core can still be stopped.",
+    "The runtime action is icon-only and centered vertically against the full status card.",
+    "The outbound country code is uppercase, enlarged, and remains the refresh target; the IP detail panel no longer repeats the organization.",
+    "Runtime duration and organization columns use a 12dp gap; organization is shown only in the runtime row.",
+    "The embedded observation page removes the outer duplicate top inset; request, connection, DNS, and log state updates render without leaving the page.",
+    "Proxy delay results render immediately with the result color; queued/running states continue to use their existing indicator."
+  ],
+  "instrumented_methods_passed": [
+    "RuntimeToggleShapeInstrumentedTest#runtimeButtonPreservesBusyActionsAndBoundsInBothMaterialsAndThemes",
+    "RuntimeToggleShapeInstrumentedTest#missingProfileDisablesStartButRunningCoreCanStillStop",
+    "DashboardInstrumentedTest#dashboardCountryCodeRefreshesAndOrganizationAppearsOnlyInRuntimeRow",
+    "DashboardInstrumentedTest#dashboardIpRefreshKeepsAddressAndFailureCanRetry",
+    "ObservationListInstrumentedTest#observationListsRenderNewStateWithoutLeavingThePage",
+    "ObservationListInstrumentedTest#embeddedObservationHeaderDoesNotReceiveTheOuterStatusBarInsetAgain",
+    "ProxyPageParityInstrumentedTest#delayResultAppearsGreenImmediatelyAfterLoading"
+  ],
+  "broader_observation_class": {
+    "class": "ObservationListInstrumentedTest",
+    "tests": 11,
+    "passed": 7,
+    "failed": 4,
+    "failure_kind": "Four existing fixed screenshot SHA assertions differ from the POCO renders. The live-state, inset, search, toolbar, and DNS detail cases passed.",
+    "baselines_changed": false
+  },
+  "build": {
+    "jvm_tests": "app, service, core, and common testDebugUnitTest passed",
+    "debug_and_android_test_apks": "passed",
+    "release_r8": "assembleRelease passed; unsigned local output",
+    "lint": "lintDebug and lintRelease passed",
+    "bilingual_resources": "2180 pairs passed key, placeholder, and English coverage validation"
+  },
+  "device_state": {
+    "installed_package": "com.lonnnnnng.flclash",
+    "version": "0.1.14-debug / versionCode 1014",
+    "dashboard_profile_count": 0,
+    "vpn_or_core_service_running": false,
+    "flutter_reference_package_modified": false
+  },
+  "debug_apk_sha256": "dc3f388114f04895ea993050cc052a6e392adc1f49c5a000853df835e1ac1895",
+  "visual_artifacts": {
+    "directory": "../../../acceptance-artifacts/dashboard-runtime-polish-poco-20261122/",
+    "dashboard_no_profile_png_sha256": "959b2a72f9e5948dbf6700972e852f1e5c1d80bdc7319c25a7c71b7c763f612b",
+    "dashboard_ip_refresh_test_xml_sha256": "5e7bd70abaca9f75b078d09746e3fa0adca4ed1cf3edd036dcb552ea079744bc"
+  },
+  "release_published": false,
+  "limitations": [
+    "POCO UI review used an empty-profile installation and fixed Compose instrumentation fixtures; no real proxy session was started.",
+    "The four existing observation screenshot hashes remain unchanged; matching those historical images on POCO is unresolved."
+  ]
+}

@@ -1322,6 +1322,7 @@ internal object AppTextCatalog {
         "运行配置" to R.string.text_8f6cbd3fb11d,
         "已复制" to R.string.text_8f6f8d979c98,
         "基础策略" to R.string.text_8f78ac991fed,
+        "点击国家简称刷新" to R.string.text_8f8f49599d61,
         "HTTP(S) 脚本地址" to R.string.text_8fd7a56ed162,
         "栈" to R.string.text_903a5fdfcc73,
         "末尾" to R.string.text_905c11ac035a,

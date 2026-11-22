@@ -1,5 +1,10 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -11,11 +16,14 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -30,6 +38,72 @@ import java.security.MessageDigest
 class ObservationListInstrumentedTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ObservationListTestActivity>()
+
+    @Test
+    fun observationListsRenderNewStateWithoutLeavingThePage() {
+        composeRule.activity.runOnUiThread { composeRule.activity.showRequestsEmptyPage() }
+        composeRule.onNodeWithTag("requests_empty_state").assertIsDisplayed()
+        composeRule.activity.runOnUiThread { composeRule.activity.emitLiveRow() }
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithTag("request_row_0").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.activity.runOnUiThread { composeRule.activity.showConnectionsEmptyPage() }
+        composeRule.onNodeWithTag("connections_empty_state").assertIsDisplayed()
+        composeRule.activity.runOnUiThread { composeRule.activity.emitLiveRow() }
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithTag("connections_row_0").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.activity.runOnUiThread { composeRule.activity.showDnsEmptyPage() }
+        composeRule.onNodeWithTag("dns_empty_state").assertIsDisplayed()
+        composeRule.activity.runOnUiThread { composeRule.activity.emitLiveRow() }
+        composeRule.waitUntil(2_000) {
+            composeRule.onAllNodesWithTag("dns_row_0").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.activity.runOnUiThread { composeRule.activity.showLogsEmptyPage() }
+        composeRule.activity.runOnUiThread { composeRule.activity.emitLiveRow() }
+        composeRule.onNodeWithText("显示 1/1").assertIsDisplayed()
+    }
+
+    @Test
+    fun embeddedObservationHeaderDoesNotReceiveTheOuterStatusBarInsetAgain() {
+        composeRule.activity.runOnUiThread {
+            WindowCompat.setDecorFitsSystemWindows(composeRule.activity.window, false)
+        }
+        composeRule.activity.runOnUiThread {
+            composeRule.activity.setContent {
+                KClashTheme {
+                    MainPageScaffold(
+                        selectedDestination = MainDestination.TOOLS,
+                        onDestinationSelected = {},
+                        showTopBar = false,
+                        showNavigation = false,
+                        contentHandlesSystemBars = true,
+                    ) { padding ->
+                        Box(Modifier.fillMaxSize().padding(padding)) {
+                            ObservationPage(
+                                requests = RequestsUiState(),
+                                connections = ConnectionsUiState(),
+                                dns = DnsUiState(),
+                                logs = LogsUiState(),
+                                runtimeState = com.lonnnnnng.flclash.service.CoreRuntimeStatus.STOPPED,
+                                selectedTabIndex = 0,
+                                onSelectedTabChange = {},
+                                onClearDns = {},
+                                onClearLogs = {},
+                                onExportLogs = {},
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        val page = composeRule.onNodeWithTag("observation_page").fetchSemanticsNode().boundsInRoot
+        assertEquals("内层工具栏负责状态栏避让，外层内容从根布局开始", 0f, page.top, 1f)
+        composeRule.onNodeWithText("网络活动").assertIsDisplayed()
+    }
 
     @Test
     fun observationRequestAndDnsListsCaptureDarkAndLightScreens() {

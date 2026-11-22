@@ -214,7 +214,7 @@ class FormMaterialInstrumentedTest {
         assertPortraitDefaultFontConfiguration()
         var glass by mutableStateOf(false)
         compose.setContent { KClashTheme { CompositionLocalProvider(LocalAppMenuGlass provides glass) {
-            RuntimeCard(com.lonnnnnng.flclash.service.CoreRuntimeStatus.STOPPED, {}, {})
+            RuntimeCard(com.lonnnnnng.flclash.service.CoreRuntimeStatus.STOPPED, {}, {}, canStart = true)
         } } }
         val card = compose.onNodeWithTag("dashboard_runtime_card")
         val plainHeight = card.fetchSemanticsNode().boundsInRoot.height

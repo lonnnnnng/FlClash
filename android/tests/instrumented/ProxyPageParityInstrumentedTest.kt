@@ -14,6 +14,8 @@ import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -21,8 +23,10 @@ import com.lonnnnnng.flclash.core.CoreBridge
 import com.lonnnnnng.flclash.core.ProxyGroupInfo
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
+import com.lonnnnnng.flclash.ui.theme.proxyDelaySuccessColor
 import java.io.ByteArrayOutputStream
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -329,12 +333,15 @@ class ProxyPageParityInstrumentedTest {
         capture("proxy_computed_auto_vs_preferred_list")
     }
 
-    @Test fun delayStatusUsesFadeTransitionWithoutChangingNodeSelection() {
+    @Test fun delayResultAppearsGreenImmediatelyAfterLoading() {
         var selected by mutableStateOf("香港节点")
         var delayState by mutableStateOf<ProxyDelayUiState?>(null)
+        var expectedSuccessColor by mutableStateOf(Color.Unspecified)
         val group = ProxyGroupInfo("测速动效", "Selector", selected, listOf("香港节点", "日本节点"), false)
         compose.setContent {
             KClashTheme {
+                val successColor = proxyDelaySuccessColor()
+                SideEffect { expectedSuccessColor = successColor }
                 ProxyGroupsCard(
                     state = ProxyGroupsUiState(
                         groups = listOf(group),
@@ -356,21 +363,21 @@ class ProxyPageParityInstrumentedTest {
         val delay = compose.onNodeWithTag("proxy_node_delay_测速动效_日本节点", useUnmergedTree = true)
         delay.assertIsDisplayed()
         compose.waitForIdle()
-        compose.mainClock.autoAdvance = false
-        val before = delay.captureToImage().asAndroidBitmap()
         compose.runOnIdle { delayState = ProxyDelayUiState(isTesting = true, isQueued = true) }
-        compose.mainClock.advanceTimeBy(60)
-        val middle = delay.captureToImage().asAndroidBitmap()
-        compose.mainClock.advanceTimeBy(300)
-        val settled = delay.captureToImage().asAndroidBitmap()
         compose.onNodeWithTag("proxy_delay_queued_icon", useUnmergedTree = true).assertIsDisplayed()
-        check(!before.sameAs(middle)) { "测速状态切换应产生淡入淡出中间帧" }
-        check(!middle.sameAs(settled)) { "测速状态切换的中间帧不能直接等于终帧" }
         compose.runOnIdle { delayState = ProxyDelayUiState(isTesting = true) }
-        compose.mainClock.advanceTimeBy(300)
         compose.onNodeWithTag("proxy_delay_queued_icon", useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithTag("proxy_delay_running_indicator", useUnmergedTree = true).assertIsDisplayed()
-        compose.mainClock.autoAdvance = true
+
+        compose.runOnIdle { delayState = ProxyDelayUiState(value = 720) }
+        val result = compose.onNodeWithTag("proxy_delay_result", useUnmergedTree = true)
+        result.assertIsDisplayed().assertTextEquals("720 ms")
+        compose.onNodeWithTag("proxy_delay_running_indicator", useUnmergedTree = true).assertDoesNotExist()
+        val expectedArgb = compose.runOnIdle { expectedSuccessColor.toArgb() }
+        val bitmap = result.captureToImage().asAndroidBitmap()
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        assertTrue("正延迟首次绘制就使用成功绿色", pixels.any { it == expectedArgb })
         compose.runOnIdle { assertEquals("香港节点", selected) }
     }
 

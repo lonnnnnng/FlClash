@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,7 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,12 +70,13 @@ internal fun OutboundIpPanel(
             modifier = Modifier.testTag("dashboard_ip_refresh"),
         ) {
             if (state.isLoading && info == null) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
-            else Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(info?.countryCode ?: "—", style = MaterialTheme.typography.labelMedium)
-                Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp))
-            }
+            else Text(
+                info?.countryCode?.takeIf(String::isNotBlank)?.uppercase(Locale.ROOT) ?: "—",
+                style = TextStyle(fontSize = 20.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold),
+                maxLines = 1,
+            )
         }
-        Column(Modifier.weight(1f).padding(start = 4.dp).height(58.dp)) {
+        Column(Modifier.weight(1f).padding(start = 4.dp).height(44.dp)) {
             Box(Modifier.fillMaxWidth().height(28.dp), contentAlignment = Alignment.CenterStart) {
                 when {
                     info != null -> Text(
@@ -98,7 +103,7 @@ internal fun OutboundIpPanel(
             Box(Modifier.fillMaxWidth().height(16.dp), contentAlignment = Alignment.CenterStart) {
                 when {
                     info == null && state.isLoading -> DashboardSkeletonBar(width = 82.dp, height = 9.dp)
-                    state.error != null -> Text(tr("点击图标重试"), Modifier.testTag("dashboard_outbound_ip_retry"),
+                    state.error != null -> Text(tr("点击国家简称刷新"), Modifier.testTag("dashboard_outbound_ip_retry"),
                         style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1)
                     info == null -> Text(tr("出口 IP"), style = MaterialTheme.typography.labelMedium,
@@ -109,19 +114,6 @@ internal fun OutboundIpPanel(
                     state.qualityLoading -> DashboardSkeletonBar(width = 112.dp, height = 9.dp)
                     else -> Text(tr("IP 类型查询失败"), style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                }
-            }
-            Box(Modifier.fillMaxWidth().height(14.dp), contentAlignment = Alignment.CenterStart) {
-                when {
-                    info != null -> Text(
-                        state.quality?.organization ?: state.quality?.asn?.let { "AS$it" } ?: "—",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    )
-                    state.isLoading -> DashboardSkeletonBar(width = 68.dp, height = 8.dp)
-                    else -> Text("", Modifier.testTag("dashboard_outbound_ip_organization"), style = MaterialTheme.typography.bodySmall)
                 }
             }
         }

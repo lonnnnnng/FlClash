@@ -113,13 +113,16 @@ class RuntimeToggleShapeInstrumentedTest {
         compose.setContent { KClashTheme(darkTheme = dark) {
             CompositionLocalProvider(LocalAppMenuGlass provides glass) {
                 RuntimeCard(status, { starts++; status = CoreRuntimeStatus.STARTING },
-                    { stops++; status = CoreRuntimeStatus.STOPPING })
+                    { stops++; status = CoreRuntimeStatus.STOPPING }, canStart = true)
             }
         } }
         val toggle = compose.onNodeWithTag("dashboard_runtime_toggle")
         val card = compose.onNodeWithTag("dashboard_runtime_card")
         val height = card.fetchSemanticsNode().boundsInRoot.height
         val bounds = toggle.fetchSemanticsNode().boundsInRoot
+        val cardBounds = card.fetchSemanticsNode().boundsInRoot
+        assertEquals("运行按钮中心与整张状态卡垂直中心对齐", (cardBounds.top + cardBounds.bottom) / 2f,
+            (bounds.top + bounds.bottom) / 2f, 2f)
         for (theme in listOf(false, true)) for (material in listOf(false, true)) {
             compose.runOnIdle { dark = theme; glass = material; status = CoreRuntimeStatus.STOPPED }
             toggle.performClick().assertIsNotEnabled()
@@ -144,5 +147,28 @@ class RuntimeToggleShapeInstrumentedTest {
             }.toByteArray())
         }
         assertEquals(4, starts); assertEquals(4, stops)
+    }
+
+    @Test fun missingProfileDisablesStartButRunningCoreCanStillStop() {
+        var status by mutableStateOf(CoreRuntimeStatus.STOPPED)
+        var stops = 0
+        compose.setContent {
+            KClashTheme {
+                RuntimeCard(
+                    state = status,
+                    onStart = {},
+                    onStop = { stops++; status = CoreRuntimeStatus.STOPPING },
+                    canStart = false,
+                )
+            }
+        }
+        val toggle = compose.onNodeWithTag("dashboard_runtime_toggle")
+        toggle.assertIsNotEnabled()
+        compose.onNodeWithText("启动核心").assertDoesNotExist()
+
+        compose.runOnIdle { status = CoreRuntimeStatus.RUNNING }
+        toggle.assertIsEnabled().performClick()
+        compose.runOnIdle { assertEquals(1, stops) }
+        toggle.assertIsNotEnabled()
     }
 }

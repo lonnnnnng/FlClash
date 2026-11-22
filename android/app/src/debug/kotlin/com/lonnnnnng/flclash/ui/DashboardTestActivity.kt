@@ -183,6 +183,7 @@ class DashboardTestActivity : ComponentActivity() {
                                 state = runtimeState,
                                 uptimeMillis = if (running) 3_661_000L else null,
                                 outboundIp = outboundIpState,
+                                canStart = true,
                                 onRefreshIp = { ipRefreshCount++; outboundIpState = outboundIpState.copy(isLoading = true, error = null) },
                                 onRefreshIpQuality = { qualityRefreshCount++; outboundIpState = outboundIpState.copy(qualityLoading = true, qualityFailures = emptyMap()) },
                                 onCopyOutboundText = { label, text ->

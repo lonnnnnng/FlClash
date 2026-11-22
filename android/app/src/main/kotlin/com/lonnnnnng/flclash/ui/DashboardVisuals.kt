@@ -367,6 +367,7 @@ internal fun RuntimeCard(
     state: CoreRuntimeStatus,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    canStart: Boolean,
     uptimeMillis: Long? = null,
     outboundIp: OutboundIpUiState = OutboundIpUiState(),
     onRefreshIp: () -> Unit = {},
@@ -375,15 +376,11 @@ internal fun RuntimeCard(
     onDemandSuspended: Boolean = false,
 ) {
     val busy = state == CoreRuntimeStatus.STARTING || state == CoreRuntimeStatus.STOPPING
+    // 作者 long：停止动作只依赖核心状态；启动动作必须有已加载且选中的配置。
+    val canToggle = !busy && (state.isRunning || canStart)
     val toggleShape = rememberRuntimeToggleShape(state.isRunning)
     val colors = MaterialTheme.colorScheme
     val tone = dashboardBlockColor()
-    val actionLabel = when (state) {
-        CoreRuntimeStatus.STARTING -> tr("正在启动核心")
-        CoreRuntimeStatus.STOPPING -> tr("正在停止核心")
-        else -> if (state.isRunning) tr("停止核心") else tr("启动核心")
-    }
-    val largeText = LocalDensity.current.fontScale > 1.4f
     Card(
         Modifier.fillMaxWidth().testTag("dashboard_runtime_card").appDashboardShadow(),
         shape = AppSuperellipseShape(34.dp),
@@ -406,65 +403,59 @@ internal fun RuntimeCard(
                 drawPath(path, tone)
             }
         }, foreground = {
-            Column(Modifier.padding(start = 20.dp, top = 18.dp, end = 16.dp, bottom = 18.dp)) {
-                Row(
-                    Modifier.fillMaxWidth().height(26.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Outlined.Tune, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(tr("状态"), style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold))
-                    RuntimeStateChip(state, onDemandSuspended)
-                }
-                Row(
-                    Modifier.fillMaxWidth().padding(top = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality, onCopyOutboundText)
-                        Spacer(Modifier.height(16.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                            DashboardRuntimeCell(
-                                label = tr("运行时长"),
-                                value = formatRuntimeDuration(uptimeMillis.takeIf { state.isRunning }),
-                                tag = "dashboard_runtime_duration",
-                                modifier = Modifier.weight(1f),
-                            )
-                            DashboardRuntimeCell(
-                                label = tr("组织"),
-                                value = outboundIp.info?.let { outboundIp.quality?.organization ?: outboundIp.quality?.asn?.let { asn -> "AS$asn" } } ?: "—",
-                                tag = "dashboard_runtime_organization",
-                                modifier = Modifier.weight(1.2f),
-                            )
-                        }
-                    }
-                    Surface(
-                        onClick = if (state.isRunning) onStop else onStart,
-                        enabled = !busy,
-                        modifier = Modifier.size(88.dp).testTag("dashboard_runtime_toggle")
-                            .appElasticPress(enabled = !busy)
-                            .appLiveButton(toggleShape, AppGlassStyle.tinted(LocalKClashDarkTheme.current,
-                                if (state.isRunning) colors.primary else colors.primaryContainer), !busy)
-                            .appFocusRing(toggleShape, standsOff = true),
-                        shape = toggleShape,
-                        color = if (LocalAppMenuGlass.current && LocalAppLiveBackdrop.current != null) Color.Transparent else if (state.isRunning) colors.primary else colors.primaryContainer,
-                        contentColor = if (state.isRunning) colors.onPrimary else colors.onPrimaryContainer,
+            Box(Modifier.fillMaxSize().padding(start = 20.dp, top = 18.dp, end = 16.dp, bottom = 18.dp)) {
+                Column(Modifier.fillMaxWidth().padding(end = 98.dp)) {
+                    Row(
+                        Modifier.fillMaxWidth().height(26.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Column(
-                            Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                        ) {
-                            RuntimeToggleGlyph(state.isRunning, state.isRunning && onDemandSuspended, busy)
-                            if (!largeText) {
-                                Text(
-                                    actionLabel,
-                                    Modifier.padding(top = 4.dp),
-                                    style = TextStyle(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold),
+                        Icon(Icons.Outlined.Tune, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(tr("状态"), style = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold))
+                        RuntimeStateChip(state, onDemandSuspended)
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().padding(top = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            OutboundIpPanel(outboundIp, state.isRunning, onRefreshIp, onRefreshIpQuality, onCopyOutboundText)
+                            Spacer(Modifier.height(16.dp))
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                DashboardRuntimeCell(
+                                    label = tr("运行时长"),
+                                    value = formatRuntimeDuration(uptimeMillis.takeIf { state.isRunning }),
+                                    tag = "dashboard_runtime_duration",
+                                    modifier = Modifier.weight(1f),
+                                )
+                                DashboardRuntimeCell(
+                                    label = tr("组织"),
+                                    value = outboundIp.info?.let { outboundIp.quality?.organization ?: outboundIp.quality?.asn?.let { asn -> "AS$asn" } } ?: "—",
+                                    tag = "dashboard_runtime_organization",
+                                    modifier = Modifier.weight(1.2f),
                                 )
                             }
                         }
+                    }
+                }
+
+                Surface(
+                    onClick = if (state.isRunning) onStop else onStart,
+                    enabled = canToggle,
+                    modifier = Modifier.align(Alignment.CenterEnd).size(88.dp).testTag("dashboard_runtime_toggle")
+                        .appElasticPress(enabled = canToggle)
+                        .appLiveButton(toggleShape, AppGlassStyle.tinted(LocalKClashDarkTheme.current,
+                            if (state.isRunning) colors.primary else colors.primaryContainer), canToggle)
+                        .appFocusRing(toggleShape, standsOff = true),
+                    shape = toggleShape,
+                    color = if (LocalAppMenuGlass.current && LocalAppLiveBackdrop.current != null) Color.Transparent
+                        else if (!canToggle) colors.surfaceVariant
+                        else if (state.isRunning) colors.primary else colors.primaryContainer,
+                    contentColor = if (!canToggle) colors.onSurfaceVariant
+                        else if (state.isRunning) colors.onPrimary else colors.onPrimaryContainer,
+                ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        RuntimeToggleGlyph(state.isRunning, state.isRunning && onDemandSuspended, busy)
                     }
                 }
             }

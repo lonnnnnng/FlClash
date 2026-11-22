@@ -3,10 +3,12 @@ package com.lonnnnnng.flclash.ui
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -53,6 +55,7 @@ internal fun MainPageScaffold(
     topBarNavigationIcon: @Composable (() -> Unit)? = null,
     showTopBar: Boolean = true,
     showNavigation: Boolean = true,
+    contentHandlesSystemBars: Boolean = false,
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -81,6 +84,8 @@ internal fun MainPageScaffold(
         snackbarHost = snackbarHost,
         bottomBar = { if (showNavigation) MainNavigationDock(selectedDestination, destinations, onDestinationSelected) },
         floatingActionButton = floatingActionButton,
+        // 作者 long：网络活动页内层 TopAppBar 自己避让状态栏，外层必须取消重复的系统栏留白。
+        contentWindowInsets = if (contentHandlesSystemBars) WindowInsets(0, 0, 0, 0) else ScaffoldDefaults.contentWindowInsets,
         content = { padding -> content(PaddingValues(start = padding.calculateLeftPadding(androidx.compose.ui.platform.LocalLayoutDirection.current),
             top = padding.calculateTopPadding(), end = padding.calculateRightPadding(androidx.compose.ui.platform.LocalLayoutDirection.current),
             bottom = if (dockInset > 0.dp) 0.dp else padding.calculateBottomPadding())) },

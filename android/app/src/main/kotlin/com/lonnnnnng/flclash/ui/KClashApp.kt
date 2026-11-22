@@ -855,6 +855,7 @@ fun KClashApp(
             selectedDestination = pageDestination,
             showTopBar = pageDestination != MainDestination.PROXY &&
                 !(pageDestination == MainDestination.TOOLS && toolsSubpage == ToolsSubpage.OBSERVATIONS),
+            contentHandlesSystemBars = pageDestination == MainDestination.TOOLS && toolsSubpage == ToolsSubpage.OBSERVATIONS,
             showNavigation = false,
             onDestinationSelected = ::navigateTo,
             destinations = navigationDestinations,
@@ -1131,6 +1132,7 @@ fun KClashApp(
                                         onRefreshIpQuality = { outboundIpViewModel?.refreshQuality() },
                                         onStart = onStartRuntime,
                                         onStop = onStopRuntime,
+                                        canStart = profilesState.profilesLoaded && selectedProfile != null,
                                     )
                                     DashboardSection.SERVICE_STATUS -> DashboardServiceStatusCard(
                                         serviceStatusState, { serviceStatusViewModel?.check(it) },

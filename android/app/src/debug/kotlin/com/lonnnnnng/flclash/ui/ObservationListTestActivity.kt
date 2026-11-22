@@ -17,6 +17,7 @@ class ObservationListTestActivity : ComponentActivity() {
     private var page by mutableStateOf(ObservationListTestPage.REQUESTS)
     private var darkTheme by mutableStateOf(true)
     private var requestsState by mutableStateOf(RequestsUiState(requestFixtures()))
+    private var connectionsState by mutableStateOf(ConnectionsUiState())
     private var dnsState by mutableStateOf(DnsUiState(dnsFixtures()))
     private var logsState by mutableStateOf(LogsUiState(logFixtures()))
     var dnsCacheClearRequests: Int = 0
@@ -39,6 +40,13 @@ class ObservationListTestActivity : ComponentActivity() {
                 when (page) {
                     ObservationListTestPage.REQUESTS -> RequestsDialog(
                         state = requestsState,
+                        onDismiss = ::finish,
+                    )
+
+                    ObservationListTestPage.CONNECTIONS -> RequestsDialog(
+                        state = RequestsUiState(connectionsState.connections),
+                        activeConnections = true,
+                        connectionState = connectionsState,
                         onDismiss = ::finish,
                     )
 
@@ -72,6 +80,11 @@ class ObservationListTestActivity : ComponentActivity() {
         page = ObservationListTestPage.REQUESTS
     }
 
+    fun showConnectionsEmptyPage() {
+        connectionsState = ConnectionsUiState()
+        page = ObservationListTestPage.CONNECTIONS
+    }
+
     fun showDnsPage() {
         dnsState = DnsUiState(dnsFixtures())
         page = ObservationListTestPage.DNS
@@ -93,6 +106,20 @@ class ObservationListTestActivity : ComponentActivity() {
         page = ObservationListTestPage.LOGS
     }
 
+    fun emitLiveRow() {
+        when (page) {
+            ObservationListTestPage.REQUESTS -> requestsState = RequestsUiState(listOf(liveConnection("live-request.example.test")))
+            ObservationListTestPage.CONNECTIONS -> connectionsState = ConnectionsUiState(listOf(liveConnection("live-connection.example.test")))
+            ObservationListTestPage.DNS -> dnsState = DnsUiState(listOf(
+                CoreDnsQuery("live-dns.example.test", "A", "test.app", "https://dns.example.test/dns-query",
+                    false, listOf("192.0.2.99"), "NOERROR", "", 8L, "2026-11-22T00:00:00Z"),
+            ))
+            ObservationListTestPage.LOGS -> logsState = LogsUiState(listOf(
+                CoreEvent.Log("info", "live log arrived", 1_795_305_600_000L),
+            ))
+        }
+    }
+
     fun overrideDarkTheme(enabled: Boolean) {
         darkTheme = enabled
     }
@@ -110,8 +137,13 @@ class ObservationListTestActivity : ComponentActivity() {
 
 private enum class ObservationListTestPage {
     REQUESTS,
+    CONNECTIONS,
     DNS,
     LOGS,
+}
+
+private fun liveConnection(host: String) = requestFixtures().first().let { source ->
+    source.copy(id = host, metadata = source.metadata.copy(host = host, remoteDestination = "$host:443"))
 }
 
 private fun logFixtures() = listOf(
