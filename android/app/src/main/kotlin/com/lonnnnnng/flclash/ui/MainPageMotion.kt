@@ -1,10 +1,10 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -25,12 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.unit.LayoutDirection
 
-// 作者 long：与 Flutter 手机 PageView 的 300ms easeOut 保持一致；跳过中间入口时仍只移动一屏，不构建沿途页面。
+// 作者 long：Flutter 当前默认选项卡效果是220ms淡入淡出，easeInOut过程中页面不横移。
+internal const val MAIN_PAGE_FADE_MILLIS = 220
+internal val MainPageFadeEasing = CubicBezierEasing(.42f, 0f, .58f, 1f)
+// 作者 long：代理组内部仍沿用300ms easeOut横向分页；不要与底部主导航的默认淡入混为一套参数。
 internal const val MAIN_PAGE_SLIDE_MILLIS = 300
 internal val MainPageSlideEasing = CubicBezierEasing(0f, 0f, .58f, 1f)
 internal val LocalMainDockInset = staticCompositionLocalOf { 0.dp }
@@ -66,14 +67,12 @@ internal fun MainPageTransition(
     savedPages: androidx.compose.runtime.saveable.SaveableStateHolder = rememberSaveableStateHolder(),
     content: @Composable (MainDestination) -> Unit,
 ) {
-    val direction = if (LocalLayoutDirection.current == LayoutDirection.Ltr) 1 else -1
     AnimatedContent(
         targetState = destination,
         modifier = modifier.clipToBounds().testTag("main_page_transition"),
         transitionSpec = {
-            val sign = if (targetState.ordinal > initialState.ordinal) direction else -direction
-            (slideInHorizontally(tween(MAIN_PAGE_SLIDE_MILLIS, easing = MainPageSlideEasing)) { it * sign } togetherWith
-                slideOutHorizontally(tween(MAIN_PAGE_SLIDE_MILLIS, easing = MainPageSlideEasing)) { -it * sign })
+            (fadeIn(tween(MAIN_PAGE_FADE_MILLIS, easing = MainPageFadeEasing)) togetherWith
+                fadeOut(tween(MAIN_PAGE_FADE_MILLIS, easing = MainPageFadeEasing)))
                 .using(null)
         },
         label = "mainPage",

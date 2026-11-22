@@ -67,7 +67,7 @@ class MainPageMotionInstrumentedTest {
                 hashes += capture("main_page_${theme}_frame_$frame")
             }
             assertTrue("至少三个不同的中间帧", hashes.size >= 3)
-            assertTrue("页面必须从右向左连续接近终点", positions.first() > 0 && positions.zipWithNext().all { (a, b) -> b < a })
+            assertTrue("淡入淡出时新页面保持原位，不应出现横向位移", positions.all { kotlin.math.abs(it - positions.first()) <= 1f })
             compose.mainClock.advanceTimeBy(500)
             compose.mainClock.autoAdvance = true
             compose.onNodeWithTag("motion_draft_PROFILES").assertTextContains("保留草稿 $theme")

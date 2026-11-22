@@ -1,0 +1,89 @@
+{
+  "id": "KUI-VIS-084",
+  "date": "2026-11-23",
+  "scope": "Main tab fade transition and page state restoration",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "reference": {
+    "source": "../acceptance-artifacts/flutter-reference-be847366",
+    "package": "com.follow.clash",
+    "selectedTransition": "淡入",
+    "observedTransition": "220ms easeInOut fade; page content does not translate horizontally",
+    "capture": "../../../acceptance-artifacts/main-nav-fade-poco-20261123/flutter-tab-animation-selected.png",
+    "referencePackageModified": false
+  },
+  "implementation": {
+    "files": [
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/MainPageMotion.kt",
+      "android/tests/instrumented/MainPageMotionInstrumentedTest.kt"
+    ],
+    "changes": [
+      "Main bottom-tab navigation now uses the selected Flutter fade transition, 220ms easeInOut, with no horizontal page movement.",
+      "Proxy-group internal horizontal paging retains its separate 300ms easeOut transition.",
+      "The regression asserts intermediate fade frames, fixed page position and Dock geometry, restored scroll position and draft in both themes, and rapid navigation reversal without building skipped pages."
+    ]
+  },
+  "verification": {
+    "instrumentedTests": {
+      "package": "com.lonnnnnng.flclash.motion",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0,
+      "cases": [
+        "MainPageMotionInstrumentedTest#continuousPagesKeepDockAndRestoreScrollAndDraftInBothThemes",
+        "MainPageMotionInstrumentedTest#rapidReversalAndSkippedDestinationsFinishWithoutDuplicatePages"
+      ],
+      "log": "../../../acceptance-artifacts/main-nav-fade-poco-20261123/instrumentation.log"
+    },
+    "jvmTests": {
+      "debug": 924,
+      "motionBenchmark": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": {
+      "result": "passed",
+      "releaseUnsignedApk": {
+        "versionName": "0.1.16",
+        "versionCode": 1016,
+        "sha256": "012dfb3e8392fbb6b6bfce05136d9e0992d91e6d0f2a7ca0ad48edcfbe11bc55"
+      },
+      "motionBenchmarkApkSha256": "d3501299f1e68274e2c32350c4db30810aecbb92d710dc60e3a0b66cd554ac2d",
+      "motionBenchmarkAndroidTestApkSha256": "82d4a414de24a4e3b326c82d9de73a8ff718268d1d3f3fe19e4b6ec7c7c60de0"
+    },
+    "lint": {
+      "debug": "0 errors, 11 warnings",
+      "release": "0 errors, 11 warnings",
+      "motionBenchmark": "0 errors, 11 warnings",
+      "motionBenchmarkRetry": "The first combined Gradle invocation crashed in Kotlin FIR analysis of unchanged AccessControlSafetyTest.kt; the isolated motionBenchmark lint task passed. The initial analyzer failure was not diagnosed."
+    },
+    "visuals": {
+      "artifactDirectory": "../../../acceptance-artifacts/main-nav-fade-poco-20261123/",
+      "manifest": "visuals.json",
+      "images": 12,
+      "validation": "All PNG files matched manifest byte counts, SHA-256 values, and decoded dimensions. Flutter selected-setting screen and Kotlin intermediate/settled frames were visually inspected."
+    }
+  },
+  "deviceState": {
+    "installedProductionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "productionPackageChanged": false,
+    "motionPackagesRemovedAfterAcceptance": true,
+    "ordinaryTestPackagePreserved": true,
+    "vpnStarted": false,
+    "flutterReferenceModified": false
+  },
+  "limits": [
+    "The motion test uses a fixed Compose navigation host. It does not prove complete MainActivity page runtime parity or live data behavior against Flutter.",
+    "Other subpage transitions and full continuous Flutter page comparison remain open.",
+    "Menu trace discarded producer, app-surface FrameTimeline coverage, GPU/fence attribution, and stable performance gain remain unresolved; no performance benefit is claimed.",
+    "Glass remains disabled by default."
+  ],
+  "next": "Compare the NTP settings page empty state and parent-page frame against the frozen Flutter reference."
+}
