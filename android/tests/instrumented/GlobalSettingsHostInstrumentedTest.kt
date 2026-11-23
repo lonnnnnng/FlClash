@@ -39,7 +39,11 @@ class GlobalSettingsHostInstrumentedTest {
                 compose.onNodeWithTag("global_dns_add").performClick()
                 capture("global_dns_add_options")
                 compose.onNodeWithTag("global_dns_add_listen").performClick()
-            } else compose.onNodeWithTag("global_dns_listen").performClick()
+                compose.waitUntil(15_000) { compose.onAllNodesWithTag("global_dns_add_listen").fetchSemanticsNodes().isEmpty() }
+                compose.onNodeWithTag("global_dns_add_close").performClick()
+                compose.waitUntil { compose.onAllNodesWithTag("global_dns_add_sheet").fetchSemanticsNodes().isEmpty() }
+            }
+            compose.onNodeWithTag("global_dns_listen").performClick()
             compose.onNodeWithTag("global_dns_input").assertExists()
             capture("global_dns_listen_editor")
             compose.onNodeWithTag("global_dns_input").performTextReplacement("")

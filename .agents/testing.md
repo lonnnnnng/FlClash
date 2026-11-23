@@ -1,5 +1,11 @@
 # Testing
 
+## KUI-VIS-095 DNS非空字段与编辑面板（2026-11-23）
+
+POCO F2 Pro/31936bb6/API36：motion组件8/8（GlobalSettingsInstrumentedTest七个方法+GlobalSettingsHost实际MainActivity方法），自然`MainGlobalDnsNaturalInstrumentedTest#dnsNonEmptyEditorsPersistAndRestoreWithoutReplay`浅/深各1/1。前者覆盖15字段选择/失败重试/两主题/列表拖拽增删重复快速编辑/清空/重置/冲突/防保存重放；自然路线覆盖系统IME、列表草稿Activity重建、保存偏好回读及STOPPED/null选择门禁。必须只运行具名方法，不跑整类；自然宿主要求空motion库，finally恢复global_dns与appearance原值和键集合，核对无正式Profile并保持STOPPED。当前 release 0.1.18 VPN PID20700保持运行。motion双包和本组设备文件已回收；固定完整参考包恢复DNS空态/浅色并保留安装、force-stop。
+
+旧Flutter完整参考0.9.3固定be847366只含11个全局DNS字段；当前upstream/main全局15字段新增4项仅按源码/模型核对。禁止表述为最新Flutter完整运行对照。主题/语言/检测更新按用户确认排除。双语2196对、相关JVM130项、Motion/Test组装/Lint最终通过；Lint 0错误11警告1提示。证据`docs/acceptance/dns-nonempty-editor-poco-20261123.json`和`../acceptance-artifacts/dns-fields-poco-20261123/`。首轮窗口/定位错误是测试驱动问题，原始失败保留在各次run目录；不作为Kotlin产品故障。
+
 ## KUI-VIS-094 DNS整页/长规则与浅色（2026-11-23）
 
 POCO独立motion空库，`MainGlobalRulesNaturalInstrumentedTest#rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames`沿用显式`kclashGlobalRulesNaturalAcceptance=true`，新增`kclashVisualTheme=light|dark`；`kclashLongRules=true`选择80条规则自然滚动/搜索/长按换序/Room重建分支，仍无ComposeRule。`MainGlobalRulesLongListInstrumentedTest#longListSearchRestoresAnchorAndDragPersistsAcrossRecreation`验证目录和多屏搜索重建锚点≤1px、80行/长目标及真实保存。最终完整方法清单见094JSON，禁止整类扩大运行；完整偏好/原外观值与键集合恢复、草稿/回执清理、空库/null选择/STOPPED门禁保持。真实IME需当前Window/Insets可用；浅色Sheet读取真实systemBarsAppearance。

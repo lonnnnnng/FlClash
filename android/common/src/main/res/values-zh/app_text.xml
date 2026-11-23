@@ -2185,4 +2185,16 @@
     <string name="text_488b65cca042" formatted="false">"暂无覆写项"</string>
     <string name="text_737db592fa92" formatted="false">"添加覆写项"</string>
     <string name="text_b79f6914ab4e" formatted="false">"添加的项会覆写所有 URL 和文件配置的 DNS，未添加的项沿用配置自身的设置。自定义配置的 DNS 在其内容中设置。"</string>
+    <string name="text_07a91297d855" formatted="false">"缓存算法"</string>
+    <string name="text_7f5204510863" formatted="false">"DNS 缓存算法无效"</string>
+    <string name="text_e1094c9e5d35" formatted="false">"共 {0} 项"</string>
+    <string name="text_cfcc14f7de89" formatted="false">"每行填写一个有效值"</string>
+    <string name="text_ba8912261bc3" formatted="false">"已存在相同的项"</string>
+    <string name="text_47f87565ed59" formatted="false">"删除 {0} 项？"</string>
+    <string name="text_daa396e05120" formatted="false">"遵守规则使 DNS 连接遵守规则，需配置 Proxy Server Nameserver。"</string>
+    <string name="text_9f559011f4ac" formatted="false">"默认使用的 DNS 服务器，如 223.5.5.5、tls://1.1.1.1、https://dns.google/dns-query。"</string>
+    <string name="text_b229d46923c9" formatted="false">"用于解析其他 DNS 服务器的域名，只能填写 IP 地址。"</string>
+    <string name="text_ba21906ef937" formatted="false">"Nameserver 的结果被 Fallback 过滤判定为污染时，改用这些服务器的结果。"</string>
+    <string name="text_b0d173a9b37a" formatted="false">"仅用于解析代理服务器的域名。"</string>
+    <string name="text_756235cccb5c" formatted="false">"用于解析直连连接的域名。"</string>
 </resources>

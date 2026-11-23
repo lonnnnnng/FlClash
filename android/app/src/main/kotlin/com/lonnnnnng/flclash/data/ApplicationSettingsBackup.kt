@@ -54,7 +54,7 @@ object ApplicationSettingsBackupCodec {
         dns.entrySet().forEach { (key, value) ->
             require(when {
                 key in GlobalDnsSettings.listKeys -> value.isJsonArray && value.asJsonArray.all(::isString)
-                key == "ipv6" -> isBoolean(value)
+                key in GlobalDnsSettings.booleanKeys -> isBoolean(value)
                 else -> isString(value)
             }) { "DNS字段类型无效" }
         }

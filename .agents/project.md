@@ -1,5 +1,10 @@
 # Project Context
 
+## Flutter对齐范围（2026-11-23）
+
+用户明确：主题、语言、检测更新保持Kotlin当前实现，不参与Flutter视觉或交互对齐。玻璃继续默认关闭。
+
+
 ## KCORE-011 网络切换出站重置与 VPN 前 socket 保护（2026-11-21，当前）
 
 已从批准的 `chen08209/Clash.Meta:FlClash` 参考移植 WireGuard/Hysteria2/TUIC 的共享连接重置，并让 Go `ResetNetwork` 遍历全部配置代理和 Provider 节点。socket hook 在核心初始化时安装；真实 UDP RawConn 的定向 Go 回归确认 VPN 前创建的同一 fd 会在 TUN 栈启动前被 Protect。另在 POCO/API36 真机上，预建 UDP socket 于真实 VPN `STARTING`、`Core.startTun` 调用仍活动时由当前 `VpnService.protect(DatagramSocket)` 接受，socket 保持打开；Go 独立快照记录启动期保护24次、拒绝0次。平台探针与 Go RawConn 不是同一 fd，也未证明其落在 Go gate 的短 `phase=starting` 子窗口。父 Go race、Mihomo adapter/TUIC 及 route/http/updater race、Debug `bindCore` 构建均通过。POCO F2 Pro/API36 用用户提供的 `2.yaml` 实测 Hysteria2：Wi-Fi 关闭4秒后重连，前后独立UID DNS/TLS/HTTPS 及HTTP 200、同一 Hysteria2 叶节点哈希、同源端口双向非直连流量均通过；底层Network handle变化，核心PID/运行起始时间不变。Wi-Fi和`allowBypass=false`恢复，motion双包已卸载，`com.follow.clash`原版未操作。WireGuard/TUIC暂缺节点、蜂窝无SIM尚未覆盖；Hysteria2结果不推广其他协议，也不归因历史TLS故障。见 `docs/adr/0022-network-change-outbound-reset.md` 和 `docs/acceptance/network-outbound-reset-20261121.json`、`docs/acceptance/vpn-protect-startup-poco-20261121.json`。

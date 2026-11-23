@@ -35,7 +35,7 @@ class ApplicationSettingsBackupTest {
         val value = ApplicationSettingsBackup(GeneralSettings(authentication = true, username = "alice", password = "private",
             externalController = true, controllerSecret = "secret", hosts = mapOf("test.invalid" to "192.0.2.1")),
             NetworkSettings(systemProxy = false, routeAddress = listOf("192.0.2.0/24")),
-            ProfileDnsOverrides(listen = "", ipv6 = false, nameserver = emptyList()), false, null)
+            ProfileDnsOverrides(listen = "", ipv6 = false, nameserver = emptyList(), useHosts = false, useSystemHosts = true, respectRules = false, preferH3 = true, cacheAlgorithm = "arc"), false, null)
         assertEquals(value, ApplicationSettingsBackupCodec.decode(ApplicationSettingsBackupCodec.encode(value)))
         assertFalse(value.toString().contains("private")); assertFalse(value.toString().contains("secret"))
     }
@@ -48,6 +48,8 @@ class ApplicationSettingsBackupTest {
             { it.getAsJsonObject("general").addProperty("port", 7890) },
             { it.getAsJsonObject("network").addProperty("systemProxy", "true") },
             { it.getAsJsonObject("dns").addProperty("ipv6", "false") },
+            { it.getAsJsonObject("dns").addProperty("prefer-h3", "false") },
+            { it.getAsJsonObject("dns").addProperty("cache-algorithm", "unknown") },
             { it.getAsJsonObject("dns").addProperty("enable", true) },
             { it.addProperty("allowLan", "false") },
         )

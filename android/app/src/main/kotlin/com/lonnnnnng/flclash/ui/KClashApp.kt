@@ -4978,7 +4978,8 @@ internal fun ProfileDnsOverrideDialog(
             TextButton(
                 onClick = {
                     onSave(
-                        ProfileDnsOverrides(
+                        // 作者 long：本面板未展示的DNS字段仍随原值保存，不能编辑监听地址时丢失缓存算法或过滤模式。
+                        initial.copy(
                             enable = enableSet.takeIf { it }?.let { enableValue },
                             listen = listen.trim().takeIf { it.isNotEmpty() },
                             ipv6 = ipv6Set.takeIf { it }?.let { ipv6Value },

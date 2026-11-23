@@ -4,9 +4,10 @@ import android.content.Context
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
-/** 作者 long：全局页仅保存 Flutter 普通配置允许的十项覆盖；CUSTOM 继续使用自己的 DNS，移除字段恢复继承。 */
+/** 作者 long：全局页仅保存 Flutter 普通配置允许的字段覆盖；CUSTOM 继续使用自己的 DNS，移除字段恢复继承。 */
 object GlobalDnsSettings {
-    val keys = listOf("listen", "ipv6", "enhanced-mode", "fake-ip-filter", "fake-ip-filter-mode",
+    val booleanKeys = setOf("ipv6", "use-hosts", "use-system-hosts", "respect-rules", "prefer-h3")
+    val keys = listOf("listen", "use-hosts", "use-system-hosts", "ipv6", "respect-rules", "prefer-h3", "cache-algorithm", "enhanced-mode", "fake-ip-filter", "fake-ip-filter-mode",
         "default-nameserver", "nameserver", "fallback", "proxy-server-nameserver", "direct-nameserver")
     val listKeys = setOf("fake-ip-filter", "default-nameserver", "nameserver", "fallback", "proxy-server-nameserver", "direct-nameserver")
 
@@ -16,6 +17,7 @@ object GlobalDnsSettings {
         require(value.listen == null || value.listen.length <= 256 && value.listen.none { it.isISOControl() }) { "监听地址格式无效" }
         require(value.enhancedMode == null || value.enhancedMode in listOf("normal", "fake-ip", "redir-host")) { "DNS 模式无效" }
         require(value.fakeIpFilterMode == null || value.fakeIpFilterMode in listOf("blacklist", "whitelist", "rule")) { "Fake-IP 过滤模式无效" }
+        require(value.cacheAlgorithm == null || value.cacheAlgorithm in listOf("lru", "arc")) { "DNS 缓存算法无效" }
         listKeys.forEach { key -> json.getAsJsonArray(key)?.let { list ->
             require(list.size() <= 4096) { "列表最多 4096 项" }
             require(list.all { it.asString.isNotBlank() && it.asString.length <= 4096 && it.asString.none(Char::isISOControl) }) { "列表每行填写一个有效值" }

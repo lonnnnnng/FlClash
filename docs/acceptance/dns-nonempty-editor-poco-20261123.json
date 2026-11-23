@@ -1,0 +1,602 @@
+{
+  "id": "KUI-VIS-095",
+  "date": "2026-11-23",
+  "status": "PASS_SCOPED",
+  "baseline": "4a21d5722eb03441599c0a7457640b26a7a21df3",
+  "device": {
+    "serial": "31936bb6",
+    "model": "POCO F2 Pro",
+    "api": 36
+  },
+  "release": "0.1.18 unchanged; no release requested",
+  "scope": [
+    "15 global DNS fields",
+    "default add retains selector",
+    "listen floating input",
+    "grouped nonempty rows",
+    "enum menu",
+    "list draft add/edit/reorder/multi-delete/quick edit/reset",
+    "empty array versus external removal conflict",
+    "save acknowledgement and restoration without replay"
+  ],
+  "excludedByUser": [
+    "theme settings parity",
+    "language settings parity",
+    "update check parity"
+  ],
+  "artifacts": {
+    "com.lonnnnnng.flclash.motion": {
+      "path": "android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+      "sha256": "de38cef178937a1ca3dcad067ecc2ee3d53e3045acda1ef6b961865252911dcf",
+      "installedReadbackMatches": true,
+      "bytes": 67598041
+    },
+    "com.lonnnnnng.flclash.motion.test": {
+      "path": "android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+      "sha256": "2a73ea1e10a1ffc4bffa84d6ebc6d9b0fa813f315f932a8fe4cbbac872ff3182",
+      "installedReadbackMatches": true,
+      "bytes": 3360351
+    }
+  },
+  "jvm": {
+    "ApplicationSettingsBackupTest": 3,
+    "GlobalDnsSettingsTest": 5,
+    "CoreRuntimeManagerTest": 122,
+    "total": 130,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "build": "build-final2.log actual/reused targeted tasks; build-final-confirm.log up-to-date confirmation"
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 11,
+    "hints": 1,
+    "final": "build-final-confirm.log"
+  },
+  "bilingualPairs": 2196,
+  "instrumented": {
+    "kotlin-final": {
+      "returncode": 0,
+      "device": "POCO F2 Pro",
+      "serial": "31936bb6",
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsFullPageUsesViewportEmptyStateAndLightDarkSelector",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsListExternalRemovalKeepsExplicitEmptyConflict",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsExplicitEmptyFailureRetryRemovalAndBothThemes",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsListPendingSaveRecreationDoesNotReplay",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsListDraftReorderQuickEditAndDiscard",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsDefaultsRetrySwitchEnumAndLastCandidateClose",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+          "test": "dnsSaveShowsProgressUntilCompletionCallback",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest",
+          "test": "actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis094_dns_empty_false": {
+          "count": 3,
+          "bytes": 92730,
+          "sha256": "bd7bc1ba761c05e3e7c5edaa42b86be8c9c4a30dd8f31583d0ef73bc6e6eda6b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis094_dns_filtered_false": {
+          "count": 4,
+          "bytes": 132753,
+          "sha256": "f63db1bd63e85b9d690cbd6875885e7850f7cfb65689adfce7377f5be93250e4",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis094_dns_empty_true": {
+          "count": 3,
+          "bytes": 93951,
+          "sha256": "bee81da025363679b12d6407979166e0766c7d180b455baaa15d7c53a253c0fa",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis094_dns_filtered_true": {
+          "count": 4,
+          "bytes": 133143,
+          "sha256": "99fcbb55c0050cb01e60fde981bc0bc27186ade8981a7dbe9f166f4613569428",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dns_light": {
+          "count": 3,
+          "bytes": 92156,
+          "sha256": "3080f3425e80dcced37acede99733168ffaaebc07a46c7f8bb6d42ed480be3ba",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dns_dark": {
+          "count": 4,
+          "bytes": 119927,
+          "sha256": "ab72f2ffb16fbc68a1314e4dc3d2a1014e07d23f5ea7bd46ed71ca7897545808",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_list_light": {
+          "count": 3,
+          "bytes": 78116,
+          "sha256": "e846ca2f96187cfe8f6985a092d850c8ebee794f2ecad12ae4c90ac0674f8201",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_list_add": {
+          "count": 4,
+          "bytes": 131018,
+          "sha256": "3abfac759e5028ecf7d536c18b210f1dff74ebdcd9e9e1fafa93fa0f2a8dc6d7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_all_fields": {
+          "count": 5,
+          "bytes": 173850,
+          "sha256": "96426884ae7c019d6e23b29544a18395f8d6126f3b2eaf0f8bde34db7e8430a1",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_dns_empty": {
+          "count": 3,
+          "bytes": 97030,
+          "sha256": "fbfed56308e174d4b7aa5b81caee36bd0abe4e1de5c1ec4022551f811dc98873",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_dns_add_options": {
+          "count": 3,
+          "bytes": 90490,
+          "sha256": "b8c795455bbe866da65749549952ec6f3dbf184788e573719ab31b5b6002cd0f",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_dns_listen_editor": {
+          "count": 3,
+          "bytes": 95093,
+          "sha256": "01c6df5140e7def852950681af74d3e48e2d627fb91f830bb0d2c9e328f271da",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_dns_actual": {
+          "count": 3,
+          "bytes": 76195,
+          "sha256": "2a0d84fc2beebcab142022fcca7e2e61d976bb8624ed6e56facc07c16d0589fc",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_rules_empty": {
+          "count": 2,
+          "bytes": 59327,
+          "sha256": "016607551f8fba7d6a0a54b5f92bbe75b6de8799db93fba664e94ad1efd46990",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_rules_presets": {
+          "count": 5,
+          "bytes": 177552,
+          "sha256": "7b0a22c56e8dec1e572ccc1d679e3a01e0998837ec54b93735c0fcee3e36dc5d",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_rules_presets_selected": {
+          "count": 5,
+          "bytes": 177890,
+          "sha256": "0d23fdaa764f553774ab74fc3ed7e43e6f98522a54692e2d8f6a03765114b41e",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_rules_add_form": {
+          "count": 3,
+          "bytes": 95231,
+          "sha256": "45482d2801871630a8db5366e14b48303d7df870401a330654ba8b951712f91c",
+          "width": 1080,
+          "height": 2400
+        },
+        "global_rules_actual": {
+          "count": 4,
+          "bytes": 133439,
+          "sha256": "e2bca1a97d68ed503f0787c1eb129f224932a63d6451a70d0d9c847588e76502",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "passed": true
+    },
+    "naturallightfinal3": {
+      "returncode": 0,
+      "device": "POCO F2 Pro",
+      "serial": "31936bb6",
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.MainGlobalDnsNaturalInstrumentedTest",
+          "test": "dnsNonEmptyEditorsPersistAndRestoreWithoutReplay",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis095_light_nonempty": {
+          "count": 3,
+          "bytes": 100473,
+          "sha256": "101fc26d5d6d115702dd309a82a1f6cd188f40b33e3cbc824540985a023b0869",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_listen": {
+          "count": 3,
+          "bytes": 94676,
+          "sha256": "48779bc45fd692bb12abef7fc016ea5900990096fe02ea31819ac013d495b5f5",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_listen_ime": {
+          "count": 4,
+          "bytes": 147123,
+          "sha256": "132fd9e01efae08855a545c19a4e0cf0708870fe2fcdb45ac463923cb9312606",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_mode": {
+          "count": 3,
+          "bytes": 105288,
+          "sha256": "16b5313d92f54afc2cbe0c58b496b524e230076a851369e05c1813b8e5f3c3b7",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_list": {
+          "count": 3,
+          "bytes": 74185,
+          "sha256": "ec49aa974a252be4d7eba28d4ba3f57d2bf7c19063bf5f1f04ad38f4a813e688",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_list_menu": {
+          "count": 3,
+          "bytes": 88505,
+          "sha256": "d6391716eea18cda113388809c5345f7f1012ae87a955a8fbb2e134d75560674",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_list_add": {
+          "count": 3,
+          "bytes": 89084,
+          "sha256": "18cfcc77e4b8643dae62af6462634df86be05ca8107b778434d96d67b54f397e",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_list_draft_recreated": {
+          "count": 3,
+          "bytes": 79611,
+          "sha256": "c3165033b3ff496e88a443058433c8b9ae25765f90b80e15786836d779932bf0",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_saved": {
+          "count": 4,
+          "bytes": 118058,
+          "sha256": "64f263c99777622f0c97c643f6b593977a6bb856a158968b596dae78d4801941",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_light_saved_recreated": {
+          "count": 4,
+          "bytes": 118058,
+          "sha256": "64f263c99777622f0c97c643f6b593977a6bb856a158968b596dae78d4801941",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "passed": true
+    },
+    "naturaldarkfinal2": {
+      "returncode": 0,
+      "device": "POCO F2 Pro",
+      "serial": "31936bb6",
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.MainGlobalDnsNaturalInstrumentedTest",
+          "test": "dnsNonEmptyEditorsPersistAndRestoreWithoutReplay",
+          "code": 0
+        }
+      ],
+      "images": {
+        "vis095_dark_nonempty": {
+          "count": 4,
+          "bytes": 117260,
+          "sha256": "f8437cc4a92f412c82dd1e44ea91f2bef657295b421b52880a2528ec82e953db",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_listen": {
+          "count": 3,
+          "bytes": 95923,
+          "sha256": "6cd1af44ea805bbfa6302cd520f422ce2462d1a984152e8e59a4e33c6ebca035",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_listen_ime": {
+          "count": 5,
+          "bytes": 170234,
+          "sha256": "f932831e117622341b50bf47a74a210afd1321f4737cd93a2b83112e8f14f37b",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_mode": {
+          "count": 4,
+          "bytes": 122150,
+          "sha256": "5a00020ebba5d535b8f99a209234d0f6306a8897d97092fd2164f472d99a5731",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_list": {
+          "count": 3,
+          "bytes": 74514,
+          "sha256": "9e6b23c64d3883e587a12d014af1223d452c8f5176aad8e6cd3208907baa7e08",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_list_menu": {
+          "count": 3,
+          "bytes": 84669,
+          "sha256": "92c19ec85146a3c9070a33b8375ce3741e6e7514598c9d5512c6965934c66923",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_list_add": {
+          "count": 3,
+          "bytes": 86405,
+          "sha256": "756f6c2570665151f764ecdea5c1f37ae0872c269876e542be7781a4c6c47131",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_list_draft_recreated": {
+          "count": 3,
+          "bytes": 79944,
+          "sha256": "d33191fbb41fe8306a65d9dfc28bfd97b055e86c54067f2962f2085f6a765f99",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_saved": {
+          "count": 4,
+          "bytes": 119312,
+          "sha256": "fef84e2b7f42588a6570a32bbc8a38ad146e740ffa1b137ad8d1911b1338faba",
+          "width": 1080,
+          "height": 2400
+        },
+        "vis095_dark_saved_recreated": {
+          "count": 4,
+          "bytes": 119312,
+          "sha256": "fef84e2b7f42588a6570a32bbc8a38ad146e740ffa1b137ad8d1911b1338faba",
+          "width": 1080,
+          "height": 2400
+        }
+      },
+      "passed": true
+    }
+  },
+  "videos": [
+    {
+      "path": "../acceptance-artifacts/dns-fields-poco-20261123/flutter-dark-route.mp4",
+      "bytes": 4936917,
+      "sha256": "95292e78c1f402f81120f916d4139491cb76ad82ab5a30e53b13af67be5d2066",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 2400
+          },
+          {},
+          {}
+        ],
+        "format": {
+          "duration": "32.452956"
+        }
+      }
+    },
+    {
+      "path": "../acceptance-artifacts/dns-fields-poco-20261123/naturallightfinal3/route.mp4",
+      "bytes": 32124365,
+      "sha256": "edbd60477acc613832dbd4cfbf1cd059d43826ca1e483f6c6f6145c9e7b4102d",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 2400
+          },
+          {},
+          {}
+        ],
+        "format": {
+          "duration": "59.849522"
+        }
+      }
+    },
+    {
+      "path": "../acceptance-artifacts/dns-fields-poco-20261123/naturaldarkfinal2/route.mp4",
+      "bytes": 28520613,
+      "sha256": "dd11c33b104229635728bbe1b58260a352a3554472447ff4b7301851cce4288c",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 2400
+          },
+          {},
+          {}
+        ],
+        "format": {
+          "duration": "56.431189"
+        }
+      }
+    }
+  ],
+  "flutterReference": {
+    "package": "com.lonnnnnng.kclash.reference.full.dev",
+    "version": "0.9.3",
+    "code": 2026110401,
+    "source": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "apkSha256": "0d3ab0ee4016bae7c75c727457357222feb3e267444f4c9b19adc9d62a0109d3",
+    "globalFields": 11,
+    "currentSource": "afe7136002271fd64f098b154e7fff40be721eb8",
+    "currentSourceGlobalFields": 15,
+    "sourceOnlyNewFields": [
+      "use-hosts",
+      "use-system-hosts",
+      "respect-rules",
+      "cache-algorithm"
+    ],
+    "originalComFollowClashNotOperated": true
+  },
+  "failuresRetained": [
+    {
+      "run": "build1.log",
+      "reason": "old trailing-lambda tests did not match new parameter order; fixed API placement and tests"
+    },
+    {
+      "run": "kotlin-first",
+      "result": "4/5",
+      "reason": "InputText contains raw value; EditableText includes URI word-joiner; assertion corrected"
+    },
+    {
+      "run": "kotlin-second",
+      "result": "6/7",
+      "reason": "StateRestorationTester does not restore nested dialog registry; isolate list state and verify actual Activity separately"
+    },
+    {
+      "run": "natural-light-first",
+      "reason": "matched Nameserver section title; later matched clickable row parent"
+    },
+    {
+      "run": "naturallightfinal",
+      "reason": "clickability belongs to ancestor of text node; driver corrected"
+    },
+    {
+      "run": "naturallightfinal2",
+      "reason": "Back issued after preference write but before UI completion, selector remained; final route waits and uses close control"
+    },
+    {
+      "run": "naturaldarkfinal",
+      "reason": "reference app was brought foreground by agent while instrumentation was still running; screen confirms reference SAFE_MODE; environment interruption, rerun passed"
+    },
+    {
+      "run": "build-final.log",
+      "reason": "Lint FIR internal ClassCastException; source stable standalone and final combined run pass"
+    }
+  ],
+  "limitations": [
+    "old reference APK is not latest Flutter",
+    "not pixel-identical or phase-synchronized transitions",
+    "minor typography, switch style, section offsets remain",
+    "no menu Perfetto or stable performance claim",
+    "no release/R8/full-suite/new network acceptance",
+    "cold process death not covered by Activity recreation"
+  ],
+  "evidenceRoot": "/Users/long/Documents/CodexProjects/clash-kotlin/acceptance-artifacts/dns-fields-poco-20261123",
+  "flutterCaptures": [
+    {
+      "file": "flutter-dark-listen-final.png",
+      "bytes": 100614,
+      "sha256": "353896495da4064f04558a2e8f446adddd89d02d4f5cc7d48978a69c7ef827fe"
+    },
+    {
+      "file": "flutter-dark-mode-final.png",
+      "bytes": 147218,
+      "sha256": "75cb2d6ed80246d3455cc641a4a3e9ec09d5b3c709c63dc93df46d0efc4b9711"
+    },
+    {
+      "file": "flutter-dark-list-final.png",
+      "bytes": 100693,
+      "sha256": "2faccac5f476c83656ab6c5e624ca741040dc562ce7bb035cfa2f8d02f50e873"
+    },
+    {
+      "file": "flutter-dark-menu-final.png",
+      "bytes": 107292,
+      "sha256": "27238229e17bcb7847a84736a3416e426d74f6351fc5cbb75ea52aa9114b5d4c"
+    },
+    {
+      "file": "flutter-dark-entry-final.png",
+      "bytes": 104477,
+      "sha256": "22ee1255808cce89715f9dde580361d03b16be4eb6df83c76b4bf06673d7eb03"
+    },
+    {
+      "file": "flutter-dark-return-final.png",
+      "bytes": 132424,
+      "sha256": "1a3ffb190bbe51119a3d9ce80fdfcfe3ef9b099415bf883f7f14112ec916349d"
+    }
+  ],
+  "productFiles": [
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalDnsSettingsPage.kt",
+      "bytes": 21041,
+      "sha256": "fb34fa49d9624591fc8c2c3035c1bc8316a85fc3cadb260adf2ce15f34967a29"
+    },
+    {
+      "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalDnsListEditor.kt",
+      "bytes": 11905,
+      "sha256": "de101cee51da7f527de6ef03d696002eb8a88b6a3d236c27450abe0999a95332"
+    },
+    {
+      "path": "android/service/src/main/java/com/lonnnnnng/flclash/service/GlobalDnsSettings.kt",
+      "bytes": 3910,
+      "sha256": "e8d6e9ff81daef05905088074656a55c188eef80ba347437f4beb332c428eceb"
+    }
+  ],
+  "referenceRestoreVerified": {
+    "globalDnsEmptyAfterRemovingTemporaryFiveFields": true,
+    "lightThemeRestored": true,
+    "forceStoppedAfterCapture": true,
+    "verificationXml": "../acceptance-artifacts/dns-fields-poco-20261123/flutter-final-empty.xml"
+  },
+  "cleanup": {
+    "motionPackagesRemoved": true,
+    "ownDeviceVideosAndXmlRemoved": true,
+    "formalVpnPidBefore": 20700,
+    "formalVpnPidAfter": 20700,
+    "formalVersion": "0.1.18",
+    "formalLastUpdateTime": "2026-11-23 19:51:05",
+    "formalFirstInstallTime": "2026-11-23 18:27:08",
+    "originalFlutterVersion": "0.9.4",
+    "originalFlutterLastUpdateTime": "2026-11-22 14:21:51",
+    "originalFlutterFirstInstallTime": "2026-11-07 02:44:08",
+    "privateYamlRead": false
+  }
+}

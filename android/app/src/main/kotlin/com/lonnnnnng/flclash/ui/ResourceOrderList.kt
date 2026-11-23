@@ -29,7 +29,7 @@ internal data class ResourceOrderItem(val id: String, val title: String, val sub
 /** 作者 long：规则资源和图库共用视口手势；整行被回收或换位后仍可拖动，只有松手才提交完整顺序。 */
 @Composable
 internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, tag: String, onReorder: (List<String>) -> Unit,
-    modifier: Modifier = Modifier, compactRows: Boolean = false, rowContent: (@Composable (ResourceOrderItem) -> Unit)? = null) {
+    modifier: Modifier = Modifier, compactRows: Boolean = false, bottomPadding: androidx.compose.ui.unit.Dp = 16.dp, rowContent: (@Composable (ResourceOrderItem) -> Unit)? = null) {
     val list = rememberLazyListState()
     val density = LocalDensity.current.density
     val owner = LocalLifecycleOwner.current
@@ -90,7 +90,7 @@ internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, t
                 cancel()
                 if (changed) commit(order)
             })
-    }, state = list, userScrollEnabled = dragged == null, contentPadding = PaddingValues(bottom = 16.dp)) {
+    }, state = list, userScrollEnabled = dragged == null, contentPadding = PaddingValues(bottom = bottomPadding)) {
         itemsIndexed(preview, key = { _, id -> id }) { index, id ->
             val row = rows.firstOrNull { it.id == id } ?: return@itemsIndexed
             val picked = dragged == id

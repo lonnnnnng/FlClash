@@ -2185,4 +2185,16 @@
     <string name="text_488b65cca042" formatted="false">"No overrides"</string>
     <string name="text_737db592fa92" formatted="false">"Add overrides"</string>
     <string name="text_b79f6914ab4e" formatted="false">"These items override DNS for URL and file profiles. Unspecified items use each profile’s settings. Custom profiles configure DNS in their own content."</string>
+    <string name="text_07a91297d855" formatted="false">"Cache algorithm"</string>
+    <string name="text_7f5204510863" formatted="false">"Invalid DNS cache algorithm"</string>
+    <string name="text_e1094c9e5d35" formatted="false">"{0} items"</string>
+    <string name="text_cfcc14f7de89" formatted="false">"Enter one valid value per line"</string>
+    <string name="text_ba8912261bc3" formatted="false">"This item already exists"</string>
+    <string name="text_47f87565ed59" formatted="false">"Delete {0} items?"</string>
+    <string name="text_daa396e05120" formatted="false">"Respect Rules makes DNS connections follow routing rules; Proxy Server Nameserver must be configured."</string>
+    <string name="text_9f559011f4ac" formatted="false">"Default DNS servers, such as 223.5.5.5, tls://1.1.1.1, or https://dns.google/dns-query."</string>
+    <string name="text_b229d46923c9" formatted="false">"Resolves hostnames of other DNS servers. Only IP addresses are allowed."</string>
+    <string name="text_ba21906ef937" formatted="false">"Uses these servers when the fallback filter rejects the Nameserver results."</string>
+    <string name="text_b0d173a9b37a" formatted="false">"Only resolves proxy server hostnames."</string>
+    <string name="text_756235cccb5c" formatted="false">"Resolves hostnames for direct connections."</string>
 </resources>

@@ -91,13 +91,14 @@ data class ProfileDnsOverrides(
     val directNameserver: List<String>? = null,
     val fakeIpFilter: List<String>? = null,
     val fakeIpFilterMode: String? = null,
+    val cacheAlgorithm: String? = null,
 ) {
     val isEmpty: Boolean
         get() = enable == null && listen == null && ipv6 == null && respectRules == null &&
             preferH3 == null && useHosts == null && useSystemHosts == null &&
             enhancedMode == null && fakeIpRange == null && nameserver == null &&
             fallback == null && defaultNameserver == null && proxyServerNameserver == null &&
-            directNameserver == null && fakeIpFilter == null && fakeIpFilterMode == null
+            directNameserver == null && fakeIpFilter == null && fakeIpFilterMode == null && cacheAlgorithm == null
 
     fun toJson(): JsonObject = JsonObject().apply {
         enable?.let { addProperty("enable", it) }
@@ -116,6 +117,7 @@ data class ProfileDnsOverrides(
         directNameserver?.let { addStringArray("direct-nameserver", it) }
         fakeIpFilter?.let { addStringArray("fake-ip-filter", it) }
         fakeIpFilterMode?.let { addProperty("fake-ip-filter-mode", it) }
+        cacheAlgorithm?.let { addProperty("cache-algorithm", it) }
     }
 
     companion object {
@@ -137,6 +139,7 @@ data class ProfileDnsOverrides(
             directNameserver = json.optStringListOrNull("direct-nameserver"),
             fakeIpFilter = json.optStringListOrNull("fake-ip-filter"),
             fakeIpFilterMode = json.optStringOrNull("fake-ip-filter-mode"),
+            cacheAlgorithm = json.optStringOrNull("cache-algorithm"),
         )
     }
 }
@@ -623,6 +626,7 @@ object ProfileDnsOverrideApplier {
         directNameserver?.let { add(RenderedField("direct-nameserver", renderList("direct-nameserver", it))) }
         fakeIpFilter?.let { add(RenderedField("fake-ip-filter", renderList("fake-ip-filter", it))) }
         fakeIpFilterMode?.let { add(RenderedField("fake-ip-filter-mode", listOf("  fake-ip-filter-mode: ${yamlScalar(it)}"))) }
+        cacheAlgorithm?.let { add(RenderedField("cache-algorithm", listOf("  cache-algorithm: ${yamlScalar(it)}"))) }
     }
 
     private fun renderList(key: String, values: List<String>): List<String> = buildList {
