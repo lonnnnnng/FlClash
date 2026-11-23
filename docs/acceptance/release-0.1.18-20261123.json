@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-23",
+  "tag": "kclash-v0.1.18",
+  "versionName": "0.1.18",
+  "versionCode": 1018,
+  "sourceCommit": "d042b3941a19a7309f5da5c06a5977095766be69",
+  "publication": {
+    "status": "published",
+    "latestAtVerification": true,
+    "draft": false,
+    "prerelease": false,
+    "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.18",
+    "publishedAt": "2026-11-23T11:43:30Z",
+    "workflowRunId": 45166052906,
+    "workflowConclusion": "success",
+    "workflowDurationSeconds": 693,
+    "assets": [
+      {
+        "name": "KClash-0.1.18-android-arm64-v8a.apk",
+        "bytes": 49595989,
+        "sha256": "d49e89149e6f86e54eeb4eadc0556de9c4016f921dbffb779dc96343082ef3f9",
+        "githubDigestMatches": true
+      },
+      {
+        "name": "SHA256SUMS",
+        "bytes": 102,
+        "sha256": "6d3184b2f7c5f40d5b79d960e612c182169b09da94982af765be3ae7394ecc80",
+        "githubDigestMatches": true
+      }
+    ]
+  },
+  "verification": {
+    "sha256SumsMatches": true,
+    "packageName": "com.lonnnnnng.flclash",
+    "versionCode": 1018,
+    "versionName": "0.1.18",
+    "abi": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "debuggable": false,
+    "signatureScheme": "v2",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "mlKitAndYamlR8Gate": "passed in release CI"
+  },
+  "validationPolicy": "User requested direct publication without further tests or device operations; prior feature acceptance reused.",
+  "priorFeatureAcceptance": {
+    "evidence": "app-update-web-poco-20261123.json",
+    "appJvmTests": 632,
+    "deviceTests": "2/2 on POCO plus VPN-running production UI check",
+    "rerunThisRelease": false
+  },
+  "phoneInstallation": false,
+  "artifacts": "../../../acceptance-artifacts/release-0.1.18-20261123/",
+  "limitations": [
+    "No new device testing or installation for 0.1.18; prior local 0.1.17 fix candidate remains on POCO.",
+    "Full Flutter parity and menu frame attribution remain open; glass stays off by default."
+  ]
+}

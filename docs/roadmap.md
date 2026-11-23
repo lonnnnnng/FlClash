@@ -1,4 +1,6 @@
 # KClash Kotlin 重写路线图
+> **0.1.18正式发布（2026-11-23）**：KClash 0.1.18/code1018 已发布为 GitHub Latest，标签`kclash-v0.1.18`固定`d042b394`。CI `45166052906`用时11分33秒，签名ARM64打包与版本/ABI/DEX/R8/证书门禁通过；公开APK 49,595,989字节，SHA`d49e8914…082ef3f9`与GitHub digest和SHA256SUMS一致，回下载验签通过。按用户要求直接发布，沿用632项App单测与POCO2/2及真实VPN检查证据，本轮不重跑测试、不操作手机。[发布证据](acceptance/release-0.1.18-20261123.json)。
+
 > **2026-11-23 更新检查简化与VPN限额修复**：应用更新已改为只读GitHub `releases/latest` 的HEAD跳转，不再调用REST API或读取更新说明；工具页直接弹出等待/结果，新版确认打开GitHub。POCO真实VPN下检查成功，单次真实HEAD和四状态弹框2/2，App JVM632项通过，正式签名R8/Release Lint/扫码DEX通过。手机已原位安装本地0.1.17修复候选并回拉验SHA，公开0.1.17资产未替换。[验收证据](acceptance/app-update-web-poco-20261123.json)。
 
 > **KClash 0.1.17 正式发布（2026-11-23）**：KClash 0.1.17/code1017 已发布为 GitHub Latest，标签`kclash-v0.1.17`固定`93542cf0`。标签CI `45139258644`用时9分01秒，签名ARM64构建、版本/ABI/R8/DEX和既有证书门禁通过；公开APK 49,595,825字节，SHA`42644807…5fad9e68`与GitHub digest和SHA256SUMS一致，回下载验签及ML Kit注册器检查通过。本轮App JVM631项全部通过；POCO本组3/3沿用版本调整前验收，未安装0.1.17正式APK。完整Flutter视觉/性能仍PARTIAL，玻璃默认关闭。[发布证据](acceptance/release-0.1.17-20261123.json)，[下载](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.17)。
@@ -957,8 +959,8 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.17/code1017**，标签`kclash-v0.1.17`指向`93542cf0`；公开ARM64 APK SHA`42644807…5fad9e68`，沿用既有正式证书 |
-| 发布范围 | KClash 0.1.17/code1017 已发布为 GitHub Latest，标签`kclash-v0.1.17`固定`93542cf0`。标签CI `45139258644`用时9分01秒，签名ARM64构建、版本/ABI/R8/DEX和既有证书门禁通过；公开APK 49,595,825字节，SHA`42644807…5fad9e68`与GitHub digest和SHA256SUMS一致，回下载验签及ML Kit注册器检查通过。本轮App JVM631项全部通过；POCO本组3/3沿用版本调整前验收，未安装0.1.17正式APK。完整Flutter视觉/性能仍PARTIAL，玻璃默认关闭。详见[发布证据](acceptance/release-0.1.17-20261123.json)。 |
+| 当前公开版本 | **0.1.18/code1018**，标签`kclash-v0.1.18`指向`d042b394`；沿用既有正式证书 |
+| 发布范围 | KClash 0.1.18/code1018 已发布为 GitHub Latest，标签`kclash-v0.1.18`固定`d042b394`。CI `45166052906`用时11分33秒，签名ARM64打包与版本/ABI/DEX/R8/证书门禁通过；公开APK 49,595,989字节，SHA`d49e8914…082ef3f9`与GitHub digest和SHA256SUMS一致，回下载验签通过。按用户要求直接发布，沿用632项App单测与POCO2/2及真实VPN检查证据，本轮不重跑测试、不操作手机。[证据](acceptance/release-0.1.18-20261123.json)。 |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
@@ -966,10 +968,10 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
 | 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | POCO F2 Pro已安装0.1.16正式签名Release；安装前包缺席，首次安装时间在公开资产更新后保持。未导入配置或启动核心/VPN；`com.follow.clash`仅只读打开空配置页，包版本/安装时间未变、数据未改；原1.yaml/2.yaml未读取。 |
-| 正在推进 | 0.1.17已发布；KUI-VIS-084～092具名切片均有记录，092已补POCO真实MainActivity规则/DNS连续路线录像，但未与Flutter同步逐帧对照。NTP与Sniffer也已验真实MainActivity父子路由/Room回读，Flutter侧仍有隔离组件对照边界。其他子页/面板和完整Flutter主应用同态路由仍待。菜单诊断只在Motion宿主发现App Deadline Missed伴随UI线程running升高；discarded owner未知，Dropped Frame、正式R8/MainActivity慢帧和GPU/fence帧归因仍开放；无稳定性能收益声明。玻璃默认关闭。 |
+| 数据保护 | POCO上一组已原位安装本地0.1.17更新检查修复候选，配置未编辑，VPN恢复运行；本轮0.1.18发布未操作手机，公开APK未安装。Flutter参考包与原始配置保持。 |
+| 正在推进 | 0.1.18已发布；KUI-VIS-084～092具名切片均有记录，092已补POCO真实MainActivity规则/DNS连续路线录像，但未与Flutter同步逐帧对照。NTP与Sniffer也已验真实MainActivity父子路由/Room回读，Flutter侧仍有隔离组件对照边界。其他子页/面板和完整Flutter主应用同态路由仍待。菜单诊断只在Motion宿主发现App Deadline Missed伴随UI线程running升高；discarded owner未知，Dropped Frame、正式R8/MainActivity慢帧和GPU/fence帧归因仍开放；无稳定性能收益声明。玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [0.1.17发布](acceptance/release-0.1.17-20261123.json)、 [KUI-VIS-090全局规则恢复回归](acceptance/global-rules-state-restoration-poco-20261123.json)、[KUI-VIS-088 NTP真实路由](acceptance/ntp-route-poco-20261123.json)、[KUI-VIS-089菜单联合trace](acceptance/menu-joint-attribution-poco-20261123.json)、[KUI-VIS-087 Sniffer真实父子路由](acceptance/sniffer-route-poco-20261123.json)、[0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)。 |
+| 最新证据 | [0.1.18发布](acceptance/release-0.1.18-20261123.json)、 [0.1.17发布](acceptance/release-0.1.17-20261123.json)、 [KUI-VIS-090全局规则恢复回归](acceptance/global-rules-state-restoration-poco-20261123.json)、[KUI-VIS-088 NTP真实路由](acceptance/ntp-route-poco-20261123.json)、[KUI-VIS-089菜单联合trace](acceptance/menu-joint-attribution-poco-20261123.json)、[KUI-VIS-087 Sniffer真实父子路由](acceptance/sniffer-route-poco-20261123.json)、[0.1.16发布与POCO安装冒烟](acceptance/release-0.1.16-20261122.json)。 |
 
 ## 4. 目标架构图
 
@@ -1518,7 +1520,7 @@ KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复
 
 ### 7.7 测试、发布和运维
 
-KClash 0.1.17/code1017 是当前 GitHub Latest，签名构建和公开APK资产见[0.1.17发布证据](acceptance/release-0.1.17-20261123.json)。以下0.1.13记录为历史：标签`kclash-v0.1.13`固定`5c8161d9`，恢复CI `44921344965`的正式签名Release、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和`SHA256SUMS`一致，沿用既有证书。首次标签运行因Gradle构建步骤缺少签名密码/别名环境变量而失败，修正提交`b01fa1ed`后从原标签源码恢复；首个运行没有创建Release。详见[历史0.1.13发布证据](acceptance/release-0.1.13-20261122.json)。
+KClash 0.1.18/code1018 是当前 GitHub Latest，签名构建和公开APK资产见[0.1.18发布证据](acceptance/release-0.1.18-20261123.json)。以下0.1.13记录为历史：标签`kclash-v0.1.13`固定`5c8161d9`，恢复CI `44921344965`的正式签名Release、版本/ABI/DEX及证书门禁通过；公开ARM64 APK 49,605,181字节，SHA`f21df1a2…55f0653`与远端digest和`SHA256SUMS`一致，沿用既有证书。首次标签运行因Gradle构建步骤缺少签名密码/别名环境变量而失败，修正提交`b01fa1ed`后从原标签源码恢复；首个运行没有创建Release。详见[历史0.1.13发布证据](acceptance/release-0.1.13-20261122.json)。
 
 最新视觉切片为KUI-VIS-092：POCO最终源码全局规则/扩展表单3/3、9张真机图和28.81秒真实MainActivity规则/DNS路线录像已校验；录像不是与Flutter同步的逐帧对照。其他子页/面板及完整Flutter主应用对照仍PARTIAL。KUI-VIS-089原35秒联合Perfetto trace经v59.1完整stats复查，global discarded计数没有producer维度，owner仍未知；App Deadline Missed伴随Motion宿主UI线程running升高，但具体热点、正式R8/MainActivity复现、Dropped Frame和GPU/fence成因未完成，无稳定性能收益声明。本批已随0.1.17发布，公开Latest为0.1.17。[规则页验收](acceptance/global-rules-form-visual-poco-20261123.json)、[全局规则恢复回归](acceptance/global-rules-state-restoration-poco-20261123.json)、[菜单诊断](acceptance/menu-joint-attribution-poco-20261123.json)。
 

@@ -22,7 +22,7 @@ POCO公开0.1.17的现场为 `CORE_HTTP_PROXY/HTTP/403`。同一手机核心入�
 
 632项App JVM全通过；正式签名Release/R8、Motion/Test构建及Release Lint通过（0错误、11警告、1提示），扫码DEX检查通过。POCO两项定向测试通过：生产核心入口下只有一次真实HEAD、REST API请求为0；等待/最新版/新版/失败弹框的动作正确。原位安装本地正式签名候选后，在VPN运行中真实工具入口显示“已是最新正式版本”，安装APK回拉SHA一致。
 
-本地候选仍使用0.1.17/code1017，不等于GitHub原公开0.1.17字节；尚未另行发版。配置未修改，VPN恢复运行，独立测试包与ADB转发已清理。详见[验收](acceptance/app-update-web-poco-20261123.json)与[溯源](runtime-log-and-update-check-defects.md)。
+本地候选使用0.1.17/code1017，不等于GitHub原公开0.1.17字节；此修复现已随0.1.18正式发布，0.1.18公开APK尚未安装。配置未修改，VPN恢复运行，独立测试包与ADB转发已清理。详见[验收](acceptance/app-update-web-poco-20261123.json)与[溯源](runtime-log-and-update-check-defects.md)。
 
 ## 已取消范围
 

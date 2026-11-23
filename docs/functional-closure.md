@@ -1,8 +1,10 @@
 # 功能性剩余项收尾
 
+2026-11-23最新发布：KClash 0.1.18/code1018 已发布为 GitHub Latest，标签`kclash-v0.1.18`固定`d042b394`。CI `45166052906`用时11分33秒，签名ARM64打包与版本/ABI/DEX/R8/证书门禁通过；公开APK 49,595,989字节，SHA`d49e8914…082ef3f9`与GitHub digest和SHA256SUMS一致，回下载验签通过。按用户要求直接发布，沿用632项App单测与POCO2/2及真实VPN检查证据，本轮不重跑测试、不操作手机。见[发布证据](acceptance/release-0.1.18-20261123.json)。
+
 2026-11-23更新检查续验：应用更新已改为只读GitHub `releases/latest` 的HEAD跳转，不再调用REST API或读取更新说明；工具页直接弹出等待/结果，新版确认打开GitHub。POCO真实VPN下检查成功，单次真实HEAD和四状态弹框2/2，App JVM632项通过，正式签名R8/Release Lint/扫码DEX通过。手机已原位安装本地0.1.17修复候选并回拉验SHA，公开0.1.17资产未替换。见[验收](acceptance/app-update-web-poco-20261123.json)。
 
-2026-11-23最新发布：KClash 0.1.17/code1017 已发布为 GitHub Latest，标签`kclash-v0.1.17`固定`93542cf0`。标签CI `45139258644`用时9分01秒，签名ARM64构建、版本/ABI/R8/DEX和既有证书门禁通过；公开APK 49,595,825字节，SHA`42644807…5fad9e68`与GitHub digest和SHA256SUMS一致，回下载验签及ML Kit注册器检查通过。本轮App JVM631项全部通过；POCO本组3/3沿用版本调整前验收，未安装0.1.17正式APK。完整Flutter视觉/性能仍PARTIAL，玻璃默认关闭。见[发布证据](acceptance/release-0.1.17-20261123.json)。
+2026-11-23历史发布：KClash 0.1.17/code1017 已发布为 GitHub Latest，标签`kclash-v0.1.17`固定`93542cf0`。标签CI `45139258644`用时9分01秒，签名ARM64构建、版本/ABI/R8/DEX和既有证书门禁通过；公开APK 49,595,825字节，SHA`42644807…5fad9e68`与GitHub digest和SHA256SUMS一致，回下载验签及ML Kit注册器检查通过。本轮App JVM631项全部通过；POCO本组3/3沿用版本调整前验收，未安装0.1.17正式APK。完整Flutter视觉/性能仍PARTIAL，玻璃默认关闭。见[发布证据](acceptance/release-0.1.17-20261123.json)。
 
 11月18日 POCO F2 Pro / API36 从本轮授权订阅实际导入 32 个节点。Trojan（16）、Hysteria2（12）、VLESS（4）各抽取两个不同端点，纯代理 GLOBAL 下 6/6 返回 HTTP 200，并在对应连接上核对叶节点及双向流量。[脱敏回执](acceptance/subscription-protocol-traffic-poco-20261118.json)
 
