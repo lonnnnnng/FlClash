@@ -1,0 +1,97 @@
+{
+  "id": "KUI-UPDATE-WEB-20261123",
+  "date": "2026-11-23",
+  "scope": "Check latest version using only GitHub website HEAD redirect; show result dialog and open release in browser",
+  "sourceBase": "87c56881b79c2038abfecd98be7778c4a451e73f",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "package": "com.lonnnnnng.flclash",
+    "versionName": "0.1.17",
+    "versionCode": 1017,
+    "localCandidateInstalled": true,
+    "publicReleaseReplaced": false,
+    "vpnRunningDuringUiCheck": true
+  },
+  "rootCause": {
+    "devicePort": 7890,
+    "transport": "USB forwarding of phone core HTTP ingress",
+    "url": "https://api.github.com/repos/lonnnnnng/FlClash/releases?per_page=100",
+    "userAgent": "KClash",
+    "connectStatus": 200,
+    "httpStatus": 403,
+    "tlsVerification": "passed",
+    "message": "API rate limit exceeded for [REDACTED_EXIT_IP]",
+    "rateLimit": 60,
+    "remaining": 0,
+    "used": 60,
+    "resetChinaTime": "2026-11-23T18:56:16+08:00"
+  },
+  "behavior": {
+    "request": "HEAD https://github.com/lonnnnnng/FlClash/releases/latest",
+    "followsRedirect": false,
+    "restApiRequests": 0,
+    "fetchReleaseNotes": false,
+    "downloadsApk": false,
+    "route": "Current core HTTP proxy while running; direct while stopped",
+    "validation": "HTTPS github.com, exact repository, stable kclash-vMAJOR.MINOR.PATCH; no foreign repo, credential, query, fragment or prerelease",
+    "ui": "Tools entry opens one cancellable loading/result dialog; latest confirms dismissal, available opens GitHub, failed offers retry"
+  },
+  "validation": {
+    "unitTests": {
+      "tests": 632,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "deviceTests": {
+      "passed": 2,
+      "failed": 0,
+      "logSha256": "f063a69a7ecf4f52470bebd55f17c0bdeb7618cad2f18b98a66213c64bfb259f",
+      "methods": [
+        "AppUpdateCheckInstrumentedTest#latestPageHeadUsesExistingCoreIngress",
+        "AppUpdateDialogInstrumentedTest#loadingLatestAvailableAndFailureUseOnlyRelevantActions"
+      ],
+      "realProxyRequest": "One real HEAD through the already running production core; no API injection"
+    },
+    "manualProductionUi": "VPN on: Tools -> update -> latest-version dialog; screenshot inspected",
+    "releaseR8": "passed",
+    "motionAndTestBuild": "passed",
+    "releaseLint": {
+      "Warning": 11,
+      "Hint": 1
+    },
+    "mlKitReleaseDex": "passed",
+    "releaseApkSha256": "b4925490ce5dfbb5f7aef1b1f75056d313371c507128f7ad5a624b2919249ffc",
+    "installedReadbackMatches": true,
+    "signatureCertificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49"
+  },
+  "screenshots": {
+    "loading": {
+      "path": "../../../acceptance-artifacts/vpn-update-diagnostic-poco-20261123/simple-dialog-result.png",
+      "sha256": "e7c0623f97cde94cf6e8e525626d5b67b4c97caf443742161c48e12be97ceec7"
+    },
+    "latest": {
+      "path": "../../../acceptance-artifacts/vpn-update-diagnostic-poco-20261123/simple-dialog-success.png",
+      "sha256": "871df1a7bbe624ecefaf1fa150279ba1790f53ac5972ba82c22f356229207c6e"
+    }
+  },
+  "preservation": {
+    "sameSignatureReplaceInstall": true,
+    "firstInstallTimePreserved": true,
+    "userConfigurationNotEdited": true,
+    "yamlReadOrUploaded": false,
+    "nodeOrModeChangedByAgent": false,
+    "flutterPackageOperated": false,
+    "productionVpnRestoredAfterInstall": true,
+    "isolatedMotionPackagesRemoved": true,
+    "adbForwardsRemoved": true
+  },
+  "limitations": [
+    "Public GitHub Latest is still the original 0.1.17 asset; the installed 0.1.17 is a local fixed candidate.",
+    "A separate curl pre-probe encountered one TLS disconnect before the HTTP response; final device HEAD and installed UI passed. This change removes API quota dependence, not all network failure possibilities.",
+    "New-version button behavior uses a deterministic UI fixture; no newer public version was fabricated."
+  ],
+  "artifacts": "../../../acceptance-artifacts/vpn-update-diagnostic-poco-20261123/"
+}

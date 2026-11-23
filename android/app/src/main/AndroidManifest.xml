@@ -64,7 +64,8 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:theme="@style/Theme.KClash.QuickAction" />
-        <activity android:name=".update.AppUpdateActivity" android:exported="false" android:launchMode="singleTop" />
+        <activity android:name=".update.AppUpdateActivity" android:exported="false" android:launchMode="singleTop"
+            android:theme="@style/Theme.KClash.QuickAction" />
         <activity
             android:name=".ExternalActionActivity"
             android:excludeFromRecents="true"

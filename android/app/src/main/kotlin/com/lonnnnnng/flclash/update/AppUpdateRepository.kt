@@ -4,7 +4,6 @@ import com.lonnnnnng.flclash.BuildConfig
 import com.lonnnnnng.flclash.service.CoreDownloadRoute
 import com.lonnnnnng.flclash.service.CoreRuntimeManager
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
-import com.google.gson.JsonParseException
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -56,7 +55,7 @@ internal object UpdateFailureDiagnostics {
             chain.any { it is SSLException } -> UpdateFailureKind.TLS
             chain.any { it is ConnectException } -> UpdateFailureKind.CONNECT
             status != null -> UpdateFailureKind.HTTP
-            chain.any { it is JsonParseException } -> UpdateFailureKind.RESPONSE
+            chain.any { it is IllegalArgumentException } -> UpdateFailureKind.RESPONSE
             chain.any { it is IOException } -> UpdateFailureKind.NETWORK
             else -> UpdateFailureKind.UNKNOWN
         }
@@ -81,8 +80,8 @@ class AppUpdateRepository @Inject constructor(private val runtime: CoreRuntimeMa
             // 作者 long：VPN运行时让核心接管GitHub出站；停止时才直连，避免更新流量绕过当前代理策略。
             val selectedRoute = runtime.downloadRoute()
             route = selectedRoute
-            val json = UpdateTransport(selectedRoute).use { it.releases() }
-            mutable.value = ReleaseCatalog.check(json, BuildConfig.VERSION_CODE.toLong())
+            val latest = UpdateTransport(selectedRoute).use { it.latestRelease() }
+            mutable.value = ReleaseCatalog.check(latest, BuildConfig.VERSION_CODE.toLong())
         } catch (cancelled: CancellationException) {
             mutable.value = previous
             throw cancelled

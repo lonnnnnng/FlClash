@@ -1,4 +1,6 @@
 # KClash Kotlin 重写路线图
+> **2026-11-23 更新检查简化与VPN限额修复**：应用更新已改为只读GitHub `releases/latest` 的HEAD跳转，不再调用REST API或读取更新说明；工具页直接弹出等待/结果，新版确认打开GitHub。POCO真实VPN下检查成功，单次真实HEAD和四状态弹框2/2，App JVM632项通过，正式签名R8/Release Lint/扫码DEX通过。手机已原位安装本地0.1.17修复候选并回拉验SHA，公开0.1.17资产未替换。[验收证据](acceptance/app-update-web-poco-20261123.json)。
+
 > **KClash 0.1.17 正式发布（2026-11-23）**：KClash 0.1.17/code1017 已发布为 GitHub Latest，标签`kclash-v0.1.17`固定`93542cf0`。标签CI `45139258644`用时9分01秒，签名ARM64构建、版本/ABI/R8/DEX和既有证书门禁通过；公开APK 49,595,825字节，SHA`42644807…5fad9e68`与GitHub digest和SHA256SUMS一致，回下载验签及ML Kit注册器检查通过。本轮App JVM631项全部通过；POCO本组3/3沿用版本调整前验收，未安装0.1.17正式APK。完整Flutter视觉/性能仍PARTIAL，玻璃默认关闭。[发布证据](acceptance/release-0.1.17-20261123.json)，[下载](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.17)。
 
 > **当前视觉快照（KUI-VIS-092）**：POCO上已完成全局规则空态/工具栏/预设、表单分组与取消恢复；最终源码3/3、9张1080x2400真机PNG及28.81秒真实MainActivity规则/DNS连续路线录像均已校验。路线录像不代表Flutter同步逐帧等价；其他子页/面板、完整跨应用路线对照和菜单慢帧归因仍待，玻璃默认关闭。详见[091证据](acceptance/global-rules-visual-poco-20261123.json)与[092证据](acceptance/global-rules-form-visual-poco-20261123.json)。
