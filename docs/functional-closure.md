@@ -1,5 +1,7 @@
 # 功能性剩余项收尾
 
+2026-11-23最新发布：KClash 0.1.17/code1017 已发布为 GitHub Latest，标签`kclash-v0.1.17`固定`93542cf0`。标签CI `45139258644`用时9分01秒，签名ARM64构建、版本/ABI/R8/DEX和既有证书门禁通过；公开APK 49,595,825字节，SHA`42644807…5fad9e68`与GitHub digest和SHA256SUMS一致，回下载验签及ML Kit注册器检查通过。本轮App JVM631项全部通过；POCO本组3/3沿用版本调整前验收，未安装0.1.17正式APK。完整Flutter视觉/性能仍PARTIAL，玻璃默认关闭。见[发布证据](acceptance/release-0.1.17-20261123.json)。
+
 11月18日 POCO F2 Pro / API36 从本轮授权订阅实际导入 32 个节点。Trojan（16）、Hysteria2（12）、VLESS（4）各抽取两个不同端点，纯代理 GLOBAL 下 6/6 返回 HTTP 200，并在对应连接上核对叶节点及双向流量。[脱敏回执](acceptance/subscription-protocol-traffic-poco-20261118.json)
 
 2026-11-18，首次联网 TLS 按用户决定作为网络环境问题归档。语义预检已覆盖 POCO 的 CUSTOM 系统选档替换、92 份缓存 MRS 一次解析、128/129 个文件边界和 VMess 实流。[验收记录](acceptance/custom-saf-preflight-poco-20261118.json)
@@ -7,7 +9,7 @@
 
 2026-11-18增补：在线 age 订阅完整链路已在POCO API36真实UI验收1/1；授权源轮换到新identity，测试覆盖缺钥、错钥无写入、正确密钥解密导入、Mihomo运行加载和非直连HTTP200。见[验收说明](online-age-subscription-acceptance.md)与[脱敏JSON](acceptance/online-age-subscription-poco-20261118.json)。较早记录中的“明文/无密钥”只反映当时状态。
 
-2026-11-22最新发布：KClash 0.1.16/code1016 已发布为 GitHub Latest，标签`kclash-v0.1.16`固定`8c03b817`。标签CI `45029620594`签名构建、版本/ABI/DEX/R8及证书门禁通过；公开ARM64 APK 49,584,393字节，SHA`96ba622f…a7abd67b`与GitHub digest和SHA256SUMS一致，沿用既有证书。POCO F2 Pro/API36上公开资产已安装，回拉SHA一致；首次启动、Dashboard、工具页、网络活动空态和系统返回冒烟通过，未启动核心/VPN。924项JVM与Debug/Release Lint均通过。见[发布证据](acceptance/release-0.1.16-20261122.json)。
+2026-11-22历史发布：KClash 0.1.16/code1016 已发布为 GitHub Latest，标签`kclash-v0.1.16`固定`8c03b817`。标签CI `45029620594`签名构建、版本/ABI/DEX/R8及证书门禁通过；公开ARM64 APK 49,584,393字节，SHA`96ba622f…a7abd67b`与GitHub digest和SHA256SUMS一致，沿用既有证书。POCO F2 Pro/API36上公开资产已安装，回拉SHA一致；首次启动、Dashboard、工具页、网络活动空态和系统返回冒烟通过，未启动核心/VPN。924项JVM与Debug/Release Lint均通过。见[发布证据](acceptance/release-0.1.16-20261122.json)。
 
 2026-11-22历史发布：KClash 0.1.15/code1015 已发布为 GitHub Latest，标签`kclash-v0.1.15`固定`64de6297`；订阅HTTP来源白名单已移除并修复 UTF-8 `filename*`解析，详见[发布证据](acceptance/subscription-http-policy-poco-20261122.json)。
 

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-23",
+  "tag": "kclash-v0.1.17",
+  "versionName": "0.1.17",
+  "versionCode": 1017,
+  "sourceCommit": "93542cf0a8cbc57a08d0b465e51385a0ab558bfe",
+  "coreGitlink": "1a1036cfcc0940bc8be8793ad08bdde91eebbb0c",
+  "publication": {
+    "status": "published",
+    "latestAtVerification": true,
+    "draft": false,
+    "prerelease": false,
+    "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.17",
+    "publishedAt": "2026-11-23T08:40:03Z",
+    "workflowRunId": 45139258644,
+    "workflowConclusion": "success",
+    "workflowDurationSeconds": 541,
+    "assets": [
+      {
+        "name": "KClash-0.1.17-android-arm64-v8a.apk",
+        "bytes": 49595825,
+        "sha256": "426448073133e42eb2f189a5666161d51e33ac43ebe613937859a4035fad9e68",
+        "githubDigestMatches": true
+      },
+      {
+        "name": "SHA256SUMS",
+        "bytes": 102,
+        "sha256": "f7d627477097523d2b1c46f8e34c6d5b0a593b9b0a43e92cb8bb26d686e5aef3",
+        "githubDigestMatches": true
+      }
+    ]
+  },
+  "verification": {
+    "sha256SumsMatches": true,
+    "packageName": "com.lonnnnnng.flclash",
+    "versionName": "0.1.17",
+    "versionCode": 1017,
+    "minSdk": 24,
+    "targetSdk": 37,
+    "abi": [
+      "arm64-v8a"
+    ],
+    "debuggable": false,
+    "signatureScheme": "v2",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "mlKitReleaseDexCheck": "passed",
+    "yamlR8Gate": "passed in CI"
+  },
+  "localPreflight": {
+    "unitTests": {
+      "task": ":app:testDebugUnitTest",
+      "suiteFiles": 83,
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "result": "passed",
+      "archive": {
+        "file": "junit-debug.zip",
+        "sha256": "0ef8b4ded4d255f9752145b8053fbc7099f2d3b67de85c6fd335987bd2628155"
+      }
+    },
+    "lint": "Reused KUI-VIS-092 Motion Lint: 0 errors, 11 warnings, 1 hint; not rerun for version-only preparation",
+    "goTests": "not rerun; core unchanged",
+    "releaseBuild": "CI only"
+  },
+  "featureAcceptance": {
+    "evidence": "global-rules-form-visual-poco-20261123.json",
+    "device": "POCO F2 Pro / 31936bb6 / API36",
+    "tests": "3/3 before version-only preparation",
+    "releaseApkInstalled": false
+  },
+  "artifacts": "../../../acceptance-artifacts/release-0.1.17-20261123/",
+  "preservation": {
+    "deviceOperatedThisRelease": false,
+    "flutterPackageModified": false,
+    "userYamlReadOrUploaded": false
+  },
+  "limitations": [
+    "本轮未安装正式0.1.17 APK或执行新的真机验收。",
+    "完整Flutter对照、其他子页和菜单discarded/GPU/fence归因仍未收口；玻璃默认关闭。"
+  ]
+}
