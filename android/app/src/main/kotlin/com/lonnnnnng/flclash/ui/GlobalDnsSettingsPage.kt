@@ -37,6 +37,17 @@ private fun ProfileDnsOverrides.changed(key: String, value: JsonElement?): Profi
     if (value == null) remove(key) else add(key, value)
 })
 
+/** 作者 long：DNS是工具中的独立整页，使用完整窗口而非Dock内的列表项；返回仍交给工具路由。 */
+@Composable
+internal fun GlobalDnsSettingsPage(settings: ProfileDnsOverrides, busy: Boolean, saving: Boolean,
+    onBack: () -> Unit, onSave: (ProfileDnsOverrides, (Boolean) -> Unit) -> Unit) {
+    ProfileEditorPage(onBack, { Text("DNS", Modifier.padding(start = 4.dp)) }, {
+        GlobalDnsSettingsPanel(settings, busy, saving, onSave)
+    }, backTag = "global_dns_back", contentPadding = PaddingValues(0.dp),
+        navigationButtonSurface = true, navigationButtonSize = 40.dp, toolbarHeight = 72.dp,
+        bodyBehindToolbar = settings.toJson().size() == 0)
+}
+
 /** 作者 long：未添加字段继续继承配置；添加后的空列表是明确清空，删除字段才撤销覆盖。 */
 @Composable
 internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean, saving: Boolean = false,
@@ -48,7 +59,7 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     val fields = settings.toJson()
     fun remove(key: String) { onSave(settings.changed(key, null)) { if (!it) error = "移除失败，请重试" } }
-    Column(Modifier.fillMaxWidth().testTag("page_global_dns"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxSize().then(if (fields.size() > 0) Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 16.dp) else Modifier).testTag("page_global_dns"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (saving) Row(Modifier.fillMaxWidth().testTag("global_dns_saving"), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -56,22 +67,29 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
         }
         error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
         if (fields.size() == 0) {
-            Box(Modifier.fillMaxWidth().heightIn(min = 520.dp).testTag("global_dns_empty"), contentAlignment = Alignment.Center) {
-                Column(Modifier.widthIn(max = 344.dp).padding(horizontal = 28.dp, vertical = 24.dp),
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().testTag("global_dns_empty"),
+                contentAlignment = androidx.compose.ui.BiasAlignment(0f, -.2f)) {
+                // 作者 long：沿Flutter按剩余视口定位空态，不能把固定520dp内容放入长列表；短视口仍可滚动触达按钮。
+                val compact = maxHeight < 560.dp
+                Column(Modifier.padding(horizontal = 32.dp).widthIn(max = 320.dp)
+                    .verticalScroll(rememberScrollState()).padding(vertical = 24.dp).testTag("global_dns_empty_content"),
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                    ProfileEmptyIllustration(AppGlyphs.resources, extent = 120.dp, flutterPalette = true)
-                    Spacer(Modifier.height(16.dp))
-                    Text(tr("尚未添加 DNS 覆盖"), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                    Box(Modifier.testTag("global_dns_illustration")) {
+                        ProfileEmptyIllustration(AppGlyphs.dns, extent = if (compact) 120.dp else 160.dp, flutterPalette = true)
+                    }
+                    Spacer(Modifier.height(if (compact) 12.dp else 16.dp))
+                    Text(tr("暂无覆写项"), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
-                    Text(tr("为普通配置设置 DNS 覆盖，未添加的字段沿用配置；自定义配置使用自己的 DNS。"),
+                    Text(tr("添加的项会覆写所有 URL 和文件配置的 DNS，未添加的项沿用配置自身的设置。自定义配置的 DNS 在其内容中设置。"),
                         color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     Spacer(Modifier.height(24.dp))
                     FilledTonalButton({ addQuery = ""; adding = true }, enabled = !busy,
-                        modifier = Modifier.testTag("global_dns_add"), shape = AppSuperellipseShape(28.dp)) {
-                        Icon(Icons.Outlined.Add, null)
+                        modifier = Modifier.heightIn(min = 44.dp).testTag("global_dns_add"), shape = AppSuperellipseShape(1000.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(containerColor = dashboardCardColor(), contentColor = MaterialTheme.colorScheme.onSurface)) {
+                        AppGlyphIcon(AppGlyphs.addCircle, Modifier.size(24.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text(tr("添加字段"))
+                        Text(tr("添加覆写项"))
                     }
                 }
             }
@@ -108,7 +126,7 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
             Text(tr("未添加的 DNS 字段沿用配置；自定义配置使用自己的 DNS。"),
                 color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
             OutlinedButton({ addQuery = ""; adding = true }, enabled = !busy && fields.size() < GlobalDnsSettings.keys.size,
-                modifier = Modifier.testTag("global_dns_add")) { Icon(Icons.Outlined.Add, null); Text(tr("添加字段")) }
+                modifier = Modifier.testTag("global_dns_add")) { Icon(Icons.Outlined.Add, null); Text(tr("添加覆写项")) }
         }
     }
     if (adding) {
@@ -133,7 +151,7 @@ internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean
             handleHeight = 10.dp, handleWidth = 28.dp, handleVerticalOffset = 3.dp, floatingForm = true,
         ) { requestDismiss ->
             Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                ProfileFormHeader(tr("添加 DNS 字段"), requestDismiss, !busy, "global_dns_add_close") {}
+                ProfileFormHeader(tr("添加覆写项"), requestDismiss, !busy, "global_dns_add_close") {}
                 val visibleSections = sections.mapNotNull { (section, keys) ->
                     section to keys.filter { it in remaining && matches(it) }
                 }.filter { it.second.isNotEmpty() }

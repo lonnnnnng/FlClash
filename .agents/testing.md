@@ -1,5 +1,11 @@
 # Testing
 
+## KUI-VIS-094 DNS整页/长规则与浅色（2026-11-23）
+
+POCO独立motion空库，`MainGlobalRulesNaturalInstrumentedTest#rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames`沿用显式`kclashGlobalRulesNaturalAcceptance=true`，新增`kclashVisualTheme=light|dark`；`kclashLongRules=true`选择80条规则自然滚动/搜索/长按换序/Room重建分支，仍无ComposeRule。`MainGlobalRulesLongListInstrumentedTest#longListSearchRestoresAnchorAndDragPersistsAcrossRecreation`验证目录和多屏搜索重建锚点≤1px、80行/长目标及真实保存。最终完整方法清单见094JSON，禁止整类扩大运行；完整偏好/原外观值与键集合恢复、草稿/回执清理、空库/null选择/STOPPED门禁保持。真实IME需当前Window/Insets可用；浅色Sheet读取真实systemBarsAppearance。
+
+完整Flutter参考为固定be847366的独立`com.lonnnnnng.kclash.reference.full.dev`，用户已亲自确认首启声明；本组结束保留安装并force-stop，存有本批内置预设及一条.invalid规则供后续对照。不要误操作原版`com.follow.clash`。公开Kotlin0.1.18 VPN PID20700本组保持。motion双包与本批设备录屏/XML已回收，原YAML未读。详见`docs/dns-long-rules-visual-alignment.md`和验收JSON；不把旧完整参考/录像当最新版、像素等价或R8性能。
+
 ## KUI-VIS-093 规则自然路线与DNS参考（2026-11-23）
 
 POCO F2 Pro/31936bb6独立motion包只运行`MainGlobalRulesNaturalInstrumentedTest#rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames`，显式`kclashGlobalRulesNaturalAcceptance=true`；仅接受空配置、null选择和STOPPED，不需要1.yaml。自然触摸/系统IME与Back、Room回读、Activity重建、勾选/取消和DNS筛选结果均核对；finally等保存结束再精确恢复偏好行/草稿/回执，超时失败不得强写并假报保持。外部回收仅本例隔离包。正式VPN可保持运行，不启动motion VPN。

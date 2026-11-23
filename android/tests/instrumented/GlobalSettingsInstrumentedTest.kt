@@ -25,7 +25,7 @@ class GlobalSettingsInstrumentedTest {
         var completion: ((Boolean) -> Unit)? = null
         compose.setContent { KClashTheme {
             ProfileEditorPage({}, { Text("DNS") }, {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
+                Column(Modifier) {
                     GlobalDnsSettingsPanel(settings, saving, saving = saving) { value, done ->
                         settings = value
                         saving = true
@@ -51,7 +51,7 @@ class GlobalSettingsInstrumentedTest {
         var fail = true
         var dark by mutableStateOf(false)
         compose.setContent { KClashTheme(darkTheme = dark) { ProfileEditorPage({}, { Text("DNS") }, {
-            Column(Modifier.verticalScroll(rememberScrollState())) { GlobalDnsSettingsPanel(settings, false) { value, done ->
+            Column(Modifier) { GlobalDnsSettingsPanel(settings, false) { value, done ->
                 if (!fail) settings = value
                 done(!fail)
             } }
@@ -103,7 +103,7 @@ class GlobalSettingsInstrumentedTest {
         compose.onNodeWithTag("extension_rule_content").performTextInput("added.test")
         compose.onNodeWithTag("extension_rule_confirm").performClick()
         compose.waitUntil { state.rules.size == 3 }
-        compose.onNodeWithTag("global_rules_select").performClick()
+        compose.onNodeWithTag("global_rule_select_one").performClick()
         compose.onNodeWithTag("global_rules_all").performClick()
         compose.onNodeWithTag("global_rules_delete").performClick()
         compose.onNodeWithTag("global_rules_delete_confirm").performClick()
@@ -114,6 +114,33 @@ class GlobalSettingsInstrumentedTest {
         compose.onNodeWithTag("extension_preset_confirm").performClick()
         compose.runOnIdle { assertEquals(1, state.rules.size); dark = true }
         capture("global_rules_dark")
+    }
+
+    @Test fun dnsFullPageUsesViewportEmptyStateAndLightDarkSelector() {
+        assertPortraitDefaultFontConfiguration()
+        var dark by mutableStateOf(false)
+        compose.setContent { KClashTheme(darkTheme = dark) {
+            GlobalDnsSettingsPage(ProfileDnsOverrides(), false, false, {}, { _, _ -> error("只读视觉不应保存") })
+        } }
+        for (theme in listOf(false, true)) {
+            compose.runOnIdle { dark = theme }
+            compose.waitForIdle()
+            val viewport = compose.onNodeWithTag("global_dns_empty").fetchSemanticsNode().boundsInRoot
+            val content = compose.onNodeWithTag("global_dns_empty_content").fetchSemanticsNode().boundsInRoot
+            val art = compose.onNodeWithTag("global_dns_illustration").fetchSemanticsNode().boundsInRoot
+            val density = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+            assertEquals(160f * density, art.height, 1f)
+            assertEquals(viewport.top + (viewport.height - content.height) * .4f, content.top, 1f)
+            compose.onNodeWithTag("global_dns_add").assertIsDisplayed()
+            capture("vis094_dns_empty_$theme")
+            compose.onNodeWithTag("global_dns_add").performClick()
+            compose.onNodeWithTag("global_dns_add_search").performTextReplacement("fake")
+            compose.onNodeWithTag("global_dns_add_fake-ip-filter").assertIsDisplayed()
+            compose.onNodeWithTag("global_dns_add_listen").assertDoesNotExist()
+            capture("vis094_dns_filtered_$theme")
+            compose.onNodeWithTag("global_dns_add_close").performClick()
+            compose.waitUntil { compose.onAllNodesWithTag("global_dns_add_sheet").fetchSemanticsNodes().isEmpty() }
+        }
     }
 
     private fun dragRule(from: String, to: String) {

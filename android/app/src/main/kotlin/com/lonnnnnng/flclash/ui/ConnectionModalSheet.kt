@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +65,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -79,6 +81,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.cos
@@ -236,6 +239,20 @@ internal fun ConnectionModalSheet(
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
         val view = LocalView.current
+        val window = (view.parent as? DialogWindowProvider)?.window
+        val lightBars = MaterialTheme.colorScheme.surface.luminance() > .5f
+        DisposableEffect(window, lightBars) {
+            val controller = window?.let { WindowCompat.getInsetsController(it, view) }
+            val status = controller?.isAppearanceLightStatusBars
+            val navigation = controller?.isAppearanceLightNavigationBars
+            // 作者 long：Sheet拥有独立Window，不能继承系统深色而把白色图标画在应用浅色背景上；关闭时归还原窗口设置。
+            controller?.isAppearanceLightStatusBars = lightBars
+            controller?.isAppearanceLightNavigationBars = lightBars
+            onDispose {
+                if (status != null) controller.isAppearanceLightStatusBars = status
+                if (navigation != null) controller.isAppearanceLightNavigationBars = navigation
+            }
+        }
         SideEffect {
             // 作者 long：遮罩由 Compose 按主题绘制，关闭系统 Dialog 的额外调暗，避免双层遮罩改变浅色对比度。
             (view.parent as? DialogWindowProvider)?.window?.setDimAmount(0f)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -80,6 +81,18 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
     val canChange = !busy && !state.interrupted
     val terms = query.lowercase().split(Regex("\\s+")).filter(String::isNotEmpty)
     val visible = state.rules.filter { rule -> terms.all { rule.value.contains(it, true) } }
+    // 作者 long：完整目录和搜索结果分别持有视口；短结果不能夹掉原浏览锚点，清除查询后回到原行。
+    val directoryList = rememberLazyListState()
+    val searchList = rememberLazyListState()
+    val searching = query.isNotBlank()
+    var appliedQuery by rememberSaveable { mutableStateOf(query) }
+    LaunchedEffect(query) {
+        // 作者 long：只有用户改查询才归零，Activity恢复同一查询时保留已保存的结果列表锚点。
+        if (appliedQuery != query) {
+            if (searching) searchList.scrollToItem(0)
+            appliedQuery = query
+        }
+    }
     val emptyOutline = remember {
         // 作者 long：规则空态在Flutter使用圆角规则牌，cookie轮廓属于其他Prism空态，不能共用。
         Path().apply { addRoundRect(RoundRect(Rect(0f, 0f, 1f, 1f), CornerRadius(.3f, .3f))) }
@@ -115,6 +128,14 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
         confirmButton = {
             if (!selecting && !sorting) Row(Modifier.padding(end = 12.dp), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (state.rules.isNotEmpty()) IconButton({
+                    sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) }
+                    sortVersion = state.saveResultVersion
+                    sorting = true
+                }, enabled = canChange && !searching,
+                    modifier = Modifier.size(40.dp).background(dashboardCardColor(), CircleShape).testTag("global_rules_sort")) {
+                    Icon(Icons.Outlined.DragHandle, null)
+                }
                 IconButton({ presets = true }, enabled = canChange && state.loaded,
                     modifier = Modifier.size(40.dp).background(dashboardCardColor(), CircleShape).testTag("global_rules_presets")) {
                     AppGlyphIcon(AppGlyphs.rules)
@@ -125,7 +146,7 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                 }
             }
         },
-        bottomBar = { DockedProfileSearch(query, { query = it }, "global_rules_search", enabled = !busy) },
+        bottomBar = { DockedProfileSearch(query, { query = it }, "global_rules_search", enabled = !busy && !sorting) },
         text = {
             Column(Modifier.fillMaxWidth().testTag("page_global_rules"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (selecting || sorting) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -181,13 +202,21 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                     ResourceOrderList(ordered.map { ResourceOrderItem(it.id, it.value, tr("长按调整顺序")) }, !canChange, "global_rules", { ids ->
                         val byId = ordered.associateBy { it.id }
                         save(ordered, ids.map { byId.getValue(it) })
-                    }, Modifier.fillMaxWidth().weight(1f))
+                    }, Modifier.fillMaxWidth().weight(1f), compactRows = true, rowContent = { item ->
+                        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            GlobalRuleLabel(ordered.first { it.id == item.id }, Modifier.weight(1f))
+                            Icon(Icons.Outlined.DragHandle, null, Modifier.padding(start = 12.dp).size(24.dp))
+                        }
+                    })
                     LaunchedEffect(state.saveResultVersion, state.saving, state.interrupted) {
                         if (!state.saving && !state.interrupted && state.error == null && state.saveResultVersion > sortVersion) {
                             sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) }; sortVersion = state.saveResultVersion
                         }
                     }
-                } else LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("global_rules_list"), contentPadding = PaddingValues(top = 20.dp)) {
+                } else key(searching) {
+                    LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("global_rules_list"),
+                        state = if (searching) searchList else directoryList, contentPadding = PaddingValues(top = 20.dp)) {
                     items(visible, key = { it.id }) { rule ->
                         val first = rule.id == visible.first().id
                         val last = rule.id == visible.last().id
@@ -211,6 +240,7 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                         }
                         if (!last) HorizontalDivider(Modifier.padding(horizontal = 16.dp), thickness = .5.dp,
                             color = MaterialTheme.colorScheme.outlineVariant)
+                    }
                     }
                 }
             }

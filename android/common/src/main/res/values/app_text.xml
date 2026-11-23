@@ -2182,4 +2182,7 @@
     <string name="text_ffd92888cff2" formatted="false">"Preparing subscription import…"</string>
     <string name="text_ffecef0ae6ee" formatted="false">"Unsupported proxy group type: "</string>
     <string name="text_dd44ca603959">Recognizing links…</string>
+    <string name="text_488b65cca042" formatted="false">"No overrides"</string>
+    <string name="text_737db592fa92" formatted="false">"Add overrides"</string>
+    <string name="text_b79f6914ab4e" formatted="false">"These items override DNS for URL and file profiles. Unspecified items use each profile’s settings. Custom profiles configure DNS in their own content."</string>
 </resources>

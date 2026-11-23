@@ -59,6 +59,8 @@ internal fun ProfileEditorPage(
     navigationButtonSize: Dp = 44.dp,
     searchActionFirst: Boolean = false,
     containerColor: androidx.compose.ui.graphics.Color = dashboardPageColor(),
+    toolbarHeight: Dp = 64.dp,
+    bodyBehindToolbar: Boolean = false,
 ) {
     LocalEmbeddedProfilePage.current?.let { page ->
         EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch,
@@ -106,6 +108,7 @@ internal fun ProfileEditorPage(
             contentWindowInsets = WindowInsets.safeDrawing,
             topBar = {
                 TopAppBar(
+                    expandedHeight = toolbarHeight,
                     title = {
                         if (topBarSearch != null) {
                             AnimatedContent(topBarSearch.expanded, transitionSpec = {
@@ -136,7 +139,9 @@ internal fun ProfileEditorPage(
             },
         ) { padding ->
             // 作者 long：Scaffold 已计入安全区；消费后再补键盘差值，避免输入时把可用高度扣两次。
-            Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding().padding(contentPadding)) {
+            // 作者 long：Flutter空态以整窗而不是扣除浮动标题栏后的区域对齐；普通编辑正文继续避让标题和系统安全区。
+            val bodyPadding = if (bodyBehindToolbar) PaddingValues(0.dp) else padding
+            Column(Modifier.fillMaxSize().padding(bodyPadding).consumeWindowInsets(padding).imePadding().padding(contentPadding)) {
                 Box(Modifier.weight(1f).fillMaxWidth()) { text() }
                 if (dismissButton != null) Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.End) { dismissButton() }
                 // 作者 long：输入停靠当前Dialog的可用下沿，安全区/IME只由本层消费，长列表不能把搜索推走。

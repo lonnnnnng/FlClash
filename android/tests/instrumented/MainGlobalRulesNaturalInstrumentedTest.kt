@@ -15,8 +15,10 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.ConnectionAcceptanceEntryPoint
 import com.lonnnnnng.flclash.MainActivity
+import com.lonnnnnng.flclash.data.AppTheme
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.ExtensionRules
+import com.lonnnnnng.flclash.service.ExtensionRule
 import androidx.room.withTransaction
 import dagger.hilt.android.EntryPointAccessors
 import java.io.ByteArrayOutputStream
@@ -36,6 +38,15 @@ class MainGlobalRulesNaturalInstrumentedTest {
         assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashGlobalRulesNaturalAcceptance"))
         assertEquals("com.lonnnnnng.flclash.motion", ins.targetContext.packageName)
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            lateinit var appearance: com.lonnnnnng.flclash.data.AppearanceSettingsStore
+            scenario.onActivity { appearance = it.appearanceSettings }
+            val originalAppearance = appearance.read()
+            val appearancePrefs = ins.targetContext.getSharedPreferences("appearance", android.content.Context.MODE_PRIVATE)
+            val originalAppearanceKeys = appearancePrefs.all.toMap()
+            val light = InstrumentationRegistry.getArguments().getString("kclashVisualTheme") == "light"
+            var outerFailure: Throwable? = null
+            try {
+            appearance.write(originalAppearance.copy(theme = if (light) AppTheme.LIGHT else AppTheme.DARK, glass = false))
             val entry = EntryPointAccessors.fromApplication(ins.targetContext.applicationContext, ConnectionAcceptanceEntryPoint::class.java)
             val repository = entry.profileRepository()
             repository.profilesLoaded.first { it }
@@ -61,9 +72,37 @@ class MainGlobalRulesNaturalInstrumentedTest {
             scenario.onActivity { controller = ViewModelProvider(it)[ProfilesViewModel::class.java].globalRules }
             var failure: Throwable? = null
             try {
+                if (InstrumentationRegistry.getArguments().getString("kclashLongRules") == "true") {
+                    val rows = (0..79).map { ExtensionRule("natural-$it", "DOMAIN,rule-${it.toString().padStart(2, '0')}.invalid,DIRECT") }
+                    repository.saveGlobalExtensionRules(rows)
+                    click("附加规则"); parent("附加规则"); settle(); capture("long_top")
+                    repeat(3) { swipeUp(); settle() }
+                    assertNull(find("rule-00.invalid"))
+                    val anchor = checkNotNull(root()?.let { nodes(it).firstOrNull { n ->
+                        n.text?.toString()?.lines()?.any { it.matches(Regex("rule-[0-9]{2}\\.invalid")) } == true && bounds(n).top in 350..1600
+                    } })
+                    val anchorText = anchor.text.toString().lines().first { it.matches(Regex("rule-[0-9]{2}\\.invalid")) }; val anchorTop = bounds(anchor).top
+                    capture("long_scrolled"); event("long-search")
+                    setText("rule-07"); awaitIme(true); back(); awaitIme(false); settle()
+                    assertNotNull(find("rule-07.invalid")); assertNull(find(anchorText)); capture("long_filtered")
+                    // 作者 long：搜索取消按钮固定在输入行右侧，先按实际输入bounds定位，再核对原锚点恢复，避免硬编码纵坐标。
+                    val input = bounds(checkNotNull(root()?.let { nodes(it).firstOrNull { n -> n.isEditable } }))
+                    val x = ins.targetContext.resources.displayMetrics.widthPixels - 36 * density
+                    tap(Rect(x.toInt()-8, input.centerY()-8, x.toInt()+8, input.centerY()+8)); settle()
+                    assertEquals(anchorTop, bounds(checkNotNull(find(anchorText))).top); capture("long_restored")
+                    event("long-sort"); toolbar("附加规则", 2); await("完成"); settle()
+                    val first = bounds(checkNotNull(find("rule-00.invalid"))); val second = bounds(checkNotNull(find("rule-01.invalid")))
+                    drag(first.centerX().toFloat(), first.centerY().toFloat(), second.centerY().toFloat())
+                    awaitState { !controller.state.value.saving && controller.state.value.rules.firstOrNull()?.id == "natural-1" }
+                    val expected = listOf(rows[1], rows[0]) + rows.drop(2)
+                    assertEquals(expected, repository.globalExtensionRules()); settle(); capture("long_sorted")
+                    scenario.recreate(); await("完成"); settle(); assertEquals(expected, repository.globalExtensionRules()); capture("long_recreated")
+                    click("完成"); parent("附加规则"); back(); parent("高级配置"); event("long-finished")
+                    return@use
+                }
                 event("route-open"); click("附加规则"); awaitState { controller.state.value.let { it.ready && it.loaded && !it.loading } }
                 parent("附加规则"); capture("empty")
-                event("add-open"); toolbar("附加规则", 0); await("添加规则"); settle(); capture("form")
+                event("add-open"); toolbar("附加规则", 0); await("添加规则"); settle(); assertSystemBarTheme(light); capture("form")
                 event("ime-open"); setText("discarded.invalid"); awaitIme(true); settle()
                 // 作者 long：短规则表单应保留父页可见区域，键盘不能把三行内容错误铺成整页；旧实现标题会升到屏幕顶部。
                 assertTrue(bounds(checkNotNull(find("添加规则"))).top > ins.targetContext.resources.displayMetrics.heightPixels / 4)
@@ -91,11 +130,11 @@ class MainGlobalRulesNaturalInstrumentedTest {
                 event("edit-cancel"); formAction(false); parent("附加规则")
                 scenario.recreate(); parent("附加规则"); assertEquals(saved, repository.globalExtensionRules()); capture("recreated")
                 event("route-back"); back(); parent("高级配置"); awaitState { controller.state.value.draft == null }
-                event("dns-open"); click("DNS"); await("尚未添加 DNS 覆盖"); settle(); capture("dns_empty")
-                click("添加字段"); await("添加 DNS 字段"); settle(); capture("dns_selector")
-                val selectorTop = bounds(checkNotNull(find("添加 DNS 字段"))).top
+                event("dns-open"); click("DNS"); await("暂无覆写项"); settle(); capture("dns_empty")
+                click("添加覆写项"); await("添加覆写项"); settle(); assertSystemBarTheme(light); capture("dns_selector")
+                val selectorTop = bounds(checkNotNull(find("添加覆写项"))).top
                 event("dns-scroll"); swipeUp(); settle()
-                assertTrue(bounds(checkNotNull(find("添加 DNS 字段"))).top < selectorTop - 24 * density)
+                assertTrue(bounds(checkNotNull(find("添加覆写项"))).top < selectorTop - 24 * density)
                 capture("dns_scrolled")
                 // 作者 long：只搜索和滚动DNS可选项，不保存设置，避免视觉验收触发运行中核心应用。
                 val search = checkNotNull(root()?.let { nodes(it).firstOrNull { n -> n.isEditable } })
@@ -107,7 +146,7 @@ class MainGlobalRulesNaturalInstrumentedTest {
                 assertEquals("fake", checkNotNull(root()?.let { nodes(it).firstOrNull { n -> n.isEditable } }).text.toString())
                 assertNotNull(find("Fake-IP 过滤")); assertNotNull(find("Fake-IP 过滤模式"))
                 assertNull(find("监听地址")); assertNull(find("Nameserver"))
-                capture("dns_search"); back(); awaitIme(false); back(); await("尚未添加 DNS 覆盖"); settle(); capture("dns_return")
+                capture("dns_search"); back(); awaitIme(false); back(); await("暂无覆写项"); settle(); capture("dns_return")
                 back(); parent("高级配置"); event("finished")
             } catch (caught: Throwable) { failure = caught; throw caught }
             finally { try {
@@ -129,6 +168,34 @@ class MainGlobalRulesNaturalInstrumentedTest {
                 assertEquals(CoreRuntimeStatus.STOPPED, entry.runtimeManager().state.value)
                 event("preserved:preferences-full-rows,scripts,empty-profiles,null-selection,no-draft,no-receipt,STOPPED")
             } catch (cleanup: Throwable) { if (failure != null) failure.addSuppressed(cleanup) else throw cleanup } }
+            } catch (caught: Throwable) { outerFailure = caught; throw caught }
+            finally { try {
+                appearance.write(originalAppearance)
+                val editor = appearancePrefs.edit()
+                for (key in listOf("theme", "language", "glass")) if (key !in originalAppearanceKeys) editor.remove(key)
+                check(editor.commit()); assertEquals(originalAppearanceKeys, appearancePrefs.all)
+            } catch (cleanup: Throwable) { if (outerFailure != null) outerFailure.addSuppressed(cleanup) else throw cleanup } }
+        }
+    }
+
+    private fun assertSystemBarTheme(light: Boolean) {
+        ins.runOnMainSync {
+            val view = checkNotNull(WindowInspector.getGlobalWindowViews().lastOrNull { it.hasWindowFocus() })
+            val appearance = checkNotNull(view.windowInsetsController).systemBarsAppearance
+            assertEquals(light, appearance and android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS != 0)
+            assertEquals(light, appearance and android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS != 0)
+        }
+    }
+
+    private fun drag(x: Float, fromY: Float, toY: Float) {
+        val start = SystemClock.uptimeMillis()
+        for (i in 0..16) {
+            val event = MotionEvent.obtain(start, SystemClock.uptimeMillis(),
+                when (i) { 0 -> MotionEvent.ACTION_DOWN; 16 -> MotionEvent.ACTION_UP; else -> MotionEvent.ACTION_MOVE },
+                x, fromY + (toY - fromY) * i / 16f, 0)
+            event.source = InputDevice.SOURCE_TOUCHSCREEN
+            try { check(ins.uiAutomation.injectInputEvent(event, true)) } finally { event.recycle() }
+            SystemClock.sleep(if (i == 0) 750 else 25)
         }
     }
 
@@ -189,8 +256,12 @@ class MainGlobalRulesNaturalInstrumentedTest {
     }
     private fun click(text: String) { await(text); settle(); tap(bounds(checkNotNull(find(text)))) }
     private fun toolbar(title: String, fromRight: Int) {
-        await(title); settle(); val rect = bounds(checkNotNull(find(title))); val x = ins.targetContext.resources.displayMetrics.widthPixels - (24 + fromRight * 48) * density
-        tap(Rect(x.toInt() - 8, rect.centerY() - 8, x.toInt() + 8, rect.centerY() + 8))
+        await(title); settle()
+        val y = bounds(checkNotNull(find(title))).centerY()
+        val buttons = checkNotNull(root()).let { nodes(it).filter { n -> n.isClickable && bounds(n).let {
+            y in it.top..it.bottom && it.width() in (24 * density).toInt()..(60 * density).toInt()
+        } }.sortedByDescending { n -> bounds(n).centerX() }.toList() }
+        tap(bounds(buttons[fromRight]))
     }
     private fun tap(rect: Rect, hold: Long = 60) {
         val start = SystemClock.uptimeMillis()
@@ -234,6 +305,6 @@ class MainGlobalRulesNaturalInstrumentedTest {
         if (InstrumentationRegistry.getArguments().getString("kclashCapturePng") != "true") return
         val bitmap = checkNotNull(ins.uiAutomation.takeScreenshot())
         val output = ByteArrayOutputStream(); bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output); bitmap.recycle()
-        recordVisualPng("vis093_main_$name", output.toByteArray())
+        recordVisualPng("vis094_${InstrumentationRegistry.getArguments().getString("kclashVisualTheme") ?: "dark"}_$name", output.toByteArray())
     }
 }

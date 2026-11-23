@@ -31,6 +31,11 @@ internal object AppGlyphs {
     ), matchTextDirection = true) }
 
     // 作者 long：列表空态与快捷编辑沿用固定Flutter资源盒和纸笔几何，避免用配置文件图标混淆页面语义。
+    val dns by lazy { AppGlyph(listOf(
+        GlyphBox(3.5f, 3.5f, 20.5f, 10.5f, 2.5f), GlyphBox(3.5f, 13.5f, 20.5f, 20.5f, 2.5f),
+        GlyphCircle(7.2f, 7f, 1.1f, role = GlyphRole.detail, solid = true),
+        GlyphCircle(7.2f, 17f, 1.1f, role = GlyphRole.detail, solid = true),
+    )) }
     val resources by lazy { AppGlyph(listOf(
         GlyphBox(3f, 3.5f, 21f, 8.5f, 1.8f), GlyphBox(4.5f, 10.8f, 19.5f, 20.5f, 2.2f),
         GlyphPolyline(listOf(GlyphVertex(10f, 14.2f), GlyphVertex(14f, 14.2f)), role = GlyphRole.detail),

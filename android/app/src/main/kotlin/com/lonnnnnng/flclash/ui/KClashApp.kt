@@ -1358,12 +1358,8 @@ fun KClashApp(
                                     runtimeViewModel::setVpnEnabled, onRestartVpn, runtimeViewModel::saveNetworkSettings)
                             }
                             ToolsSubpage.GLOBAL_DNS -> item {
-                                GlobalDnsSettingsPanel(
-                                    globalDns,
-                                    dnsSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
-                                    saving = dnsSaving,
-                                    onSave = runtimeViewModel::saveGlobalDns,
-                                )
+                                // 作者 long：独立DNS整页覆盖工具页；底层保留高级菜单作为真实返回目标，避免显示空白宿主。
+                                AdvancedSettingsPanel({}, {}, {}, {})
                             }
                             ToolsSubpage.ON_DEMAND -> item {
                                 OnDemandSettingsPanel(
@@ -1482,6 +1478,11 @@ fun KClashApp(
         val batch by resourcesViewModel.iconUrlImports.state.collectAsState()
         ResourceUrlImportPage(tr("导入图标集"), batch, { showIconUrls = false }, resourcesViewModel.iconUrlImports::start,
             resourcesViewModel.iconUrlImports::cancel, resourcesViewModel.iconUrlImports::retry, resourcesViewModel.iconUrlImports::reset)
+    }
+    if (selectedDestination == MainDestination.TOOLS && toolsSubpage == ToolsSubpage.GLOBAL_DNS) {
+        GlobalDnsSettingsPage(globalDns,
+            dnsSaving || runtimeState == CoreRuntimeStatus.STARTING || runtimeState == CoreRuntimeStatus.STOPPING,
+            dnsSaving, ::returnFromToolsSubpage, runtimeViewModel::saveGlobalDns)
     }
     if (showGlobalRules) GlobalRulesRoute(profilesViewModel.globalRules) { showGlobalRules = false }
 

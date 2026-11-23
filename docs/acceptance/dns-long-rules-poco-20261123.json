@@ -1,0 +1,759 @@
+{
+  "id": "KUI-VIS-094",
+  "date": "2026-11-23",
+  "status": "VERIFIED_NAMED_SLICE; OVERALL_FLUTTER_PARITY_PARTIAL",
+  "source": {
+    "baseHead": "c3a5d5de2d78942831407db8393adf40aa987fe4",
+    "files": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppGlyphs.kt": "581e947ebb595732b8c137a0dc0b1d06da25feaf6ae621073403259612d213ed",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt": "b842f5476688a5b0295ea8379ba2c3f4e01d2ea67b6e427192b6a4b70e3e1533",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalDnsSettingsPage.kt": "39b919a9ea8b4c4f558ffa0e812f577d43212134c227eabf1aea670f3c8af26a",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalRulesPage.kt": "b961be03f70a63c375e3d97a2855c3e4ce57769a27b1518c035a470bcb0027de",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/KClashApp.kt": "6f27fd94df16bbfb9a417a7e575b6d8e5a6a1ae089870ae281dde4b2946a9e11",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt": "cef1f9fd559bf95aa1d9832f4e27d26e4019d4731921d3521befac8567487fd9",
+      "android/common/src/main/java/com/lonnnnnng/flclash/common/AppTextCatalog.kt": "c66282e9b3bb3d1bb930665a2be79bfceabb85664774a98c7a9c74620e4e2300",
+      "android/common/src/main/res/values-zh/app_text.xml": "8d1509f566f7e97e094f3177cfd5f3d7eebac761ddd9aa9c8614595df02e3641",
+      "android/common/src/main/res/values/app_text.xml": "10a747ff2ddd535d48555611aeecdd478014bbb871db2255348b1024e0d70234",
+      "android/tests/instrumented/GlobalSettingsHostInstrumentedTest.kt": "040141559b8a0c3ccd3a51057d3929104013e29d21a58f1569e5026fbdf1482e",
+      "android/tests/instrumented/GlobalSettingsInstrumentedTest.kt": "2ed189e6ff0f068252e2aaf6c740637cdcb924bf850bbf75bf1f6854af3f369b",
+      "android/tests/instrumented/MainGlobalRulesNaturalInstrumentedTest.kt": "f67536c664a454286ac75e098ed5aa061634d991e304e663bd31db1a588179b8",
+      "android/tests/instrumented/MainGlobalRulesLongListInstrumentedTest.kt": "9647b1f5c5717bc5c6bb36c7dba682e7b8dabb165b1df331a36f2296bc20a11e"
+    }
+  },
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": [
+      1080,
+      2400
+    ],
+    "densityOverride": 396,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "glassEnabled": false
+  },
+  "implementation": [
+    "DNS standalone full-window route, floating toolbar/viewport-based empty state, DNS glyph, neutral action, bilingual copy.",
+    "Restore global rule sorting entry with frozen snapshot/version and compact rows.",
+    "Separate directory/search scroll states; preserve both on Activity recreation.",
+    "Own Sheet window system-bar icons follow app theme and restore on disposal."
+  ],
+  "flutterReference": {
+    "kind": "Complete Flutter application, isolated package; real UI navigation and persisted rules",
+    "package": "com.lonnnnnng.kclash.reference.full.dev",
+    "version": "0.9.3 / 2026110401",
+    "safeMode": true,
+    "revision": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "apk": {
+      "path": "acceptance-artifacts/docked-search-20261110/flutter-full/build/app/outputs/flutter-apk/app-release.apk",
+      "bytes": 65148968,
+      "sha256": "0d3ab0ee4016bae7c75c727457357222feb3e267444f4c9b19adc9d62a0109d3"
+    },
+    "consent": "User personally completed first-run disclaimer this turn",
+    "ruleDragBeforeAfter": [
+      [
+        "AND\n((NETWORK,UDP),(DST-PORT,3478/19302))\nREJECT-DROP",
+        "AND\n((NETWORK,UDP),(DST-PORT,443))\nREJECT-DROP"
+      ],
+      [
+        "AND\n((NETWORK,UDP),(DST-PORT,443))\nREJECT-DROP",
+        "AND\n((NETWORK,UDP),(DST-PORT,3478/19302))\nREJECT-DROP"
+      ]
+    ],
+    "originalPackageTouched": false
+  },
+  "validation": {
+    "instrumentation": {
+      "final4": {
+        "passed": true,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.MainGlobalRulesLongListInstrumentedTest",
+            "test": "longListSearchRestoresAnchorAndDragPersistsAcrossRecreation",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+            "test": "dnsFullPageUsesViewportEmptyStateAndLightDarkSelector",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+            "test": "dnsExplicitEmptyFailureRetryRemovalAndBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+            "test": "globalRulesSearchPresetSortSelectDeleteAndBothThemes",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlobalSettingsInstrumentedTest",
+            "test": "dnsSaveShowsProgressUntilCompletionCallback",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest",
+            "test": "actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+            "code": 0
+          },
+          {
+            "class": "com.lonnnnnng.flclash.ui.MainGlobalRulesNaturalInstrumentedTest",
+            "test": "rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames",
+            "code": 0
+          }
+        ],
+        "manifest": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/screenshots.json",
+          "bytes": 9525,
+          "sha256": "7df13f8d0d67bed244a2b1666882838c1764a2cb64bc588665eda7bf41f26fc6"
+        },
+        "log": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/instrumentation.log",
+          "bytes": 5901586,
+          "sha256": "83ffd9561d117731dd73fff56d317fed60eea38deb00f7bd8b9f1768b808a978"
+        }
+      },
+      "lightfinal2": {
+        "passed": true,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.MainGlobalRulesNaturalInstrumentedTest",
+            "test": "rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames",
+            "code": 0
+          }
+        ],
+        "manifest": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/screenshots.json",
+          "bytes": 3369,
+          "sha256": "5ca2f864990fe25b72c19c96c19c78e85e3f714657acccdec2c34468d87b0691"
+        },
+        "log": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/instrumentation.log",
+          "bytes": 1807618,
+          "sha256": "83398c6e5e8cee3cc08a234a6d7ba2c45f83541a8f8e63bf9c5fb0dacb8b75ce"
+        }
+      },
+      "longfinal1": {
+        "passed": true,
+        "tests": [
+          {
+            "class": "com.lonnnnnng.flclash.ui.MainGlobalRulesNaturalInstrumentedTest",
+            "test": "rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames",
+            "code": 0
+          }
+        ],
+        "manifest": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/screenshots.json",
+          "bytes": 1561,
+          "sha256": "bbe4c26e98bdc87f167e2c9c13b86309c4ecc0b135f74106d02377ed28be515f"
+        },
+        "log": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/instrumentation.log",
+          "bytes": 1441770,
+          "sha256": "a60bfd1fc048256a950788a5db936f1da86fce581c50f0a9b9d8e67f7ac2f7a6"
+        }
+      }
+    },
+    "unit": [
+      {
+        "name": "com.lonnnnnng.flclash.ui.GlobalRulesControllerTest",
+        "tests": "16",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      },
+      {
+        "name": "com.lonnnnnng.flclash.ui.ConnectionSheetGeometryTest",
+        "tests": "10",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0"
+      }
+    ],
+    "unitLog": {
+      "path": "acceptance-artifacts/dns-long-rules-poco-20261123/unit.log",
+      "bytes": 5536,
+      "sha256": "d343caf1f62fac88763e0bce4cbea6d624ad6368954ef94b46702fb1bd6f035a"
+    },
+    "buildLogs": [
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final-build8.log",
+        "bytes": 14663,
+        "sha256": "cf63ee336f8dd09694556905d106019056e02f77dd02f7f809ced6755d3e1014"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/test9.log",
+        "bytes": 8453,
+        "sha256": "4465a3a3f0095004a6e189563b64246c0e1c8ce8f4a752cb728cf76f54245c1f"
+      }
+    ],
+    "lint": {
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1,
+      "log": {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lint-final.log",
+        "bytes": 8653,
+        "sha256": "98c641fc402d8dae825891d6974ef8649ddee509e9b1f39f0d9ea2ad4f0efcfb"
+      }
+    },
+    "translations": 2184,
+    "screenshots": [
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_dns_actual.png",
+        "bytes": 64612,
+        "sha256": "246ee871cda32953358938887051940da4266935d0043dc46ed7d190df8b74d5"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_dns_add_options.png",
+        "bytes": 95903,
+        "sha256": "c271b9a43ba10e1d95ab66e38de51c104ea26449c680abbc46ab2c60743c8945"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_dns_dark.png",
+        "bytes": 93943,
+        "sha256": "97c374ef9c2b2bc9f91ba2a8dd2440625a9c17ebb6c08671c02b9815220e0809"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_dns_empty.png",
+        "bytes": 93522,
+        "sha256": "f34414f3d0aa82dcbd182d8b400e688c9af7838ceeac5eba838a3912d80476b3"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_dns_light.png",
+        "bytes": 73936,
+        "sha256": "0215071a038216a72d6fd88a6c0de1d5e39004580a4962cd409f3df53715d053"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_dns_listen_editor.png",
+        "bytes": 60083,
+        "sha256": "1916a26a885a03ceab0eb0d823def76461640f32f1c97bcec63ffd50f6f8406e"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_actual.png",
+        "bytes": 129454,
+        "sha256": "c2d4a7fe5f47ce7e0826fe373b3206c411aa7cc4c2c8a15c9cf261d415b3eb7a"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_add_form.png",
+        "bytes": 90389,
+        "sha256": "da0daced7df5043fb6f34a48c60ce3850f58d7571b0e3a751339abc82d3525dc"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_dark.png",
+        "bytes": 61051,
+        "sha256": "9d908a53e6a8e3c1f0d90dcb780802ef4985d70087238074055fd8513a4507f4"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_empty.png",
+        "bytes": 54134,
+        "sha256": "6aa69739cf6f0e754bb6f9fe7800b19a729c4865bc92f67326790d0780851b25"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_light.png",
+        "bytes": 67670,
+        "sha256": "20006d37a1a4a41e73ac42a91db137a036ca3c5b2acee3d9bb0e269330b89c35"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_presets.png",
+        "bytes": 172416,
+        "sha256": "bb2f5021eac7e3a5649e154a06650748f2317af860288f334ef3a4d13cb49bd8"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_presets_selected.png",
+        "bytes": 172867,
+        "sha256": "3079a4508f286efcb2b86b33e82ee8c8e34529301b1e4ac008f5fcc613a1027b"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/global_rules_sort.png",
+        "bytes": 67566,
+        "sha256": "9c8479d6777e05daedd252ea0920e8947bb39617829fb2b314045cb036e9f4d6"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_cancelled.png",
+        "bytes": 54134,
+        "sha256": "6aa69739cf6f0e754bb6f9fe7800b19a729c4865bc92f67326790d0780851b25"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_discard.png",
+        "bytes": 93126,
+        "sha256": "dbd899af9d499f088c4d6731b523c28fe5b36e86518ece0468cc2749da11f312"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_dns_empty.png",
+        "bytes": 93900,
+        "sha256": "e975416637b76d57e9ca395867b3f6e8c4ef0c69ca645f34d5da4beedeb085bd"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_dns_return.png",
+        "bytes": 93900,
+        "sha256": "e975416637b76d57e9ca395867b3f6e8c4ef0c69ca645f34d5da4beedeb085bd"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_dns_scrolled.png",
+        "bytes": 113102,
+        "sha256": "03694e9ca4ab3a05e5c4e326c8261bf2eb1cbf79c83f96026cc983efb4c7dd13"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_dns_search.png",
+        "bytes": 133137,
+        "sha256": "994554a6c860795d7fd229d89faa657df9fd4b940687388fdca5689a72c509a3"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_dns_selector.png",
+        "bytes": 96445,
+        "sha256": "aaced814704244774c2688a38d1fbd10ff86d14ac073dcda3e3fb9b1c2219cf5"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_edit.png",
+        "bytes": 99711,
+        "sha256": "946d3a82d3b9e63317df08ff60d1e750fe26ec3ae29ef2aab6b57901a49b89ce"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_empty.png",
+        "bytes": 54379,
+        "sha256": "0bee538106b487d692b7a266d26dc969fe6db9ce3acf4741fd8db7f809732ca4"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_form.png",
+        "bytes": 90304,
+        "sha256": "283fc923d42f789e81c3a03cb866c250020e41ee33038aec8e6159d9a0e91a90"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_ime.png",
+        "bytes": 147958,
+        "sha256": "e45ecda2af4491b60ba6641c5a6187669ef09cd85b3d3d8d37803095794aaf66"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_ime_closed.png",
+        "bytes": 88212,
+        "sha256": "c0d4a71d5176c2df657e7ff6ede7a94d8bcd7f365f52033de352f44468e082e1"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_recreated.png",
+        "bytes": 59099,
+        "sha256": "b09c07e7c33e469040243bf06b41a99c92c355ebf3c6f326c84c887b5771dc81"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_saved.png",
+        "bytes": 59099,
+        "sha256": "b09c07e7c33e469040243bf06b41a99c92c355ebf3c6f326c84c887b5771dc81"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dark_selected.png",
+        "bytes": 61884,
+        "sha256": "47d3902e60a8bc7bbb1da9f26c2b981c0a2d6e9f7bb61fe2a925e730a5904335"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dns_empty_false.png",
+        "bytes": 92171,
+        "sha256": "4accf87f1207d2a9882ace804bc6e5895ea8d1e8c482441efe66717778c716c3"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dns_empty_true.png",
+        "bytes": 93522,
+        "sha256": "f34414f3d0aa82dcbd182d8b400e688c9af7838ceeac5eba838a3912d80476b3"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dns_filtered_false.png",
+        "bytes": 131939,
+        "sha256": "d74cc9e16a74f76eb492a89dd4f7efb817dc90a2c7db4b4a314315331b5a5589"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_dns_filtered_true.png",
+        "bytes": 132332,
+        "sha256": "7940d819bf4c869bf0dcc1c5de74e96f7fcd754a3f28a6210ace0c5a5605f725"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_anchor_restored.png",
+        "bytes": 218856,
+        "sha256": "38bdef683341b1732dffd5d52bd9e79769529bf0f7b59dea55137a85f6792536"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_filtered.png",
+        "bytes": 58875,
+        "sha256": "c3f6bc4257bf86d44ceeba0b8f43c173905b1c23be1d63fb2db98bf4e3f11acd"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_last_row.png",
+        "bytes": 215222,
+        "sha256": "93c327df2464408dff9ce2f72013219bc53afd4590ec1e249d62e80916aef186"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_long_list.png",
+        "bytes": 215935,
+        "sha256": "9f53b6b19e97629723ce24c9792f6dcb6a2ddd2d83a224408ddbda16585d7bdb"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_search_recreated.png",
+        "bytes": 216809,
+        "sha256": "fe14ca32d20b41aa745ca988984ad4b258d125f844d125823c784368df423329"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_sorted.png",
+        "bytes": 185406,
+        "sha256": "289b28ff18d7b0653690a93180b2a7cbb04e9e34007b285f1ac427233844b649"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/final4/vis094_long_sorted_recreated.png",
+        "bytes": 185406,
+        "sha256": "289b28ff18d7b0653690a93180b2a7cbb04e9e34007b285f1ac427233844b649"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_cancelled.png",
+        "bytes": 53728,
+        "sha256": "427f6cc1f1f02d4671dd04e8bd2e5deda8f0be0086da9ab44461e9f7d0dc6e73"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_discard.png",
+        "bytes": 95059,
+        "sha256": "0b47dfed4473f19cfcae7d987db3e41d895e9ac794a5512c85e01b25979b0b1f"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_dns_empty.png",
+        "bytes": 92752,
+        "sha256": "568866a35c363cebc033278e3e8c7f7dd89c15e1e4c6038c77e1f20be8ebdda1"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_dns_return.png",
+        "bytes": 92752,
+        "sha256": "568866a35c363cebc033278e3e8c7f7dd89c15e1e4c6038c77e1f20be8ebdda1"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_dns_scrolled.png",
+        "bytes": 111944,
+        "sha256": "dbb9c29889b99e253e29ca9af2097d8ecf1245c884158c017e336feca2721ad4"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_dns_search.png",
+        "bytes": 132745,
+        "sha256": "593e23bb15ee84079a8cb3b182fedef95749b2a16c02864822650d5973f9ec4b"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_dns_selector.png",
+        "bytes": 96755,
+        "sha256": "2ae8d6c8ab983746db6d6bb2180ff3cf10c08c829949cde247d80b0735df3d5b"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_edit.png",
+        "bytes": 102100,
+        "sha256": "ca47529c925ee3e7320ca7c441dd148c7b1bc84aaccd0b8fa92b1ddd7d929703"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_empty.png",
+        "bytes": 54034,
+        "sha256": "8eba0e948ef5779defe56d6e350ec857018c6d5d8d09064136076c9f73ca3cc1"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_form.png",
+        "bytes": 92112,
+        "sha256": "3b67180e1e061434e63e57bf08d409e76e1cb9be9280e363ede864f95079b121"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_ime.png",
+        "bytes": 149319,
+        "sha256": "e9b2283e58763add037509802797c4b366eef141d31c328eeb8708138d974b08"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_ime_closed.png",
+        "bytes": 90395,
+        "sha256": "109501153ed3b40b6014ddcdeaf8cd14153f21533569abe0e20e626fcfd2decc"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_recreated.png",
+        "bytes": 58386,
+        "sha256": "ebe1c3816fec2c58914eb2a2f407b320db7382698be6fd4bdfdd3f7952be190f"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_saved.png",
+        "bytes": 58386,
+        "sha256": "ebe1c3816fec2c58914eb2a2f407b320db7382698be6fd4bdfdd3f7952be190f"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/vis094_light_selected.png",
+        "bytes": 61002,
+        "sha256": "f9ee2f737a1464257cc5998d5d41d3915de0df7752b3656d4ecfb69df7c3ac53"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/vis094_light_long_filtered.png",
+        "bytes": 59290,
+        "sha256": "6c8ab04f62c0bbc66568483b7740336c9d36bd4a4a1ab755b92cb6a00414ee70"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/vis094_light_long_recreated.png",
+        "bytes": 185894,
+        "sha256": "7d1cc4677a4d04f2ec8af4d6bc77fedfefe8c05ff16ec15bd8f0af272865ea52"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/vis094_light_long_restored.png",
+        "bytes": 212679,
+        "sha256": "e87b1cc789c64d69824d2265432bb6ce8f9dd2aef70452879f9c3c72d3982180"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/vis094_light_long_scrolled.png",
+        "bytes": 212679,
+        "sha256": "e87b1cc789c64d69824d2265432bb6ce8f9dd2aef70452879f9c3c72d3982180"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/vis094_light_long_sorted.png",
+        "bytes": 185894,
+        "sha256": "7d1cc4677a4d04f2ec8af4d6bc77fedfefe8c05ff16ec15bd8f0af272865ea52"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/vis094_light_long_top.png",
+        "bytes": 214730,
+        "sha256": "d41c0c9442df40c0f70c3191a0f6e3d7d36246c42e862a26b384c831a4824a51"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/cancelled.png",
+        "bytes": 75050,
+        "sha256": "9d429d8372897edd4b8165f21964a19563c2ad304ce529cc493ac3d2ed2b47f2"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/dns_empty.png",
+        "bytes": 110993,
+        "sha256": "bd203446c7f38affc085067f34a875f3d379987ba875681b18ba925fb724fea8"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/dns_return.png",
+        "bytes": 110993,
+        "sha256": "bd203446c7f38affc085067f34a875f3d379987ba875681b18ba925fb724fea8"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/edit.png",
+        "bytes": 116368,
+        "sha256": "fd41b64626653bf5d33ae24dedbcb84465178070a1f21a711beef8991e050e28"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/edit_return.png",
+        "bytes": 79752,
+        "sha256": "ee91269bab6cf9b2ab2f86270e6c4582fe5881d7ec12e9dae2ce9b8e9f9a7b4d"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/form.png",
+        "bytes": 103510,
+        "sha256": "d9f0e9033175e593be063c96fa034b403a8d8aae48ab4666cb0ce399a8ef6e45"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/ime.png",
+        "bytes": 163758,
+        "sha256": "411210920c22c3bcb20fffc074b5dc563d74753724feccbe403f31950d43098f"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/rules_empty.png",
+        "bytes": 78051,
+        "sha256": "af77861b928cd4f517b3ca901d7110f4b663b1da799f9a9f0b6e7dbeca0e2f9c"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/saved.png",
+        "bytes": 79742,
+        "sha256": "fe22bca1d25ecea97c34881f5ffd9fe20b77421087d4022c04df1101bcac53e6"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/scrolled.png",
+        "bytes": 138854,
+        "sha256": "65f9d28e8e80c7038b3c938439593cbf483c54e36043e351b256afe363a826d0"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/search.png",
+        "bytes": 152519,
+        "sha256": "02c8a8aea69ea1990a96409612f733dbd42b5df0cf03bc1445fe24e12658df74"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/search_closed.png",
+        "bytes": 92272,
+        "sha256": "1c48ab47a70e383a35299e09ae4944f17642ad982a210405d914b21bb81899d3"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/selector.png",
+        "bytes": 116862,
+        "sha256": "b63db806777ea36ef373419c310bcbd660f58880ae202ccc02c112726212a836"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/bottom.png",
+        "bytes": 265152,
+        "sha256": "e88c1518d3cf5d1b71e8d4b04f254f4678045a5e815bb6833404b5096b06e353"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/reordered.png",
+        "bytes": 235770,
+        "sha256": "3da998d4b80e3d8daa11c093625b53df65d62eee848bacab4cb40445f3a75491"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/returned.png",
+        "bytes": 235770,
+        "sha256": "3da998d4b80e3d8daa11c093625b53df65d62eee848bacab4cb40445f3a75491"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/search.png",
+        "bytes": 162392,
+        "sha256": "fa9f6bc5a8dde7077485e92e1fe24d3e26bb54a43a6a8ba8534f9270095d16b2"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/search_ime_closed.png",
+        "bytes": 88748,
+        "sha256": "f49983715fc71db101ee7c83efaeafd7cac77fba112cf3bbfe7bd7a7206bef9e"
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/top.png",
+        "bytes": 236528,
+        "sha256": "0f77eeab2b56973fd803966cc693e5996624319bcdea0a13c40ee420bba07775"
+      }
+    ],
+    "videos": [
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/route.mp4",
+        "bytes": 20208789,
+        "sha256": "0c3c0f0467ad84e688f466b5e5c9b8a504c53a85a55be8c57d723fae4738cca4",
+        "durationSeconds": 69.510322,
+        "frames": 1716,
+        "samples": 62,
+        "index": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-light/frame-index.json",
+          "bytes": 11098,
+          "sha256": "803faa3fba6943ec70a490203a1556b755d68bdfa0176a5bd8939d98ad8245c6"
+        }
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/route.mp4",
+        "bytes": 6650461,
+        "sha256": "84f7d6bb5e606a75b1cb083cc995e2584d4f84c67f8d2baa645324984d2798ad",
+        "durationSeconds": 24.064133,
+        "frames": 674,
+        "samples": 62,
+        "index": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/flutter-full-long2/frame-index.json",
+          "bytes": 11057,
+          "sha256": "fdb166c6855268e89cbe2c3022c0583c21b0ea91c78f49294280c6565dae4c72"
+        }
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/route.mp4",
+        "bytes": 25504841,
+        "sha256": "d4b73e7dc75ff4e5d052616ba84f149f186d7c79ed2a75c928bf9067717e4845",
+        "durationSeconds": 49.783967,
+        "frames": 1240,
+        "samples": 62,
+        "index": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/lightfinal2/frame-index.json",
+          "bytes": 11079,
+          "sha256": "5cb6dc9a1b1b350212439340cc4d9e2dfb95f14c149768875446d40020629175"
+        }
+      },
+      {
+        "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/route.mp4",
+        "bytes": 15716165,
+        "sha256": "52629ad350e69051ad8f253a2e085d9fbb01c1af27745116b8de981af98d9f46",
+        "durationSeconds": 31.9143,
+        "frames": 564,
+        "samples": 63,
+        "index": {
+          "path": "acceptance-artifacts/dns-long-rules-poco-20261123/longfinal1/frame-index.json",
+          "bytes": 11227,
+          "sha256": "357c852e645bd6bce02451f560eac825e1c9607bcfdc5bc20790b27a4fe54c90"
+        }
+      }
+    ],
+    "comparison": {
+      "path": "acceptance-artifacts/dns-long-rules-poco-20261123/comparison-final.jpg",
+      "bytes": 103068,
+      "sha256": "9134f5cceae403eb1291abb78cd2102629fca0420adb633117f9a15ce25394b4"
+    },
+    "apk": {
+      "path": "FlClash/android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+      "bytes": 67569345,
+      "sha256": "f4fa440ace1c348e29eaa7948fdf8cc71996f8c475b5af3ecb11cffc6ab02ee9"
+    },
+    "testApk": {
+      "path": "FlClash/android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+      "bytes": 3344903,
+      "sha256": "3e7e146a9d51478c30cc0faa32ae5b30059d082ee74b88df6df87a7ae101ca5b"
+    }
+  },
+  "assertions": [
+    "80 rules: first row actually offscreen; search one result/no-result; cancel restores original row top within 1px.",
+    "Multi-screen filtered result survives Activity recreation at same top within 1px.",
+    "Actual drag updates Room order; recreation preserves it; last rule reachable.",
+    "Natural long flow uses native DOWN/MOVE/UP, search/IME/system Back and Room readback.",
+    "DNS two-theme 160dp illustration and viewport Alignment(0,-.2) geometry; failure/retry/explicit-empty/busy/removal maintained.",
+    "Actual focused Sheet Window status/navigation bar theme flags match light/dark."
+  ],
+  "nonFinalAttempts": [
+    {
+      "run": "kotlin1",
+      "result": "1/2",
+      "reason": "Directory visibility checked while IME still compressed viewport; use actual cancel-search and wait for keyboard/window settle."
+    },
+    {
+      "run": "final3",
+      "result": "5/6",
+      "reason": "Legacy tools_subpage_back matched underlying and standalone DNS windows; use dedicated global_dns_back."
+    },
+    {
+      "run": "flutter-full-long",
+      "result": "not drag evidence",
+      "reason": "One adb swipe lacked held long-press; full-long2 uses real DOWN hold then MOVE/UP and XML verifies swapped order."
+    }
+  ],
+  "limits": [
+    "Fixed old complete Flutter package is not latest upstream afe71360/Prism6c47901 runtime.",
+    "Flutter uses built-in presets plus one rule, Kotlin uses 80 synthetic rules; not identical long-list data.",
+    "DNS nonempty field layouts/editors and five additional upstream keys remain; no fake options added.",
+    "Kotlin explicit sort mode, discard confirmation, raw editor and typography differ from reference.",
+    "Recordings show continuous routes, not same-phase pixel equivalence, jank or formal R8 performance.",
+    "No configuration/YAML/import/core changes; only isolated app data."
+  ],
+  "preservation": {
+    "productionVpnPidAtStart": 20700,
+    "originalFlutterPackage": "com.follow.clash",
+    "originalYamlReadOrUploaded": false,
+    "motionProfilesEmpty": true,
+    "motionSelectionNull": true,
+    "motionCore": "STOPPED",
+    "appearanceValuesAndKeySetsRestored": true,
+    "roomPreferenceRowsDraftsReceiptsRestored": true,
+    "installedReadbackSha256": {
+      "com.lonnnnnng.flclash.motion": "f4fa440ace1c348e29eaa7948fdf8cc71996f8c475b5af3ecb11cffc6ab02ee9",
+      "com.lonnnnnng.flclash.motion.test": "3e7e146a9d51478c30cc0faa32ae5b30059d082ee74b88df6df87a7ae101ca5b",
+      "com.lonnnnnng.kclash.reference.full.dev": "0d3ab0ee4016bae7c75c727457357222feb3e267444f4c9b19adc9d62a0109d3"
+    },
+    "productionAndOriginalFlutterPackages": {
+      "com.follow.clash": [
+        "versionCode=2026113907 minSdk=24 targetSdk=37",
+        "versionName=0.9.4",
+        "lastUpdateTime=2026-11-22 14:21:51",
+        "firstInstallTime=2026-11-07 02:44:08"
+      ],
+      "com.lonnnnnng.flclash": [
+        "versionCode=1018 minSdk=24 targetSdk=37",
+        "versionName=0.1.18",
+        "lastUpdateTime=2026-11-23 19:51:05",
+        "firstInstallTime=2026-11-23 18:27:08"
+      ]
+    },
+    "productionVpnPidAtEnd": 20700,
+    "motionAndTestRemoved": true,
+    "fullReferenceRetainedStopped": "com.lonnnnnng.kclash.reference.full.dev",
+    "temporaryFilesRemoved": [
+      "/sdcard/Movies/vis094-flutter-full-light.mp4",
+      "/sdcard/Movies/vis094-flutter-full-long.mp4",
+      "/sdcard/Movies/vis094-flutter-full-long2.mp4",
+      "/sdcard/Movies/vis093-kotlin-lightfinal1.mp4",
+      "/sdcard/Movies/vis093-kotlin-lightfinal2.mp4",
+      "/sdcard/Movies/vis093-kotlin-longfinal1.mp4",
+      "/sdcard/vis094-reference.xml"
+    ],
+    "settings": {
+      "font_scale": "1.0",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    }
+  },
+  "next": "DNS nonempty fields/editor and mapping, remaining subpages, latest complete reference and menu attribution."
+}

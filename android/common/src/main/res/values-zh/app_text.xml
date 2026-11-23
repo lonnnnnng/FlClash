@@ -2182,4 +2182,7 @@
     <string name="text_ffd92888cff2" formatted="false">"正在准备订阅导入…"</string>
     <string name="text_ffecef0ae6ee" formatted="false">"不支持的策略组类型："</string>
     <string name="text_dd44ca603959">正在识别链接…</string>
+    <string name="text_488b65cca042" formatted="false">"暂无覆写项"</string>
+    <string name="text_737db592fa92" formatted="false">"添加覆写项"</string>
+    <string name="text_b79f6914ab4e" formatted="false">"添加的项会覆写所有 URL 和文件配置的 DNS，未添加的项沿用配置自身的设置。自定义配置的 DNS 在其内容中设置。"</string>
 </resources>

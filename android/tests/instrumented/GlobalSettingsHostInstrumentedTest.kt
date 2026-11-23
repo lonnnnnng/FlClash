@@ -35,7 +35,7 @@ class GlobalSettingsHostInstrumentedTest {
             compose.onNodeWithTag("advanced_item_dns").performClick()
             capture("global_dns_empty")
             if (originalDns.listen == null) {
-                compose.onNodeWithTag("page_tools").performScrollToNode(hasTestTag("global_dns_add"))
+                compose.onNodeWithTag("global_dns_add").assertIsDisplayed()
                 compose.onNodeWithTag("global_dns_add").performClick()
                 capture("global_dns_add_options")
                 compose.onNodeWithTag("global_dns_add_listen").performClick()
@@ -49,7 +49,7 @@ class GlobalSettingsHostInstrumentedTest {
             capture("global_dns_actual")
             compose.activityRule.scenario.recreate(); compose.waitForIdle()
             compose.onNodeWithTag("page_global_dns").assertExists()
-            compose.onNodeWithTag("tools_subpage_back").performClick()
+            compose.onNodeWithTag("global_dns_back").performClick()
             compose.onNodeWithTag("advanced_item_rules").performClick()
             compose.waitUntil(15_000) { compose.onAllNodes(hasTestTag("global_rules_add") and isEnabled()).fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("global_rules_empty_title").assertIsDisplayed()
