@@ -120,9 +120,9 @@ class IconSetRepository @Inject constructor(private val database: KClashDatabase
         } else importContent(client.download(normalized).bytes.toString(Charsets.UTF_8), normalized,
             fallbackName = URI(normalized).path.substringAfterLast('/').substringBeforeLast('.'), preferredName = name)
     }
-    suspend fun sync(expected: ResourceIconSet): ResourceIconSet = withContext(Dispatchers.IO) {
+    suspend fun sync(expected: ResourceIconSet, onProgress: (ResourceDownloadProgress) -> Unit = {}): ResourceIconSet = withContext(Dispatchers.IO) {
         require(expected.url.isNotEmpty()) { "本地图标集没有远程地址" }
-        val (_, icons) = IconSetCodec.parse(client.download(expected.url).bytes.toString(Charsets.UTF_8))
+        val (_, icons) = IconSetCodec.parse(client.download(expected.url, onProgress).bytes.toString(Charsets.UTF_8))
         lock.withLock {
             val rows = all()
             val latest = rows.firstOrNull { it.id == expected.id } ?: error("图标集已删除")

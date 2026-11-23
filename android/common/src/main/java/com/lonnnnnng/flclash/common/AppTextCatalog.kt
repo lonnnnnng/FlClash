@@ -17,6 +17,8 @@ internal object AppTextCatalog {
         put("缓存算法", R.string.text_07a91297d855)
         put("DNS 缓存算法无效", R.string.text_7f5204510863)
         put("共 {0} 项", R.string.text_e1094c9e5d35)
+        put("已下载 {0}", R.string.text_9f570d2d8f99)
+        put("已下载 {0} / {1}", R.string.text_081b50667b4f)
         put("每行填写一个有效值", R.string.text_cfcc14f7de89)
         put("已存在相同的项", R.string.text_ba8912261bc3)
         put("删除 {0} 项？", R.string.text_47f87565ed59)

@@ -31,9 +31,11 @@ class CoreBridgeParsingTest {
             {"type":"geoUpdate","data":{"type":"MMDB","updating":true}},
             {"type":"geoUpdate","data":{"type":"MMDB","updating":false}},
             {"type":"geoUpdate","data":{"type":"GEOIP","updating":false,"error":"download failed"}},
+            {"type":"geoUpdate","data":{"type":"ASN","updating":true,"downloaded":8192,"total":32768,"attempt":2}},
             {"type":"geoUpdate","data":{"type":"unknown","updating":true}}]}""".toByteArray())
         assertEquals(listOf(CoreEvent.GeoUpdate("MMDB", true), CoreEvent.GeoUpdate("MMDB", false),
-            CoreEvent.GeoUpdate("GEOIP", false, error = "download failed")), events)
+            CoreEvent.GeoUpdate("GEOIP", false, error = "download failed"),
+            CoreEvent.GeoUpdate("ASN", true, downloadedBytes = 8192, totalBytes = 32768, attempt = 2)), events)
     }
     @Test fun proxyTypesKeepLeavesGroupsAndUnknownProtocolsWithoutPrivateMetadata() {
         val types = CoreBridge().parseProxyTypes(JsonParser.parseString("""{

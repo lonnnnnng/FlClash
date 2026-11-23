@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/metacubex/mihomo/component/geodata"
 	"github.com/metacubex/mihomo/component/updater"
@@ -60,6 +61,19 @@ func handleUpdateGeoData(geoType string) error {
 	return nil
 }
 
+var geoProgress = struct {
+	sync.Mutex
+	latest map[string]GeoUpdateStatus
+}{latest: make(map[string]GeoUpdateStatus)}
+
+func onGeoProgress(geoType string, downloaded, total int64, attempt int) {
+	geoProgress.Lock()
+	defer geoProgress.Unlock()
+	status := GeoUpdateStatus{Type: geoType, Updating: true, Downloaded: downloaded, Total: total, Attempt: attempt}
+	geoProgress.latest[geoType] = status
+	sendMessage(GeoUpdateMessage, status)
+}
+
 func onGeoUpdate(geoType string, updating bool, skipped bool, updateErr error) {
 	if updating {
 		claimUpdateAs(geoUpdateScope+geoType, true)
@@ -71,6 +85,14 @@ func onGeoUpdate(geoType string, updating bool, skipped bool, updateErr error) {
 		}
 	}
 	status := GeoUpdateStatus{Type: geoType, Updating: updating, Skipped: skipped}
+	// 作者 long：终态携带最后字节数，UI即使错过中间进度也能确认实际收取量；新一轮不能继承旧进度。
+	geoProgress.Lock()
+	defer geoProgress.Unlock()
+	if !updating {
+		last := geoProgress.latest[geoType]
+		status.Downloaded, status.Total, status.Attempt = last.Downloaded, last.Total, last.Attempt
+	}
+	delete(geoProgress.latest, geoType)
 	if updateErr != nil {
 		status.Error = updateErr.Error()
 	}

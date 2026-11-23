@@ -26,11 +26,13 @@ class ResourceInputMotionInstrumentedTest {
 
     @Test fun realToolsResourceInputsValidateSaveResetCancelAndReopenContinuously() = runBlocking {
         assertPortraitDefaultFontConfiguration()
-        assertTrue("该流程需要实际安装的R8 motion宿主", compose.activity.packageName.endsWith(".motion"))
+        assertTrue("该流程需要实际安装的独立motion宿主", compose.activity.packageName.endsWith(".motion"))
         val entry = EntryPointAccessors.fromApplication(compose.activity.application, ConnectionAcceptanceEntryPoint::class.java)
         val runtime = entry.runtimeManager()
         assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
         val originalSettings = runtime.geoSettings.value
+        val resourcePrefs = compose.activity.getSharedPreferences("resource_settings", android.content.Context.MODE_PRIVATE)
+        val originalKeys = resourcePrefs.all.toMap()
 
         fun capture(name: String) {
             compose.waitForIdle()
@@ -63,6 +65,7 @@ class ResourceInputMotionInstrumentedTest {
             compose.onNodeWithTag("nav_tools").performClick()
             compose.onNodeWithTag("tools_item_resources").performClick()
             compose.onNodeWithTag("resources_page").assertIsDisplayed()
+            capture("page_initial")
             if (!runtime.geoSettings.value.autoUpdate) {
                 compose.onNodeWithTag("resources_auto_update").performClick()
                 compose.waitUntil(10_000) { runtime.geoSettings.value.autoUpdate }
@@ -133,6 +136,10 @@ class ResourceInputMotionInstrumentedTest {
             capture("resources_returned")
         } finally {
             runtime.setGeoSettings(originalSettings)
+            // 作者 long：恢复语义之外还恢复原键集合，不能为视觉验收留下此前不存在的默认配置。
+            val editor = resourcePrefs.edit()
+            for (key in listOf("auto_update", "interval_hours") + GeoResourceType.entries.map { it.name }) if (key !in originalKeys) editor.remove(key)
+            check(editor.commit()); assertEquals(originalKeys, resourcePrefs.all)
             assertEquals(originalSettings, runtime.geoSettings.value)
             assertEquals(CoreRuntimeStatus.STOPPED, runtime.state.value)
         }

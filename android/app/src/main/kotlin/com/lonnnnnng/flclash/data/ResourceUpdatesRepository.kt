@@ -19,13 +19,14 @@ data class ResourceUpdateRow(val kind: ResourceKind, val id: String, val label: 
     val updatedAt: Long? = null, val size: Long? = null, val count: Int? = null) {
     val key get() = "${kind.name}:$id"
 }
-data class ResourceUpdateFailure(val label: String, val message: String)
+data class ResourceUpdateFailure(val label: String, val message: String, val rowKey: String? = null)
 data class ResourceUpdatesState(
     val loading: Boolean = true,
     val settings: GeoResourceSettings = GeoResourceSettings(),
     val rows: List<ResourceUpdateRow> = emptyList(),
     val iconSets: List<ResourceIconSet> = emptyList(),
     val updating: Set<String> = emptySet(),
+    val transfers: Map<String, ResourceDownloadProgress> = emptyMap(),
     val settingsBusy: Boolean = false,
     val failures: List<ResourceUpdateFailure> = emptyList(),
     val message: String? = null,
@@ -43,13 +44,42 @@ class ResourceUpdatesRepository @Inject constructor(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = Mutex()
     private val refreshLock = Mutex()
+    private val downloadSlots = Semaphore(4)
     private val mutable = MutableStateFlow(ResourceUpdatesState(settings = runtime.geoSettings.value))
     val state = mutable.asStateFlow()
     private val manual = mutableSetOf<String>()
 
     init {
         scope.launch { merge(icons.invalidations, rules.changes.map { Unit }, scripts.scripts.map { Unit },
-            runtime.geoSettings.map { Unit }, runtime.geoUpdates.map { Unit }).collect { refresh() } }
+            runtime.geoSettings.map { Unit }).collect { refresh() } }
+        scope.launch {
+            var previous = emptyMap<String, com.lonnnnnng.flclash.core.CoreEvent.GeoUpdate>()
+            runtime.geoUpdates.collect { events ->
+                val changed = events.values.filter { previous[it.type] != it }
+                lock.withLock {
+                    mutable.update { current ->
+                        val transfers = current.transfers.toMutableMap()
+                        var failures = current.failures
+                        changed.forEach { event ->
+                            val key = "GEO:${event.type}"
+                            if (event.updating) {
+                                transfers[key] = ResourceDownloadProgress(event.downloadedBytes, event.totalBytes, event.attempt)
+                                if (previous[event.type]?.updating != true) failures = failures.filterNot { it.rowKey == key }
+                            } else {
+                                transfers.remove(key)
+                                failures = failures.filterNot { it.rowKey == key }
+                                if (event.error.isNotEmpty()) failures += ResourceUpdateFailure(event.type, geoUpdateFailureMessage(event.error), key)
+                            }
+                        }
+                        val coreUpdating = events.values.filter { it.updating }.map { "GEO:${it.type}" }.toSet()
+                        current.copy(transfers = transfers, failures = failures, updating = manual + coreUpdating)
+                    }
+                }
+                previous = events
+                // 作者 long：字节进度只更新内存；终态才重读文件和目录，避免每200ms重新查询数据库。
+                if (changed.any { !it.updating }) refresh()
+            }
+        }
     }
 
     suspend fun refresh() = withContext(Dispatchers.IO) { refreshLock.withLock {
@@ -78,64 +108,79 @@ class ResourceUpdatesRepository @Inject constructor(
                 mutable.update { it.copy(loading = false, rows = rows, settings = settings, iconSets = sets, updating = manual + coreUpdating) }
             }
         } catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: Exception) { mutable.update { it.copy(loading = false, failures = listOf(ResourceUpdateFailure("资源列表", "读取失败，请重试"))) } }
+        catch (_: Exception) { mutable.update { state -> state.copy(loading = false,
+            failures = state.failures.filter { it.rowKey != null } + ResourceUpdateFailure("资源列表", "读取失败，请重试")) } }
     } }
 
     suspend fun saveSettings(settings: GeoResourceSettings) {
         if (mutable.value.settingsBusy) return
-        mutable.update { it.copy(settingsBusy = true, failures = emptyList(), message = null) }
+        mutable.update { state -> state.copy(settingsBusy = true, failures = state.failures.filter { it.rowKey != null }, message = null) }
         try { runtime.setGeoSettings(settings); refresh() }
         catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: Exception) { mutable.update { it.copy(failures = listOf(ResourceUpdateFailure("资源设置", "保存失败，请等待更新完成并检查地址和周期后重试"))) } }
+        catch (_: Exception) { mutable.update { it.copy(failures = it.failures + ResourceUpdateFailure("资源设置", "保存失败，请等待更新完成并检查地址和周期后重试")) } }
         finally { mutable.update { it.copy(settingsBusy = false) } }
     }
 
     suspend fun update(row: ResourceUpdateRow): ResourceUpdateFailure? {
         val claimed = lock.withLock {
             if (row.key in mutable.value.updating) false else {
-                manual.add(row.key); mutable.update { it.copy(updating = it.updating + row.key) }; true
+                manual.add(row.key); mutable.update { state -> state.copy(updating = state.updating + row.key,
+                    transfers = state.transfers + (row.key to ResourceDownloadProgress()),
+                    failures = state.failures.filterNot { it.rowKey == row.key }, message = null) }; true
             }
         }
         if (!claimed) return null
+        val reportProgress: (ResourceDownloadProgress) -> Unit = { progress ->
+            mutable.update { it.copy(transfers = it.transfers + (row.key to progress)) }
+        }
         return try {
             when (row.kind) {
                 ResourceKind.GEO -> {
                     runtime.requestGeoUpdate(GeoResourceType.valueOf(row.id))
                     // 作者 long：等待核心下载完成，不能把已受理当成成功；超时后仍由核心状态保留更新标记。
                     val completion = withTimeout(180_000L) { runtime.geoUpdates.first { it[row.id]?.updating == false }.getValue(row.id) }
-                    if (completion.error.isNotEmpty()) return ResourceUpdateFailure(row.label, geoUpdateFailureMessage(completion.error))
+                    if (completion.error.isNotEmpty()) return ResourceUpdateFailure(row.label, geoUpdateFailureMessage(completion.error), row.key)
                 }
-                ResourceKind.ICONS -> icons.sync(icons.all().first { it.id == row.id && it.url == row.url })
+                ResourceKind.ICONS -> icons.sync(icons.all().first { it.id == row.id && it.url == row.url }, reportProgress)
                 ResourceKind.RULE -> {
                     val expected = rules.all().first { it.id == row.id && it.url == row.url }
-                    val saved = rules.sync(expected)
+                    val saved = rules.sync(expected, reportProgress)
                     val currentId = profiles.currentProfileId.value
                     if (currentId != null && rules.isUsedBy(currentId, saved)) {
                         try { runtime.applyCurrentProfile(currentId) }
                         catch (cancelled: CancellationException) { throw cancelled }
-                        catch (_: Exception) { return ResourceUpdateFailure(row.label, "资源已保存，但当前配置应用失败，请在配置页重试应用") }
+                        catch (_: Exception) { return ResourceUpdateFailure(row.label, "资源已保存，但当前配置应用失败，请在配置页重试应用", row.key) }
                     }
                 }
                 // 作者 long：脚本仓库统一处理当前绑定的应用和回滚，无关脚本更新不能重载正在运行的配置。
-                ResourceKind.SCRIPT -> scripts.sync(row.id.toLong())
+                ResourceKind.SCRIPT -> scripts.sync(row.id.toLong(), reportProgress)
             }
             null
         } catch (_: com.lonnnnnng.flclash.service.ProfileApplyAfterSaveException) {
-            ResourceUpdateFailure(row.label, "脚本已保存，但当前配置应用失败，请在脚本库修正或在配置页重试应用")
-        } catch (_: TimeoutCancellationException) { ResourceUpdateFailure(row.label, "等待超时；下载可能仍在后台进行，请稍后查看") }
+            ResourceUpdateFailure(row.label, "脚本已保存，但当前配置应用失败，请在脚本库修正或在配置页重试应用", row.key)
+        } catch (_: TimeoutCancellationException) { ResourceUpdateFailure(row.label, "等待超时；下载可能仍在后台进行，请稍后查看", row.key) }
         catch (cancelled: CancellationException) { throw cancelled }
-        catch (_: Exception) { ResourceUpdateFailure(row.label, "更新失败，请检查网络或资源地址后重试") }
-        finally {
-            lock.withLock { manual.remove(row.key) }
+        catch (_: Exception) { ResourceUpdateFailure(row.label, "更新失败，请检查网络或资源地址后重试", row.key) }
+        finally { withContext(NonCancellable) {
+            lock.withLock {
+                manual.remove(row.key)
+                val coreRunning = row.kind == ResourceKind.GEO && runtime.geoUpdates.value[row.id]?.updating == true
+                mutable.update { if (coreRunning) it else it.copy(transfers = it.transfers - row.key, updating = it.updating - row.key) }
+            }
             refresh()
-        }
+        } }
     }
 
     suspend fun updateRows(rows: List<ResourceUpdateRow>) {
-        mutable.update { it.copy(failures = emptyList(), message = null) }
-        val semaphore = Semaphore(4)
-        val failures = coroutineScope { rows.map { row -> async { semaphore.withPermit { update(row) } } }.awaitAll().filterNotNull() }
-        mutable.update { it.copy(failures = failures, message = if (failures.isEmpty()) "资源更新完成" else null) }
+        // 作者 long：每行完成即反馈，慢资源不能挡住其他行错误；按唯一键替换，单行重试不清空其他失败。
+        val targets = rows.distinctBy { it.key }
+        coroutineScope { targets.map { row -> async { downloadSlots.withPermit {
+            update(row)?.let { failure -> mutable.update { state ->
+                state.copy(failures = state.failures.filterNot { it.rowKey == row.key } + failure)
+            } }
+        } } }.awaitAll() }
+        val keys = targets.map { it.key }.toSet()
+        mutable.update { state -> state.copy(message = if (keys.isNotEmpty() && state.failures.none { it.rowKey in keys }) "资源更新完成" else null) }
     }
 
     suspend fun updateDue(now: Long = System.currentTimeMillis()): Boolean {
@@ -146,8 +191,10 @@ class ResourceUpdatesRepository @Inject constructor(
         val due = current.rows.filter { it.kind != ResourceKind.GEO &&
             (it.kind != ResourceKind.RULE || runtime.state.value.isRunning) &&
             (it.updatedAt == null || now - it.updatedAt >= interval) }
-        if (due.isNotEmpty()) updateRows(due)
-        return mutable.value.failures.isEmpty()
+        if (due.isEmpty()) return true
+        updateRows(due)
+        val dueKeys = due.map { it.key }.toSet()
+        return mutable.value.failures.none { it.rowKey in dueKeys }
     }
     fun clearFeedback() { mutable.update { it.copy(failures = emptyList(), message = null) } }
 }

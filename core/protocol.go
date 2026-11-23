@@ -268,8 +268,11 @@ type nodeView struct {
 }
 
 type GeoUpdateStatus struct {
-	Type     string `json:"type"`
-	Updating bool   `json:"updating"`
-	Skipped  bool   `json:"skipped,omitempty"`
-	Error    string `json:"error,omitempty"`
+	Type       string `json:"type"`
+	Updating   bool   `json:"updating"`
+	Skipped    bool   `json:"skipped,omitempty"`
+	Error      string `json:"error,omitempty"`
+	Downloaded int64  `json:"downloaded,omitempty"`
+	Total      int64  `json:"total,omitempty"`
+	Attempt    int    `json:"attempt,omitempty"`
 }

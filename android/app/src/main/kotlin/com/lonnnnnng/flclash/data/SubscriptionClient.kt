@@ -15,10 +15,14 @@ data class SubscriptionDownload(
 
 interface SubscriptionClient {
     suspend fun download(url: String): SubscriptionDownload
+    suspend fun download(url: String, onProgress: (ResourceDownloadProgress) -> Unit): SubscriptionDownload =
+        download(url).also { onProgress(ResourceDownloadProgress(it.bytes.size.toLong(), it.bytes.size.toLong())) }
 }
 
 class HttpSubscriptionClient(private val generalSettingsStore: com.lonnnnnng.flclash.service.GeneralSettingsStore? = null) : SubscriptionClient {
-    override suspend fun download(url: String): SubscriptionDownload {
+    override suspend fun download(url: String): SubscriptionDownload = download(url) {}
+
+    override suspend fun download(url: String, onProgress: (ResourceDownloadProgress) -> Unit): SubscriptionDownload {
         val requestSettings = generalSettingsStore?.read()
         var currentUrl = runCatching { URL(url) }.getOrElse {
             throw IllegalArgumentException("订阅链接格式无效", it)
@@ -50,7 +54,9 @@ class HttpSubscriptionClient(private val generalSettingsStore: com.lonnnnnng.flc
                 if (code !in 200..299) {
                     throw IOException("订阅服务器返回 HTTP $code")
                 }
-                val bytes = connection.inputStream.use { readProfileFileBytes(it) }
+                val progress = ResourceProgressReporter(connection.contentLengthLong.takeIf { connection.contentEncoding.isNullOrBlank() }, onProgress)
+                val bytes = try { connection.inputStream.use { readProfileFileBytes(it, onRead = progress::read) } }
+                    finally { progress.finish() }
                 if (bytes.isEmpty()) throw IOException("订阅内容为空")
                 return SubscriptionDownload(
                     bytes = bytes,

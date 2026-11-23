@@ -238,7 +238,7 @@ internal fun AppDropdownMenu(
     LaunchedEffect(active, expanded) {
         // 作者 long：回源期间外部撤销也必须取消旧交接；否则false→true重开时active仍为false，旧选择会借用新展开状态重放。
         if (!expanded) menuTrace("kclash/menu/cleanup/revoke-request") { pendingAction = null; requestedClose = false }
-        if (active) {
+        if (active) menuWindowTrace("kclash/menu/open-window") {
             stack.reset(pageKey)
             returnCard = null
             present = true
@@ -250,7 +250,7 @@ internal fun AppDropdownMenu(
             if (glass) withFrameNanos { }
             backdrop = if (glass) captureAppMenuBackdrop(hostView, density.density) else null
             opening.animateTo(.45f, tween(450, easing = LinearEasing))
-        } else {
+        } else menuWindowTrace("kclash/menu/close-window") {
             returnFrom = opening.value
             // 作者 long：稳定多层菜单从最上层实际卡片回源；保存局部矩形，后层退出或布局回调不能改变收回起点。
             returnCard = if (returnFrom >= .45f) stack.topCardBounds.takeUnless { it.isEmpty }
@@ -260,7 +260,7 @@ internal fun AppDropdownMenu(
             returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
             MenuCloseCaptureProbe.afterAnimation()
             menuTrace("kclash/menu/cleanup/restore-source-before-detach") { source?.hidden = false }
-            awaitAppWindowRemoved(popupWindow.view) { present = false }
+            menuWindowTrace("kclash/menu/detach-window") { awaitAppWindowRemoved(popupWindow.view) { present = false } }
             // 作者 long：窗口移除也有取消窗口，交接时再核对外部展开与生命周期，防止后台或撤销后重放选择。
             val action = pendingAction.takeIf { expandedLatest && lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) }
             menuTrace("kclash/menu/cleanup/drop-action") { pendingAction = null }

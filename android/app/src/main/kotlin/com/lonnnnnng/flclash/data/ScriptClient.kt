@@ -11,10 +11,14 @@ data class ScriptDownload(
 
 interface ScriptClient {
     suspend fun download(url: String): ScriptDownload
+    suspend fun download(url: String, onProgress: (ResourceDownloadProgress) -> Unit): ScriptDownload =
+        download(url).also { onProgress(ResourceDownloadProgress(it.bytes.size.toLong(), it.bytes.size.toLong())) }
 }
 
 class HttpScriptClient(private val generalSettingsStore: com.lonnnnnng.flclash.service.GeneralSettingsStore? = null) : ScriptClient {
-    override suspend fun download(url: String): ScriptDownload {
+    override suspend fun download(url: String): ScriptDownload = download(url) {}
+
+    override suspend fun download(url: String, onProgress: (ResourceDownloadProgress) -> Unit): ScriptDownload {
         val requestSettings = generalSettingsStore?.read()
         var currentUrl = runCatching { URL(url) }.getOrElse {
             throw IllegalArgumentException("脚本地址格式无效", it)
@@ -50,7 +54,8 @@ class HttpScriptClient(private val generalSettingsStore: com.lonnnnnng.flclash.s
                     if (declaredLength > MAX_BYTES) {
                         throw IOException("脚本文件超过 2 MiB 限制")
                     }
-                    input.readBoundedBytes(MAX_BYTES)
+                    val progress = ResourceProgressReporter(declaredLength.takeIf { connection.contentEncoding.isNullOrBlank() }, onProgress)
+                    try { input.readBoundedBytes(MAX_BYTES, progress::read) } finally { progress.finish() }
                 }
                 if (bytes.isEmpty()) throw IOException("脚本内容为空")
                 return ScriptDownload(
@@ -90,7 +95,7 @@ class HttpScriptClient(private val generalSettingsStore: com.lonnnnnng.flclash.s
     }
 }
 
-private fun java.io.InputStream.readBoundedBytes(maxBytes: Long): ByteArray {
+private fun java.io.InputStream.readBoundedBytes(maxBytes: Long, onRead: (Int) -> Unit): ByteArray {
     val output = java.io.ByteArrayOutputStream()
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var total = 0L
@@ -100,6 +105,7 @@ private fun java.io.InputStream.readBoundedBytes(maxBytes: Long): ByteArray {
         total += count
         if (total > maxBytes) throw IOException("脚本文件超过 2 MiB 限制")
         output.write(buffer, 0, count)
+        onRead(count)
     }
     return output.toByteArray()
 }

@@ -66,6 +66,7 @@
     <string name="text_07c6f802d368" formatted="false">"全部地址"</string>
     <string name="text_07cb32ff97f6" formatted="false">"核心未返回代理链"</string>
     <string name="text_07ec86e0f1d4" formatted="false">"创建时间"</string>
+    <string name="text_081b50667b4f" formatted="false">"已下载 {0} / {1}"</string>
     <string name="text_082b63461a10" formatted="false">"已应用到配置的图标会保留。"</string>
     <string name="text_0849e2fd0ced" formatted="false">"脚本库"</string>
     <string name="text_0853bf3c0144" formatted="false">"仪表盘"</string>
@@ -1372,6 +1373,7 @@
     <string name="text_9f07d2ce4115" formatted="false">"更多操作"</string>
     <string name="text_9f1151ae6445" formatted="false">"批量测速并发数必须大于 0"</string>
     <string name="text_9f23ef5945af" formatted="false">"失败或取消不会移除已经导入的资源。"</string>
+    <string name="text_9f570d2d8f99" formatted="false">"已下载 {0}"</string>
     <string name="text_9f63e47a16dd" formatted="false">"备份缺少资源设置"</string>
     <string name="text_9f6fee1aba17" formatted="false">"语言"</string>
     <string name="text_a051c936f0c4" formatted="false">"剪贴板导入"</string>

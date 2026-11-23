@@ -36,6 +36,7 @@ func init() {
 		sendMessage(LoadedMessage, providerName)
 	}
 	updater.GeoUpdateHook = onGeoUpdate
+	updater.GeoProgressHook = onGeoProgress
 	proxydialer.DefaultLoopNotify = reportDialerLoop
 }
 

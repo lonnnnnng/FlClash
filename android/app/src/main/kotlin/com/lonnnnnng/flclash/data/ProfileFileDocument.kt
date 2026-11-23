@@ -35,7 +35,8 @@ class AndroidProfileFileDocumentReader(private val context: Context) : ProfileFi
     }
 }
 
-internal fun readProfileFileBytes(input: InputStream, allowEmpty: Boolean = false, maxBytes: Int = MAX_PROFILE_FILE_BYTES): ByteArray {
+internal fun readProfileFileBytes(input: InputStream, allowEmpty: Boolean = false, maxBytes: Int = MAX_PROFILE_FILE_BYTES,
+    onRead: (Int) -> Unit = {}): ByteArray {
     // 作者 long：SAF 的大小元数据不可靠，按实际读取预算截断，避免云端文件令编辑页无界分配内存。
     val output = ByteArrayOutputStream()
     require(maxBytes in 1..MAX_PROFILE_FILE_BYTES)
@@ -46,6 +47,7 @@ internal fun readProfileFileBytes(input: InputStream, allowEmpty: Boolean = fals
         if (count == 0) continue
         output.write(buffer, 0, count)
         require(output.size() <= maxBytes) { if (maxBytes == MAX_PROFILE_FILE_BYTES) "配置文件超过 8 MiB" else "文件超过允许大小" }
+        onRead(count)
     }
     val bytes = output.toByteArray()
     require(allowEmpty || bytes.isNotEmpty()) { "配置文件为空" }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import com.lonnnnnng.flclash.data.*
+import com.lonnnnnng.flclash.common.AppText
 import com.lonnnnnng.flclash.service.GeoResourceSettings
 import com.lonnnnnng.flclash.service.GeoResourceType
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
@@ -15,6 +16,9 @@ class ResourcesPageInstrumentedTest {
     @get:Rule val compose = createComposeRule()
     @Test fun overviewSettingsMenusAndFailureSummaryWorkInBothThemes() {
         assertPortraitDefaultFontConfiguration()
+        // 作者 long：该组件用例验证中文业务校验文案；不要继承前一个Activity留下的全局语种快照。
+        AppText.useEnglish = false
+        UiLanguage.english = false
         var dark by mutableStateOf(false)
         var state by mutableStateOf(ResourceUpdatesState(loading = false, rows = GeoResourceType.entries.map {
             ResourceUpdateRow(ResourceKind.GEO, it.name, it.name, it.defaultUrl, size = 1234567)
@@ -48,11 +52,12 @@ class ResourcesPageInstrumentedTest {
             compose.onNodeWithText("同步").performClick()
             compose.runOnIdle {
                 assertEquals("MMDB", updated)
-                state = state.copy(failures = listOf(ResourceUpdateFailure("MMDB", "更新失败，请检查网络后重试")))
+                state = state.copy(failures = listOf(ResourceUpdateFailure("MMDB", "更新失败，请检查网络后重试", "GEO:MMDB")))
             }
-            capture("resources_failure_$theme")
-            compose.onNodeWithText("关闭提示").performClick()
+            compose.onNodeWithTag("resource_error_GEO:MMDB").assertIsDisplayed()
             compose.onNodeWithTag("resources_failures").assertDoesNotExist()
+            capture("resources_failure_$theme")
+            compose.runOnIdle { state = state.copy(failures = emptyList()) }
             for ((kind, id) in listOf(ResourceKind.ICONS to "gallery", ResourceKind.RULE to "rules", ResourceKind.SCRIPT to "script")) {
                 val tag = "resource_${kind.name}:$id"
                 compose.onNodeWithTag("resources_page").performScrollToNode(hasTestTag(tag))
@@ -62,6 +67,49 @@ class ResourcesPageInstrumentedTest {
             }
             capture("resources_remote_sections_$theme")
         }
+    }
+
+    @Test fun resourceMenuDefersEditUntilExitAndLoadingKeepsRowHeight() {
+        var state by mutableStateOf(ResourceUpdatesState(loading = false, rows = GeoResourceType.entries.map {
+            ResourceUpdateRow(ResourceKind.GEO, it.name, it.name, it.defaultUrl, size = 1234567)
+        }))
+        compose.setContent { KClashTheme { ResourcesPage(state, {}, {}, {}, {}, {}, {}) } }
+        val row = compose.onNodeWithTag("resource_GEO:MMDB")
+        val baseline = row.fetchSemanticsNode().boundsInRoot
+        compose.runOnIdle { state = state.copy(updating = setOf("GEO:MMDB")) }
+        assertEquals(baseline.height, row.fetchSemanticsNode().boundsInRoot.height, 1f)
+        row.performTouchInput { longClick() }
+        compose.onNodeWithText("同步").assertDoesNotExist()
+        compose.onNodeWithText("编辑").assertDoesNotExist()
+        // 作者 long：菜单独占窗口焦点，系统返回键应交给当前窗口，避免 Espresso 等待底层 Activity 焦点。
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+            .sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        compose.waitUntil { compose.onAllNodesWithTag("app_popup_window").fetchSemanticsNodes().isEmpty() }
+        compose.runOnIdle { state = state.copy(updating = emptySet()) }
+        row.performTouchInput { longClick() }
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithText("编辑").performClick()
+        compose.mainClock.advanceTimeBy(64)
+        compose.onNodeWithTag("app_popup_window").assertExists()
+        compose.onNodeWithTag("resource_setting_dialog").assertDoesNotExist()
+        compose.mainClock.autoAdvance = true
+        compose.waitUntil { compose.onAllNodesWithTag("resource_setting_dialog").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithTag("app_popup_window").assertDoesNotExist()
+        compose.onNodeWithTag("resource_setting_cancel").performClick()
+    }
+
+    @Test fun resourceTransferShowsByteProgressAndKeepsFailureOnItsOwnRow() {
+        val rows = GeoResourceType.entries.map { ResourceUpdateRow(ResourceKind.GEO, it.name, it.name, it.defaultUrl, size = 1234567) }
+        var state by mutableStateOf(ResourceUpdatesState(loading = false, rows = rows,
+            updating = setOf("GEO:MMDB"), transfers = mapOf("GEO:MMDB" to ResourceDownloadProgress(512 * 1024, 2 * 1024 * 1024)),
+            failures = listOf(ResourceUpdateFailure("ASN", "该行的失败原因", "GEO:ASN"))))
+        compose.setContent { KClashTheme { ResourcesPage(state, {}, {}, {}, {}, {}, {}) } }
+        compose.onNodeWithText("已下载", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("resource_progress_GEO:MMDB").assertExists()
+        compose.onNodeWithTag("resource_error_GEO:ASN").assertIsDisplayed()
+        compose.onNodeWithTag("resource_error_GEO:MMDB").assertDoesNotExist()
+        compose.onNodeWithTag("resources_failures").assertDoesNotExist()
+        capture("resource_download_progress")
     }
 
     @Test fun iconSetPreviewAndGroupPickerUseGalleryNamesAndSelection() {

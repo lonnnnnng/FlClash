@@ -13,6 +13,36 @@ import org.junit.Test
 
 class SubscriptionClientTest {
     @Test
+    fun `reports real body bytes while downloading with the response length`() = runBlocking {
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        val body = ByteArray(64 * 1024) { (it % 251).toByte() }
+        server.createContext("/profile") { exchange ->
+            exchange.sendResponseHeaders(200, body.size.toLong())
+            exchange.responseBody.use { output ->
+                var offset = 0
+                while (offset < body.size) {
+                    val end = minOf(offset + 8 * 1024, body.size)
+                    output.write(body, offset, end - offset); output.flush(); Thread.sleep(65)
+                    offset = end
+                }
+            }
+        }
+        server.executor = Executors.newSingleThreadExecutor()
+        server.start()
+        val progress = Collections.synchronizedList(mutableListOf<ResourceDownloadProgress>())
+        try {
+            val result = HttpSubscriptionClient().download(
+                URI("http://127.0.0.1:${server.address.port}/profile").toURL().toString(), progress::add,
+            )
+            assertArrayEquals(body, result.bytes)
+            assertTrue("至少报告开始和结束", progress.size >= 2)
+            assertEquals(body.size.toLong(), progress.last().downloadedBytes)
+            assertEquals(body.size.toLong(), progress.last().totalBytes)
+            assertTrue(progress.zipWithNext().all { (a, b) -> b.downloadedBytes >= a.downloadedBytes })
+        } finally { server.stop(0) }
+    }
+
+    @Test
     fun `follows an http redirect before reading subscription bytes`() = runBlocking {
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         val userAgents = Collections.synchronizedList(mutableListOf<String>())

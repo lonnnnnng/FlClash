@@ -11,6 +11,16 @@ internal inline fun <T> menuTrace(name: String, block: () -> T): T {
     return try { block() } finally { android.os.Trace.endSection() }
 }
 
+private val menuTraceSequence = java.util.concurrent.atomic.AtomicInteger()
+
+/** 作者 long：协程跨帧不能用线程同步slice圈定；仅诊断R8包记录完整窗口阶段，并在反转/取消时成对结束。 */
+internal suspend fun <T> menuWindowTrace(name: String, block: suspend () -> T): T {
+    if (!BuildConfig.MENU_TRACE || android.os.Build.VERSION.SDK_INT < 29) return block()
+    val cookie = menuTraceSequence.incrementAndGet()
+    android.os.Trace.beginAsyncSection(name, cookie)
+    return try { block() } finally { android.os.Trace.endAsyncSection(name, cookie) }
+}
+
 internal fun Modifier.menuTraceMeasure(name: String): Modifier =
     if (BuildConfig.MENU_TRACE) then(MenuTraceMeasure(name)) else this
 

@@ -190,12 +190,14 @@ class ScriptRepository(
         }
     }
 
-    override suspend fun sync(id: Long): Script = withContext(Dispatchers.IO) {
+    override suspend fun sync(id: Long): Script = sync(id) {}
+
+    suspend fun sync(id: Long, onProgress: (ResourceDownloadProgress) -> Unit): Script = withContext(Dispatchers.IO) {
         val original = readDocument(id)
         val current = original.script
         val url = current.url.takeIf { it.isNotBlank() }
             ?: throw IllegalArgumentException("本地脚本没有远程地址")
-        val downloaded = scriptClient.download(url)
+        val downloaded = scriptClient.download(url, onProgress)
         val normalizedContent = decodeScriptBytes(downloaded.bytes)
         writeScript(id) {
             val latest = requireNotNull(scriptDao.getById(id)) { "脚本已删除" }.toDomain()

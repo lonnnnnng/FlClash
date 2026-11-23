@@ -6,9 +6,12 @@ import android.content.Context
 import android.text.format.DateUtils
 import android.text.format.Formatter
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -35,38 +38,46 @@ internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, o
     var editingGeo by rememberSaveable { mutableStateOf<String?>(null) }
     var editingInterval by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) { onRefresh() }
-    ProfileEditorPage(onDismissRequest = onDismiss, title = { Text(tr("资源")) }, backTag = "resources_back",
+    ProfileEditorPage(onDismissRequest = onDismiss, title = { Text(tr("资源"), Modifier.padding(start = 4.dp), style = MaterialTheme.typography.titleMedium) }, backTag = "resources_back",
+        toolbarHeight = 72.dp, navigationButtonSurface = true, navigationButtonSize = 40.dp,
         confirmButton = {
-            IconButton(onClick = onSyncAll, enabled = !state.loading && state.updating.isEmpty(), modifier = Modifier.testTag("resources_update_all")) {
+            IconButton(onClick = onSyncAll, enabled = !state.loading && state.updating.isEmpty(), modifier = Modifier.padding(end = 16.dp).size(44.dp).background(dashboardCardColor(), CircleShape).testTag("resources_update_all")) {
                 if (state.updating.isNotEmpty()) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                else Icon(Icons.Outlined.Sync, null)
+                else AppGlyphIcon(AppGlyphs.sync)
             }
         }, text = {
-            LazyColumn(Modifier.fillMaxSize().testTag("resources_page"), contentPadding = PaddingValues(bottom = 24.dp)) {
+            LazyColumn(Modifier.fillMaxSize().testTag("resources_page"), contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp)) {
                 if (state.loading) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
                 item {
-                    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                        Column {
-                            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Text(tr("自动更新"), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                                Switch(state.settings.autoUpdate, { onSettings(state.settings.copy(autoUpdate = it)) },
-                                    enabled = !state.settingsBusy && state.updating.isEmpty(), modifier = Modifier.testTag("resources_auto_update"))
+                    ProfileFormSection(contentPadding = PaddingValues(0.dp), spacing = 0.dp) {
+                        val enabled = !state.settingsBusy && state.updating.isEmpty()
+                        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(enabled) {
+                            onSettings(state.settings.copy(autoUpdate = !state.settings.autoUpdate))
+                        }.padding(horizontal = 16.dp).testTag("resources_auto_update_row"), verticalAlignment = Alignment.CenterVertically) {
+                            Text(tr("自动更新"), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                            Switch(state.settings.autoUpdate, { onSettings(state.settings.copy(autoUpdate = it)) },
+                                enabled = enabled, modifier = Modifier.testTag("resources_auto_update"))
+                        }
+                        if (state.settings.autoUpdate) {
+                            ProfileFormDivider()
+                            Column(Modifier.fillMaxWidth().heightIn(min = 62.dp).clickable(enabled) { editingInterval = true }
+                                .padding(horizontal = 16.dp, vertical = 10.dp)) {
+                                Text(tr("资源更新周期"), style = MaterialTheme.typography.bodyLarge)
+                                Text(tr("{0} 小时", state.settings.intervalHours), style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            if (state.settings.autoUpdate) ListItem(
-                                headlineContent = { Text(tr("资源更新周期")) }, supportingContent = { Text(tr("{0} 小时", state.settings.intervalHours)) },
-                                modifier = Modifier.combinedClickable(enabled = !state.settingsBusy && state.updating.isEmpty(), onClick = { editingInterval = true }),
-                                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow))
                         }
                     }
                 }
                 if (state.settingsBusy) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp)) }
                 state.message?.let { message -> item { Text(tr(message), Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.primary) } }
-                if (state.failures.isNotEmpty()) item {
+                val globalFailures = state.failures.filter { it.rowKey == null }
+                if (globalFailures.isNotEmpty()) item {
                     Surface(color = MaterialTheme.colorScheme.errorContainer, shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag("resources_failures")) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(tr("{0} 项操作未完成", state.failures.size), style = MaterialTheme.typography.titleSmall)
-                            state.failures.forEach { Text("${it.label}：${tr(it.message)}", style = MaterialTheme.typography.bodyMedium) }
+                            Text(tr("{0} 项操作未完成", globalFailures.size), style = MaterialTheme.typography.titleSmall)
+                            globalFailures.forEach { Text("${it.label}：${tr(it.message)}", style = MaterialTheme.typography.bodyMedium) }
                             TextButton(onClick = onClearFeedback) { Text(tr("关闭提示")) }
                         }
                     }
@@ -75,11 +86,12 @@ internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, o
                     val rows = state.rows.filter { it.kind == kind }
                     if (rows.isNotEmpty()) {
                         item(key = "header_$kind") { Text(when (kind) {
-                            ResourceKind.GEO -> tr("Geo 资源"); ResourceKind.ICONS -> tr("图标集"); ResourceKind.RULE -> tr("规则资源"); ResourceKind.SCRIPT -> tr("脚本")
-                        }, Modifier.padding(top = 24.dp, bottom = 8.dp, start = 12.dp), style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary) }
-                        items(rows, key = { it.key }) { row ->
-                            ResourceOverviewRow(row, row.key in state.updating, onSync = { onSync(row) },
+                            ResourceKind.GEO -> "Geo"; ResourceKind.ICONS -> tr("图标集"); ResourceKind.RULE -> tr("规则资源"); ResourceKind.SCRIPT -> tr("脚本")
+                        }, Modifier.padding(top = 24.dp, bottom = 13.dp, start = 16.dp), style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                        itemsIndexed(rows, key = { _, row -> row.key }) { index, row ->
+                            ResourceOverviewRow(row, row.key in state.updating, state.transfers[row.key],
+                                state.failures.firstOrNull { it.rowKey == row.key }, index == 0, index == rows.lastIndex, onSync = { onSync(row) },
                                 onEdit = if (kind == ResourceKind.GEO) ({ editingGeo = row.id }) else null,
                                 onCopy = { (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
                                     .setPrimaryClip(ClipData.newPlainText(tr("资源链接"), row.url)) })
@@ -105,31 +117,67 @@ internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, o
 }
 
 @Composable
-private fun ResourceOverviewRow(row: ResourceUpdateRow, updating: Boolean, onSync: () -> Unit, onEdit: (() -> Unit)?, onCopy: () -> Unit) {
+private fun ResourceOverviewRow(row: ResourceUpdateRow, updating: Boolean, progress: ResourceDownloadProgress?, failure: ResourceUpdateFailure?,
+    first: Boolean, last: Boolean, onSync: () -> Unit, onEdit: (() -> Unit)?, onCopy: () -> Unit) {
     var menu by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
+    val anchor = remember(row.key) { AppContextMenuAnchor() }
+    // 作者 long：每行仍由Lazy列表独立回收，只在分组首尾裁圆角；同步状态不能改变卡片边界或挤动邻行。
+    Surface(color = dashboardCardColor(), shape = AppSuperellipseShape(
+        topStart = if (first) 24.dp else 0.dp, topEnd = if (first) 24.dp else 0.dp,
+        bottomStart = if (last) 24.dp else 0.dp, bottomEnd = if (last) 24.dp else 0.dp)) {
         Box {
-            Row(Modifier.fillMaxWidth().testTag("resource_${row.key}").combinedClickable(
-                onClick = { onEdit?.invoke() ?: run { menu = true } }, onLongClick = { menu = true }).padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(row.label, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(row.updatedAt?.let { tr("更新于 {0}", DateUtils.getRelativeTimeSpanString(it)) } ?: tr("未知"),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                if (updating) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                else (row.count?.let { "$it" } ?: row.size?.let { Formatter.formatShortFileSize(context, it) })?.let { size ->
-                    Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = MaterialTheme.shapes.small) {
-                        Text(size, Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column {
+                Row(Modifier.fillMaxWidth().heightIn(min = 62.dp).testTag("resource_${row.key}")
+                    .appContextMenuAnchor(anchor) { menu = true }.combinedClickable(
+                    onClick = { onEdit?.invoke() ?: run { anchor.open(fromKeyboard = true); menu = true } },
+                    onLongClick = { anchor.open(); menu = true }).padding(horizontal = 16.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(row.label, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(row.updatedAt?.let { DateUtils.getRelativeTimeSpanString(it).toString() } ?: tr("未知"),
+                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (progress != null) {
+                        val downloaded = Formatter.formatShortFileSize(context, progress.downloadedBytes)
+                        val total = progress.totalBytes
+                        val fraction = progress.fraction
+                        Text(if (total != null && fraction != null)
+                            tr("已下载 {0} / {1}", downloaded, Formatter.formatShortFileSize(context, total))
+                            else tr("已下载 {0}", downloaded), Modifier.widthIn(max = 180.dp).testTag("resource_transfer_label_${row.key}"),
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                    } else if (updating) CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                    else (row.count?.let { "$it" } ?: row.size?.let { Formatter.formatShortFileSize(context, it) })?.let { size ->
+                        Surface(color = dashboardCardColor(), shape = MaterialTheme.shapes.small) {
+                            Text(size, Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 }
+                if (progress != null) {
+                    val fraction = progress.fraction
+                    if (fraction == null) LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(2.dp)
+                        .testTag("resource_progress_${row.key}"))
+                    else LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(2.dp)
+                        .testTag("resource_progress_${row.key}"))
+                }
+                if (failure != null) {
+                    Text(tr(failure.message), Modifier.fillMaxWidth().testTag("resource_error_${row.key}")
+                        .padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 10.dp),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
             }
-            DropdownMenu(menu, { menu = false }) {
-                if (!updating) DropdownMenuItem(text = { Text(tr("同步")) }, leadingIcon = { Icon(Icons.Outlined.Sync, null) }, onClick = { menu = false; onSync() })
-                if (onEdit != null && !updating) DropdownMenuItem(text = { Text(tr("编辑")) }, leadingIcon = { Icon(Icons.Outlined.Edit, null) }, onClick = { menu = false; onEdit() })
-                DropdownMenuItem(text = { Text(tr("复制链接")) }, leadingIcon = { Icon(Icons.Outlined.ContentCopy, null) }, onClick = { menu = false; onCopy() })
+            if (!last) HorizontalDivider(Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))
+            AppDropdownMenu(menu, { menu = false }, anchor = anchor.point, carriedPointer = anchor.carry,
+                placement = AppMenuPlacement.BELOW_POINT, avoid = anchor.bounds) {
+                if (!updating) AppDropdownMenuItem(text = { Text(tr("同步")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.sync) },
+                    onClick = { menu = false; onSync() })
+                if (onEdit != null && !updating) AppDropdownMenuItem(text = { Text(tr("编辑")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
+                    onClick = { menu = false; onEdit() })
+                AppDropdownMenuItem(text = { Text(tr("复制链接")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.copy) },
+                    onClick = { menu = false; onCopy() })
             }
         }
     }

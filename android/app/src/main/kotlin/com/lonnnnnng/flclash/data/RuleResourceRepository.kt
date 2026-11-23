@@ -156,9 +156,9 @@ class RuleResourceRepository @Inject constructor(
             }
         } finally { if (!committed) discardFile(staged.fileName) }
     }
-    suspend fun sync(expected: RuleResource): RuleResource {
+    suspend fun sync(expected: RuleResource, onProgress: (ResourceDownloadProgress) -> Unit = {}): RuleResource = withContext(Dispatchers.IO) {
         require(expected.url.isNotBlank()) { "本地资源没有远程地址" }
-        return save(expected.label, expected.url, null, expected)
+        save(expected.label, expected.url, client.download(expected.url, onProgress).bytes, expected)
     }
     suspend fun delete(expected: RuleResource) = withContext(Dispatchers.IO) {
         lock.withLock {

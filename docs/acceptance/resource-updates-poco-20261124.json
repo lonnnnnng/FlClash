@@ -1,0 +1,150 @@
+{
+  "id": "KUI-VIS-096-resource-updates",
+  "date": "2026-11-24",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36
+  },
+  "publicVersion": "0.1.18/code1018",
+  "source": {
+    "startingCommit": "f6f106391bec60f1c7ba3084979b864e9d5f889c",
+    "branch": "kotlin",
+    "upstreamFlutterRef": "afe7136002271fd64f098b154e7fff40be721eb8",
+    "mihomoProgressCommit": "d4877e3e"
+  },
+  "scope": {
+    "completed": [
+      "Tools > Resources overview layout and actual page/menu/input transitions",
+      "Resource-keyed inline update failures and per-row retry clearing",
+      "Actual read-byte and Content-Length progress for Geo, icon sets, rule resources, and scripts",
+      "R8 MainActivity menu open/close trace attribution"
+    ],
+    "themeLanguageUpdateChecking": "Kept at current Kotlin behavior per user instruction",
+    "glass": "Disabled"
+  },
+  "buildArtifacts": {
+    "releaseUnsignedApk": {
+      "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+      "sha256": "115edc86ce11cdf07efec42f7a0d315d558bf77136e91406a1f245b94427eda3",
+      "bytes": 49621337
+    },
+    "motionApkSha256": "17502b72f500aced2bf777f04d0d7d323f8a31ac10bf65433306fa754dbf72c5",
+    "motionAndroidTestApkSha256": "2005afbcc7359aa416cd5ae6d18203975f126c33e0bd095592c3ab090dfd8c48",
+    "performanceBenchmarkApkSha256": "a2ab9e207a800e9cfe4415e4fe8a357cae716a53679ad3c22e2c6f4be5368f50",
+    "mlKitReleaseDexGate": "passed"
+  },
+  "checks": {
+    "jvm": {
+      "ResourceDownloadProgressTest": "1/1",
+      "SubscriptionClientTest": "2/2",
+      "CoreBridgeParsingTest": "39/39"
+    },
+    "go": {
+      "mihomoUpdaterRace": "go test -race ./component/updater ./component/resource passed",
+      "kotlinCoreGeoAndMessageTests": "go test . -run 'TestGeo|TestClassOfMessageRoutesEachTier' passed",
+      "wholeKotlinCoreModule": "Not green: existing TestFilterPresetsMatchTheirNamesOnly expects ../lib/models/config.dart, which is absent from the Kotlin checkout"
+    },
+    "device": {
+      "ResourcesPageInstrumentedTest": "3/3",
+      "ResourceInputMotionInstrumentedTest": "1/1",
+      "progressScreenshotTest": "1/1",
+      "naturalResourceInputRoute": "Passed on POCO; no sync/download action",
+      "isolatedMotionSettings": "Restored to exact original preference keys/values; STOPPED"
+    },
+    "geoLiveDeviceBoundary": "GeoResourcesHostInstrumentedTest could not reach its download path because the isolated Motion database has no active profile. It failed at activeProfile() with '没有可用配置' before changing settings or issuing a request. No config was imported to bypass this precondition.",
+    "build": {
+      "debug": "assembleDebug and lintDebug passed",
+      "release": "unsigned Release-R8 and lintRelease passed",
+      "motion": "Motion app/test APKs and lintMotionBenchmark passed",
+      "performanceBenchmark": "R8 diagnostic APK with MENU_TRACE passed",
+      "lint": "Debug, Release, and Motion: 0 errors, 11 warnings, 1 hint each",
+      "releaseMlKitDexGate": "Passed; all three registrars have public no-arg constructors"
+    }
+  },
+  "deviceProtection": {
+    "productionPackage": "com.lonnnnnng.flclash",
+    "productionPidBeforeAndAfter": "20700",
+    "formalVpnStoppedOrRestarted": false,
+    "formalProfileOrPreferenceChanged": false,
+    "authorized1YamlReadOrChanged": false,
+    "originalFlutterPackageChanged": false,
+    "isolatedTestPackagesRemoved": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.performance"
+    ],
+    "ownedOldDeviceVideosRemovedAfterHashMatch": [
+      "vis096-kotlin-resource-route.mp4",
+      "vis096-flutter-resources-final.mp4"
+    ],
+    "releaseInstalledOrPublished": false
+  },
+  "r8MenuTrace": {
+    "package": "com.lonnnnnng.flclash.performance",
+    "tracePath": "../acceptance-artifacts/rule-resources-poco-20261123/r8-menu-final-20261124/menu.perfetto-trace",
+    "analysisFiles": "../acceptance-artifacts/rule-resources-poco-20261123/r8-menu-final-20261124/",
+    "apkSha256": "a2ab9e207a800e9cfe4415e4fe8a357cae716a53679ad3c22e2c6f4be5368f50",
+    "traceSha256": "d96ae0eeb9274f66f2247c4f3a859075dc986e930ab5f5ccaeae99bb69cde38a",
+    "traceBytes": 8665882,
+    "cycles": 3,
+    "phaseWallMs": {
+      "open": [459.87, 443.707, 526.513],
+      "close": [535.096, 541.558, 538.007],
+      "detach": [30.567, 30.336, 31.664]
+    },
+    "openFrameTimelineSlices": {
+      "onTime": 50,
+      "bufferStuffing": 25,
+      "droppedFrame": 7,
+      "appDeadlineMissed": 2,
+      "appDeadlineMissedAndBufferStuffing": 2
+    },
+    "frameCountsArePopupLayerSlices": true,
+    "closeFrameTimelineSlices": {
+      "bufferStuffingLatePresent": 93
+    },
+    "threadAttribution": "For matched open deadline frames, UI Choreographer Running averaged 21-29 ms while matched RenderThread Running was about 0.1-0.2 ms. A matched slow UI root included traversal, animation, Recomposer, popup measure, and draw slices. Dropped frames did not match shader_compile or waitForBufferRelease; not attributed.",
+    "bufferWait": {
+      "closeWaitForBufferReleaseSlices": 77,
+      "closeWaitForBufferReleaseWallMs": 89.75,
+      "interpretation": "Observed, but about 1 ms per close frame and not established as the dominant cause"
+    },
+    "gpuFence": {
+      "dmaFenceWaitStartEndEvents": 0,
+      "dmaFenceSignaledEvents": 678,
+      "frameTimelineLatchedFenceState": "NULL on popup frames",
+      "interpretation": "GPU/fence wait attribution remains open"
+    },
+    "traceIntegrity": {
+      "globalTracedChunksDiscarded": 33,
+      "globalDiscardedOwner": "Unknown; idx is NULL and no per-producer owner is exposed",
+      "localBufferDiscardedOverwrittenAndReadGap": 0,
+      "flushFailed": 0,
+      "finalFlushFailed": 0,
+      "interpretation": "Do not attribute global discarded count to KClash or claim complete trace"
+    },
+    "performanceConclusion": "No stable single cause or performance gain claimed. An earlier capture showed shader compilation in some opening misses; the final capture instead showed UI traversal/animation, so shader compilation is not a repeatable explanation."
+  },
+  "media": {
+    "resourcePageNaturalVideo": {
+      "path": "../acceptance-artifacts/resource-updates-poco-20261124/kotlin-natural-final/resources-natural.mp4",
+      "sha256": "52157526c6360980fd64ee578515d0671d51082cf3e46b759eda5010565fbc9a",
+      "bytes": 9539361,
+      "frames": 468,
+      "ptsMonotonic": true
+    },
+    "progressScreenshot": {
+      "path": "../acceptance-artifacts/resource-updates-poco-20261124/device-progress-final2/resource_download_progress.png",
+      "sha256": "ca10e5e6ebf9e0d37703baa1df21a3ff61158ff31c35b21dee3845e0fb5129c6",
+      "width": 1080,
+      "height": 2400
+    },
+    "flutterReferenceVideo": "../acceptance-artifacts/rule-resources-poco-20261123/flutter-resources-route-final.mp4"
+  },
+  "release": {
+    "versionChanged": false,
+    "tagCreated": false,
+    "githubReleaseWorkflowTriggered": false
+  }
+}

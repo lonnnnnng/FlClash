@@ -933,7 +933,9 @@ class CoreBridge {
                     val data = raw.objectValue("data") ?: return@runCatching null
                     val resource = data.string("type")
                     if (resource !in setOf("MMDB", "ASN", "GEOIP", "GEOSITE")) return@runCatching null
-                    CoreEvent.GeoUpdate(resource, data.bool("updating"), data.bool("skipped"), data.string("error"))
+                    CoreEvent.GeoUpdate(resource, data.bool("updating"), data.bool("skipped"), data.string("error"),
+                        data.long("downloaded").coerceAtLeast(0), data.long("total").takeIf { it > 0 },
+                        data.long("attempt").coerceIn(1, Int.MAX_VALUE.toLong()).toInt())
                 }
                 "delay" -> {
                     val data = raw.objectValue("data") ?: return@runCatching null
@@ -1026,7 +1028,8 @@ data class CoreEventFlowStats(
 )
 
 sealed interface CoreEvent {
-    data class GeoUpdate(val type: String, val updating: Boolean, val skipped: Boolean = false, val error: String = "") : CoreEvent
+    data class GeoUpdate(val type: String, val updating: Boolean, val skipped: Boolean = false, val error: String = "",
+        val downloadedBytes: Long = 0, val totalBytes: Long? = null, val attempt: Int = 1) : CoreEvent
     data class Request(val connection: CoreConnection) : CoreEvent
 
     data class RequestTraffic(val updates: List<CoreTrafficUpdate>) : CoreEvent

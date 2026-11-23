@@ -66,6 +66,7 @@
     <string name="text_07c6f802d368" formatted="false">"All addresses"</string>
     <string name="text_07cb32ff97f6" formatted="false">"The core returned no proxy chain"</string>
     <string name="text_07ec86e0f1d4" formatted="false">"Created"</string>
+    <string name="text_081b50667b4f" formatted="false">"Downloaded {0} / {1}"</string>
     <string name="text_082b63461a10" formatted="false">"Icons already applied to profiles will be kept."</string>
     <string name="text_0849e2fd0ced" formatted="false">"Script library"</string>
     <string name="text_0853bf3c0144" formatted="false">"Dashboard"</string>
@@ -1372,6 +1373,7 @@
     <string name="text_9f07d2ce4115" formatted="false">"More actions"</string>
     <string name="text_9f1151ae6445" formatted="false">"Batch latency test concurrency must be greater than 0."</string>
     <string name="text_9f23ef5945af" formatted="false">"Imported resources are kept if the operation fails or is cancelled."</string>
+    <string name="text_9f570d2d8f99" formatted="false">"Downloaded {0}"</string>
     <string name="text_9f63e47a16dd" formatted="false">"The backup is missing resource settings"</string>
     <string name="text_9f6fee1aba17" formatted="false">"Language"</string>
     <string name="text_a051c936f0c4" formatted="false">"Import from clipboard"</string>
