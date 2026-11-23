@@ -2,6 +2,8 @@ package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -40,51 +42,135 @@ private fun ProfileDnsOverrides.changed(key: String, value: JsonElement?): Profi
 internal fun GlobalDnsSettingsPanel(settings: ProfileDnsOverrides, busy: Boolean, saving: Boolean = false,
     onSave: (ProfileDnsOverrides, (Boolean) -> Unit) -> Unit) {
     var adding by rememberSaveable { mutableStateOf(false) }
+    var addQuery by rememberSaveable { mutableStateOf("") }
+    var pendingKey by rememberSaveable { mutableStateOf<String?>(null) }
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     val fields = settings.toJson()
     fun remove(key: String) { onSave(settings.changed(key, null)) { if (!it) error = "移除失败，请重试" } }
     Column(Modifier.fillMaxWidth().testTag("page_global_dns"), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(tr("为普通配置设置 DNS 覆盖，未添加的字段沿用配置；自定义配置使用自己的 DNS。"),
-            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
         if (saving) Row(Modifier.fillMaxWidth().testTag("global_dns_saving"), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
             Text(tr("正在保存并应用 DNS 设置…"), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error) }
-        listOf(tr("选项") to listOf("listen", "ipv6", "enhanced-mode"), "Fake-IP" to listOf("fake-ip-filter", "fake-ip-filter-mode"),
-            "Nameserver" to GlobalDnsSettings.keys.filter { it in GlobalDnsSettings.listKeys && it != "fake-ip-filter" }).forEach { (section, keys) ->
-            if (keys.any(fields::has)) {
-                Text(section, Modifier.padding(top = 12.dp), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleSmall)
-                keys.filter(fields::has).forEach { key ->
-                    Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { editing = key }.testTag("global_dns_$key")
-                        .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                            Text(dnsLabels.getValue(key))
-                            Text(fields.get(key).dnsText().ifEmpty { tr("空值覆盖") }, maxLines = 3,
-                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (key == "ipv6") Switch(fields.get(key).asBoolean, { enabled ->
-                            onSave(settings.changed(key, JsonPrimitive(enabled))) { if (!it) error = "保存失败，请重试" }
-                        }, enabled = !busy)
-                        IconButton({ remove(key) }, enabled = !busy, modifier = Modifier.testTag("global_dns_remove_$key")) {
-                            Icon(Icons.Outlined.RemoveCircleOutline, null)
-                        }
+        if (fields.size() == 0) {
+            Box(Modifier.fillMaxWidth().heightIn(min = 520.dp).testTag("global_dns_empty"), contentAlignment = Alignment.Center) {
+                Column(Modifier.widthIn(max = 344.dp).padding(horizontal = 28.dp, vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    ProfileEmptyIllustration(AppGlyphs.resources, extent = 120.dp, flutterPalette = true)
+                    Spacer(Modifier.height(16.dp))
+                    Text(tr("尚未添加 DNS 覆盖"), color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(8.dp))
+                    Text(tr("为普通配置设置 DNS 覆盖，未添加的字段沿用配置；自定义配置使用自己的 DNS。"),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    Spacer(Modifier.height(24.dp))
+                    FilledTonalButton({ addQuery = ""; adding = true }, enabled = !busy,
+                        modifier = Modifier.testTag("global_dns_add"), shape = AppSuperellipseShape(28.dp)) {
+                        Icon(Icons.Outlined.Add, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(tr("添加字段"))
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }
+        } else {
+            val sections = listOf(
+                tr("选项") to listOf("listen", "ipv6", "enhanced-mode"),
+                "Fake-IP" to listOf("fake-ip-filter", "fake-ip-filter-mode"),
+                "Nameserver" to GlobalDnsSettings.keys.filter { it in GlobalDnsSettings.listKeys && it != "fake-ip-filter" },
+            )
+            sections.forEach { (section, keys) ->
+                val existing = keys.filter(fields::has)
+                if (existing.isNotEmpty()) {
+                    Text(section, Modifier.padding(top = 12.dp), color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleSmall)
+                    existing.forEach { key ->
+                        Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { editing = key }.testTag("global_dns_$key")
+                            .padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                                Text(dnsLabels.getValue(key))
+                                Text(fields.get(key).dnsText().ifEmpty { tr("空值覆盖") }, maxLines = 3,
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            if (key == "ipv6") Switch(fields.get(key).asBoolean, { enabled ->
+                                onSave(settings.changed(key, JsonPrimitive(enabled))) { if (!it) error = "保存失败，请重试" }
+                            }, enabled = !busy)
+                            IconButton({ remove(key) }, enabled = !busy, modifier = Modifier.testTag("global_dns_remove_$key")) {
+                                Icon(Icons.Outlined.RemoveCircleOutline, null)
+                            }
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                }
+            }
+            Text(tr("未添加的 DNS 字段沿用配置；自定义配置使用自己的 DNS。"),
+                color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            OutlinedButton({ addQuery = ""; adding = true }, enabled = !busy && fields.size() < GlobalDnsSettings.keys.size,
+                modifier = Modifier.testTag("global_dns_add")) { Icon(Icons.Outlined.Add, null); Text(tr("添加字段")) }
         }
-        if (fields.size() == 0) Text(tr("尚未添加 DNS 覆盖"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-        OutlinedButton({ adding = true }, enabled = !busy && fields.size() < GlobalDnsSettings.keys.size,
-            modifier = Modifier.testTag("global_dns_add")) { Icon(Icons.Outlined.Add, null); Text(tr("添加字段")) }
     }
-    if (adding) AlertDialog(onDismissRequest = { if (!busy) adding = false }, title = { Text(tr("添加 DNS 字段")) }, text = {
-        Column { GlobalDnsSettings.keys.filterNot(fields::has).forEach { key ->
-            TextButton({ adding = false; editing = key }, enabled = !busy, modifier = Modifier.testTag("global_dns_add_$key")) { Text(dnsLabels.getValue(key)) }
-        } }
-    }, confirmButton = { TextButton({ adding = false }, enabled = !busy) { Text(tr("取消")) } })
+    if (adding) {
+        val scroll = rememberScrollState()
+        val remaining = GlobalDnsSettings.keys.filterNot(fields::has)
+        val terms = remember(addQuery) { addQuery.trim().split(Regex("\\s+")).filter(String::isNotEmpty) }
+        fun matches(key: String) = terms.all { (dnsLabels.getValue(key) + " " + key).contains(it, ignoreCase = true) }
+        val sections = listOf(
+            tr("选项") to listOf("listen", "ipv6", "enhanced-mode"),
+            "Fake-IP" to listOf("fake-ip-filter", "fake-ip-filter-mode"),
+            "Nameserver" to listOf("default-nameserver", "nameserver", "fallback", "proxy-server-nameserver", "direct-nameserver"),
+        )
+        // 作者 long：Flutter 在底部停靠可搜索的字段选择器；这里只统一选择层，不改变 DNS 校验与保存回执。
+        ConnectionModalSheet(
+            onDismiss = {
+                adding = false
+                addQuery = ""
+                pendingKey?.let { editing = it; pendingKey = null }
+            },
+            contentScrollState = scroll, isContentAtTop = { scroll.value == 0 }, avoidIme = true, restoreDetentAfterIme = true,
+            dismissAllowed = { !busy }, sheetTag = "global_dns_add_sheet",
+            handleHeight = 10.dp, handleWidth = 28.dp, handleVerticalOffset = 3.dp, floatingForm = true,
+        ) { requestDismiss ->
+            Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                ProfileFormHeader(tr("添加 DNS 字段"), requestDismiss, !busy, "global_dns_add_close") {}
+                val visibleSections = sections.mapNotNull { (section, keys) ->
+                    section to keys.filter { it in remaining && matches(it) }
+                }.filter { it.second.isNotEmpty() }
+                if (visibleSections.isEmpty()) Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(tr("没有匹配的字段"), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll)) {
+                    visibleSections.forEachIndexed { sectionIndex, (section, keys) ->
+                        if (sectionIndex > 0) Spacer(Modifier.height(16.dp))
+                        Text(section, Modifier.padding(start = 16.dp, top = 10.dp, bottom = 13.dp),
+                            style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Surface(shape = AppSuperellipseShape(24.dp),
+                            color = if (com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current)
+                                MaterialTheme.colorScheme.surfaceContainerHigh else dashboardCardColor()) {
+                            Column {
+                                keys.forEachIndexed { index, key ->
+                                    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(enabled = !busy) {
+                                        pendingKey = key
+                                        requestDismiss()
+                                    }.padding(horizontal = 16.dp).testTag("global_dns_add_$key"),
+                                        verticalAlignment = Alignment.CenterVertically) {
+                                        Text(dnsLabels.getValue(key), Modifier.weight(1f))
+                                    }
+                                    if (index < keys.lastIndex) HorizontalDivider(Modifier.padding(horizontal = 16.dp),
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .35f))
+                                }
+                            }
+                        }
+                    }
+                }
+                DockedProfileSearch(addQuery, { addQuery = it }, "global_dns_add_search", enabled = !busy,
+                    modifier = Modifier.padding(top = 12.dp),
+                    containerColor = if (com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current)
+                        MaterialTheme.colorScheme.surfaceContainerHighest else dashboardCardColor())
+                Spacer(Modifier.height(16.dp))
+            }
+        }
+    }
     editing?.let { key ->
         GlobalDnsFieldEditor(key, fields.get(key)?.dnsText() ?: dnsDefault(key), busy, saving,
             onDismiss = { editing = null }) { value, done ->

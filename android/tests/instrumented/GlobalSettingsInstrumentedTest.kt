@@ -66,14 +66,14 @@ class GlobalSettingsInstrumentedTest {
         compose.onNodeWithTag("global_dns_editor").assertDoesNotExist()
         compose.runOnIdle { assertEquals(emptyList<String>(), settings.nameserver) }
         compose.onNodeWithTag("global_dns_add").performScrollTo().performClick()
-        compose.onNodeWithTag("global_dns_add_fake-ip-filter-mode").performClick()
+        compose.onNodeWithTag("global_dns_add_fake-ip-filter-mode").performScrollTo().performClick()
         compose.onNodeWithTag("global_dns_option_whitelist").performClick()
         compose.runOnIdle { assertEquals("whitelist", settings.fakeIpFilterMode); dark = true }
         capture("global_dns_dark")
         compose.onNodeWithTag("global_dns_remove_nameserver").performScrollTo().performClick()
         compose.runOnIdle { assertNull(settings.nameserver); assertEquals(false, settings.ipv6) }
         compose.onNodeWithTag("global_dns_add").performScrollTo().performClick()
-        compose.onNodeWithTag("global_dns_add_listen").performClick()
+        compose.onNodeWithTag("global_dns_add_listen").performScrollTo().performClick()
         compose.onNodeWithTag("global_dns_save").performClick()
         compose.runOnIdle { assertEquals("", settings.listen) }
     }

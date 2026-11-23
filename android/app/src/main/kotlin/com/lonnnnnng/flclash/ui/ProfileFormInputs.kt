@@ -65,7 +65,7 @@ internal fun ProfileFormDivider() {
 /** 作者 long：紧凑表单标题固定居中，左右操作各留相同宽度，批量切换不能把标题推偏。 */
 @Composable
 internal fun ProfileFormHeader(title: String, onClose: () -> Unit, closeEnabled: Boolean,
-    closeTag: String, actions: @Composable RowScope.() -> Unit) {
+    closeTag: String, actionSurface: Boolean = true, actions: @Composable RowScope.() -> Unit) {
     val shape = AppSuperellipseShape(1000.dp)
     Box(Modifier.fillMaxWidth().height(58.dp).padding(start = 16.dp, end = 16.dp, bottom = 10.dp)) {
         IconButton(onClose, Modifier.align(Alignment.CenterStart).size(44.dp)
@@ -74,7 +74,7 @@ internal fun ProfileFormHeader(title: String, onClose: () -> Unit, closeEnabled:
         }
         Text(title, Modifier.align(Alignment.Center).padding(horizontal = 94.dp),
             style = MaterialTheme.typography.titleMedium, maxLines = 1)
-        Row(Modifier.align(Alignment.CenterEnd).background(profileInputSurfaceColor(), shape),
+        Row(Modifier.align(Alignment.CenterEnd).then(if (actionSurface) Modifier.background(profileInputSurfaceColor(), shape) else Modifier),
             verticalAlignment = Alignment.CenterVertically, content = actions)
     }
 }

@@ -1,0 +1,156 @@
+{
+  "id": "KUI-VIS-092",
+  "date": "2026-11-23",
+  "scope": "Global rules add form grouping and discard/reopen recovery",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait",
+    "glassEnabled": false
+  },
+  "source": {
+    "branch": "kotlin",
+    "head": "5a4e5e1b0a0879ab61c1cf9ac65a59d40aacc2c4",
+    "worktreeWasDirty": true,
+    "filesAtFinalRun": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalRulesPage.kt": "e52c7b3c9c4fa412e491448fc8aa9ace7d8313c74abc38a9fa62f5537709d58a",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileExtensionEditor.kt": "d0409ce2335d163834d149cb4671aae11463c5a25be90c7d7fa8f5c9d3039faf",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileFormInputs.kt": "6f5b27bce4b4d8766e1afdf520f0c4bc28efabe92589f14d05e69e38e72eda7e",
+      "android/tests/instrumented/GlobalSettingsHostInstrumentedTest.kt": "86444b8bcab04a9053069671f6842b06fdd5402f86d2925a50c65cfee6116e5a",
+      "android/tests/instrumented/GlobalRulesRecoveryInstrumentedTest.kt": "227d6373c16d67cb3edd336f6b9d52dec00ac7d5d6869cd70ad406b45a462690"
+    },
+    "otherDirtyFilesPreserved": true,
+    "flutterReferenceReadOnly": true
+  },
+  "flutterReference": {
+    "package": "com.follow.clash 0.9.4",
+    "source": "upstream/main:lib/views/config/rules.dart and upstream/main:lib/features/form/rule.dart",
+    "symbols": ["AddedRulesView", "RuleForm"],
+    "capture": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/flutter-refresh1/flutter-rule-form.png",
+    "dataChanged": false
+  },
+  "implementation": {
+    "basicInformation": "Rule type, content and split strategy now share one grouped surface with dividers and aligned rows; the leading labels and trailing values follow the Flutter form hierarchy.",
+    "trailingIndicators": "Type and split strategy use the vertical unfold indicator seen in the Flutter option rows.",
+    "rawRuleEditor": "Preserved as a secondary code action in the sheet header; the save action retains its separate circular surface.",
+    "defaultType": "Global rules add defaults to DOMAIN like Flutter; the Profile extension form remains DOMAIN-SUFFIX.",
+    "parameters": "The no-resolve switch is shown and serialized only for supported rule types."
+  },
+  "validation": {
+    "buildCommand": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "buildResult": "passed",
+    "motionApkSha256": "fc5144d6924abf8cddd9f8ca69bf3f3db5f49ecf4f113b645ddc95d7bdb74230",
+    "androidTestApkSha256": "2645e22d924b9ceb4f9ffa74478a2093e9971f1c3850b6b96c3201582108b438",
+    "lint": {
+      "command": "./gradlew :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1,
+      "report": "../../android/app/build/reports/lint-results-motionBenchmark.xml",
+      "reportSha256": "c29376f407ef117f1596c5f7754379b4c7cfdadaf72e2e39dc434b680544a337"
+    },
+    "buildLog": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final11/gradle-final.log",
+    "buildLogSha256": "bd17a12235a4e250283b3bb8dfbe71b15ac4fec450ee91daa48779d6241aaddd",
+    "instrumentationCommand": "ANDROID_SERIAL=31936bb6 ./gradlew :app:connectedMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles,com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#rulesFormReorderAndBatchDeletePersistTheDisplayedOrder,com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest#presetsKeepLogicalRuleAndNoncurrentProfileHasNoApplyButton -Pandroid.testInstrumentationRunnerArguments.kclashCapturePng=true -Pandroid.testInstrumentationRunnerArguments.kclashCapturePngChunks=true",
+    "instrumentation": {
+      "result": "passed",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "testResults": [
+        {
+          "test": "GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+          "durationSeconds": 15.392
+        },
+        {
+          "test": "ProfileExtensionEditorInstrumentedTest#rulesFormReorderAndBatchDeletePersistTheDisplayedOrder",
+          "durationSeconds": 2.737
+        },
+        {
+          "test": "ProfileExtensionEditorInstrumentedTest#presetsKeepLogicalRuleAndNoncurrentProfileHasNoApplyButton",
+          "durationSeconds": 1.366
+        }
+      ],
+      "junitXml": "../../android/app/build/outputs/androidTest-results/connected/motionBenchmark/TEST-POCO F2 Pro - 16.xml",
+      "junitXmlSha256": "7ed92d1c436942be1a1a88ef9a557a741933abc346463c60801a6ddd92f11fbc"
+    },
+    "screenshotCapture": {
+      "method": "AndroidJUnitRunner status stream from the exact MainActivity test",
+      "result": "passed",
+      "command": "adb -s 31936bb6 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles -e kclashCapturePng true -e kclashCapturePngChunks true com.lonnnnnng.flclash.motion.test/androidx.test.runner.AndroidJUnitRunner",
+      "runnerLog": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final11/instrumentation.txt",
+      "runnerLogSha256": "7887179a4814cfbda25d65bb6eebee245e8c9dbecbc1fba3080f93b4fc024337",
+      "junitResult": "passed 1/1"
+    },
+    "screenshots": {
+      "directory": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final11/",
+      "manifest": "screenshots.json",
+      "manifestSha256": "91c85a8ed4fa4c1157449cca1e4ed14e7041bf985cee17995ffdc98fe4ce4e63",
+      "passed": true,
+      "count": 9,
+      "resolution": "1080x2400",
+      "addRuleForm": {
+        "file": "global_rules_add_form.png",
+        "bytes": 89505,
+        "sha256": "bd994dd8d14d69ee15504b47a12dd580153c0a01bfb14988e5fa7994e4d9c73d",
+        "width": 1080,
+        "height": 2400
+      }
+    },
+    "continuousRecording": {
+      "method": "POCO screenrecord during the real MainActivity instrumentation route",
+      "result": "passed",
+      "routeRunLog": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final11/route-final12-instrumentation.txt",
+      "routeRunLogSha256": "b454f48c11c5851e101d0b1b5843ede0cec066afd3870aeb40dadc25a2477ee9",
+      "file": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final11/global-rules-route-complete.mp4",
+      "devicePath": "/sdcard/Movies/kclash-global-rules-route-final12.mp4",
+      "deviceReadbackSha256": "a67404a530ed46e087128e2a035965942e77c949570dc691f5693f85829704dc",
+      "localSha256": "a67404a530ed46e087128e2a035965942e77c949570dc691f5693f85829704dc",
+      "bytes": 10702725,
+      "durationSeconds": 28.810722,
+      "resolution": "1080x2400",
+      "codec": "H.264",
+      "decode": "passed",
+      "coverage": "The continuous run shows global-rules states, DNS settings, preset selection, add form, discard confirmation, and the saved/filtered list.",
+      "limits": "The clip starts on the restored global-rules route and has no synchronized Flutter recording or frame-by-frame parity claim.",
+      "deviceTemporaryFileRemoved": true
+    },
+    "dataProtection": {
+      "globalRulesRestored": true,
+      "globalDnsRestored": true,
+      "profileRowsAndSelectionUnchanged": true,
+      "runtime": "STOPPED",
+      "workspaceYamlRead": false
+    }
+  },
+  "preservation": {
+    "productionVersion": "0.1.16 / code 1016",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "flutterVersion": "0.9.4 / code 2026113907",
+    "flutterFirstInstallTime": "2026-11-07 02:44:08",
+    "flutterLastUpdateTime": "2026-11-22 14:21:51",
+    "flutterPackageChanged": false,
+    "motionAndTestPackagesAbsentAfterRun": true,
+    "rotationSettings": "accelerometer_rotation=1, user_rotation=0",
+    "originalYamlReadOrUploaded": false
+  },
+  "nonFinalAttempts": [
+    "The first final-source connected run failed because Android's POST_NOTIFICATIONS prompt covered MainActivity; granting it only to the isolated Motion package allowed the final 3/3 run.",
+    "The earlier JSON referenced intermediate source, JUnit and screenshot hashes; the final source hashes and artifacts were rebuilt and checked against the POCO run.",
+    "The initial empty-field assertion counted the placeholder as text; the final assertion reads EditableText and verifies the draft is empty.",
+    "An uninstall attempt returned DELETE_FAILED_INTERNAL_ERROR for the Motion test package after the Gradle test task had already removed it; final package-manager reads showed all Kotlin test packages absent."
+  ],
+  "limits": [
+    "This closes the form grouping, cancellation/reopen and continuous global-rules route slice, not complete application-wide Flutter parity.",
+    "The route recording is Kotlin-only; no synchronized Flutter recording or frame-by-frame transition comparison was made.",
+    "Menu discarded-owner, formal R8/MainActivity dropped-frame, GPU/fence and RenderThread attribution remain open; no stable performance gain is claimed.",
+    "Glass remains disabled by default."
+  ],
+  "next": "Continue matched Flutter/Kotlin comparisons for remaining subpages and panels; menu discarded-owner and GPU/fence attribution remain separate open items."
+}

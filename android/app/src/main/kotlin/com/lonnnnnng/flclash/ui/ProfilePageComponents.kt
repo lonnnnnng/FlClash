@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
 import com.lonnnnnng.flclash.R
@@ -55,11 +56,13 @@ internal fun ProfileEditorPage(
     bottomBar: (@Composable () -> Unit)? = null,
     topBarSearch: ProfileEditorSearchState? = null,
     navigationButtonSurface: Boolean = false,
+    navigationButtonSize: Dp = 44.dp,
     searchActionFirst: Boolean = false,
     containerColor: androidx.compose.ui.graphics.Color = dashboardPageColor(),
 ) {
     LocalEmbeddedProfilePage.current?.let { page ->
-        EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch)
+        EmbeddedProfileEditorPage(page, onDismissRequest, title, text, confirmButton, backTag, contentPadding, bottomBar, topBarSearch,
+            navigationButtonSize)
         return
     }
     val draftRegistry = rememberEditorWindowRegistry()
@@ -117,7 +120,7 @@ internal fun ProfileEditorPage(
                     },
                     navigationIcon = {
                         val modifier = if (navigationButtonSurface) {
-                            Modifier.padding(start = 12.dp).size(44.dp)
+                            Modifier.padding(start = 12.dp).size(navigationButtonSize)
                                 .background(dashboardCardColor(), CircleShape)
                         } else Modifier
                         IconButton(onClick = onDismissRequest, modifier = modifier.testTag(backTag)) {

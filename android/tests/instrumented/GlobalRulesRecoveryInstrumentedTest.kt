@@ -191,7 +191,7 @@ class GlobalRulesRecoveryInstrumentedTest {
         ins.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK); compose.waitForIdle()
         compose.onNodeWithText("放弃").performClick()
         compose.onNodeWithTag("global_rules_add").performClick()
-        compose.onNodeWithText("类型：DOMAIN-SUFFIX").performClick()
+        compose.onNodeWithTag("extension_rule_type").performClick()
         compose.onNodeWithText("MATCH", useUnmergedTree = true).performScrollTo().performClick()
         // 作者 long：类型菜单是另一个Window，等其退场完成后才记录表单令牌。
         compose.waitForIdle(); android.os.SystemClock.sleep(650)

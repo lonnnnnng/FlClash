@@ -1,0 +1,88 @@
+{
+  "id": "KUI-VIS-090",
+  "date": "2026-11-23",
+  "scope": "Global rules Activity recreation crash regression and committed-sheet exit",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait",
+    "glassEnabled": false
+  },
+  "source": {
+    "branch": "kotlin",
+    "head": "5a4e5e1b0a0879ab61c1cf9ac65a59d40aacc2c4",
+    "worktreeWasDirty": true,
+    "filesAtFinalRun": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalRulesPage.kt": "f515e2ff7151a748bff6a9e9cfe2cdcb33a0e1f6b4a7e83c119151f05cde56e8",
+      "android/tests/instrumented/GlobalSettingsHostInstrumentedTest.kt": "c42a39e3b5dc175b688ab1ecb4fc03c66ef8368825a75054d963aa55f57ee31e"
+    },
+    "otherDirtyFilesPreserved": true
+  },
+  "incident": {
+    "observedAt": "2026-11-23 07:27:55.284",
+    "package": "com.lonnnnnng.flclash.motion",
+    "exception": "java.lang.ClassCastException: androidx.compose.runtime.ParcelableSnapshotMutableState cannot be cast to androidx.compose.runtime.MutableLongState",
+    "stack": "com.lonnnnnng.flclash.ui.GlobalRulesPageKt.GlobalRulesPage(GlobalRulesPage.kt:59)",
+    "trigger": "MainActivity recreation while the global rules page was active",
+    "cause": "rememberSaveable restored the sort revision as ParcelableSnapshotMutableState while the caller expected MutableLongState."
+  },
+  "implementation": {
+    "change": "GlobalRulesPage sortVersion now uses rememberSaveable { mutableStateOf(0L) } so save and restore use the same state implementation.",
+    "regressionAssertion": "After recreation the test waits for extension_rule_confirm to leave the semantics tree before interacting with the rules list; this lets the committed editor sheet finish its exit transition before list assertions."
+  },
+  "flutterReference": {
+    "source": "upstream/main:lib/views/config/override.dart",
+    "symbol": "AddedRulesView",
+    "comparison": "Flutter keeps the query as ordinary StatefulWidget state and has no equivalent specialized Kotlin saveable long-state contract; the source was read-only and no Flutter code was merged or changed."
+  },
+  "validation": {
+    "command": "ANDROID_SERIAL=31936bb6 ./gradlew :app:connectedMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true -Pandroid.testInstrumentationRunnerArguments.class=com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+    "result": "passed",
+    "tests": 1,
+    "passed": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "durationSeconds": 10.69,
+    "report": "../../android/app/build/outputs/androidTest-results/connected/motionBenchmark/TEST-POCO F2 Pro - 16.xml",
+    "reportSha256": "5309988c574801204c321826ec0a39f8c57c430e52570fbfc73b1d0fb92de188",
+    "motionApkSha256": "ad856e6dbecf53763a256b74b12fc95c0dee8c0649f7e273266fed17e690237c",
+    "androidTestApkSha256": "ac82ba72b00117d728aa9ea92acef52881ef24b31a7809c4e59bfdd39acb9cf6",
+    "covered": [
+      "real MainActivity navigation to global DNS and global rules",
+      "save a rule, recreate Activity and read the committed Room value",
+      "committed editor sheet completes dismissal before returning to list assertions",
+      "restore global DNS, global rules, profile rows, selected profile and STOPPED runtime in finally"
+    ]
+  },
+  "nonFinalAttempts": [
+    {
+      "result": "The first post-fix run passed both Activity recreations but matched the saved rule text in the list and the still-exiting editor sheet; the test now waits for the sheet confirmation node to disappear before asserting the list."
+    },
+    {
+      "result": "A later launch was covered by Android POST_NOTIFICATIONS permission UI after package reinstall. The permission was temporarily granted only to the isolated Motion package for the final run; Motion and test packages were removed afterwards."
+    }
+  ],
+  "preservation": {
+    "productionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "originalFlutterPackage": "com.follow.clash 0.9.4",
+    "originalFlutterFirstInstallTime": "2026-11-07 02:44:08",
+    "originalFlutterLastUpdateTime": "2026-11-22 14:21:51",
+    "originalFlutterPackageChanged": false,
+    "motionAndTestPackagesAbsentAfterRun": true,
+    "runtime": "STOPPED",
+    "workspaceYamlRead": false
+  },
+  "limits": [
+    "This closes a Compose saveable-state crash regression and a page-state restoration assertion; it does not establish Flutter visual parity for the global rules page.",
+    "No full Flutter MainActivity comparison or continuous-transition recording was performed.",
+    "Menu dropped-frame, global Perfetto discarded owner and formal R8 GPU/fence attribution remain open; no stable performance gain is claimed.",
+    "Glass remains disabled by default."
+  ],
+  "next": "Continue a fixed-state Flutter comparison of a remaining real subpage and panel transition; keep MainActivity and Performance R8 menu attribution open."
+}

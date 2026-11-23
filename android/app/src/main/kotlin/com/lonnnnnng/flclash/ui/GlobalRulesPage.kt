@@ -1,16 +1,24 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -54,11 +62,13 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
     var selecting by rememberSaveable { mutableStateOf(false) }
     var sorting by rememberSaveable { mutableStateOf(false) }
     var sortSnapshot by rememberSaveable { mutableStateOf(emptyList<String>()) }
-    var sortVersion by rememberSaveable { mutableLongStateOf(0L) }
+    // 作者 long：Activity 重建时让保存器恢复同一种 State，避免专用长整型状态被还原成普通 ParcelableSnapshotMutableState。
+    var sortVersion by rememberSaveable { mutableStateOf(0L) }
     var form by rememberSaveable { mutableStateOf<String?>(null) }
     var originalValue by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingId by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingValue by rememberSaveable { mutableStateOf<String?>(null) }
+    var closeAfterSave by rememberSaveable { mutableStateOf(false) }
     var presets by rememberSaveable { mutableStateOf(false) }
     var delete by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var deleteVersion by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -66,13 +76,18 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
     val canChange = !busy && !state.interrupted
     val terms = query.lowercase().split(Regex("\\s+")).filter(String::isNotEmpty)
     val visible = state.rules.filter { rule -> terms.all { rule.value.contains(it, true) } }
+    val emptyOutline = remember {
+        // 作者 long：规则空态在Flutter使用圆角规则牌，cookie轮廓属于其他Prism空态，不能共用。
+        Path().apply { addRoundRect(RoundRect(Rect(0f, 0f, 1f, 1f), CornerRadius(.3f, .3f))) }
+    }
     LaunchedEffect(state.rules, state.saving, state.saveResultVersion, state.interrupted) {
         if (!state.loaded || state.loading) return@LaunchedEffect
         selected = selected.filter { id -> state.rules.any { it.id == id } }
         if (!state.saving && !state.interrupted) {
             if (delete.isNotEmpty() && state.rules.none { it.id in delete } && state.error == null) delete = emptyList()
             if (pendingId != null && state.rules.any { it.id == pendingId && it.value == pendingValue }) {
-                pendingId = null; pendingValue = null; form = null; originalValue = null
+                // 作者 long：提交成功后保持编辑Sheet到退场动画结束，不能在Room回执帧直接销毁窗口。
+                closeAfterSave = true
             }
             if (deleteVersion != null && state.saveResultVersion > deleteVersion!!) {
                 if (state.rules.none { it.id in delete }) delete = emptyList()
@@ -91,82 +106,115 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
         else if (query.isNotEmpty()) query = ""
         else onDismiss()
     }
-    ProfileEditorPage(::back, { Text(tr("附加规则")) }, {
-        Column(Modifier.fillMaxWidth().testTag("page_global_rules"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (!sorting) OutlinedTextField(query, { query = it }, singleLine = true, enabled = !busy,
-                label = { Text(tr("搜索规则")) }, modifier = Modifier.fillMaxWidth().testTag("global_rules_search"))
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(if (selecting) tr("已选 {0} 项", selected.size) else tr("共 {0} 条规则", state.rules.size), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
-                if (selecting) {
-                    IconButton({ selected = if (visible.all { it.id in selected }) emptyList() else visible.map { it.id } }, enabled = canChange,
-                        modifier = Modifier.testTag("global_rules_all")) { Icon(Icons.Outlined.SelectAll, null) }
-                    IconButton({ delete = selected.filter { id -> visible.any { it.id == id } } }, enabled = canChange && visible.any { it.id in selected },
-                        modifier = Modifier.testTag("global_rules_delete")) { Icon(Icons.Outlined.Delete, null) }
-                    IconButton({ selecting = false; selected = emptyList() }, enabled = !busy, modifier = Modifier.testTag("global_rules_cancel_selection")) { Icon(Icons.Outlined.Close, null) }
-                } else if (sorting) TextButton({ sorting = false; sortSnapshot = emptyList() }, enabled = !busy, modifier = Modifier.testTag("global_rules_sort_done")) { Text(tr("完成")) }
-                else {
-                    IconButton({ selecting = true }, enabled = canChange && visible.isNotEmpty(), modifier = Modifier.testTag("global_rules_select")) { Icon(Icons.Outlined.Checklist, null) }
-                    IconButton({ sorting = true; sortVersion = state.saveResultVersion; sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) } }, enabled = canChange && query.isBlank() && state.rules.size > 1, modifier = Modifier.testTag("global_rules_sort")) { Icon(Icons.Outlined.SwapVert, null) }
-                    IconButton({ presets = true }, enabled = canChange && state.loaded, modifier = Modifier.testTag("global_rules_presets")) { Icon(Icons.Outlined.AutoAwesome, null) }
-                    IconButton({ form = "new"; originalValue = null }, enabled = canChange && state.loaded, modifier = Modifier.testTag("global_rules_add")) { Icon(Icons.Outlined.Add, null) }
+    ProfileEditorPage(onDismissRequest = ::back, title = { Text(tr("附加规则"), Modifier.padding(start = 4.dp)) }, backTag = "global_rules_back",
+        navigationButtonSurface = true, navigationButtonSize = 40.dp,
+        confirmButton = {
+            if (!selecting && !sorting) Row(Modifier.padding(end = 12.dp), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                IconButton({ presets = true }, enabled = canChange && state.loaded,
+                    modifier = Modifier.size(40.dp).background(dashboardCardColor(), CircleShape).testTag("global_rules_presets")) {
+                    AppGlyphIcon(AppGlyphs.rules)
+                }
+                IconButton({ form = "new"; originalValue = null }, enabled = canChange && state.loaded,
+                    modifier = Modifier.size(40.dp).background(dashboardCardColor(), CircleShape).testTag("global_rules_add")) {
+                    AppGlyphIcon(AppGlyphs.addCircle)
                 }
             }
-            state.error?.let {
-                Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_rules_error"))
-                Row {
-                    if (state.interrupted) {
-                        TextButton(onRetryPending, enabled = !busy && !state.blocked, modifier = Modifier.testTag("global_rules_retry")) { Text(if (state.draft?.pending?.committed == true) tr("继续编辑") else tr("重试保存")) }
-                        TextButton(onDiscardPending, enabled = !busy, modifier = Modifier.testTag("global_rules_discard_pending")) { Text(tr("放弃这次保存")) }
-                    } else {
-                        TextButton(onReload, enabled = !busy, modifier = Modifier.testTag("global_rules_reload")) { Text(tr("重新读取")) }
+        },
+        bottomBar = { DockedProfileSearch(query, { query = it }, "global_rules_search", enabled = !busy) },
+        text = {
+            Column(Modifier.fillMaxWidth().testTag("page_global_rules"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (selecting || sorting) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (selecting) tr("已选 {0} 项", selected.size) else tr("共 {0} 条规则", state.rules.size),
+                        Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                    if (selecting) {
+                        IconButton({ selected = if (visible.all { it.id in selected }) emptyList() else visible.map { it.id } }, enabled = canChange,
+                            modifier = Modifier.testTag("global_rules_all")) { Icon(Icons.Outlined.SelectAll, null) }
+                        IconButton({ delete = selected.filter { id -> visible.any { it.id == id } } }, enabled = canChange && visible.any { it.id in selected },
+                            modifier = Modifier.testTag("global_rules_delete")) { Icon(Icons.Outlined.Delete, null) }
+                        IconButton({ selecting = false; selected = emptyList() }, enabled = !busy,
+                            modifier = Modifier.testTag("global_rules_cancel_selection")) { Icon(Icons.Outlined.Close, null) }
+                    } else TextButton({ sorting = false; sortSnapshot = emptyList() }, enabled = !busy,
+                        modifier = Modifier.testTag("global_rules_sort_done")) { Text(tr("完成")) }
+                }
+                state.error?.let {
+                    Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("global_rules_error"))
+                    Row {
+                        if (state.interrupted) {
+                            TextButton(onRetryPending, enabled = !busy && !state.blocked, modifier = Modifier.testTag("global_rules_retry")) {
+                                Text(if (state.draft?.pending?.committed == true) tr("继续编辑") else tr("重试保存"))
+                            }
+                            TextButton(onDiscardPending, enabled = !busy, modifier = Modifier.testTag("global_rules_discard_pending")) {
+                                Text(tr("放弃这次保存"))
+                            }
+                        } else TextButton(onReload, enabled = !busy, modifier = Modifier.testTag("global_rules_reload")) {
+                            Text(tr("重新读取"))
+                        }
                     }
                 }
-            }
-            if (state.draft?.applyPending == true && !state.interrupted) TextButton(onApply, enabled = !busy,
-                modifier = Modifier.testTag("global_rules_apply")) { Text(tr("应用到原配置")) }
-            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-            if (!busy && visible.isEmpty()) Text(if (query.isBlank()) tr("暂无附加规则") else tr("没有匹配的规则"), Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (sorting) {
-                val ordered = sortSnapshot.chunked(2).map { ExtensionRule(it[0], it[1]) }
-                ResourceOrderList(ordered.map { ResourceOrderItem(it.id, it.value, tr("长按调整顺序")) }, !canChange, "global_rules", { ids ->
-                    val byId = ordered.associateBy { it.id }
-                    save(ordered, ids.map { byId.getValue(it) })
-                }, Modifier.fillMaxWidth().weight(1f))
-                LaunchedEffect(state.saveResultVersion, state.saving, state.interrupted) {
-                    if (!state.saving && !state.interrupted && state.error == null && state.saveResultVersion > sortVersion) {
-                        sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) }; sortVersion = state.saveResultVersion
+                if (state.draft?.applyPending == true && !state.interrupted) TextButton(onApply, enabled = !busy,
+                    modifier = Modifier.testTag("global_rules_apply")) { Text(tr("应用到原配置")) }
+                if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (!busy && visible.isEmpty()) {
+                    if (query.isBlank()) BoxWithConstraints(Modifier.weight(1f).fillMaxWidth().testTag("global_rules_empty"),
+                        contentAlignment = Alignment.Center) {
+                        Column(Modifier.widthIn(max = 320.dp).offset(y = maxHeight * -.10f)
+                            .padding(horizontal = 32.dp, vertical = 24.dp)
+                            .verticalScroll(rememberScrollState()).testTag("global_rules_empty_content"),
+                            horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(Modifier.testTag("global_rules_empty_illustration")) {
+                                ProfileEmptyIllustration(AppGlyphs.rules, outline = emptyOutline, extent = 144.dp, flutterPalette = true)
+                            }
+                            Spacer(Modifier.height(16.dp))
+                            Text(tr("暂无规则"), Modifier.testTag("global_rules_empty_title"),
+                                color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                        }
+                    } else Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(tr("没有匹配的规则"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
-            } else LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("global_rules_list")) {
-                items(visible, key = { it.id }) { rule ->
-                    Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).clickable(enabled = canChange) {
-                        if (selecting) selected = if (rule.id in selected) selected - rule.id else selected + rule.id
-                        else { form = rule.id; originalValue = rule.value }
-                    }.padding(vertical = 12.dp).testTag("global_rule_${rule.id}"), verticalAlignment = Alignment.CenterVertically) {
-                        if (selecting) Checkbox(rule.id in selected, null, enabled = canChange)
-                        Text(rule.value, Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
-                        if (!selecting) Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else if (sorting) {
+                    val ordered = sortSnapshot.chunked(2).map { ExtensionRule(it[0], it[1]) }
+                    ResourceOrderList(ordered.map { ResourceOrderItem(it.id, it.value, tr("长按调整顺序")) }, !canChange, "global_rules", { ids ->
+                        val byId = ordered.associateBy { it.id }
+                        save(ordered, ids.map { byId.getValue(it) })
+                    }, Modifier.fillMaxWidth().weight(1f))
+                    LaunchedEffect(state.saveResultVersion, state.saving, state.interrupted) {
+                        if (!state.saving && !state.interrupted && state.error == null && state.saveResultVersion > sortVersion) {
+                            sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) }; sortVersion = state.saveResultVersion
+                        }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                } else LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("global_rules_list")) {
+                    items(visible, key = { it.id }) { rule ->
+                        Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).clickable(enabled = canChange) {
+                            if (selecting) selected = if (rule.id in selected) selected - rule.id else selected + rule.id
+                            else { form = rule.id; originalValue = rule.value }
+                        }.padding(vertical = 12.dp).testTag("global_rule_${rule.id}"), verticalAlignment = Alignment.CenterVertically) {
+                            if (selecting) Checkbox(rule.id in selected, null, enabled = canChange)
+                            Text(rule.value, Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
+                            if (!selecting) Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
                 }
             }
         }
-    }, backTag = "global_rules_back")
+    )
     form?.let { id ->
         val initial = originalValue?.let { ExtensionRule(id, it) }
         val actual = state.rules.firstOrNull { it.id == id }
         val ownResult = pendingId == id && actual?.value == pendingValue
         val conflict = if (state.blocked || id != "new" && !ownResult && actual != initial)
             tr("原规则已被修改或删除，草稿已保留，请返回后重新打开") else null
-        ExtensionRuleForm(initial, listOf("DIRECT", "REJECT", "REJECT-DROP", "PASS"), busy, state.error,
+        ExtensionRuleForm(initial, listOf("DIRECT", "REJECT", "REJECT-DROP", "PASS"), busy || ownResult, state.error,
             blockedMessage = conflict, onRetryPending = onRetryPending.takeIf { state.interrupted },
             onDiscardPending = onDiscardPending.takeIf { state.interrupted }, committed = state.draft?.pending?.committed == true,
-            onDismiss = { form = null; originalValue = null; pendingId = null; pendingValue = null; if (state.interrupted) onDiscardPending() }, onSave = { rule ->
+            onDismiss = { form = null; originalValue = null; pendingId = null; pendingValue = null; closeAfterSave = false; if (state.interrupted) onDiscardPending() }, onSave = { rule ->
                 if (conflict == null && canChange) {
                     pendingId = rule.id; pendingValue = rule.value
+                    closeAfterSave = false
                     save(state.rules, if (id == "new") state.rules + rule else state.rules.map { if (it.id == id) rule else it })
                 }
-            })
+            }, sheetPresentation = true, sheetCloseRequested = closeAfterSave, defaultType = "DOMAIN")
     }
     if (presets) ExtensionPresets({ presets = false }) { values ->
         presets = false

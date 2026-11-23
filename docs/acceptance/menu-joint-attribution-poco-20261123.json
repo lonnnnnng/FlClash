@@ -50,6 +50,25 @@
       "interpretation": "The session-local ring buffer reports no discarded or overwritten chunks. The global traced_chunks_discarded stat remains nonzero and its producer/owner is unresolved; no attribution is claimed for that global count."
     }
   },
+  "fullStatsAudit": {
+    "date": "2026-11-23",
+    "processor": "Perfetto v59.1-1e9c61e98",
+    "trace": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint.perfetto-trace",
+    "readOnly": true,
+    "query": "SELECT name, idx, severity, source, value FROM stats WHERE lower(name) GLOB '*discard*' OR lower(name) GLOB '*producer*' OR lower(name) GLOB 'traced*' OR lower(name) GLOB '*trace_writer*' ORDER BY name, idx",
+    "result": {
+      "tracedChunksDiscarded": { "idx": null, "source": "trace", "value": 31 },
+      "bufferChunksDiscarded": { "idx": 0, "source": "trace", "value": 0 },
+      "bufferChunksOverwritten": { "idx": 0, "source": "trace", "value": 0 },
+      "traceWriterPacketLoss": { "idx": 0, "source": "trace", "value": 0 },
+      "producersConnected": { "idx": null, "source": "trace", "value": 33 },
+      "producersSeen": { "idx": null, "source": "trace", "value": 690 },
+      "dataSourcesRegistered": { "idx": null, "source": "trace", "value": 97 },
+      "dataSourcesSeen": { "idx": null, "source": "trace", "value": 102 },
+      "producerScopedDiscardRows": 0
+    },
+    "conclusion": "The stats table exposes the nonzero discard value only as a global idx=NULL row and exposes producer counts only as totals; it contains no producer id, per-producer discard row, or join key. The value 31 cannot be assigned to any producer from this trace's stats. This narrows the evidence boundary but does not identify the owner or equate discarded chunks with lost menu frames."
+  },
   "frameTimeline": {
     "csv": "../../../acceptance-artifacts/ntp-route-poco-20261123/menu-joint-frame-threads.csv",
     "perTokenSql": "../../../acceptance-artifacts/menu-performance-poco-20261118/vis048-perfetto-clean-z97gep21/frame-thread-attribution.sql",

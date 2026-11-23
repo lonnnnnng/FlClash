@@ -35,6 +35,15 @@ internal object AppGlyphs {
         GlyphBox(3f, 3.5f, 21f, 8.5f, 1.8f), GlyphBox(4.5f, 10.8f, 19.5f, 20.5f, 2.2f),
         GlyphPolyline(listOf(GlyphVertex(10f, 14.2f), GlyphVertex(14f, 14.2f)), role = GlyphRole.detail),
     )) }
+    // 作者 long：全局规则空态沿用 Flutter 的三条列表符号，避免把 DNS/资源页识别成文件页。
+    val rules by lazy { AppGlyph(listOf(
+        GlyphCircle(6f, 6.8f, 1.1f, solid = true),
+        GlyphPolyline(listOf(GlyphVertex(9f, 6.8f), GlyphVertex(20f, 6.8f)), role = GlyphRole.line),
+        GlyphCircle(6f, 12f, 1.1f, solid = true),
+        GlyphPolyline(listOf(GlyphVertex(9f, 12f), GlyphVertex(20f, 12f)), role = GlyphRole.line),
+        GlyphCircle(6f, 17.2f, 1.1f, solid = true),
+        GlyphPolyline(listOf(GlyphVertex(9f, 17.2f), GlyphVertex(20f, 17.2f)), role = GlyphRole.line),
+    )) }
     val compose by lazy { AppGlyph(listOf(
         GlyphPolyline(listOf(GlyphVertex(9.4f, 6.2f), GlyphVertex(4f, 6.2f, 2.5f),
             GlyphVertex(4f, 20.2f, 2.5f), GlyphVertex(18f, 20.2f, 2.5f), GlyphVertex(18f, 14.8f)), role = GlyphRole.line),

@@ -1,0 +1,116 @@
+{
+  "id": "KUI-VIS-091",
+  "date": "2026-11-23",
+  "scope": "Global rules empty page toolbar and quick preset sheet Flutter runtime comparison",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait",
+    "glassEnabled": false
+  },
+  "source": {
+    "branch": "kotlin",
+    "head": "5a4e5e1b0a0879ab61c1cf9ac65a59d40aacc2c4",
+    "worktreeWasDirty": true,
+    "flutterPackage": "com.follow.clash",
+    "flutterVersion": "0.9.4",
+    "flutterReferenceReadOnly": true,
+    "productionPackage": "com.lonnnnnng.flclash 0.1.16 / code 1016"
+  },
+  "implementation": {
+    "emptyState": "Use the Flutter rounded-square rule illustration, three filled bullets, matching empty copy and a slightly raised content anchor.",
+    "toolbar": "Use 40dp circular back, quick-action and add targets with Flutter glyphs and spacing scoped to the global rules route.",
+    "quickPresets": "Present presets in a bottom sheet with the sheet surface, compact handle, icon/title/monospace rule rows, checkboxes and a confirmation action only after selection. Opening or closing the sheet does not mutate rules.",
+    "remainingDifference": "The add-rule sheet still uses a different field grouping and hierarchy from Flutter; it was captured but is not counted as visually aligned. No full-route continuous transition recording was made."
+  },
+  "flutterRuntimeCapture": {
+    "directory": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/flutter-refresh1/",
+    "screenshots": {
+      "globalRulesEmpty": {
+        "file": "flutter-current.png",
+        "sha256": "0bd844a8b9094d0de9942bf151287900d105cd751022779d527e83fc457a335a",
+        "width": 1080,
+        "height": 2400
+      },
+      "quickPresets": {
+        "file": "flutter-presets.png",
+        "sha256": "fc696cc84d68e5daf0e11150a5f5c93895af064560ed4e7af1d937fd71154b36",
+        "width": 1080,
+        "height": 2400
+      },
+      "addRuleForm": {
+        "file": "flutter-rule-form.png",
+        "sha256": "452f7361a809b440f328ec7bd200381e4d44be1552639129a2b78055e242a06f",
+        "width": 1080,
+        "height": 2400
+      }
+    },
+    "dataChanged": false
+  },
+  "validation": {
+    "buildCommand": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "buildResult": "passed",
+    "motionApkSha256": "03d87729f4d60153bc0bb9619645b1ab11bc1107596b397db6dba7c4e179c500",
+    "androidTestApkSha256": "d7cc3ca111d62fe2a341d27fa46722e705136af6b8c7bfce53d3527fd06adf8c",
+    "instrumentation": {
+      "test": "GlobalSettingsHostInstrumentedTest#actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+      "result": "passed",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "durationSeconds": 12.628,
+      "runnerLog": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final9/instrumentation.log",
+      "runnerLogSha256": "66ccc05f8cf4cab48558231f72b81bb437e762f58484177c059a8f44fa43be3b"
+    },
+    "screenshots": {
+      "directory": "../../../acceptance-artifacts/global-rules-visual-poco-20261123/mainactivity-final9/",
+      "manifest": "screenshots.json",
+      "passed": true,
+      "states": {
+        "global_dns_empty": { "bytes": 89977, "sha256": "0c18792b7a1b88adac9674db86236bace0271371d8a5657219a779ceb17a6504", "width": 1080, "height": 2400 },
+        "global_dns_add_options": { "bytes": 128833, "sha256": "3875aa728e94c58c3f868dbab718ac51650c73c0bb6fa977b69f8dda7b3e3580", "width": 1080, "height": 2400 },
+        "global_dns_listen_editor": { "bytes": 74164, "sha256": "8eeec7497f0bc883f93900c4b00241b229524a7a32e7afef159c619c180c8cfb", "width": 1080, "height": 2400 },
+        "global_dns_actual": { "bytes": 74692, "sha256": "4e27ea412374d03eab737633dda8b6c76d6cb66a47d3c53950aa2a93dcfbd072", "width": 1080, "height": 2400 },
+        "global_rules_empty": { "bytes": 54402, "sha256": "fa39441669421f171abc90575619640b30002f78ab7d7894fbad5327b6e92b79", "width": 1080, "height": 2400 },
+        "global_rules_presets": { "bytes": 172766, "sha256": "2e9bc7aab660ba64b1acdc37ee0c335206bb8fb57eaf468fd856f0f96b0c608b", "width": 1080, "height": 2400 },
+        "global_rules_presets_selected": { "bytes": 173206, "sha256": "bdfd1acb3160ab7757e0daffb91e46d801a64cfb46f3970d5359bd733f6d6bb3", "width": 1080, "height": 2400 },
+        "global_rules_add_form": { "bytes": 91296, "sha256": "e0c398561f90884bd901a20e98a13b152dc1344391963f840c637a6224032b30", "width": 1080, "height": 2400 },
+        "global_rules_actual": { "bytes": 127593, "sha256": "ae92cd4086f7968aff8b2d528bef36edbdf3ce680c3cc4f60e8f1695a8b3eb85", "width": 1080, "height": 2400 }
+      }
+    },
+    "dataProtection": {
+      "globalRulesRestored": true,
+      "globalDnsRestored": true,
+      "profileRowsAndSelectionUnchanged": true,
+      "runtime": "STOPPED",
+      "workspaceYamlRead": false
+    }
+  },
+  "preservation": {
+    "productionVersion": "0.1.16",
+    "productionFirstInstallTime": "2026-11-22 21:24:30",
+    "productionLastUpdateTime": "2026-11-22 22:07:32",
+    "productionPackageChanged": false,
+    "flutterVersion": "0.9.4",
+    "flutterFirstInstallTime": "2026-11-07 02:44:08",
+    "flutterLastUpdateTime": "2026-11-22 14:21:51",
+    "flutterPackageChanged": false,
+    "motionAndTestPackagesUninstalled": true,
+    "systemRotation": "restored to accelerometer_rotation=1, user_rotation=0"
+  },
+  "nonFinalAttempts": [
+    "The first new geometry assertion compared pixel bounds directly to dp; corrected it to divide by device density.",
+    "A subsequent launch was covered by the Motion package notification permission page; the permission was granted only to the isolated Motion package for final runs.",
+    "The first preset-sheet capture exposed that an empty Set<Int> is not saveable by the default registry; selection now uses a saveable List<Int>."
+  ],
+  "limits": [
+    "This is one global-rules visual slice, not complete Flutter page parity.",
+    "The Flutter and Kotlin add-rule forms still differ in grouping and layout.",
+    "No full-page continuous transition recording was captured.",
+    "Menu discarded-owner, dropped-frame, formal R8/MainActivity and GPU/fence attribution remain unresolved; no stable performance benefit is claimed.",
+    "Glass remains disabled by default."
+  ]
+}

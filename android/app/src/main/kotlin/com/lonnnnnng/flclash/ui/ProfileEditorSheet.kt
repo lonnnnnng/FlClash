@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -117,7 +118,7 @@ internal fun ProfileEditorSheet(page: String, scroll: ScrollState, closing: Bool
 internal fun EmbeddedProfileEditorPage(page: EmbeddedProfilePage, onDismiss: () -> Unit,
     title: @Composable () -> Unit, text: @Composable () -> Unit, actions: @Composable () -> Unit,
     backTag: String, contentPadding: PaddingValues, bottomBar: (@Composable () -> Unit)?,
-    topBarSearch: ProfileEditorSearchState? = null) {
+    topBarSearch: ProfileEditorSearchState? = null, navigationButtonSize: Dp = 44.dp) {
     val searchFocus = remember { androidx.compose.ui.focus.FocusRequester() }
     ProfileEditorSearchFocus(topBarSearch, searchFocus)
     val registeredBack = {
@@ -129,7 +130,7 @@ internal fun EmbeddedProfileEditorPage(page: EmbeddedProfilePage, onDismiss: () 
     SideEffect { page.registerBack(registeredBack) }
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 16.dp)) {
-            IconButton(onDismiss, Modifier.align(Alignment.CenterStart).size(44.dp)
+            IconButton(onDismiss, Modifier.align(Alignment.CenterStart).size(navigationButtonSize)
                 .background(dashboardCardColor(), AppSuperellipseShape(44.dp)).testTag(backTag)) {
                 Icon(if (page.root) Icons.Outlined.Close else Icons.AutoMirrored.Outlined.ArrowBack, null)
             }

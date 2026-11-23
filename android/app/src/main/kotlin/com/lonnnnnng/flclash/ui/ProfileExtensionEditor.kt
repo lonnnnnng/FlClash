@@ -1,6 +1,7 @@
 package com.lonnnnnng.flclash.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -326,9 +327,11 @@ private fun ExtensionTargetPicker(selected: String?, targets: List<String>, foll
 @Composable
 internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, saving: Boolean, saveError: String?,
     blockedMessage: String? = null, onRetryPending: (() -> Unit)? = null, onDiscardPending: (() -> Unit)? = null,
-    committed: Boolean = false, onDismiss: () -> Unit, onSave: (ExtensionRule) -> Unit) {
+    committed: Boolean = false, sheetPresentation: Boolean = false, sheetCloseRequested: Boolean = false,
+    defaultType: String = "DOMAIN-SUFFIX",
+    onDismiss: () -> Unit, onSave: (ExtensionRule) -> Unit) {
     val fields = remember(initial) { initial?.let { ExtensionRules.fields(it.value) }.orEmpty() }
-    var type by rememberSaveable { mutableStateOf(fields.firstOrNull() ?: "DOMAIN-SUFFIX") }
+    var type by rememberSaveable { mutableStateOf(fields.firstOrNull() ?: defaultType) }
     var content by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(if (fields.size > 2) fields[1] else "")) }
     val ruleId = rememberSaveable { initial?.id ?: UUID.randomUUID().toString() }
     var target by rememberSaveable { mutableStateOf(fields.getOrNull(if (fields.lastOrNull() == "no-resolve") fields.lastIndex - 1 else fields.lastIndex) ?: "DIRECT") }
@@ -340,17 +343,39 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
     var selectTarget by rememberSaveable { mutableStateOf(false) }
     var typeMenu by rememberSaveable { mutableStateOf(false) }
     var discard by rememberSaveable { mutableStateOf(false) }
+    var closeSheet by rememberSaveable { mutableStateOf(false) }
     val editable = !saving && onRetryPending == null
-    val value = if (rawMode) raw.text.trim() else listOfNotNull(type, content.text.trim().takeUnless { type in setOf("MATCH", "FINAL") }, target, "no-resolve".takeIf { noResolve }).joinToString(",")
+    val includeNoResolve = noResolve && type in extensionRuleNoResolveTypes
+    val value = if (rawMode) raw.text.trim() else listOfNotNull(type, content.text.trim().takeUnless { type in setOf("MATCH", "FINAL") }, target,
+        "no-resolve".takeIf { includeNoResolve }).joinToString(",")
+    val changed = if (initial != null) value != initial.value else
+        type != defaultType || target != "DIRECT" || includeNoResolve || content.text.isNotEmpty() || raw.text.isNotEmpty()
+    LaunchedEffect(sheetCloseRequested) { if (sheetCloseRequested) closeSheet = true }
     fun back() {
         if (saving) return
         // 作者 long：MATCH等无匹配内容规则也有类型/目标草稿，不能因为内容为空就静默丢弃。
-        val changed = if (initial != null) value != initial.value else
-            type != "DOMAIN-SUFFIX" || target != "DIRECT" || noResolve || content.text.isNotEmpty() || raw.text.isNotEmpty()
         if (changed) discard = true else onDismiss()
     }
-    ProfileEditorPage(::back, { Text(if (initial == null) tr("添加规则") else tr("编辑规则")) }, {
-        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    fun saveRule() {
+        if (saving || blockedMessage != null || onRetryPending != null) return
+        val rule = ExtensionRule(ruleId, value)
+        runCatching { ExtensionRules.validate(listOf(rule)) }.onSuccess { onSave(rule) }.onFailure { error = it.message }
+    }
+    fun toggleRawMode() {
+        if (!rawMode) {
+            raw = TextFieldValue(value)
+            rawMode = true
+        } else runCatching {
+            ExtensionRules.validate(listOf(ExtensionRule("draft", raw.text)))
+            val parsed = ExtensionRules.fields(raw.text)
+            type = parsed.first(); content = TextFieldValue(if (parsed.size > 2) parsed[1] else "")
+            noResolve = parsed.last() == "no-resolve"
+            target = parsed[if (noResolve) parsed.lastIndex - 1 else parsed.lastIndex]
+            rawMode = false; error = null
+        }.onFailure { error = it.message }
+    }
+    val ruleFields: @Composable (Modifier) -> Unit = { modifier ->
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
             (blockedMessage ?: error ?: saveError)?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("extension_rule_error")) }
             if (onRetryPending != null) Row {
                 TextButton(onClick = onRetryPending, enabled = !saving && blockedMessage == null,
@@ -358,42 +383,94 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
                 if (onDiscardPending != null) TextButton(onClick = onDiscardPending, enabled = !saving,
                     modifier = Modifier.testTag("extension_rule_discard_pending")) { Text(tr("放弃这次保存")) }
             }
-            TextButton(onClick = {
-                if (!rawMode) { raw = TextFieldValue(value); rawMode = true } else runCatching {
-                    ExtensionRules.validate(listOf(ExtensionRule("draft", raw.text)))
-                    val parsed = ExtensionRules.fields(raw.text)
-                    type = parsed.first(); content = TextFieldValue(if (parsed.size > 2) parsed[1] else "")
-                    noResolve = parsed.last() == "no-resolve"
-                    target = parsed[if (noResolve) parsed.lastIndex - 1 else parsed.lastIndex]
-                    rawMode = false; error = null
-                }.onFailure { error = it.message }
-            }, enabled = editable, modifier = Modifier.testTag("extension_rule_raw_mode")) { Text(if (rawMode) tr("表单编辑") else tr("原始规则")) }
-            if (rawMode) OutlinedTextField(raw, { raw = it }, readOnly = !editable, label = { Text(tr("规则")) }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_raw"))
+            if (rawMode) OutlinedTextField(raw, { raw = it }, readOnly = !editable, label = { Text(tr("原始规则")) },
+                modifier = Modifier.fillMaxWidth().testTag("extension_rule_raw"))
             else {
-                Box {
-                    OutlinedButton(onClick = { typeMenu = true }, enabled = editable) { Text(tr("类型：{0}", type)) }
-                    DropdownMenu(typeMenu, { typeMenu = false }) {
-                        listOf("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-REGEX", "GEOSITE", "GEOIP", "IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "DST-PORT", "SRC-PORT", "PROCESS-NAME", "PROCESS-PATH", "NETWORK", "UID", "AND", "OR", "NOT", "MATCH").forEach { action ->
-                            DropdownMenuItem({ Text(action) }, onClick = { type = action; typeMenu = false })
+                Text(tr("基础信息"), Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.titleSmall)
+                ProfileFormSection(modifier = Modifier.fillMaxWidth().testTag("extension_rule_basic_section"),
+                    contentPadding = PaddingValues(0.dp), spacing = 0.dp, color = profileInputSurfaceColor()) {
+                    Box {
+                        ProfileFormRow(tr("代理类型"), Modifier.clickable(enabled = editable) { typeMenu = true }
+                            .testTag("extension_rule_type")) {
+                            Text(type, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(Modifier.width(4.dp)); Icon(Icons.Outlined.UnfoldMore, null, Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        DropdownMenu(typeMenu, { typeMenu = false }) {
+                            listOf("DOMAIN", "DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "DOMAIN-REGEX", "GEOSITE", "GEOIP", "IP-CIDR", "IP-CIDR6", "SRC-IP-CIDR", "DST-PORT", "SRC-PORT", "PROCESS-NAME", "PROCESS-PATH", "NETWORK", "UID", "AND", "OR", "NOT", "MATCH").forEach { action ->
+                                DropdownMenuItem({ Text(action) }, onClick = { type = action; typeMenu = false }, enabled = editable,
+                                    modifier = Modifier.testTag("extension_rule_option_$action"))
+                            }
+                        }
+                    }
+                    ProfileFormDivider()
+                    if (type !in setOf("MATCH", "FINAL")) ProfileFormInput(tr("内容"), content.text,
+                        { content = TextFieldValue(it) }, "extension_rule_content", enabled = editable,
+                        invalid = error != null && content.text.isBlank(), placeholder = tr("输入规则内容"))
+                    ProfileFormDivider()
+                    ProfileFormRow(tr("分流策略"), Modifier.clickable(enabled = editable) { selectTarget = true }
+                        .testTag("extension_rule_target")) {
+                        Text(target, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.width(4.dp)); Icon(Icons.Outlined.UnfoldMore, null, Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (type in extensionRuleNoResolveTypes) {
+                    Text(tr("附加参数"), Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.titleSmall)
+                    ProfileFormSection(modifier = Modifier.fillMaxWidth().testTag("extension_rule_parameters"),
+                        contentPadding = PaddingValues(0.dp), spacing = 0.dp, color = profileInputSurfaceColor()) {
+                        ProfileFormRow(tr("不解析域名"), Modifier.testTag("extension_rule_no_resolve")) {
+                            Switch(noResolve, { noResolve = it }, enabled = editable)
                         }
                     }
                 }
-                if (type !in setOf("MATCH", "FINAL")) OutlinedTextField(content, { content = it }, readOnly = !editable, label = { Text(tr("匹配内容")) }, modifier = Modifier.fillMaxWidth().testTag("extension_rule_content"))
-                ProfileSectionRow(tr("目标"), modifier = Modifier.testTag("extension_rule_target"), detail = target,
-                    icon = Icons.Outlined.Route, enabled = editable) { selectTarget = true }
-                Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(noResolve, { noResolve = it }, enabled = editable); Text("no-resolve") }
             }
-            Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-    }, confirmButton = { TextButton(onClick = {
-        if (saving || blockedMessage != null || onRetryPending != null) return@TextButton
-        val rule = ExtensionRule(ruleId, value)
-        runCatching { ExtensionRules.validate(listOf(rule)) }.onSuccess { onSave(rule) }.onFailure { error = it.message }
-    }, enabled = !saving && blockedMessage == null && onRetryPending == null, modifier = Modifier.testTag("extension_rule_confirm")) { Text(if (saving) tr("保存中…") else tr("确认")) } })
+    }
+    if (sheetPresentation) {
+        val scroll = rememberScrollState()
+        ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = scroll, avoidIme = true, restoreDetentAfterIme = true,
+            dismissAllowed = { !saving && !changed }, sheetTag = "extension_rule_form_sheet", closeRequested = closeSheet,
+            floatingForm = true, fitFormOverKeyboard = true, handleHeight = 10.dp, handleWidth = 28.dp, handleVerticalOffset = 3.dp,
+            onBackRequest = {
+                when { saving -> true; changed -> { discard = true; true }; else -> false }
+            }) { requestDismiss ->
+            Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                ProfileFormHeader(if (initial == null) tr("添加规则") else tr("编辑规则"),
+                    onClose = { if (changed) discard = true else requestDismiss() }, closeEnabled = !saving,
+                    closeTag = "extension_rule_form_close", actionSurface = false) {
+                    IconButton(::toggleRawMode, Modifier.size(44.dp).testTag("extension_rule_raw_mode"), enabled = editable) {
+                        Icon(if (rawMode) Icons.Outlined.Edit else Icons.Outlined.Code,
+                            contentDescription = tr(if (rawMode) "切换表单编辑" else "切换原始规则"))
+                    }
+                    Spacer(Modifier.width(4.dp))
+                    IconButton(::saveRule, Modifier.size(44.dp).background(profileInputSurfaceColor(), AppSuperellipseShape(1000.dp))
+                        .testTag("extension_rule_confirm"),
+                        enabled = !saving && blockedMessage == null && onRetryPending == null) {
+                        if (saving) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                        else AppGlyphIcon(AppGlyphs.check, Modifier.size(24.dp))
+                    }
+                }
+                ruleFields(Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll)
+                    .wrapContentHeight(Alignment.Top, unbounded = true))
+            }
+        }
+    } else {
+        ProfileEditorPage(::back, { Text(if (initial == null) tr("添加规则") else tr("编辑规则")) },
+            { Column { TextButton(::toggleRawMode, enabled = editable, modifier = Modifier.testTag("extension_rule_raw_mode")) {
+                    Text(if (rawMode) tr("表单编辑") else tr("原始规则"))
+                }; ruleFields(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) } }, confirmButton = {
+                TextButton(::saveRule, enabled = !saving && blockedMessage == null && onRetryPending == null,
+                    modifier = Modifier.testTag("extension_rule_confirm")) { Text(if (saving) tr("保存中…") else tr("确认")) }
+            })
+    }
     if (selectTarget) ExtensionTargetPicker(target, (listOf("MATCH") + targets).distinct(), false, { selectTarget = false }) { target = it ?: "DIRECT"; selectTarget = false }
     if (discard) EditorAlertDialog(onDismissRequest = { discard = false }, title = { Text(tr("放弃未保存修改？")) },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(tr("放弃")) } }, dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
+        confirmButton = { TextButton(onClick = { discard = false; if (sheetPresentation) closeSheet = true else onDismiss() }) { Text(tr("放弃")) } },
+        dismissButton = { TextButton(onClick = { discard = false }) { Text(tr("继续编辑")) } })
 }
+
+private val extensionRuleNoResolveTypes = setOf("GEOIP", "IP-ASN", "IP-CIDR", "IP-CIDR6", "IP-SUFFIX", "RULE-SET")
 
 private val extensionPresets get() = listOf(
     tr("阻止 QUIC") to listOf("AND,((NETWORK,UDP),(DST-PORT,443)),REJECT-DROP"),
@@ -407,16 +484,51 @@ private val extensionPresets get() = listOf(
 
 @Composable
 internal fun ExtensionPresets(onDismiss: () -> Unit, onAdd: (List<String>) -> Unit) {
-    var selected by rememberSaveable { mutableStateOf(listOf<Int>()) }
-    ProfileEditorPage(onDismiss, { Text(tr("规则预设")) }, {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            extensionPresets.forEachIndexed { index, (label, rules) ->
-                Row(Modifier.fillMaxWidth().clickable { selected = if (index in selected) selected - index else selected + index }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) { Text(label); Text(rules.joinToString("\n"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    Checkbox(index in selected, onCheckedChange = null)
+    // 作者 long：Sheet 重建时只恢复选中的预设编号，保持 Bundle 可保存且不持久化实际规则正文。
+    var selected by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    val scroll = rememberScrollState()
+    fun confirm() {
+        if (selected.isNotEmpty()) onAdd(extensionPresets.filterIndexed { index, _ -> index in selected }.flatMap { it.second })
+    }
+    ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = scroll,
+        handleHeight = 12.dp, sheetTag = "extension_presets_sheet", sheetShape = AppSuperellipseShape(
+            topStart = 28.dp, topEnd = 28.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+        content = { requestDismiss ->
+            Column(Modifier.fillMaxSize()) {
+                DashboardSheetHeader(tr("快捷操作"), "extension_presets_close", requestDismiss, actions = {
+                    if (selected.isNotEmpty()) IconButton(onClick = ::confirm, modifier = Modifier.testTag("extension_preset_confirm")) {
+                        AppGlyphIcon(AppGlyphs.check)
+                    }
+                })
+                Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = 16.dp)
+                    .padding(top = 8.dp, bottom = 20.dp)) {
+                    extensionPresets.forEachIndexed { index, (label, rules) ->
+                        Row(Modifier.fillMaxWidth().clickable {
+                            selected = if (index in selected) selected - index else selected + index
+                        }.padding(vertical = 12.dp).testTag("extension_preset_$index"), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(extensionPresetIcons[index], null, Modifier.padding(end = 16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(label, style = MaterialTheme.typography.titleMedium)
+                                rules.forEach { raw ->
+                                    Text(raw, style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
+                                        color = MaterialTheme.colorScheme.tertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                            }
+                            Checkbox(index in selected, onCheckedChange = null)
+                        }
+                        if (index != extensionPresets.lastIndex) HorizontalDivider(Modifier.padding(start = 48.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                    }
                 }
             }
-        }
-    }, confirmButton = { TextButton(onClick = { onAdd(extensionPresets.filterIndexed { index, _ -> index in selected }.flatMap { it.second }) }, enabled = selected.isNotEmpty(),
-        modifier = Modifier.testTag("extension_preset_confirm")) { Text(tr("添加")) } })
+        })
 }
+
+private val extensionPresetIcons get() = listOf(
+    Icons.Outlined.Block,
+    Icons.Outlined.VisibilityOff,
+    Icons.Outlined.Dns,
+    Icons.Outlined.Sync,
+    Icons.Outlined.Wifi,
+    Icons.Outlined.Devices,
+    Icons.Outlined.CloudDownload,
+)
