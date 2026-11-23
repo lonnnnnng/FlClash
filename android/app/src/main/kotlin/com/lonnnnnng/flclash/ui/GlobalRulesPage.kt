@@ -18,11 +18,15 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lonnnnnng.flclash.service.ExtensionRule
+import com.lonnnnnng.flclash.service.ExtensionRules
+import com.lonnnnnng.flclash.ui.theme.proxyDelaySuccessColor
+import com.lonnnnnng.flclash.ui.theme.proxyDelayWarningColor
 import java.util.UUID
 
 @Composable
@@ -183,17 +187,30 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
                             sortSnapshot = state.rules.flatMap { listOf(it.id, it.value) }; sortVersion = state.saveResultVersion
                         }
                     }
-                } else LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("global_rules_list")) {
+                } else LazyColumn(Modifier.fillMaxWidth().weight(1f).testTag("global_rules_list"), contentPadding = PaddingValues(top = 20.dp)) {
                     items(visible, key = { it.id }) { rule ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = 72.dp).clickable(enabled = canChange) {
+                        val first = rule.id == visible.first().id
+                        val last = rule.id == visible.last().id
+                        Row(Modifier.fillMaxWidth().clip(AppSuperellipseShape(
+                            topStart = if (first) 24.dp else 0.dp, topEnd = if (first) 24.dp else 0.dp,
+                            bottomStart = if (last) 24.dp else 0.dp, bottomEnd = if (last) 24.dp else 0.dp))
+                            .background(dashboardCardColor()).heightIn(min = 56.dp).clickable(enabled = canChange) {
                             if (selecting) selected = if (rule.id in selected) selected - rule.id else selected + rule.id
                             else { form = rule.id; originalValue = rule.value }
-                        }.padding(vertical = 12.dp).testTag("global_rule_${rule.id}"), verticalAlignment = Alignment.CenterVertically) {
-                            if (selecting) Checkbox(rule.id in selected, null, enabled = canChange)
-                            Text(rule.value, Modifier.weight(1f), maxLines = 3, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
-                            if (!selecting) Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }.padding(horizontal = 16.dp, vertical = 7.dp).testTag("global_rule_${rule.id}"), verticalAlignment = Alignment.CenterVertically) {
+                            GlobalRuleLabel(rule, Modifier.weight(1f))
+                            Spacer(Modifier.width(12.dp))
+                            IconToggleButton(rule.id in selected, {
+                                selecting = true
+                                selected = if (rule.id in selected) selected - rule.id else selected + rule.id
+                                if (selected.isEmpty()) selecting = false
+                            }, enabled = canChange, modifier = Modifier.size(24.dp).testTag("global_rule_select_${rule.id}")) {
+                                Icon(if (rule.id in selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                    null, Modifier.size(22.dp), tint = if (rule.id in selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                        if (!last) HorizontalDivider(Modifier.padding(horizontal = 16.dp), thickness = .5.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -239,4 +256,29 @@ internal fun GlobalRulesPage(state: GlobalRulesUiState, onDismiss: () -> Unit, o
             TextButton({ delete = emptyList(); deleteVersion = null; if (state.interrupted) onDiscardPending() }, enabled = !busy,
                 modifier = Modifier.testTag("global_rules_delete_cancel")) { Text(tr("取消")) }
         })
+}
+
+@Composable
+private fun GlobalRuleLabel(rule: ExtensionRule, modifier: Modifier) {
+    // 作者 long：仅拆分展示；逻辑表达式内部的逗号必须由现有解析器保留，不能影响保存正文或把no-resolve当成分流目标。
+    val fields = remember(rule.value) { ExtensionRules.fields(rule.value) }
+    val targetIndex = if (fields.last().equals("no-resolve", true)) fields.lastIndex - 1 else fields.lastIndex
+    val target = fields[targetIndex]
+    val content = fields.subList(1, targetIndex).joinToString(",")
+    val targetColor = when (target.uppercase()) {
+        "DIRECT", "COMPATIBLE" -> proxyDelaySuccessColor()
+        "REJECT", "REJECT-DROP" -> proxyDelayWarningColor()
+        else -> MaterialTheme.colorScheme.tertiary
+    }
+    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(Modifier.weight(1f)) {
+            Text(fields.first(), style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (content.isNotEmpty()) Text(content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .6f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Text(target, Modifier.widthIn(max = 140.dp), color = targetColor,
+            style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
 }

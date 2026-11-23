@@ -58,6 +58,8 @@
 
 ## 当前推进顺序
 
+2026-11-23视觉续验：KUI-VIS-093已补规则列表→表单→IME→取消重开→保存返回的两端自然录像，以及DNS选择器滚动/搜索返回对照；修复规则短表单缺少正文高度测量导致键盘拉满，非空规则卡片按类型/内容/彩色目标/圆形勾选排列。同一POCO卡片背景均为138px、Y=287..424。最终定向4/4、控制器16/16单测通过，42张真机PNG核验；三段录像49.39/21.23/11.36秒保留原PTS，Lint0错误11警告1提示。Flutter是固定be847366的原始组件隔离宿主/内存保存，Kotlin是真MainActivity/Room；不冒充最新版完整Flutter或性能证据。093整体仍PARTIAL，后续优先DNS整页与字段面板、规则长列表及浅色路线，再继续其他子页和菜单归因；玻璃默认关闭。本批未发版，公开版0.1.18。 [说明](global-rules-natural-route-alignment.md)、[证据](acceptance/global-rules-natural-route-poco-20261123.json)。
+
 2026-11-19，按用户决定，语义预检与系统兼容保留当前覆盖和未验证记录，停止扩展验收。当前推进 Flutter 子页与面板、连续转场和菜单性能，玻璃默认关闭。
 
 KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider Kotlin 连续流程验收：真实资源选择器绑定隔离资源、添加并保存 TIMEOUT=5000、重开后 Room 回读；精确用例1/1、7张截图核验。未做 Flutter 同状态运行对照。[验收记录](acceptance/provider-options-nonempty-poco-20261119.json)

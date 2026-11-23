@@ -1,5 +1,12 @@
 # Testing
 
+## KUI-VIS-093 规则自然路线与DNS参考（2026-11-23）
+
+POCO F2 Pro/31936bb6独立motion包只运行`MainGlobalRulesNaturalInstrumentedTest#rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames`，显式`kclashGlobalRulesNaturalAcceptance=true`；仅接受空配置、null选择和STOPPED，不需要1.yaml。自然触摸/系统IME与Back、Room回读、Activity重建、勾选/取消和DNS筛选结果均核对；finally等保存结束再精确恢复偏好行/草稿/回执，超时失败不得强写并假报保持。外部回收仅本例隔离包。正式VPN可保持运行，不启动motion VPN。
+
+本组与GlobalSettingsHost规则/DNS方法、ProfileExtensionEditor表单/预设两方法最终4/4，控制器16/16；证据见`docs/acceptance/global-rules-natural-route-poco-20261123.json`。录像使用相同产品APK的自然final3，最终测试只加强选择定位和DNS结果断言；Flutter是固定旧版本原始组件宿主/内存存储，禁止冒充最新版完整MainActivity或性能收益。其他规则长列表/浅色和DNS精确布局仍待。
+
+
 ## 动态顶卡与菜单复验（2026-11-08，当前）
 
 KUI-019继续优化菜单动态轮廓：阴影局部重组、同帧Path/Paint复用、宽度延迟布局及移除重复裁剪。Redmi API36独立非debuggable包、无PNG/录屏，前后各两轮深浅，菜单合计jank331/1429（23.16%）→261/1555（16.78%），顶卡收回38.61%→14.07%；首开26.42%→23.16%改善有限，关闭6.91%→9.94%退化保留，首次打开UI区间中位也未改善。完整自然流程各深浅一轮非启动窗口15.10%→13.39%，不冒充正式R8运行。final-build3共849项JVM零失败/错误/跳过（App568在build1执行、其余281复用，最终四模块UP-TO-DATE）；Debug/Test/未签名Release-R8/双Lint通过，Debug0错误68警告14提示、Release0错误66警告13提示。同套最终包回归19/19、自然整页2/2、三轮菜单2/2；92PNG/32拼图及8组原PTS抽样已核对，593源码与安装回拉匹配。用户确认重置，当前正式0份配置，排除依赖非空库的两条导航回归；Flutter参考包保持缺席、不安装。44份正式快照及最终独立检查一致，原1.yaml/设备设置保持；独立.motion双包与独占文件精确回收，结束无服务/tun0。旧包/候选12图逐字节一致后刷新环境基线，14/19、旧包0/5与run-as拒绝回拉失败均保留。整体性能和完整Flutter视觉仍PARTIAL；下一步优先首开、关闭退化及RenderThread慢帧，再补CUSTOM组数、首页无流量统计、内存图形与其余子页。玻璃默认关闭，既有边界保持。证据`docs/acceptance/menu-rendering-redmi-20261108.json`，溯源`docs/menu-rendering-performance-defect.md`，附件`../acceptance-artifacts/menu-rendering-20261108/`。

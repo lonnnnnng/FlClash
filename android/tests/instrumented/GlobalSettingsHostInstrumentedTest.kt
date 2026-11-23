@@ -110,7 +110,8 @@ class GlobalSettingsHostInstrumentedTest {
             // 作者 long：保存后的编辑Sheet要完成退场才算回到规则列表，避免动画中的预览被误判为重复记录。
             compose.waitUntil(10_000) { compose.onAllNodesWithTag("extension_rule_confirm").fetchSemanticsNodes().isEmpty() }
             compose.onNodeWithTag("global_rules_search").performTextInput("roadmap-acceptance.invalid")
-            compose.onNodeWithText(saved.last().value).assertIsDisplayed()
+            compose.onNodeWithTag("global_rule_${saved.last().id}").assertIsDisplayed()
+                .assertTextContains("roadmap-acceptance.invalid")
             capture("global_rules_actual")
             assertEquals(before, entry.database().profiles().getAll())
             assertEquals(selected, repository.currentProfileId.value)

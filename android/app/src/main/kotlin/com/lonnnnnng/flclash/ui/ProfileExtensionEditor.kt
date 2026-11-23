@@ -15,6 +15,7 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.TextFieldValue
@@ -429,9 +430,13 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
     }
     if (sheetPresentation) {
         val scroll = rememberScrollState()
+        var formHeight by remember { mutableStateOf<Int?>(null) }
+        val headerHeight = with(LocalDensity.current) { 68.dp.roundToPx() }
         ConnectionModalSheet(onDismiss = onDismiss, contentScrollState = scroll, avoidIme = true, restoreDetentAfterIme = true,
             dismissAllowed = { !saving && !changed }, sheetTag = "extension_rule_form_sheet", closeRequested = closeSheet,
             floatingForm = true, fitFormOverKeyboard = true, handleHeight = 10.dp, handleWidth = 28.dp, handleVerticalOffset = 3.dp,
+            // 作者 long：键盘先占用短表单的留白；缺少正文实测高度会被当作整页内容，输入时错误拉满屏幕。
+            naturalContentHeight = formHeight?.plus(headerHeight),
             onBackRequest = {
                 when { saving -> true; changed -> { discard = true; true }; else -> false }
             }) { requestDismiss ->
@@ -452,7 +457,7 @@ internal fun ExtensionRuleForm(initial: ExtensionRule?, targets: List<String>, s
                     }
                 }
                 ruleFields(Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll)
-                    .wrapContentHeight(Alignment.Top, unbounded = true))
+                    .wrapContentHeight(Alignment.Top, unbounded = true).onSizeChanged { formHeight = it.height })
             }
         }
     } else {

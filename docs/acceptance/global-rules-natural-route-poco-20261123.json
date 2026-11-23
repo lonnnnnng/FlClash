@@ -1,0 +1,491 @@
+{
+  "id": "KUI-VIS-093",
+  "date": "2026-11-23",
+  "status": "PARTIAL_OVERALL; FIXED_REFERENCE_ROUTE_VERIFIED",
+  "scope": "Global rules natural route and adjacent DNS selector comparison; no release",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "densityOverride": 396,
+    "fontScale": 1.0,
+    "orientation": "portrait",
+    "glassEnabled": false
+  },
+  "source": {
+    "baseHead": "03fbfc39bb78526cac365971c8823fdcaa225615",
+    "files": {
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/GlobalRulesPage.kt": "f908c94480dfd550f41c2ef73faffb42a85e45e72667e34858871341e2f94c24",
+      "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfileExtensionEditor.kt": "449d7805062c6c5fd65695eedca69a152aad88f0d1eb23810e0204cacf690ec2",
+      "android/tests/instrumented/MainGlobalRulesNaturalInstrumentedTest.kt": "a0dcc2f5ffe298d9e0f376b05854c4a3bb43faac7b863a607ca9e2a2d0bcc914",
+      "android/tests/instrumented/GlobalSettingsHostInstrumentedTest.kt": "5a7c61f649fe1aa59fcf24b00437cd2560bec731debc08c094d2b3d2b7523af7"
+    }
+  },
+  "flutterReference": {
+    "revision": "be84736605527034689c95bf27828ff27d912c5e",
+    "prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185",
+    "package": "com.lonnnnnng.kclash.reference.flutter_rules_dns_reference",
+    "type": "Isolated original-widget host with in-memory GlobalRules provider; not complete MainActivity or Drift acceptance",
+    "originalSourcesVerified": {
+      "lib/views/config/rules.dart": "f95042d59c8de18cc1d2c9581815cd3c29c051491ed466ec0795301ae07ba7b8",
+      "lib/features/form/rule.dart": "b3d6e78a18e0e7b1bfbe7fd60390fc1d37df2fe2c219a928a75b1b22f060d0a4",
+      "lib/views/config/dns.dart": "2c20eda2df44cbada907404ac1a13ceb9fe78a33980c18bbf1dba37ab42b4547"
+    },
+    "host": {
+      "file": "acceptance-artifacts/flutter-rules-dns-reference-host-20261123/lib/main.dart",
+      "bytes": 3286,
+      "sha256": "7c90667c826df9f9a1eeef1a96fa8cf7d4d07cf997de5378ecd0b6a6cfe71e8b"
+    },
+    "apk": {
+      "file": "acceptance-artifacts/flutter-rules-dns-reference-host-20261123/build/app/outputs/flutter-apk/app-debug.apk",
+      "bytes": 142881524,
+      "sha256": "122f9a3f6dab6c15df134e489b992888492c0d6285bec31950bee65346016b4d"
+    },
+    "currentUpstreamNotClaimed": "afe7136002271fd64f098b154e7fff40be721eb8 has customExit/MITM/preset route differences"
+  },
+  "fixes": [
+    "Measure actual rule form body plus header so IME consumes short-form blank space instead of expanding the sheet to full height.",
+    "Render global rules as compact grouped type/content rows with target color and trailing circular selection; preserve original serialized rule values."
+  ],
+  "validation": {
+    "builds": [
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlin-build5.log",
+        "bytes": 14292,
+        "sha256": "42a42aebc121d338fedae365d7b46ebd072c68b9d97b24a6c62c33d377bfa2eb"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlin-final6.log",
+        "bytes": 12630,
+        "sha256": "d2421ce54b21a4cfed5cf80c162bc04958abd63ece0eaf87fbcd70e1efaed1c9"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/test-final9.log",
+        "bytes": 8405,
+        "sha256": "93f1e47f124785f3b440b0d7a1baa59973f94efc762906ca9656d2e77b528f68"
+      }
+    ],
+    "lint": {
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1,
+      "log": {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/final8.log",
+        "bytes": 12117,
+        "sha256": "a23289d41e4404a017c66a95f739f8d5ac697f663a2868ded1b1396cb233adc2"
+      },
+      "note": "Product source is final; final test-only selector/filtered-result assertions were strengthened after this lint run."
+    },
+    "unitTests": {
+      "suite": "com.lonnnnnng.flclash.ui.GlobalRulesControllerTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "log": {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlin-build3.log",
+        "bytes": 13281,
+        "sha256": "e0614729c7d503dd8f88519f42e118874a91a065bd87961900b0e72860fbef2f"
+      }
+    },
+    "instrumentation": {
+      "result": "passed",
+      "tests": [
+        {
+          "class": "com.lonnnnnng.flclash.ui.MainGlobalRulesNaturalInstrumentedTest",
+          "test": "rulesFormImeDiscardSaveAndDnsSelectorUseNaturalFrames",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.GlobalSettingsHostInstrumentedTest",
+          "test": "actualGlobalDnsAndRulesPersistAcrossRecreationWithoutChangingProfiles",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest",
+          "test": "presetsKeepLogicalRuleAndNoncurrentProfileHasNoApplyButton",
+          "code": 0
+        },
+        {
+          "class": "com.lonnnnnng.flclash.ui.ProfileExtensionEditorInstrumentedTest",
+          "test": "rulesFormReorderAndBatchDeletePersistTheDisplayedOrder",
+          "code": 0
+        }
+      ],
+      "manifest": {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/screenshots.json",
+        "bytes": 5755,
+        "sha256": "927668ac82a18bddfbf57ca6a0bacd0dad2142aebdd9d21e33732c1b6cef4556"
+      },
+      "log": {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/instrumentation.log",
+        "bytes": 3168088,
+        "sha256": "5a26c71b60243f6cf48eda51ffa5b92ca221fc5198238e22c6d8e0bab4b07735"
+      },
+      "appApk": {
+        "file": "FlClash/android/app/build/outputs/apk/motionBenchmark/app-motionBenchmark.apk",
+        "bytes": 67558725,
+        "sha256": "b15412c2fd8c74d0bb3354309095c8d8dd62d21d74cc35c7383eb6e32c5c86e6"
+      },
+      "testApk": {
+        "file": "FlClash/android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+        "bytes": 3328335,
+        "sha256": "d739aaf60d2c00065d59e98c494f89305fffdaeb92735fe053975a99186a9549"
+      }
+    },
+    "naturalInput": "Native touch events and Android Back with actual IME/window insets. Kotlin text uses ACTION_SET_TEXT; Flutter uses adb input text. No ComposeTestRule in the natural test.",
+    "screenshots": [
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/before_save.png",
+        "bytes": 90057,
+        "sha256": "9be1a2a1aa38ddefd3d0fe3df196b506133642e4894bce37d45ea116471052c9"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/cancelled.png",
+        "bytes": 62813,
+        "sha256": "9d0bbe82a9ce1c40bae26cacb53a114642eebadb98beba6b11e91da5e5c377ea"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/dns_empty.png",
+        "bytes": 101325,
+        "sha256": "60c8db4681a4e9cc90dff9a675c619b376526009e6d08c23265febab6329e014"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/edit.png",
+        "bytes": 101415,
+        "sha256": "04208111a4717c74f3ae1664a9536ff1c1b9e3defd5b006a5b179825e15963fe"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/edited_return.png",
+        "bytes": 69353,
+        "sha256": "30f6a871c9c76e15b772f5fb3c94baff06602c9b8170a8b3c052add308c2dfd9"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/empty.png",
+        "bytes": 62565,
+        "sha256": "1e0288e4ff219bc0741b562f3b3b55f4adbb70c4a4fe35110a32dbf4b962b713"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/form.png",
+        "bytes": 89106,
+        "sha256": "a6e85bfea03284c291cac94a85ccebdcaa99ee65f7f4695487f66802b22cfa93"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/ime.png",
+        "bytes": 156194,
+        "sha256": "56ccfa2538ce3f7d2878cd6723d09e57613be4a8de8161828a50aaef02a2248f"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/ime_closed.png",
+        "bytes": 88649,
+        "sha256": "591644f594103f90edcd35ff266f9eaec994967603babb0906b671cc3e04dc14"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/menu.png",
+        "bytes": 49213,
+        "sha256": "939a9bb731a30beb45656d48d051846f49aa8b2f6032906c5170760451e3b4b4"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/reopened.png",
+        "bytes": 89380,
+        "sha256": "d6d752681b88da41919186eadaa28d03b8b9299842dd4151ad24886bcb7c42da"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/saved.png",
+        "bytes": 72519,
+        "sha256": "fb8844ed960e823df10399af82f5af8f6b909ffb925ef8978c91c93932da1a77"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/dns_empty.png",
+        "bytes": 101640,
+        "sha256": "ac700312e44b69aa63377d75f8d0ca8ea2c2baa2ac7050d107fc3b5add2a15e8"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/returned.png",
+        "bytes": 101640,
+        "sha256": "ac700312e44b69aa63377d75f8d0ca8ea2c2baa2ac7050d107fc3b5add2a15e8"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/scrolled.png",
+        "bytes": 126955,
+        "sha256": "85c60d7f33284d15265dd4ad49b1752b4eb917485c2ea4eaeec8be99a019da73"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/search.png",
+        "bytes": 142694,
+        "sha256": "d9fa4d9a893f061f1faaa73c833472fd9844a6cbe86478df1f887f141addcd5d"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/search_ime_closed.png",
+        "bytes": 80649,
+        "sha256": "2f98a29f204343d2a4f3f06b0b8ad83e7de30ae5cf76b53020f41df30813d880"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/selector.png",
+        "bytes": 106304,
+        "sha256": "adee1478dd5cc5a019452d3dd791967ae148f8a11b13af14fcdcccbc75e2b5f5"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_dns_actual.png",
+        "bytes": 74972,
+        "sha256": "72cdbda8a7df7a213865dd3242c318ccbc492d1d1c2345ad86fdaf8decb5de9a"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_dns_add_options.png",
+        "bytes": 129026,
+        "sha256": "f5cf98d0013baf6c934ff24a5b1d1f7297e80be087c8340aa67bc9c77d7b8adf"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_dns_empty.png",
+        "bytes": 92672,
+        "sha256": "86f6c400e22b3d7474022757c198e96a6fbf203dae0e73a075b9026c55301de8"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_dns_listen_editor.png",
+        "bytes": 72139,
+        "sha256": "e98841e43dfd964d7db71e5e61b6f458fe14f1062fb66ca2b6111ef0e51fcb56"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_rules_actual.png",
+        "bytes": 129453,
+        "sha256": "f3172def17538e03a776a96f7648197bf2d9e35c44740e3a2f3fa781f6bc8dd1"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_rules_add_form.png",
+        "bytes": 90967,
+        "sha256": "9acf31994ade876d865a8795501aada8a4b6813dd472858df6b07050842cdba4"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_rules_empty.png",
+        "bytes": 54793,
+        "sha256": "0fdeccfffbaa502912e84bb189e089926de116549746bf0a3b79cd054f43a722"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_rules_presets.png",
+        "bytes": 173292,
+        "sha256": "96b1a2cc7dff3e1d60fe86ccf7a0751c488ef2b1dfd3d88844e63927c00ca263"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/global_rules_presets_selected.png",
+        "bytes": 173602,
+        "sha256": "f2c3ae29e72a1b7390232575b93c5c6e73144ac0227ec45bd94029a52894becc"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_cancelled.png",
+        "bytes": 54708,
+        "sha256": "75482301f1c425d9f6ea88f49672ffb8501152bb4215554b2a00214f924e485e"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_discard.png",
+        "bytes": 93338,
+        "sha256": "506d42ca73a7b71005cca54ea9d07c9dc4f11c30f66c29244deb93c401ee926c"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_dns_empty.png",
+        "bytes": 90265,
+        "sha256": "c6972e62f7909b66bd5b6870d227ee4e7e2ce5011b373aa328b75c9ae3ad0587"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_dns_return.png",
+        "bytes": 90359,
+        "sha256": "eeca25fc3f563b8962a90835dd9266112bc46350def100bbd98c50a71e8f8ed4"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_dns_scrolled.png",
+        "bytes": 112308,
+        "sha256": "1acf67fac258d084b0da9121cdf70d1748a2b080e667b9eb5842dbc4205c41ef"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_dns_search.png",
+        "bytes": 132423,
+        "sha256": "0d744cf4c43aa6eb5e90162cc150c8e0a5bfeea1187bf293920ca37477459f02"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_dns_selector.png",
+        "bytes": 126127,
+        "sha256": "6a0a8698d4fc944d9009a396a68f029c8cee8cdb194a2f2f400b6eb64beb0178"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_edit.png",
+        "bytes": 99218,
+        "sha256": "e677f16f29c60dfa343b59c0bc2a4bca44cb3ffecfcd72c821a7ede0f3012cb4"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_empty.png",
+        "bytes": 54979,
+        "sha256": "1f5fb77d355aa1882ff64fe49e54b0521aa120f86da30dfb321852f398cf09bb"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_form.png",
+        "bytes": 90794,
+        "sha256": "243ed3c7f619795616aaa59cdbf1336a1992c00240adcdf7932102128cef4e01"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_ime.png",
+        "bytes": 148371,
+        "sha256": "e6b040fe696cdcfedc40e1800150a7829d07b8da5003bc8d90d7f6a13d796094"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_ime_closed.png",
+        "bytes": 88792,
+        "sha256": "d3aa204d88200cec577f8ced9d91b4b8cc296e6872b2c1ff2edbed3726d16680"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_recreated.png",
+        "bytes": 58387,
+        "sha256": "62ecc83f900f6f0d39c70157546924d0c5dddb3393cfb70e35879dd44cf24dca"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_saved.png",
+        "bytes": 58387,
+        "sha256": "62ecc83f900f6f0d39c70157546924d0c5dddb3393cfb70e35879dd44cf24dca"
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal5/vis093_main_selected.png",
+        "bytes": 61730,
+        "sha256": "66337eb4c3d2d7ef6662ad4678b6ae992866df2c39d87ef628e032f275a0acc1"
+      }
+    ],
+    "continuousRecordings": [
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-route1/route.mp4",
+        "bytes": 9565505,
+        "sha256": "1d1d7233218878b44b25b5c08d94c6dffffc1b66250b3d7f204bd0a9db5f33e2",
+        "durationSeconds": 21.227144,
+        "frames": 765,
+        "sampledFrames": 64,
+        "resolution": [
+          1080,
+          2400
+        ]
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/flutter-dns-route1/route.mp4",
+        "bytes": 5007345,
+        "sha256": "6a239105880599b40a2c3e7a4d39352f2880e6bf935fe7e49ebd8b266abb69b6",
+        "durationSeconds": 11.359267,
+        "frames": 392,
+        "sampledFrames": 66,
+        "resolution": [
+          1080,
+          2400
+        ]
+      },
+      {
+        "file": "acceptance-artifacts/global-rules-route-poco-20261123/kotlinfinal3/route.mp4",
+        "bytes": 21546029,
+        "sha256": "225096953b83d31bfa78da2d58f65fa202bd9637a7c7ad03205b5b95b7300a12",
+        "durationSeconds": 49.3916,
+        "frames": 1181,
+        "sampledFrames": 63,
+        "resolution": [
+          1080,
+          2400
+        ]
+      }
+    ],
+    "videoBoundary": "Kotlinfinal3 video uses identical product APK; final test-only selector/wait/filter assertions are verified by kotlinfinal5. Original PTS retained; do not interpret video length or encoded frame gaps as jank/response time.",
+    "comparison": {
+      "file": "acceptance-artifacts/global-rules-route-poco-20261123/comparison-final.jpg",
+      "bytes": 127395,
+      "sha256": "e85c04fef5cd9f14c736c36d2785d39041dae4010de75122630cb50b5395e0ce"
+    }
+  },
+  "observations": {
+    "savedCard": {
+      "flutterSurfaceRows": [
+        287,
+        424
+      ],
+      "kotlinSurfaceRows": [
+        287,
+        424
+      ],
+      "heightPixels": 138,
+      "surfaceRgb": [
+        37,
+        38,
+        40
+      ],
+      "scope": "single saved DOMAIN/DIRECT rule at this exact device density"
+    },
+    "ime": "Before fix Kotlin form title moved near screen top; after fix > screen height/4 with actual IME visible, all three fields remain above keyboard.",
+    "remainingDnsDifferences": [
+      "Empty-state vertical placement, illustration, button material/text.",
+      "Kotlin tools subpage retains Dock; Flutter reference page has none.",
+      "Reference selector includes Prefer H3 and additional keys; functional mapping needs separate review.",
+      "Search sheet expansion/IME and exact typography/spacing not fully identical."
+    ]
+  },
+  "nonFinalAttempts": [
+    {
+      "run": "kotlinfinal2",
+      "result": "failed selection-unselect assertion",
+      "reason": "Test reused pre-selection coordinates after toolbar shifted the row; fixed by re-reading current toggle bounds; cleanup marker passed."
+    },
+    {
+      "run": "kotlinfinal4",
+      "result": "3 passed / 1 failed",
+      "reason": "Legacy globalSettings text finder matched both search field and new rule content; changed to assert within stable rule-id node."
+    },
+    {
+      "step": "cleanup",
+      "result": "pm path returned 1 after successful uninstall",
+      "reason": "This Android returns exit 1 for an absent package; final cleanup handles absence explicitly and verified all three packages absent."
+    }
+  ],
+  "preservation": {
+    "onlyIsolatedPackagesMutated": true,
+    "productionVpnPidObservedAtStart": 20700,
+    "productionAppVersionObserved": "0.1.18 / 1018",
+    "originalFlutterVersionObserved": "0.9.4 / 2026113907",
+    "originalFlutterStarted": false,
+    "originalYamlReadOrUploaded": false,
+    "runtimeInMotion": "STOPPED",
+    "motionProfilesEmptyAndSelectionNull": true,
+    "fullPreferenceRowsScriptsDraftsReceiptsVerifiedAndRestored": true,
+    "installedHashes": {
+      "com.lonnnnnng.flclash.motion": "b15412c2fd8c74d0bb3354309095c8d8dd62d21d74cc35c7383eb6e32c5c86e6",
+      "com.lonnnnnng.flclash.motion.test": "d739aaf60d2c00065d59e98c494f89305fffdaeb92735fe053975a99186a9549"
+    },
+    "packages": {
+      "com.lonnnnnng.flclash": [
+        "versionCode=1018 minSdk=24 targetSdk=37",
+        "versionName=0.1.18",
+        "lastUpdateTime=2026-11-23 19:51:05",
+        "firstInstallTime=2026-11-23 18:27:08"
+      ],
+      "com.follow.clash": [
+        "versionCode=2026113907 minSdk=24 targetSdk=37",
+        "versionName=0.9.4",
+        "lastUpdateTime=2026-11-22 14:21:51",
+        "firstInstallTime=2026-11-07 02:44:08"
+      ]
+    },
+    "productionVpnPidUnchanged": 20700,
+    "isolatedPackagesRemoved": true,
+    "temporaryFilesRemoved": [
+      "/sdcard/Movies/vis093-flutter-route1.mp4",
+      "/sdcard/Movies/vis093-flutter-dns-route1.mp4",
+      "/sdcard/Movies/vis093-kotlin-kotlinfinal2.mp4",
+      "/sdcard/Movies/vis093-kotlin-kotlinfinal3.mp4",
+      "/sdcard/vis093-flutter.xml"
+    ],
+    "settingsAtEnd": {
+      "font_scale": "1.0",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "window_animation_scale": "1.0",
+      "transition_animation_scale": "1.0",
+      "animator_duration_scale": "null"
+    }
+  },
+  "limits": [
+    "Fixed older Flutter component reference is not newest full-application runtime parity.",
+    "093 remains open for full Flutter MainActivity, long rule-list scrolling/dragging, remaining types and light-theme route.",
+    "No new performance/Perfetto/jank attribution or stable performance gain claim.",
+    "Cleanup timeout intentionally fails rather than racing a pending save; isolated package is reclaimed externally."
+  ],
+  "next": "DNS full-page empty state/selector parity and global-rule long-list routes, then remaining subpages and menu attribution."
+}
