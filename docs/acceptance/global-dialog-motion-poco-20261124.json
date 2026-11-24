@@ -1,0 +1,145 @@
+{
+  "id": "KUI-VIS-097-global-dialog-motion",
+  "date": "2026-11-24",
+  "status": "completed-with-limits",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36
+  },
+  "scope": {
+    "dialog": "ConnectionModalSheet opened from the configuration source flow into the remote subscription form",
+    "sharedImplementation": "Global bottom-sheet scrim, entrance/exit translation, and floating-form presentation",
+    "excluded": [
+      "Material3 AlertDialog internals and call sites",
+      "FloatingInputDialog/MoreScalarDialog independent windows",
+      "Full Flutter pixel parity",
+      "Performance results under a running proxy core"
+    ]
+  },
+  "source": {
+    "startingCommit": "7507aa0a850b1faaf9a04f3670829f9e9be58510",
+    "branch": "kotlin",
+    "file": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt",
+    "change": "Read presentation progress during draw/layer updates instead of feeding every frame through sheet layout and form recomposition; keep keyboard, detents, touch, duration and submit semantics unchanged."
+  },
+  "build": {
+    "command": "./gradlew :app:testDebugUnitTest :app:assemblePerformanceBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashPerformanceBenchmark=true",
+    "result": "passed",
+    "appJvm": {
+      "suites": 85,
+      "tests": 634,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "debugLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "releaseLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "performanceBenchmarkApk": {
+      "package": "com.lonnnnnng.flclash.performance",
+      "version": "0.1.18-performance",
+      "sha256": "f85a25b1667ee58154849022c10617963922a22f27bfc0ff203ab4b7e8071757"
+    }
+  },
+  "deviceRegression": {
+    "database": "independent empty PerformanceBenchmark database",
+    "core": "stopped",
+    "roundsBefore": 5,
+    "roundsAfter": 5,
+    "stages": [
+      "source menu open",
+      "remote subscription form open",
+      "IME back/hide",
+      "form close"
+    ],
+    "assertions": "All expected screens remained reachable in each round; no crash, stuck dialog, submit, profile import, or configuration mutation.",
+    "baselineGfxJankPercentMedian": {
+      "sourceOpen": 9.091,
+      "remoteFormOpen": 5.714,
+      "imeClose": 0.0,
+      "formClose": 6.897
+    },
+    "finalGfxJankPercentMedian": {
+      "sourceOpen": 8.824,
+      "remoteFormOpen": 5.634,
+      "imeClose": 0.0,
+      "formClose": 0.0
+    },
+    "measurementLimit": "gfxinfo used shell-driven taps and a 1.2s observation window; small medians are directional only and do not establish stable app-wide jank improvement."
+  },
+  "perfetto": {
+    "processor": "Perfetto trace_processor v59.1 local build",
+    "window": "500ms from the first MainActivity frame for each dialog transition",
+    "baseline": {
+      "apkSha256": "5c02e8b86393937bf523bfd40e8ca3f67fd4a3183d0d6c6ea450f4dab03ac530",
+      "trace": {
+        "path": "../acceptance-artifacts/dialog-global-poco-20261124/trace-current1/trace.perfetto-trace",
+        "bytes": 9427314,
+        "sha256": "613f915c020c0d7a90f173125ca70182496fed16b212d9157d72226941d475aa"
+      },
+      "composeRecomposeSlices": 94,
+      "composeRecomposeMs": 61.065,
+      "maxMeasureMs": 31.915,
+      "popupToDialogGapMs": 12.551
+    },
+    "final": [
+      {
+        "trace": {
+          "path": "../acceptance-artifacts/dialog-global-poco-20261124/trace-final1/trace.perfetto-trace",
+          "bytes": 9014410,
+          "sha256": "34fb943fd2027814a4c5077a419953dbf0ddef093575e021f154c476f56201aa"
+        },
+        "composeRecomposeSlices": 58,
+        "composeRecomposeMs": 54.041,
+        "maxMeasureMs": 31.715,
+        "popupToDialogGapMs": 12.889
+      },
+      {
+        "trace": {
+          "path": "../acceptance-artifacts/dialog-global-poco-20261124/trace-final2/trace.perfetto-trace",
+          "bytes": 8998526,
+          "sha256": "d8035f1dd61bfc0d6bdf25b0886417b064007f0fd9fc7a5dbb9e5042ffcb52cc"
+        },
+        "composeRecomposeSlices": 57,
+        "composeRecomposeMs": 57.983,
+        "maxMeasureMs": 32.855,
+        "popupToDialogGapMs": 15.082
+      }
+    ],
+    "traceIntegrity": "Perfetto stats contained zero traced buffer discard and zero positive error/data_loss counters in the final trace.",
+    "conclusion": "The two final traces consistently contain fewer Compose:recompose slices during presentation (57-58 versus 94); summed recompose duration is modestly lower but varies between final runs. Initial AndroidOwner measurement remains about 31.5-32.9ms and the Popup-to-Dialog gap is unchanged. This is a targeted reduction in repeated presentation work, not proof of faster first visibility or a stable app-wide performance gain.",
+    "traceCapture": "One interaction per trace; no screen recording, screenshots, or instrumentation ran concurrently."
+  },
+  "deviceProtection": {
+    "productionPackage": "com.lonnnnnng.flclash",
+    "productionPidBeforeAndAfter": "20700",
+    "productionVersionBeforeAndAfter": "0.1.18/code1018",
+    "productionInstallTimesUnchanged": true,
+    "vpnOrProxyServiceChanged": false,
+    "originalFlutterPackageChanged": false,
+    "authorized1YamlReadOrChanged": false,
+    "performancePackageRemoved": true,
+    "temporaryNotificationPermissionClearedWithPackageRemoval": true
+  },
+  "rawEvidenceRoot": "../../../acceptance-artifacts/dialog-global-poco-20261124/",
+  "failuresPreserved": [
+    "The first two attempts stopped at the device lock screen/initial notification prompt before any dialog sample; no measurements were taken from those attempts.",
+    "An initial trace query used the historical directory and a follow-up query had a fixed prior-run timestamp; both queries failed/returned no result. The trace was retained and reprocessed from the correct directory using the MainActivity FrameTimeline start.",
+    "One combined Debug and PerformanceBenchmark build attempt exposed a missing background import; the import was restored and the full final build passed."
+  ],
+  "release": {
+    "requested": true,
+    "tagCreated": false,
+    "publication": "pending"
+  }
+}

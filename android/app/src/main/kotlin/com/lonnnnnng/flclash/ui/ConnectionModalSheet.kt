@@ -64,6 +64,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -257,11 +258,17 @@ internal fun ConnectionModalSheet(
             // 作者 long：遮罩由 Compose 按主题绘制，关闭系统 Dialog 的额外调暗，避免双层遮罩改变浅色对比度。
             (view.parent as? DialogWindowProvider)?.window?.setDimAmount(0f)
         }
+        val scrimColor = MaterialTheme.colorScheme.scrim
+        val scrimBaseAlpha = if (floatingForm) {
+            if (com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current) .48f else .2f
+        } else .32f
         Box(Modifier.fillMaxSize()) {
             Box(
                 Modifier.fillMaxSize().testTag("connection_detail_scrim")
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha =
-                        (if (floatingForm) { if (com.lonnnnnng.flclash.ui.theme.LocalKClashDarkTheme.current) .48f else .2f } else .32f) * presentation.value * scrimFade))
+                    .drawBehind {
+                        // 作者 long：遮罩透明度只改变像素，放在绘制阶段读取，避免弹层动画每帧重组完整表单。
+                        drawRect(scrimColor.copy(alpha = scrimBaseAlpha * presentation.value * scrimFade))
+                    }
                     .clickable(
                         remember { MutableInteractionSource() },
                         indication = null,
@@ -431,16 +438,21 @@ internal fun ConnectionModalSheet(
                     val height = (geometry.availableHeight - offset).coerceAtLeast(1f)
                     // 作者 long：半停靠的表单浮起8dp，展开/键盘时归零；布局补偿缩放后的底部，避免把搜索栏挤出可见区域。
                     val reach = ((height / geometry.availableHeight - 9f / 16f) / (.9f - 9f / 16f)).coerceIn(0f, 1f)
-                    val floating = if (floatingForm) (1f - reach) * (1f - WindowInsets.ime.getBottom(density) / with(density) { 120.dp.toPx() }).coerceIn(0f, 1f) *
-                        (if (hasEntered) 1f else presentation.value.coerceIn(0f, 1f)) else 0f
+                    // 作者 long：卡片浮起只取决于锚点和键盘，进场进度留给图层变换，避免动画每帧重测整张表单。
+                    val floating = if (floatingForm) (1f - reach) *
+                        (1f - WindowInsets.ime.getBottom(density) / with(density) { 120.dp.toPx() }).coerceIn(0f, 1f) else 0f
                     val inset = with(density) { 8.dp.toPx() } * floating
                     val scale = (1f - 2f * inset / constraints.maxWidth).coerceAtLeast(.1f)
                     val visibleHeight = with(density) { ((height - inset) / scale).coerceAtLeast(1f).toDp() }
-                    val presentationOffset = offset + (geometry.availableHeight - offset) * (1f - presentation.value)
                     Surface(
                         modifier = Modifier.fillMaxWidth().height(visibleHeight)
-                            .offset { IntOffset(0, presentationOffset.roundToInt()) }
-                            .graphicsLayer { scaleX = scale; scaleY = scale; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(.5f, 0f) }
+                            .offset { IntOffset(0, offset.roundToInt()) }
+                            .graphicsLayer {
+                                // 作者 long：位移进度在图层阶段读取；首帧维持底部停靠位置计算，动画期间不触发表单重组。
+                                translationY = (geometry.availableHeight - offset) * (1f - presentation.value)
+                                scaleX = scale; scaleY = scale
+                                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(.5f, 0f)
+                            }
                             .pointerInput(contentScrollState) {
                                 // 作者 long：从列表中部开始下滑只滚回顶部，同一手势不能继续关闭面板，避免长详情误退出。
                                 awaitEachGesture {

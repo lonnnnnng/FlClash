@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-24",
+  "tag": "kclash-v0.1.19",
+  "versionName": "0.1.19",
+  "versionCode": 1019,
+  "sourceCommit": "pending-release-preparation-commit",
+  "publication": {
+    "status": "pending",
+    "latestAtVerification": null,
+    "draft": null,
+    "prerelease": null,
+    "releaseUrl": null,
+    "workflowRunId": null,
+    "workflowConclusion": null,
+    "assets": []
+  },
+  "preflight": {
+    "appJvmTests": {
+      "suites": 85,
+      "tests": 634,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "performanceR8Build": "passed",
+    "debugLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "releaseLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "featureDeviceAcceptance": "POCO R8 PerformanceBenchmark before/after five-round dialog flow; see global-dialog-motion-poco-20261124.json",
+    "publicReleaseInstallation": false
+  },
+  "featureAcceptance": "global-dialog-motion-poco-20261124.json",
+  "phoneInstallation": false,
+  "limitations": [
+    "Only the shared ConnectionModalSheet animation phase was optimized; first window measurement and other dialog implementations remain outside this fix.",
+    "Perfetto showed fewer Compose recomposition slices in two final traces, but did not establish stable app-wide jank improvement.",
+    "The formal signed Release APK will be produced and verified by the tag-triggered GitHub workflow."
+  ],
+  "artifacts": "../../../acceptance-artifacts/dialog-global-poco-20261124/"
+}
