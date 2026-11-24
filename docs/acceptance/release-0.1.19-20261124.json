@@ -4,16 +4,46 @@
   "tag": "kclash-v0.1.19",
   "versionName": "0.1.19",
   "versionCode": 1019,
-  "sourceCommit": "pending-release-preparation-commit",
+  "sourceCommit": "bc7460273e5e28e33d855939c2b6cffcd93250b3",
   "publication": {
-    "status": "pending",
-    "latestAtVerification": null,
-    "draft": null,
-    "prerelease": null,
-    "releaseUrl": null,
-    "workflowRunId": null,
-    "workflowConclusion": null,
-    "assets": []
+    "status": "published",
+    "latestAtVerification": true,
+    "draft": false,
+    "prerelease": false,
+    "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.19",
+    "publishedAt": "2026-11-24T03:05:22Z",
+    "workflowRunId": 45315545653,
+    "workflowConclusion": "success",
+    "workflowDurationSeconds": 758,
+    "assets": [
+      {
+        "name": "KClash-0.1.19-android-arm64-v8a.apk",
+        "bytes": 49636773,
+        "sha256": "7d8f506caf7a79260ad5029f6a8c7d57c648f85f25b9bb9bbee5a99cf16c5fd8",
+        "githubDigestMatches": true
+      },
+      {
+        "name": "SHA256SUMS",
+        "bytes": 102,
+        "sha256": "2afdb1499ece664d68956165917c2b66bd2ce82f5ca8f29ece5dbf74e240dd26",
+        "githubDigestMatches": true
+      }
+    ]
+  },
+  "verification": {
+    "sha256SumsMatches": true,
+    "packageName": "com.lonnnnnng.flclash",
+    "versionCode": 1019,
+    "versionName": "0.1.19",
+    "abi": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "targetSdk": 37,
+    "debuggable": false,
+    "signatureScheme": "v2",
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "mlKitAndYamlR8Gate": "passed in release CI"
   },
   "preflight": {
     "appJvmTests": {
@@ -44,7 +74,7 @@
   "limitations": [
     "Only the shared ConnectionModalSheet animation phase was optimized; first window measurement and other dialog implementations remain outside this fix.",
     "Perfetto showed fewer Compose recomposition slices in two final traces, but did not establish stable app-wide jank improvement.",
-    "The formal signed Release APK will be produced and verified by the tag-triggered GitHub workflow."
+    "The published Release APK was not installed on the phone; POCO still has the existing 0.1.18 formal package."
   ],
   "artifacts": "../../../acceptance-artifacts/dialog-global-poco-20261124/"
 }
