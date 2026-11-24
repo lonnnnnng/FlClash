@@ -20,7 +20,7 @@ Popup 到 Dialog 的间隙基线为 12.719ms，候选为 12.993ms 和 13.095ms�
 
 最终源码在 POCO 的隔离 Motion 包上通过真实 MainActivity 用例 1/1：无效订阅地址校验、真实 IME 导航、隐藏键盘、Activity 重建后保留名称/地址草稿、age 密钥清空、返回关闭，以及正式库/脚本/正文/偏好/选择不变；运行态保持 STOPPED。用例不提交导入、不访问网络。Debug、未签名 Release-R8、Motion 与 Motion AndroidTest 构建通过；Motion JVM 634 项通过；Debug、Release、Motion Lint 均 0 错误、11 警告、1 提示。
 
-本组没有发布新版本，公开版仍是 0.1.19。POCO 正式包仍为 0.1.18；本轮独立 Motion 与 Performance 包已从 POCO 卸载。Material3 AlertDialog、其它自绘输入 Dialog、完整 Flutter 页面等价、核心运行时性能和菜单 GPU/fence 归因不在本组结论内。
+本组已随 KClash 0.1.20 正式发布。POCO 正式包仍为 0.1.18，本轮 Release APK 未安装；独立 Motion 与 Performance 包已从 POCO 卸载。Material3 AlertDialog、其它自绘输入 Dialog、完整 Flutter 页面等价、核心运行时性能和菜单 GPU/fence 归因不在本组结论内。
 
 首次自动化连接测试使用 Gradle connectedMotionBenchmarkAndroidTest。尽管传入 device serial 属性，AGP 仍将同一隔离用例分发到所有在线设备，包含 Redmi Note 8 Pro。该轮结果不纳入验收；随后已用 adb -s 31936bb6 单独复跑 POCO 并得到 1/1 通过。为遵守设备边界，没有再查询 Redmi；相关自动化日志与 POCO-only 复跑日志均留在验收材料目录。
 

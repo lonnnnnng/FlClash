@@ -4,7 +4,9 @@
 
 2026-11-23视觉续验KUI-VIS-095：DNS非空字段、列表编辑、默认选择、错误重试、重建防重放和外部删除冲突已在POCO8/8集中回归；浅深真实MainActivity路线2/2，130相关JVM与2196组双语通过。全局DNS15项与当前Flutter上游字段集合一致。主题、语言、检测更新不纳入Flutter对齐；其余视觉性能继续PARTIAL。详见[实现](dns-nonempty-editor-alignment.md)与[验收](acceptance/dns-nonempty-editor-poco-20261123.json)。
 
-2026-11-23最新发布：KClash 0.1.18/code1018 已发布为 GitHub Latest，标签`kclash-v0.1.18`固定`d042b394`。CI `45166052906`用时11分33秒，签名ARM64打包与版本/ABI/DEX/R8/证书门禁通过；公开APK 49,595,989字节，SHA`d49e8914…082ef3f9`与GitHub digest和SHA256SUMS一致，回下载验签通过。按用户要求直接发布，沿用632项App单测与POCO2/2及真实VPN检查证据，本轮不重跑测试、不操作手机。见[发布证据](acceptance/release-0.1.18-20261123.json)。
+2026-11-24最新发布：KClash 0.1.20/code1020 已发布为 GitHub Latest，标签 kclash-v0.1.20 固定 a245d75f。CI 45338327994 用时13分10秒，签名 ARM64 Release、版本/ABI/R8/DEX/ML Kit/YAML/证书门禁和发布均通过；公开 APK 49,636,949字节，SHA-256 8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f 与 GitHub digest、SHA256SUMS一致，回下载验签及包元数据核对通过。版本包含 KUI-VIS-098 弹框测量定向优化；性能结论仍限于两份 POCO trace 的表单测量切片，未证明全局 jank 改善。POCO正式包仍为0.1.18，本次Release APK未安装。[发布验收](acceptance/release-0.1.20-20261124.json)。
+
+2026-11-23历史发布：KClash 0.1.18/code1018 已发布为 GitHub Latest，标签`kclash-v0.1.18`固定`d042b394`。CI `45166052906`用时11分33秒，签名ARM64打包与版本/ABI/DEX/R8/证书门禁通过；公开APK 49,595,989字节，SHA`d49e8914…082ef3f9`与GitHub digest和SHA256SUMS一致，回下载验签通过。按用户要求直接发布，沿用632项App单测与POCO2/2及真实VPN检查证据，本轮不重跑测试、不操作手机。见[发布证据](acceptance/release-0.1.18-20261123.json)。
 
 2026-11-23更新检查续验：应用更新已改为只读GitHub `releases/latest` 的HEAD跳转，不再调用REST API或读取更新说明；工具页直接弹出等待/结果，新版确认打开GitHub。POCO真实VPN下检查成功，单次真实HEAD和四状态弹框2/2，App JVM632项通过，正式签名R8/Release Lint/扫码DEX通过。手机已原位安装本地0.1.17修复候选并回拉验SHA，公开0.1.17资产未替换。见[验收](acceptance/app-update-web-poco-20261123.json)。
 

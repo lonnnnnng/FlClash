@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-24",
+  "tag": "kclash-v0.1.20",
+  "versionName": "0.1.20",
+  "versionCode": 1020,
+  "sourceCommit": "a245d75fbaa656d7aee69277714d76c37a0e9d73",
+  "featureCommit": "34c98905e95dae4d767b74f3b96b6b11d5655fdc",
+  "publication": {
+    "status": "published",
+    "latestAtVerification": true,
+    "draft": false,
+    "prerelease": false,
+    "releaseUrl": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.20",
+    "publishedAt": "2026-11-24T06:22:25Z",
+    "workflowRunId": 45338327994,
+    "workflowUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/45338327994",
+    "workflowConclusion": "success",
+    "workflowDurationSeconds": 794,
+    "tagAndBranchPointToSourceCommit": true,
+    "assets": [
+      {
+        "name": "KClash-0.1.20-android-arm64-v8a.apk",
+        "bytes": 49636949,
+        "sha256": "8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f",
+        "githubDigestMatches": true
+      },
+      {
+        "name": "SHA256SUMS",
+        "bytes": 102,
+        "sha256": "8f05e18971e512d8b58f5e47800ab627383f487cb58d12ddbd88a6b25794f066",
+        "githubDigestMatches": true
+      }
+    ],
+    "jobDurationSeconds": 790
+  },
+  "verification": {
+    "downloadedSha256SumMatches": true,
+    "packageName": "com.lonnnnnng.flclash",
+    "versionName": "0.1.20",
+    "versionCode": 1020,
+    "abi": [
+      "arm64-v8a"
+    ],
+    "minSdk": 24,
+    "targetSdk": 37,
+    "debuggable": false,
+    "signatureSchemeV2": true,
+    "signerCount": 1,
+    "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "mlKitAndYamlR8Gate": "passed in release workflow"
+  },
+  "preflight": {
+    "featureAcceptance": "docs/acceptance/profile-form-measurement-poco-20261124.json",
+    "appJvmTests": {
+      "suites": 85,
+      "tests": 634,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionDeviceRegression": "POCO F2 Pro/API36, real MainActivity form/IME/draft recreation 1/1; no network submission or import",
+    "debugLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "releaseLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "motionLint": {
+      "result": "passed",
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "releaseSigningAndFormalR8": "passed in workflow",
+    "publicReleaseInstallation": false
+  },
+  "phoneInstallation": false,
+  "limitations": [
+    "This release includes a targeted reduction in repeated title measurement/composition for the remote subscription form.",
+    "The Popup-to-Dialog interval remained about 13ms and the Perfetto sample does not establish stable app-wide jank improvement.",
+    "The signed Release APK was not installed on POCO; the existing formal 0.1.18 installation remains unchanged."
+  ],
+  "downloadedAssets": "../../../acceptance-artifacts/release-0.1.20-20261124/download/"
+}
