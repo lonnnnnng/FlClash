@@ -23,7 +23,7 @@ import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 
-/** 作者 long：整版批选、问题及图标集中回归，远程图片只访问测试自建回环服务，不读取正式配置。 */
+/** 作者 long：整版批选、问题与策略组图标处理回归，远程图片只访问测试自建回环服务，不读取正式配置。 */
 class ProxyGroupParityInstrumentedTest {
     @get:Rule val compose = createComposeRule()
     private val source = "proxy-groups: [{name: Main, type: select, proxies: [DIRECT]}, {name: Other, type: fallback, proxies: [Main]}]\nrules: ['MATCH,Main']\n"

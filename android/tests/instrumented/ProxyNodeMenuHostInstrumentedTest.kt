@@ -92,9 +92,9 @@ class ProxyNodeMenuHostInstrumentedTest {
             compose.activityRule.scenario.recreate(); compose.waitForIdle()
             compose.onNodeWithTag("nav_tools").performClick()
             compose.waitForIdle()
-            compose.onNodeWithTag("tools_item_resources_settings").performScrollTo()
+            compose.onNodeWithTag("tools_item_advanced").performScrollTo()
             if (running) {
-                val target = compose.onNodeWithTag("tools_item_resources_settings").fetchSemanticsNode().boundsInRoot
+                val target = compose.onNodeWithTag("tools_item_advanced").fetchSemanticsNode().boundsInRoot
                 val feedback = compose.onAllNodesWithText("${added.name} 已在本地代理中").fetchSemanticsNodes().map { it.boundsInRoot }
                 androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().sendStatus(2, android.os.Bundle().apply {
                     putString("kclash_touch_bounds", "target=$target feedback=$feedback")
@@ -103,10 +103,10 @@ class ProxyNodeMenuHostInstrumentedTest {
             }
             // 作者 long：重建可能重播仍未消费的重复提示；提示覆盖卡片时不能向其后方注入点击，再用等待窗口掩盖漏触。
             compose.waitUntil(10_000) { compose.onAllNodesWithText("${added.name} 已在本地代理中").fetchSemanticsNodes().isEmpty() }
-            compose.onNodeWithTag("tools_item_resources_settings").performClick()
+            compose.onNodeWithTag("tools_item_advanced").performClick()
             // 作者 long：整页Dialog由Android Window异步加入；运行态轮询时必须等新窗口就绪，不能把首帧未注册当成入口缺失。
             compose.waitUntil(10_000) { compose.onAllNodesWithText("本地代理").fetchSemanticsNodes().isNotEmpty() }
-            compose.onNodeWithText("本地代理").performClick()
+            compose.onNodeWithTag("advanced_item_local_proxies").performClick()
             compose.waitUntil(10_000) { compose.onAllNodesWithTag("local_proxies_page").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithTag("local_proxy_$addedId").performScrollTo().assertIsDisplayed()
             if (running) capture("running_node_local_directory_after_recreate")

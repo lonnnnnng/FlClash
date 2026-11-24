@@ -17,7 +17,8 @@ object NamedResourceUrls {
         require(label.trim().length <= 128) { "名称最多 128 字符" }
         // 作者 long：整批先校验再下载，避免末尾的无效链接让用户得到意外的部分导入。
         urls.forEach { url ->
-            require(IconSetCodec.validUrl(url) && URI(url).fragment == null) { "存在无效 URL，请使用 HTTP/HTTPS 地址" }
+            val normalized = runCatching { RuleResources.normalizeUrl(url) }.getOrNull()
+            require(normalized != null && URI(normalized).fragment == null) { "存在无效 URL，请使用 HTTP/HTTPS 地址" }
         }
         return urls.map { NamedResourceUrl(it, if (urls.size == 1) label.trim() else "") }
     }

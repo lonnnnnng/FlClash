@@ -11,40 +11,6 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ResourceRepositoriesInstrumentedTest {
-    @Test fun iconGallerySyncKeepsRenameAndRejectsDeletedChangedOrInvalidVersions() = runBlocking {
-        assertPortraitDefaultFontConfiguration()
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val database = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
-        val start = CompletableDeferred<Unit>(); val finish = CompletableDeferred<Unit>()
-        var blocking = false
-        var content = """{"name":"远程图库","icons":[{"name":"A","url":"https://example.com/a.png"}]}"""
-        val repository = IconSetRepository(database, object : ScriptClient {
-            override suspend fun download(url: String): ScriptDownload {
-                if (blocking) { start.complete(Unit); finish.await() }
-                return ScriptDownload(content.toByteArray(), null)
-            }
-        })
-        try {
-            val row = repository.importUrl("https://example.com/icons.json")
-            blocking = true
-            val job = async(Dispatchers.IO) { repository.sync(row) }
-            start.await(); repository.rename(row.id, "我的图库"); finish.complete(Unit)
-            val synced = job.await()
-            assertEquals("我的图库", synced.name)
-            assertEquals(row.id, synced.id)
-            content = "{}"
-            assertTrue(runCatching { repository.sync(synced) }.isFailure)
-            assertEquals(synced, repository.all().single())
-            content = """{"icons":[{"url":"https://example.com/b.png"}]}"""
-            val changed = repository.options(synced, "改源", "https://example.com/next.json")
-            assertTrue(runCatching { repository.sync(synced) }.isFailure)
-            assertEquals("https://example.com/next.json", repository.all().single().url)
-            repository.delete(row.id)
-            assertTrue(runCatching { repository.sync(synced) }.isFailure)
-            assertTrue(repository.all().isEmpty())
-        } finally { database.close() }
-    }
-
     @Test fun scriptSyncCannotOverwriteConcurrentEditOrResurrectDeletedScript() = runBlocking {
         assertPortraitDefaultFontConfiguration()
         val context = ApplicationProvider.getApplicationContext<Context>()

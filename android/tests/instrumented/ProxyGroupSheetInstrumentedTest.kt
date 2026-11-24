@@ -112,24 +112,20 @@ class ProxyGroupSheetInstrumentedTest {
         }
     }
 
-    @Test fun nonemptyGalleryDecodesImageAndReturnsToSameSheetDraft() {
+    @Test fun recentGroupImageDecodesAndReturnsToSameSheetDraft() {
         assertPortraitDefaultFontConfiguration()
         val bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.RED) }
         val bytes = ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
         val url = "data:image/png;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
-        val gallery = ResourceIconSet("loaded", "已加载图库", icons = listOf(ResourceIcon("Red", url)), updatedAt = 1)
         var saved: ProxyGroupsSave? = null
         compose.setContent { KClashTheme {
-            CompositionLocalProvider(LocalResourceIconSets provides listOf(gallery)) {
-                VisualProxyGroupsEditor(Profile.custom(3103, "Images"), "", source(), false, initialGroupIndex = 0,
-                    onDismiss = {}, onSave = {}, onSaveDraft = { saved = it })
-            }
+            VisualProxyGroupsEditor(Profile.custom(3103, "Images"), "", source(), false, initialGroupIndex = 0,
+                onDismiss = {}, onSave = {}, onSaveDraft = { saved = it }, recentIcons = listOf(url))
         } }
         compose.onNodeWithTag("connection_detail_handle").performClick()
         val expanded = compose.onNodeWithTag("proxy_group_editor_sheet").fetchSemanticsNode().boundsInRoot.height
         compose.onNodeWithTag("proxy_group_icon").performClick()
-        compose.waitUntil(5000) { compose.onAllNodesWithTag("group_icon_source_set:loaded").fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithTag("group_icon_source_set:loaded").performClick()
+        compose.waitUntil(5000) { compose.onAllNodesWithTag("group_icon_recent_label").fetchSemanticsNodes().isNotEmpty() }
         val tile = compose.onNodeWithTag("group_icon_choice_0")
         compose.waitUntil(5000) {
             val image = tile.captureToImage().asAndroidBitmap()
@@ -137,9 +133,9 @@ class ProxyGroupSheetInstrumentedTest {
         }
         val viewport = compose.onNodeWithTag("connection_sheet_viewport").fetchSemanticsNode().boundsInRoot
         val short = compose.onNodeWithTag("proxy_group_editor_sheet").fetchSemanticsNode().boundsInRoot
-        assertTrue("单图图库应适配短内容", short.height < expanded && short.height <= viewport.height * .57f)
-        assertTrue("短图库应恢复浮动边距", short.left > viewport.left)
-        capture("group_sheet_nonempty_gallery")
+        assertTrue("单条最近图片应适配短内容", short.height < expanded && short.height <= viewport.height * .57f)
+        assertTrue("短列表应恢复浮动边距", short.left > viewport.left)
+        capture("group_sheet_recent_image")
         tile.performClick()
         compose.onNodeWithTag("proxy_group_form_confirm").assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(url, checkNotNull(saved).groups.single().text("icon")) }
@@ -230,18 +226,16 @@ class ProxyGroupSheetInstrumentedTest {
         compose.runOnIdle { assertEquals(listOf("Node 0", "Node 1"), checkNotNull(saved).groups.single().strings("proxies")) }
     }
 
-    @Test fun galleryAndYamlMiddleScrollDoNotCollapseExpandedSheet() {
+    @Test fun recentImagesAndYamlMiddleScrollDoNotCollapseExpandedSheet() {
         assertPortraitDefaultFontConfiguration()
-        val gallery = ResourceIconSet("long", "长图库", icons = (0 until 80).map { index ->
+        val recent = (0 until 80).map { index ->
             val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.rgb(index, 80, 120)) }
             val data = ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
-            ResourceIcon("Icon $index", "data:image/png;base64," + Base64.encodeToString(data, Base64.NO_WRAP))
-        }, updatedAt = 1)
+            "data:image/png;base64," + Base64.encodeToString(data, Base64.NO_WRAP)
+        }
         compose.setContent { KClashTheme {
-            CompositionLocalProvider(LocalResourceIconSets provides listOf(gallery)) {
-                VisualProxyGroupsEditor(Profile.custom(3107, "Long children"), "", source(80), false, initialGroupIndex = 0,
-                    onDismiss = {}, onSave = {})
-            }
+            VisualProxyGroupsEditor(Profile.custom(3107, "Long children"), "", source(80), false, initialGroupIndex = 0,
+                onDismiss = {}, onSave = {}, recentIcons = recent)
         } }
         compose.onNodeWithTag("connection_detail_handle").performClick()
         val top = compose.onNodeWithTag("proxy_group_editor_sheet").fetchSemanticsNode().boundsInRoot.top

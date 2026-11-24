@@ -18,8 +18,6 @@ class ResourceOrderRepositoryInstrumentedTest {
         val directory = File(context.cacheDir, "resource-order-${System.nanoTime()}").apply { mkdirs() }
         val isolated = object : ContextWrapper(context) { override fun getApplicationContext(): Context = this; override fun getFilesDir() = directory }
         val db = Room.inMemoryDatabaseBuilder(context, KClashDatabase::class.java).build()
-        val iconClient = object : ScriptClient { override suspend fun download(url: String): ScriptDownload = error("排序不允许下载") }
-        val icons = IconSetRepository(db, iconClient)
         val rules = RuleResourceRepository(isolated, db, object : SubscriptionClient {
             override suspend fun download(url: String): SubscriptionDownload = error("排序不允许下载")
         }, object : RuleResourceCompiler {
@@ -27,16 +25,6 @@ class ResourceOrderRepositoryInstrumentedTest {
             override suspend fun preview(path: String): String = error("排序不允许读预览")
         })
         try {
-            val galleries = (1..3).map { icons.importContent("""{"name":"图库$it","icons":[{"name":"YouTube.png","url":"https://example.org/$it.png"}]}""") }
-            icons.rename(galleries[0].id, "最新名称")
-            val latest = icons.all().associateBy { it.id }
-            icons.reorder(galleries.reversed().map { it.id })
-            assertEquals(galleries.reversed().map { latest.getValue(it.id) }, IconSetRepository(db, iconClient).all())
-            val beforeIcons = db.appPreferences().get(ICON_SETS_KEY)
-            for (ids in listOf(galleries.drop(1).map { it.id }, listOf(galleries[0].id, galleries[0].id, galleries[1].id), galleries.map { it.id } + "missing")) {
-                assertTrue(runCatching { icons.reorder(ids) }.isFailure)
-                assertEquals(beforeIcons, db.appPreferences().get(ICON_SETS_KEY))
-            }
             val entries = (1..3).map { rules.save("规则$it", "", "+.example$it.org\n".toByteArray()) }
             val renamed = rules.updateOptions(entries[0], "最新规则名", "")
             val files = entries.associate { row -> row.id to (rules.file(row).readBytes() to rules.file(row).lastModified()) }

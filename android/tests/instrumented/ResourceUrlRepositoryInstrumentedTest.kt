@@ -12,29 +12,6 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ResourceUrlRepositoryInstrumentedTest {
-    @Test fun concurrentIconImportsDeduplicateAtCommitAndKeepExistingContentOnRepeat() = runBlocking {
-        assertPortraitDefaultFontConfiguration()
-        val database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext<Context>(), KClashDatabase::class.java).build()
-        val gate = CompletableDeferred<Unit>(); val started = CompletableDeferred<Unit>(); val count = java.util.concurrent.atomic.AtomicInteger()
-        val repository = IconSetRepository(database, object : ScriptClient {
-            override suspend fun download(url: String): ScriptDownload {
-                if (count.incrementAndGet() == 2) started.complete(Unit)
-                gate.await()
-                return ScriptDownload("{\"icons\":[{\"name\":\"A\",\"url\":\"https://example.com/a.svg\"}]}".toByteArray(), null)
-            }
-        })
-        try {
-            val input = NamedResourceUrl("https://example.com/gallery.json")
-            val jobs = (1..2).map { async(Dispatchers.IO) { repository.importUrlIfNew(input) } }
-            started.await(); gate.complete(Unit)
-            assertEquals(setOf(ResourceImportResult.IMPORTED, ResourceImportResult.SKIPPED), jobs.awaitAll().toSet())
-            val row = repository.all().single()
-            assertEquals(ResourceImportResult.SKIPPED, repository.importUrlIfNew(input))
-            assertEquals(2, count.get()); assertEquals(listOf(row), repository.all())
-            repository.importUrlIfNew(NamedResourceUrl("https://example.com/other/gallery.json"))
-            assertEquals(listOf("gallery", "gallery (2)"), repository.all().map { it.name })
-        } finally { database.close() }
-    }
     @Test fun concurrentRuleImportsDiscardOnlyUncommittedStagingAndSkipExistingUrl() = runBlocking {
         assertPortraitDefaultFontConfiguration()
         val context = ApplicationProvider.getApplicationContext<Context>()

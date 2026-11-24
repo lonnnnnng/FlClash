@@ -1,0 +1,84 @@
+{
+  "id": "dashboard-lan-switch-empty-profile",
+  "date": "2026-11-24",
+  "status": "completed-with-limits",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36
+  },
+  "issue": "When the dashboard LAN card was opened with no saved profiles, refreshing LAN settings called ProfileRepository.activeProfile(), which throws when the profile table is empty. The ViewModel surfaced a settings error and disabled the switch.",
+  "fix": {
+    "file": "android/service/src/main/java/com/lonnnnnng/flclash/service/CoreRuntimeManager.kt",
+    "methods": [
+      "refreshLanSharing",
+      "updateLanSharing"
+    ],
+    "behavior": "Resolve the active profile through nullable activeProfileId()/profileById() lookups. With no profile, read or persist the user's LAN preference and publish an empty-port state without loading or starting Mihomo. The configured-profile path keeps its existing core readback and hot-update behavior."
+  },
+  "deviceRegression": {
+    "command": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.IntranetIpRuntimeLiveTest#dashboardLanSwitchCanBeEnabledAndDisabledWithoutStartingCore com.lonnnnnng.flclash.motion.test/androidx.test.runner.AndroidJUnitRunner",
+    "result": "passed",
+    "tests": 1,
+    "failures": 0,
+    "durationSeconds": 5.366,
+    "assertions": [
+      "Real MainActivity dashboard with an empty Room profile table",
+      "LAN card can be added through dashboard layout editing",
+      "Switch is enabled and initially off",
+      "Turning on and off updates the preference and visible switch state",
+      "CoreRuntimeStatus remains STOPPED",
+      "Original LAN preference and dashboard layout are restored by the test"
+    ]
+  },
+  "advancedSettingsRegression": {
+    "command": "adb -s wsvwypiz7xwslvl7 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.RuleResourcesHostInstrumentedTest#actualToolsEntryAndNativeCompilerWorkWithoutStartingVpn com.lonnnnnng.flclash.motion.test/androidx.test.runner.AndroidJUnitRunner",
+    "result": "passed",
+    "tests": 1,
+    "failures": 0,
+    "durationSeconds": 3.711,
+    "assertions": [
+      "Tools > Advanced Configuration > Rule Resources route is reachable",
+      "Rule resource native compiler and preview work",
+      "Core remains STOPPED and profile rows remain unchanged"
+    ]
+  },
+  "build": {
+    "debugCommand": "./gradlew test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 --max-workers=2",
+    "debugResult": "passed",
+    "jvmReports": {
+      "total": { "tests": 924, "failures": 0, "errors": 0, "skipped": 0 },
+      "app": { "tests": 630, "execution": "executed" },
+      "service": { "tests": 221, "execution": "UP-TO-DATE" },
+      "core": { "tests": 39, "execution": "UP-TO-DATE" },
+      "common": { "tests": 34, "execution": "UP-TO-DATE" }
+    },
+    "debugLint": "0 errors, 11 warnings, 1 hint",
+    "motionCommand": "./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true --max-workers=2",
+    "motionResult": "passed",
+    "debugApkSha256": "80c4ad98c4afe6be99bd24359ab7ec70ffbe7b137b7da965baffc958aa1e14c2",
+    "debugAndroidTestApkSha256": "d4e58f6164e42f6df82940e4cbc1efe4b9fc4c6b478ee0529c4f03feff1933aa",
+    "motionApkSha256": "f6927e867d9849ca34f2c56f80c04794a2c2cf9cb8331c89e04fd5557dc817ff",
+    "motionAndroidTestApkSha256": "7ded74b2af0a3d0b2f7b9aeb41ee9b94ece2b34a054c79ec553037855547d76b"
+  },
+  "limits": [
+    "This regression covers the empty-profile dashboard save path; this batch did not repeat active-profile core hot-update or real LAN client traffic tests.",
+    "IPv6-only networking and Wi-Fi/cellular transitions were not part of this switch regression.",
+    "The Gradle connected-test task was not used because POCO was also online; both device tests were invoked with an explicit Redmi serial."
+  ],
+  "cleanup": {
+    "uninstalledPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.test"
+    ],
+    "flutterReferencePackageUntouched": "com.follow.clash",
+    "workspaceRoot1YamlReadOrChanged": false,
+    "formalKclashPackageWasInstalled": false
+  },
+  "release": {
+    "requested": false,
+    "published": false,
+    "publicLatest": "0.1.20"
+  }
+}

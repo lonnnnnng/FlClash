@@ -1,5 +1,7 @@
 # 第9项剩余交互与恢复验收清单
 
+> **范围变更（2026-11-24）**：全局图标集管理及其图库选择/预览/同步链路已从 Kotlin 版移除。以下 SAF-04 和 VIS-049/052/053 是历史验收证据，不再表示现存功能或待办；策略组独立图片选择和最近图片仍保留。
+
 > **发布状态（2026-11-23）**：当前Latest为0.1.16/code1016；签名构建、公开资产和POCO安装回拉已在发布证据中核验。055～070的历史纳入版本仍按各切片记录；完整视觉/光学/性能仍PARTIAL。[0.1.16发布证据](acceptance/release-0.1.16-20261122.json)
 
 > **KUI-VIS-086（2026-11-23，配置空态与NTP/Sniffer范围回归，POCO）**：Flutter配置空态圆形文档插图、四角装饰、上移锚点和raised surface按钮已对齐；按钮44dp高、约114dp宽，现有忙碌/启停门闩保留。发现NTP 44dp紧凑按钮样式影响共用Sniffer按钮，现将尺寸/内边距收回NTP条件，Sniffer保持默认40dp。POCO F2 Pro/API36定向用例4/4：真实MainActivity空配置页几何/截图、按钮忙碌与运行状态门闩、NTP回归、Sniffer尺寸回归。924项JVM零失败，Debug/Release/Motion Lint各0错误/11警告，Debug/未签名Release-R8/Motion APK构建通过。真实Flutter与Kotlin MainActivity同为空配置页的截图已归档。非空Profiles旧矩阵仍有自定义卡片/远程用量两项旧哈希差异，本轮保留且未归因。[证据](acceptance/profile-empty-nullstatus-poco-20261123.json)、[截图与XML](../../../acceptance-artifacts/profile-empty-nullstatus-poco-20261123/)。

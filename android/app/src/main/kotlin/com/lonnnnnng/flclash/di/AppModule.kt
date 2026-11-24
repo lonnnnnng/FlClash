@@ -108,11 +108,8 @@ object AppModule {
     fun provideDatabase(@ApplicationContext context: Context): KClashDatabase =
         Room.databaseBuilder(context, KClashDatabase::class.java, "kclash.db")
             .openHelperFactory(com.lonnnnnng.flclash.data.StateAuditPlatform.factory())
-            .addMigrations(KClashDatabase.MIGRATION_1_2)
-            .addMigrations(KClashDatabase.MIGRATION_2_3)
-            .addMigrations(KClashDatabase.MIGRATION_3_4)
-            .addMigrations(KClashDatabase.MIGRATION_4_5)
-            .addMigrations(KClashDatabase.MIGRATION_5_6)
+            // 作者 long：开发阶段按当前实体重建 Room，不再维护旧结构的迁移兼容分支。
+            .fallbackToDestructiveMigration(true)
             .build()
 
     @Provides
@@ -188,10 +185,6 @@ object AppModule {
     @Provides @Singleton @javax.inject.Named("rule-resource-draft")
     fun provideRuleResourceDraft(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
         com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "rule-resource-draft.v1", "com.lonnnnnng.flclash.rule.draft.v1")
-
-    @Provides @Singleton @javax.inject.Named("icon-file-picker")
-    fun provideIconFilePicker(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =
-        com.lonnnnnng.flclash.data.EncryptedDraftFile(context, "icon-file-picker.v1", "com.lonnnnnng.flclash.icon.picker.v1")
 
     @Provides @Singleton @javax.inject.Named("group-image-picker")
     fun provideGroupImagePicker(@ApplicationContext context: Context): com.lonnnnnng.flclash.data.ProfileDraftStore =

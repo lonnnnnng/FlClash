@@ -87,7 +87,6 @@
     <string name="text_0a5f9a892960" formatted="false">"更新时间"</string>
     <string name="text_0a6b179fd07a" formatted="false">"网络设置恢复失败，服务已停止，请重新保存后启动"</string>
     <string name="text_0a98a48eaaac" formatted="false">"测试连接"</string>
-    <string name="text_0ace8108a0b8" formatted="false">"图标集列表已变化，请重新排序"</string>
     <string name="text_0aefe516aa7a" formatted="false">"{0} 项异常"</string>
     <string name="text_0afd17980ac8" formatted="false">"Provider 统计重复"</string>
     <string name="text_0b1a21ffd1f8" formatted="false">"核心正在切换状态"</string>
@@ -152,7 +151,6 @@
     <string name="text_13542b37636e" formatted="false">"用反引号分隔多个表达式"</string>
     <string name="text_13572dfb9151" formatted="false">"链式代理 · {0}"</string>
     <string name="text_137d65bfd0f0" formatted="false">"阻止 STUN"</string>
-    <string name="text_138cbb01f0ea" formatted="false">"暂无图标集"</string>
     <string name="text_13d0e68e0478" formatted="false">"VPN 被系统撤销"</string>
     <string name="text_13d61fea9f17" formatted="false">"预览"</string>
     <string name="text_145219e726b8" formatted="false">"隐藏"</string>
@@ -238,7 +236,6 @@
     <string name="text_1cf09da87bb9" formatted="false">"请输入非负整数"</string>
     <string name="text_1cf11a4d597c" formatted="false">"本地代理"</string>
     <string name="text_1d0fd5f9336d" formatted="false">"标签"</string>
-    <string name="text_1d11498b6c18" formatted="false">"图标集过大"</string>
     <string name="text_1d1be8275f38" formatted="false">"保存失败，输入已保留；请检查代理格式，或重新打开已变化的配置"</string>
     <string name="text_1d6b1b062c8b" formatted="false">"目标已失效或会形成循环，请重新选择"</string>
     <string name="text_1d82c44f8c13" formatted="false">"核心停止失败"</string>
@@ -323,7 +320,6 @@
     <string name="text_27a64028992d" formatted="false">"无法替换配置文件，原配置已保留"</string>
     <string name="text_27aceef129d1" formatted="false">"长按调整顺序"</string>
     <string name="text_27e2d9e2d924" formatted="false">"白名单"</string>
-    <string name="text_27f3337ca7b1" formatted="false">"图标集已删除"</string>
     <string name="text_280da21fe70d" formatted="false">"已请求回收，内存数据已刷新"</string>
     <string name="text_280e79b5c2c6" formatted="false">"（可保留，运行前请修复）"</string>
     <string name="text_281ce960e4c5" formatted="false">"URL 配置"</string>
@@ -505,12 +501,9 @@
     <string name="text_3a47fe70da82" formatted="false">"入站"</string>
     <string name="text_3a92fd9de827" formatted="false">"无法读取本地代理，请恢复有效备份后重试"</string>
     <string name="text_3aadb5ebbbee" formatted="false">"内存统计不能为负数"</string>
-    <string name="text_3adc22a8829a" formatted="false">"图标集已变化，请重试"</string>
     <string name="text_3added0ce3f8" formatted="false">"全局 DNS 包含不支持的字段"</string>
-    <string name="text_3ae28b67cbae" formatted="false">"图标集元数据无效"</string>
     <string name="text_3aef12a27fc5" formatted="false">"检查更新失败，请检查网络后重试"</string>
     <string name="text_3aef878f17b6" formatted="false">"排序配置"</string>
-    <string name="text_3b3f68e320f5" formatted="false">"操作失败，请检查图标集 JSON、名称或网络后重试"</string>
     <string name="text_3b63bcf680d5" formatted="false">"配置中已经使用的过滤表达式会保留。"</string>
     <string name="text_3b6fefc50feb" formatted="false">"小时"</string>
     <string name="text_3b96b8a6f50b" formatted="false">"配置文件为空或超过 8 MiB"</string>
@@ -757,18 +750,15 @@
     <string name="text_570d60206779" formatted="false">"正在保存"</string>
     <string name="text_572c01ee2bf2" formatted="false">"IP 地址"</string>
     <string name="text_572cf45ba436" formatted="false">"返回"</string>
-    <string name="text_5730e5f2aadc" formatted="false">"图标集字段无效"</string>
     <string name="text_5741b5f027c8" formatted="false">"代理或策略组名称重复："</string>
     <string name="text_575059b934f6" formatted="false">"代理链"</string>
     <string name="text_576d81bb0631" formatted="false">"导入"</string>
     <string name="text_577b9b9c5b99" formatted="false">"{0} 条规则需要检查；可编辑修复目标或资源引用"</string>
-    <string name="text_57833b0aa1ba" formatted="false">"图标集时间无效"</string>
     <string name="text_57a3d82cc458" formatted="false">"不支持的编辑草稿状态策略"</string>
     <string name="text_57a9c961e004" formatted="false">"样式：{0}"</string>
     <string name="text_57d2e79be363" formatted="false">"脚本列表已变化，请重新排序"</string>
     <string name="text_57e88a43ef2b" formatted="false">"本地文件"</string>
     <string name="text_57eb642456cb" formatted="false">"可重新读取应用列表；若系统限制读取，请先在应用设置中允许。"</string>
-    <string name="text_581bf439599d" formatted="false">"图标集没有有效图标"</string>
     <string name="text_58232954944d" formatted="false">"下载恢复"</string>
     <string name="text_582b5c8cda6b" formatted="false">"放弃选项修改？"</string>
     <string name="text_5831995e457c" formatted="false">"尚未保存的过滤和设置项将丢失。"</string>
@@ -931,7 +921,6 @@
     <string name="text_6a113a5edfc9" formatted="false">"订阅链接"</string>
     <string name="text_6a1cb5cce225" formatted="false">"确认核心仍在运行后重新测试当前路由。"</string>
     <string name="text_6a77bad5e7af" formatted="false">"按入站用户哈希"</string>
-    <string name="text_6a94c80f9da8" formatted="false">"图标集地址"</string>
     <string name="text_6a9b31b7efc5" formatted="false">"节点校验失败，请刷新代理列表后重试"</string>
     <string name="text_6aa27f14bff1" formatted="false">"读取失败"</string>
     <string name="text_6aa8be418850" formatted="false">"请输入小时数"</string>
@@ -1069,7 +1058,6 @@
     <string name="text_79464200f2c3" formatted="false">"按名称"</string>
     <string name="text_794b8daa9726" formatted="false">"连接状态：{0}"</string>
     <string name="text_798b90e687c6" formatted="false">"请输入 IP/前缀长度格式的路由地址"</string>
-    <string name="text_79954992ecaa" formatted="false">"备份缺少图标集"</string>
     <string name="text_799892c5543e" formatted="false">"远端目标"</string>
     <string name="text_79a02937e74d" formatted="false">"应用（不含核心运行时）"</string>
     <string name="text_7a24c4a24f86" formatted="false">"WebDAV 凭据已清除"</string>
@@ -1140,7 +1128,6 @@
     <string name="text_82399ed67dc4" formatted="false">"DNS 详情"</string>
     <string name="text_823bef472b89" formatted="false">"启用外部控制器时请输入密钥"</string>
     <string name="text_8247cabad4ef" formatted="false">"备份包含非法路径"</string>
-    <string name="text_82c52bd76f29" formatted="false">"图标集缺少 icons 列表"</string>
     <string name="text_82cd27cd2e18" formatted="false">"添加配置后使用"</string>
     <string name="text_82cf4e351907" formatted="false">"已收到目标响应，当前代理链可以归因。"</string>
     <string name="text_82f07089d15b" formatted="false">"规则已保存，结果核对失败，请重试核对"</string>
@@ -1384,13 +1371,11 @@
     <string name="text_a0f21b6ad97a" formatted="false">"资源编辑状态已变化"</string>
     <string name="text_a0f309a7536c" formatted="false">"已确认上次节点保存，请退出管理页检查当前配置应用"</string>
     <string name="text_a0f83e93f1c2" formatted="false">"跳过目标地址"</string>
-    <string name="text_a13dab8702e1" formatted="false">"导入图标集"</string>
     <string name="text_a1465136f22f" formatted="false">"备份缺少清单"</string>
     <string name="text_a1a42cd9b16e" formatted="false">"应用设置"</string>
     <string name="text_a1b1820d5116" formatted="false">"放弃修改？"</string>
     <string name="text_a1b9d9aea5b9" formatted="false">"长按拖动调整顺序，松手保存；也可使用上下移动按钮"</string>
     <string name="text_a1dee6659ca4" formatted="false">"备份缺少应用设置"</string>
-    <string name="text_a2299b57fc1d" formatted="false">"图标集最多包含 8192 项"</string>
     <string name="text_a22d18d67fd0" formatted="false">"检测全部"</string>
     <string name="text_a2608220b976" formatted="false">"每行一个 DNS 服务器"</string>
     <string name="text_a2c3e83f30fb" formatted="false">"配置文件不是有效的 UTF-8 文本"</string>
@@ -1509,14 +1494,12 @@
     <string name="text_af576b290fd8" formatted="false">"下一步建议：{0}"</string>
     <string name="text_af9e720d25dd" formatted="false">"规则资源定义无效"</string>
     <string name="text_afa1394b18f2" formatted="false">"查找进程"</string>
-    <string name="text_afb88719b0e8" formatted="false">"图标集已变化，请重新选择"</string>
     <string name="text_afc4284d4c82" formatted="false">"配置已切换，请重新打开节点菜单"</string>
     <string name="text_afc4f4a74084" formatted="false">"规则资源不存在：{0}"</string>
     <string name="text_b009946e35e1" formatted="false">"仅恢复配置文件"</string>
     <string name="text_b06325c5660f" formatted="false">"直连"</string>
     <string name="text_b09180526087" formatted="false">"查询来源"</string>
     <string name="text_b096842c67b2" formatted="false">"自动换行"</string>
-    <string name="text_b0df1c94ba9f" formatted="false">"图标集目录超过容量限制"</string>
     <string name="text_b10018385612" formatted="false">"完成排序"</string>
     <string name="text_b154d597e81e" formatted="false">"导入失败，请检查链接、文件格式或解密密钥"</string>
     <string name="text_b1554836d21d" formatted="false">"从链接导入"</string>
@@ -1645,7 +1628,6 @@
     <string name="text_c13b73f83979" formatted="false">"扩展已被修改或删除，请重新打开"</string>
     <string name="text_c15837faf6cc" formatted="false">"核心未提供 Geo 更新"</string>
     <string name="text_c16514974683" formatted="false">"WebDAV 认证失败，请检查账号和密码"</string>
-    <string name="text_c16e46bf54d9" formatted="false">"图标集 ID 重复"</string>
     <string name="text_c185ba92b723" formatted="false">"HTTP 状态、代理链和核心归因均有效"</string>
     <string name="text_c1ba39ea6b79" formatted="false">"第 {0} 行必须从 Provider 条目开始"</string>
     <string name="text_c1d8cf194a1f" formatted="false">"排序保存失败，请重试"</string>
@@ -1715,14 +1697,12 @@
     <string name="text_c9d07210d1c0" formatted="false">"操作已完成，草稿清理失败，请关闭窗口重试"</string>
     <string name="text_c9f9e18b0623" formatted="false">"添加规则"</string>
     <string name="text_ca01bee31d19" formatted="false">"核心调用失败"</string>
-    <string name="text_ca203f98cd66" formatted="false">"图标集超过 2 MiB"</string>
     <string name="text_ca94fab98f1e" formatted="false">"诊断中…"</string>
     <string name="text_caadeb2b5d32" formatted="false">"实时连接、最近请求、DNS查询"</string>
     <string name="text_cac4a343346d" formatted="false">"每条规则须为单行且不能超过 16 KiB"</string>
     <string name="text_cad0c598d671" formatted="false">"配置文件为空"</string>
     <string name="text_caeb137406e6" formatted="false">"无法读取所选文件，请重新选择"</string>
     <string name="text_caf66f3b0b18" formatted="false">"原始详情：{0}"</string>
-    <string name="text_cafc03e87381" formatted="false">"图标集"</string>
     <string name="text_cb1e0e22c7de" formatted="false">"自定义配置"</string>
     <string name="text_cb290d55a075" formatted="false">"编辑草稿层级过深"</string>
     <string name="text_cb4237f3e648" formatted="false">"配置内容不能为空"</string>
@@ -1759,11 +1739,9 @@
     <string name="text_ce79f3f87d1e" formatted="false">"等待核心上报 DNS 查询事件。"</string>
     <string name="text_ce820ae814b9" formatted="false">"答案"</string>
     <string name="text_cea1aafe9416" formatted="false">"请求头"</string>
-    <string name="text_ceda743fcdb7" formatted="false">"本地图标集没有远程地址"</string>
     <string name="text_cef4c378465e" formatted="false">"拥塞控制"</string>
     <string name="text_cf048cf5e66b" formatted="false">"开发者模式"</string>
     <string name="text_cf2abdf7d8fa" formatted="false">"，核心已停止"</string>
-    <string name="text_cf396d3ed8b6" formatted="false">"图标集目录无效"</string>
     <string name="text_cf42ccc99335" formatted="false">"备份文件为空"</string>
     <string name="text_cf46c729e1ba" formatted="false">"配置中引用这些全局规则的记录将不再生效。"</string>
     <string name="text_cf4b615400f2" formatted="false">"恢复备份失败"</string>
@@ -1834,7 +1812,6 @@
     <string name="text_d5330ed81331" formatted="false">"请选择规则资源"</string>
     <string name="text_d5602ae7068d" formatted="false">"节点定义必须是对象"</string>
     <string name="text_d5764aa845e6" formatted="false">"{0} 项更新失败，旧资源已保留"</string>
-    <string name="text_d59099a1ed38" formatted="false">"无法读取图标集，请检查JSON后重新选择"</string>
     <string name="text_d59ae02a59c9" formatted="false">"请求受限"</string>
     <string name="text_d5aa861120dd" formatted="false">"此资源为二进制文件，无法预览或编辑；可返回后从文件导入"</string>
     <string name="text_d5c0161dd185" formatted="false">"图标条目无效"</string>
@@ -2062,7 +2039,6 @@
     <string name="text_f1039b16b7fe" formatted="false">"脚本已保存，但当前配置应用失败，请在脚本库修正或在配置页重试应用"</string>
     <string name="text_f112bc6039d0" formatted="false">"绕过域名最多 128 项"</string>
     <string name="text_f118c694699c" formatted="false">"无法清理核心配置临时文件"</string>
-    <string name="text_f13f7c2fd6fa" formatted="false">"图标集缺少 icons"</string>
     <string name="text_f1655a1c5872" formatted="false">"Provider 已不存在，请刷新列表"</string>
     <string name="text_f165d22fa441" formatted="false">"WebDAV 服务器暂时不可用，请稍后重试"</string>
     <string name="text_f1663cea1e3b" formatted="false">"配置名称不能为空，最多 64 个字符"</string>
@@ -2106,7 +2082,6 @@
     <string name="text_f6ef72685b6b" formatted="false">"可选择订阅或文件配置作为代理资源"</string>
     <string name="text_f700797d4091" formatted="false">"自动包含"</string>
     <string name="text_f70c0007f30f" formatted="false">"已绑定"</string>
-    <string name="text_f78a449defcc" formatted="false">"图标集名称已存在"</string>
     <string name="text_f7cb4968a2fe" formatted="false">"无法打开电池优化设置"</string>
     <string name="text_f7e1cccb6008" formatted="false">"可选设置"</string>
     <string name="text_f81163f1ad7c" formatted="false">"备份版本过高"</string>
@@ -2115,7 +2090,6 @@
     <string name="text_f853a70b1204" formatted="false">"上移"</string>
     <string name="text_f864824df79b" formatted="false">"代理资源“{0}”不可用，请重新选择订阅或文件配置。"</string>
     <string name="text_f876762b5d8b" formatted="false">"核心未提供节点出口查询"</string>
-    <string name="text_f8a20f4a5d72" formatted="false">"图标集地址无效"</string>
     <string name="text_f8a933dfbe14" formatted="false">"保存 DNS 失败"</string>
     <string name="text_f8b23394b67d" formatted="false">"核心停止中"</string>
     <string name="text_f8d416f8f2d8" formatted="false">"核心启动"</string>

@@ -1024,7 +1024,10 @@ class CoreRuntimeManager(
 
     override suspend fun refreshLanSharing() = transitionLock.withLock {
         withContext(Dispatchers.IO) {
-            if (profileProvider.activeProfile() == null) {
+            // 作者 long：无配置时必须走可空ID检查；ProfileRepository.activeProfile会为其他业务抛出无配置错误。
+            val profileId = profileProvider.activeProfileId()
+            val profile = profileId?.let { profileProvider.profileById(it) }
+            if (profile == null) {
                 mutableLanSharing.value = LanSharingState(com.lonnnnnng.flclash.core.CoreLanConfig(lanSharingStore.read() ?: false, 0))
             } else {
                 ensureConfigLoaded()
@@ -1035,7 +1038,8 @@ class CoreRuntimeManager(
 
     override suspend fun updateLanSharing(allowLan: Boolean?) = transitionLock.withLock {
         withContext(Dispatchers.IO) {
-            val profile = profileProvider.activeProfile()
+            val profileId = profileProvider.activeProfileId()
+            val profile = profileId?.let { profileProvider.profileById(it) }
             if (profile == null) {
                 lanSharingStore.write(allowLan)
                 mutableLanSharing.value = LanSharingState(com.lonnnnnng.flclash.core.CoreLanConfig(allowLan ?: false, 0))

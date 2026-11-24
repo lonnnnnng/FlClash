@@ -309,9 +309,9 @@ class MainLocalProxyFailureInstrumentedTest {
         stage = "正式资源入口"
         compose.onNodeWithTag("nav_tools").performClick()
         compose.waitUntil(10_000) { model().state.value.message == null && model().state.value.error == null }
-        compose.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
+        compose.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
         compose.waitUntil(10_000) { compose.onAllNodesWithText("本地代理", substring = false).fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithText("本地代理", substring = false).performClick()
+        compose.onNodeWithTag("advanced_item_local_proxies").performClick()
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("local_proxies_page").fetchSemanticsNodes().isNotEmpty() }
         awaitIdle()
     }

@@ -53,33 +53,16 @@ class ResourceOptionsHostInstrumentedTest {
         prepareTouchVisualCapture()
         assertTrue(compose.activity.packageName.endsWith(".motion"))
         val e=EntryPointAccessors.fromApplication(compose.activity.application,ConnectionAcceptanceEntryPoint::class.java)
-        // 作者 long：夹具只准备资源，不借用会自动应用当前配置的生产写入器；实际页面仍使用原DI与VM，空库不能被测试偷偷导入配置。
-        val db=e.database();val scripts=ScriptRepository(compose.activity.application,db);val icons=e.icons()
-        val profiles=db.profiles().getAll();val beforeScripts=db.scripts().getAll();val beforeIcons=icons.all()
+        // 作者 long：夹具只准备脚本目录，不借用会自动应用当前配置的生产写入器，避免测试偷偷导入或切换配置。
+        val db=e.database();val scripts=ScriptRepository(compose.activity.application,db)
+        val profiles=db.profiles().getAll();val beforeScripts=db.scripts().getAll()
         assertEquals(CoreRuntimeStatus.STOPPED,e.runtimeManager().state.value)
         val token="vis073-${System.nanoTime()}"
-        val icon=icons.importContent("""{"name":"$token","icons":[{"name":"Fixture","url":"https://example.invalid/icon.svg"}]}""")
         val local=scripts.create(token,"const main = config => config;")
         val remote=local.copy(url="file:///fixture/source.js")
         db.scripts().update(remote.toEntity())
         try {
             compose.onNodeWithTag("nav_tools").performClick()
-            compose.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
-            compose.onNodeWithText("图标集").performClick()
-            compose.onNodeWithTag("icon_set_${icon.id}").performTouchInput { longClick() }
-            compose.onNodeWithText("选项").performClick()
-            compose.onNodeWithTag("icon_set_name").performTextReplacement("$token-renamed")
-            compose.onNodeWithTag("icon_set_name").performImeAction()
-            compose.waitUntil(10000){compose.onAllNodesWithTag("icon_set_options_dialog").fetchSemanticsNodes().isEmpty()}
-            assertEquals("$token-renamed",icons.all().single{it.id==icon.id}.name)
-            compose.activityRule.scenario.recreate();compose.waitForIdle()
-            compose.onNodeWithTag("icon_set_${icon.id}").performTouchInput { longClick() }
-            compose.onNodeWithText("选项").performClick()
-            compose.onNodeWithTag("icon_set_name").assertTextEquals("$token-renamed")
-            compose.onNodeWithTag("icon_set_cancel").performClick()
-            compose.waitUntil(5000){compose.onAllNodesWithTag("icon_set_options_dialog").fetchSemanticsNodes().isEmpty()}
-            compose.onNodeWithTag("icon_sets_back").performClick()
-            compose.onNodeWithTag("profile_editor_back").performClick()
             compose.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
             compose.onNodeWithTag("advanced_item_scripts").performClick()
             compose.onNodeWithTag("script_menu_${remote.id}").performClick()
@@ -102,9 +85,8 @@ class ResourceOptionsHostInstrumentedTest {
             compose.onNodeWithTag("script_remote_back").performClick()
             compose.waitUntil(5000){compose.onAllNodesWithTag("script_remote_page").fetchSemanticsNodes().isEmpty()}
         } finally {
-            icons.all().firstOrNull{it.id==icon.id && it.name.startsWith(token)}?.let{icons.delete(it.id)}
             db.scripts().getById(remote.id)?.takeIf{it.label==token}?.let{scripts.delete(it.id)}
-            assertEquals(beforeIcons,icons.all());assertEquals(beforeScripts,db.scripts().getAll())
+            assertEquals(beforeScripts,db.scripts().getAll())
             assertEquals(profiles,db.profiles().getAll());assertEquals(CoreRuntimeStatus.STOPPED,e.runtimeManager().state.value)
         }
     }

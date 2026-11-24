@@ -14,7 +14,7 @@ import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 
-/** 作者 long：菜单操作与卡片点击共用选择入口，验证长按本身不切节点，图库/排序等前序页面不参与此用例。 */
+/** 作者 long：菜单操作与卡片点击共用选择入口，验证长按本身不切节点，资源排序页面不参与此用例。 */
 class ProxyNodeMenusInstrumentedTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
     @Test fun selectorPreferredAndNonselectableMenusKeepSelectionAndDelayIndependentInBothThemes() {

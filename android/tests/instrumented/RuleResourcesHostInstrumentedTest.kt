@@ -24,8 +24,8 @@ class RuleResourcesHostInstrumentedTest {
         compose.onNodeWithTag("tools_item_resources").performScrollTo().performClick()
         compose.onNodeWithTag("resources_page").assertIsDisplayed()
         compose.onNodeWithTag("resources_back").performClick()
-        compose.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
-        compose.onNodeWithText("规则资源").performClick()
+        compose.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("advanced_item_rule_resources").performClick()
         compose.onNodeWithTag("rule_resources_page").assertIsDisplayed()
         compose.onNodeWithTag("rule_resources_back").performClick()
         val directory = File(entry.paths().homeDir, "providers/rules").apply { mkdirs() }

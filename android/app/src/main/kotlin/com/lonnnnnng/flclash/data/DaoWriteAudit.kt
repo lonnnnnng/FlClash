@@ -12,7 +12,7 @@ internal suspend fun <T> auditedDaoWrite(source: String, table: String, entity: 
             }.getOrElse { mapOf("snapshotFailure" to it.javaClass.simpleName) }
             val preferenceKey = (entity as? AppPreferenceEntity)?.key
             val family = preferenceKey?.takeIf { it in setOf("current_profile_id", "runtime_should_resume", "ip_quality_cache_v1", "access_control",
-                "global_filter_presets", "global_icon_sets", "global_rule_resources", "global_extension_rules", "local_proxies", "group_icon_history") }
+                "global_filter_presets", "global_rule_resources", "global_extension_rules", "local_proxies", "group_icon_history") }
             StateWriteAudit.event("entity_write", mapOf("table" to table, "fields" to fields, "preferenceFamily" to family))
         }
         block()

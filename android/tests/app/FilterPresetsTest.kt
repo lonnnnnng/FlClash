@@ -29,16 +29,12 @@ class FilterPresetsTest {
             assertTrue(runCatching { NamedResourceUrls.parse(it) }.isFailure)
         }
     }
-    @Test fun resourcePreferenceRoundTripAndMergePreserveExistingIconsAndOverrideMatchingFilters() {
-        val icon = ResourceIconSet("one", "图库", icons = listOf(ResourceIcon("A", "https://example.com/a.svg")), updatedAt = 1)
-        val old = ResourcePreferences(listOf(icon), listOf(FilterPreset("地区", "HK"), FilterPreset("自定义", "custom")), com.lonnnnnng.flclash.service.GeoResourceSettings())
-        val incoming = ResourcePreferences(listOf(icon.copy(id = "two")), listOf(FilterPreset("地区", "JP")), old.geo.copy(intervalHours = 72))
+    @Test fun resourcePreferenceRoundTripAndMergeOverrideMatchingFilters() {
+        val old = ResourcePreferences(listOf(FilterPreset("地区", "HK"), FilterPreset("自定义", "custom")), com.lonnnnnng.flclash.service.GeoResourceSettings())
+        val incoming = ResourcePreferences(listOf(FilterPreset("地区", "JP")), old.geo.copy(intervalHours = 72))
         assertEquals(incoming, ResourcePreferencesCodec.decode(ResourcePreferencesCodec.encode(incoming)))
         val merged = ResourcePreferencesCodec.merge(old, incoming)
-        assertEquals(listOf("图库", "图库 (2)"), merged.icons.map { it.name })
         assertEquals(listOf(FilterPreset("自定义", "custom"), FilterPreset("地区", "JP")), merged.filters)
         assertEquals(72, merged.geo.intervalHours)
-        assertTrue(runCatching { ResourcePreferencesCodec.decode("{\"icons\":[],\"filters\":[]}") }.isFailure)
-        assertTrue(runCatching { IconSetCodec.decode("[{\"id\":null}]") }.isFailure)
     }
 }

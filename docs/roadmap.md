@@ -1,4 +1,5 @@
 # KClash Kotlin 重写路线图
+> **2026-11-24 首页局域网开关与工具入口修正（Redmi）**：空配置时 `ProfileRepository.activeProfile()` 会抛出“没有可用配置”，导致首页局域网卡片把设置标为错误并禁用开关。`CoreRuntimeManager` 改为用可空活动配置 ID 判断；没有配置时只保存开关偏好，不加载/启动 Mihomo。Redmi Note 8 Pro/API36 的真实 `MainActivity` 空库用例开关开/关和持久化通过1/1，核心保持STOPPED；高级配置中的规则资源入口回归1/1。全量924项JVM报告失败/错误/跳过为0（App630本次执行，其余模块按Gradle复用），Debug/Motion构建和Debug Lint通过（0错误、11警告、1提示）。没有复验真实局域网客户端流量、配置运行态热更新、IPv6-only或Wi-Fi/蜂窝切换。[验收证据](acceptance/dashboard-lan-switch-redmi-20261124.json)。
 > **当前视觉/性能快照（KUI-VIS-098，2026-11-24）**：配置订阅弹框每行原先用 BoxWithConstraints 测标题宽度，现改为 Modifier.layout 按当前测量约束计算，保留带 leading 控件时的 48dp 触点宽度规则。POCO F2 Pro/API36冷开 Perfetto 的 AndroidOwner:onMeasure 从基线31.838ms降至候选25.331/27.429ms，测量窗口 Compose:recompose 切片4→1；Popup→Dialog间隙仍约13ms，开合jank没有稳定全局收益。POCO-only真实MainActivity表单/IME/草稿重建回归1/1；Motion JVM634项，Debug/Release/Motion构建和Lint通过（0错误、11警告、1提示）。这是局部测量开销下降，不代表首窗、总体掉帧或菜单归因闭环；公开版0.1.20；KUI-VIS-098已随该版发布，剩余首窗和总体掉帧仍未闭环。下一步继续其它子页连续转场和首次绘制、菜单慢帧归因。[实现与限制](profile-form-measurement-optimization.md)、[验收trace](acceptance/profile-form-measurement-poco-20261124.json)。
 > **KClash 0.1.20正式发布（2026-11-24）**：标签 kclash-v0.1.20 固定提交 a245d75f，CI 45338327994 用时13分10秒，签名 ARM64 Release、R8/DEX/ML Kit/YAML/ABI及证书门禁通过。GitHub Release 为 Latest；公开 APK 49,636,949字节，SHA-256 8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f 与 GitHub digest、SHA256SUMS一致；回下载验签及包名/版本/code/minSdk/ABI/非debuggable核对通过。包含KUI-VIS-098弹框测量定向优化。POCO仍安装正式0.1.18，本次APK未安装。[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.20)、[CI](https://github.com/lonnnnnng/FlClash/actions/runs/45338327994)、[验收证据](acceptance/release-0.1.20-20261124.json)。
 > **上一组视觉/性能快照（KUI-VIS-097，2026-11-24）**：全局 `ConnectionModalSheet` 的遮罩、进退场位移和浮动缩放已移到绘制/图层阶段，避免每帧重组表单；弹簧曲线、键盘交接、停靠和业务语义保持。POCO R8诊断包输入框路线前后各5轮均可打开/返回，无崩溃；App JVM634项、Debug/Release Lint通过（各0错误、11警告、1提示）。两份最终Perfetto的动画窗口 `Compose:recompose` 切片为57/58，改动前基线94；首帧测量仍31.5–32.9ms，Popup到Dialog空档约12.9–15.1ms，gfx jank中位数没有稳定的全局改善证据。本项仅为共享Sheet动画的定向优化，不代表Material `AlertDialog`、其它Dialog路径或全局首次建窗问题已解决。0.1.19已发布；其余子页/连续转场和菜单归因仍PARTIAL，玻璃默认关闭。[实现位置](../android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ConnectionModalSheet.kt)、[验收与trace](acceptance/global-dialog-motion-poco-20261124.json)。
@@ -963,24 +964,26 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 
 ## 3. 当前快照（2026-11-24核对）
 
+> **2026-11-24功能范围调整**：全局图标集管理已从 Kotlin 版彻底移除，不再作为现存能力或待办。Room 当前版本变更时直接 destructive rebuild，不保留旧迁移链；策略组逐组选择本地图片/HTTP(S)图片及最近图片记录仍保留。工具页不再提供独立“自定义资源”入口，本地代理、规则资源、过滤预设与脚本库统一从“高级配置”进入。此前图标集开发和验收记录仅为历史，不代表当前仍存在该功能。
+
 本节与[功能清单](functional-closure.md)、工作区根`todo.md`为当前状态；具名日期的验收切片保留原始范围和失败，不能将其中旧“下一步”当作现行待办。
 
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.18/code1018**，标签`kclash-v0.1.18`指向`d042b394`；沿用既有正式证书 |
-| 发布范围 | KClash 0.1.18/code1018 已发布为 GitHub Latest，标签`kclash-v0.1.18`固定`d042b394`。CI `45166052906`用时11分33秒，签名ARM64打包与版本/ABI/DEX/R8/证书门禁通过；公开APK 49,595,989字节，SHA`d49e8914…082ef3f9`与GitHub digest和SHA256SUMS一致，回下载验签通过。按用户要求直接发布，沿用632项App单测与POCO2/2及真实VPN检查证据，本轮不重跑测试、不操作手机。[证据](acceptance/release-0.1.18-20261123.json)。 |
+| 当前公开版本 | **0.1.20/code1020**，标签`kclash-v0.1.20`指向`a245d75f`；沿用既有正式证书 |
+| 发布范围 | KClash 0.1.20/code1020 已发布为 GitHub Latest，标签`kclash-v0.1.20`固定`a245d75f`。CI `45338327994`用时13分10秒，签名ARM64打包及R8/DEX/ML Kit/YAML/ABI/证书门禁通过；公开APK 49,636,949字节，SHA-256 `8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f`与GitHub digest、SHA256SUMS一致，回下载验签通过。[证据](acceptance/release-0.1.20-20261124.json)。 |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | KUI-VIS-096资源概览与进度/行内错误：POCO资源页/菜单/输入组件3/3、真实MainActivity输入路线1/1、进度行截图1/1；另自然触摸路线468帧PTS单调。真实Core→UI Geo下载因空Motion库无活动配置未触及请求，不记为通过。R8 MainActivity菜单三次开合已取得线程归因；UI Traversal/动画是当前Deadline Missed候选，关闭帧Buffer Stuffing，fence字段不可用，global discarded owner仍不明，无稳定性能收益声明。正式VPN PID20700保持；整体Flutter/菜单性能仍PARTIAL、玻璃关闭。[096](acceptance/resource-updates-poco-20261124.json)。 |
+| 最新自动化记录 | KUI-VIS-098表单测量局部优化已随0.1.20发布；本轮另在Redmi验证无配置时首页局域网开关可保存/切换1/1、工具→高级配置→规则资源入口1/1。菜单global discarded来源、GPU/fence和关闭帧整体归因仍未闭环，Flutter完整子页/连续转场继续PARTIAL，玻璃关闭。[LAN修复证据](acceptance/dashboard-lan-switch-redmi-20261124.json)、[菜单及资源更新证据](acceptance/resource-updates-poco-20261124.json)。 |
 | 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
-| 当前验收设备 | 用户更换为POCO F2 Pro（`31936bb6`、API36）；每轮重新核对serial/型号。旧Redmi与API27离线模拟器证据仅作历史；当前禁止模拟器 |
-| 数据保护 | POCO 正式 KClash 0.1.18 PID20700 本轮始终运行，未改配置/偏好/资源，也未安装Release或改原版Flutter。本次仅用独立Motion、Performance、AndroidTest包；正式本地配置和授权`1.yaml`未读改。 |
+| 当前验收设备 | 本轮局域网开关回归按用户指定使用 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API36）；每轮显式 serial 核对。POCO F2 Pro（`31936bb6`）为近期视觉/Perfetto历史证据设备；当前禁止模拟器 |
+| 数据保护 | Redmi 本轮只安装独立 Motion 与测试壳执行两个定向用例，之后已卸载 Motion、Motion.test 和遗留 Debug 测试包；正式 KClash 包未安装，`com.follow.clash`未操作。未访问工作区根`1.yaml`，核心保持STOPPED。 |
 | 正在推进 | KUI-VIS-096已补Tools→资源概览行内失败与分块下载进度，并完成真实触摸资源输入和R8菜单trace。剩余其它子页/面板连续转场及完整Flutter主应用同态路线仍待。最终R8菜单帧显示部分Deadline Missed由UI Traversal/动画/Popup测量忙帧伴随；早期trace的shader compile解释未在最终重跑稳定复现。关闭帧有waitForBufferRelease但量级有限，Dropped Frame未归因，GPU fence字段缺失，discarded owner未知；不宣称稳定性能收益。玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [KUI-VIS-096资源更新行反馈/进度与菜单trace](acceptance/resource-updates-poco-20261124.json)、[资源更新反馈与进度实现说明](resource-update-feedback-progress.md)、[KUI-VIS-095 DNS非空字段](acceptance/dns-nonempty-editor-poco-20261123.json)、[0.1.18发布](acceptance/release-0.1.18-20261123.json)、[KUI-VIS-089菜单联合trace](acceptance/menu-joint-attribution-poco-20261123.json)。 |
+| 最新证据 | [首页局域网开关空配置修复](acceptance/dashboard-lan-switch-redmi-20261124.json)、[KUI-VIS-098弹框测量优化](acceptance/profile-form-measurement-poco-20261124.json)、[KUI-VIS-096资源更新行反馈/进度与菜单trace](acceptance/resource-updates-poco-20261124.json)、[0.1.20发布](acceptance/release-0.1.20-20261124.json)。 |
 
 ## 4. 目标架构图
 
@@ -1242,7 +1245,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 
 最新视觉补充：本地代理基本/认证/可选项、Provider选项与资源列表按56dp同行、右侧轻量输入、24/8分组标题及资源边距补齐；随后共享玻璃材质、策略组/更多/链式代理覆盖子页与API27离线fallback同批验收，见`general-glass-subpages-api27-20261104.json`。正文/运行预览等宽着色、1201行查找复制和72dp排序沿用前组证据。未覆盖的更多页面/空态与8MiB正文极限性能待补，完整Profiles仍PARTIAL；历史Room摘要变化保留，早期元数据兼容不在开发阶段要求内，正式配置与正文仍按验收快照核验。
 
-最新补充：全局本地代理/链式代理、规则/图库/过滤/Geo资源、Provider结构化与外部文档、脚本整页、常规/网络/全局DNS/附加规则、按需SSID、批量同步及正文父草稿均已有首版。备份现为v6，ALL_DATA纳入常规/网络/全局DNS、VPN/LAN、恢复策略及可选SSID；PROFILES_ONLY和旧归档缺项保留现值，失败有补偿。其他界面/按应用代理偏好、跨全部写者一致快照和系统备份SAF完整E2E仍待补。分项设备证据见顶部同名节，完整Profiles仍为PARTIAL。
+最新补充：全局本地代理/链式代理、规则/过滤/Geo资源、Provider结构化与外部文档、脚本整页、常规/网络/全局DNS/附加规则、按需SSID、批量同步及正文父草稿均已有首版。全局图标集管理已于2026-11-24移除，不列入当前能力；策略组单独图片/URL和最近图片记录保留。备份现为v6，ALL_DATA纳入常规/网络/全局DNS、VPN/LAN、恢复策略及可选SSID；PROFILES_ONLY和旧归档缺项保留现值，失败有补偿。其他界面/按应用代理偏好、跨全部写者一致快照和系统备份SAF完整E2E仍待补。分项设备证据见顶部同名节，完整Profiles仍为PARTIAL。
 
 已完成本轮切片：
 
@@ -1257,7 +1260,7 @@ Provider最新（11-05）：todo第5项本组范围已验：Provider批量部分
 - 父表单/正文子页和原始并发基线、文件替换及picker令牌保存在noBackup加密草稿；后台am kill后恢复及放弃清除已验。FILE/远程本地副本、脚本和Provider的真实DocumentsUI前台回收进程后返回/取消均已验；FILE/远程外层保存才提交，脚本同名不覆盖，Provider重建绑定并严格复核原输入/缓存摘要后侧载、核心回读。
 - 自定义 Profile 新增 Rules 分区快速编辑入口；编辑器逐行校验规则类型和动作，拒绝 `SUB-RULE`，保存时只替换顶层 `rules` 区块，不改写其他 YAML 字段。
 - 自定义 Profile 新增 Proxies 分区快速编辑入口；编辑器按 YAML 列表校验代理名称和类型，拒绝重复名称和非列表结构，保存时只替换顶层 `proxies` 区块，不改写其他 YAML 字段。
-- 自定义 Profile 的 Proxy Groups 已有可视列表/单组/成员/可选设置首版，保留整列表与单组快捷 YAML；支持复制、删除、排序、引用跟随改名和原子保存，保留未知字段与未编辑分区。批量操作、结构问题提示、核心过滤校验、图标选择、图库/推荐、过滤预设和全局资源映射已有后续首版；真实远程/运行态资源更新和完整视觉仍PARTIAL，证据见顶部相关切片。
+- 自定义 Profile 的 Proxy Groups 已有可视列表/单组/成员/可选设置首版，保留整列表与单组快捷 YAML；支持复制、删除、排序、引用跟随改名和原子保存，保留未知字段与未编辑分区。批量操作、结构问题提示、核心过滤校验、策略组逐组图片选择、最近图片推荐、过滤预设和全局资源映射已有后续首版；全局图标集管理已移除。真实远程/运行态资源更新和完整视觉仍PARTIAL，证据见顶部相关切片。
 - 自定义 Profile 新增 Providers 分区快速编辑入口；分别编辑顶层 `proxy-providers`/`rule-providers` map，校验嵌套 map、非空字段和唯一名称，保存时局部替换并保留边界注释与其他 YAML 字段。
 - 自定义 Profile 的代理 Provider 新增字段化覆盖表单；支持健康检查 URL、间隔、超时、lazy、期望状态、名称前缀/后缀、UDP、跳过证书校验和 IP 版本，并将覆盖按 Provider 名称持久化到 Kotlin 自有 `overridesJson`。
 - Provider 覆盖只作用于核心启动时生成的暂存 YAML，原始 Profile 文件保持不变；已有 `health-check`/`override` 子字段会局部合并并保留未覆盖字段，避免编辑覆盖后丢失用户配置。

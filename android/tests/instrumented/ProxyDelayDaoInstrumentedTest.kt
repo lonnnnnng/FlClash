@@ -1,10 +1,6 @@
 package com.lonnnnnng.flclash.data
 
-import android.content.Context
 import androidx.room.Room
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.SupportSQLiteOpenHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
@@ -70,106 +66,4 @@ class ProxyDelayDaoInstrumentedTest {
         assertEquals(listOf(100L), store.load(10L).map { it.updatedAtMillis })
     }
 
-    @Test
-    fun migration5To6CreatesDelayTableIndexesAndOrderedCompositePrimaryKey() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val databaseName = "proxy-delay-migration-${System.nanoTime()}.db"
-        context.deleteDatabase(databaseName)
-
-        val versionFive = createSqliteHelper(context, databaseName, version = 5) { }
-        versionFive.writableDatabase.close()
-        versionFive.close()
-
-        val versionSix = createSqliteHelper(context, databaseName, version = 6) { database ->
-            KClashDatabase.MIGRATION_5_6.migrate(database)
-        }
-        val upgraded = versionSix.writableDatabase
-
-        assertEquals(
-            1,
-            upgraded.query(
-                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'proxy_delay_results'",
-            ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 },
-        )
-        assertEquals(
-            1,
-            upgraded.query(
-                "SELECT name FROM sqlite_master WHERE type = 'index' " +
-                    "AND name = 'index_proxy_delay_results_profileId'",
-            ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 },
-        )
-        assertEquals(
-            1,
-            upgraded.query(
-                "SELECT name FROM sqlite_master WHERE type = 'index' " +
-                    "AND name = 'index_proxy_delay_results_updatedAtMillis'",
-            ).use { cursor -> if (cursor.moveToFirst()) 1 else 0 },
-        )
-
-        val primaryKeyColumns = upgraded.query("PRAGMA table_info(proxy_delay_results)").use { cursor ->
-            val nameIndex = cursor.getColumnIndexOrThrow("name")
-            val primaryKeyIndex = cursor.getColumnIndexOrThrow("pk")
-            buildList {
-                if (cursor.moveToFirst()) {
-                    do {
-                        if (cursor.getInt(primaryKeyIndex) > 0) {
-                            add(cursor.getInt(primaryKeyIndex) to cursor.getString(nameIndex))
-                        }
-                    } while (cursor.moveToNext())
-                }
-            }.sortedBy { it.first }
-        }
-        assertEquals(
-            listOf(
-                1 to "profileId",
-                2 to "groupName",
-                3 to "proxyName",
-                4 to "testUrl",
-            ),
-            primaryKeyColumns,
-        )
-
-        upgraded.execSQL(
-            "INSERT INTO proxy_delay_results " +
-                "(profileId, groupName, proxyName, testUrl, value, updatedAtMillis) " +
-                "VALUES (1, 'Auto', 'node-a', 'https://one', 100, 10)",
-        )
-        upgraded.execSQL(
-            "INSERT INTO proxy_delay_results " +
-                "(profileId, groupName, proxyName, testUrl, value, updatedAtMillis) " +
-                "VALUES (1, 'Auto', 'node-a', 'https://two', 200, 20)",
-        )
-        assertEquals(
-            2,
-            upgraded.query("SELECT COUNT(*) FROM proxy_delay_results WHERE profileId = 1").use { cursor ->
-                assertTrue(cursor.moveToFirst())
-                cursor.getInt(0)
-            },
-        )
-
-        versionSix.close()
-        context.deleteDatabase(databaseName)
-    }
-
-    private fun createSqliteHelper(
-        context: Context,
-        name: String,
-        version: Int,
-        onUpgrade: (SupportSQLiteDatabase) -> Unit,
-    ): SupportSQLiteOpenHelper = FrameworkSQLiteOpenHelperFactory().create(
-        SupportSQLiteOpenHelper.Configuration.builder(context)
-            .name(name)
-            .callback(object : SupportSQLiteOpenHelper.Callback(version) {
-                override fun onCreate(db: SupportSQLiteDatabase) = Unit
-
-                override fun onUpgrade(
-                    db: SupportSQLiteDatabase,
-                    oldVersion: Int,
-                    newVersion: Int,
-                ) {
-                    onUpgrade(db)
-                }
-            })
-            .build(),
-    )
 }

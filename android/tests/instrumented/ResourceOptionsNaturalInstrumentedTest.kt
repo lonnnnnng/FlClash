@@ -15,7 +15,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
-import com.lonnnnnng.flclash.data.ResourceIconSet
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import kotlinx.coroutines.delay
@@ -34,14 +33,10 @@ class ResourceOptionsNaturalInstrumentedTest {
             fun close() { open="";closing=false;busy=false }
             scenario.onActivity { activity -> activity.setContent { KClashTheme(darkTheme=dark) {
                 Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-                    for (name in listOf("Local","Remote","Script","Import")) TextButton({open=name}) { Text(name) }
+                    for (name in listOf("Script","Import")) TextButton({open=name}) { Text(name) }
                 }
                 LaunchedEffect(busy) { if(busy) { delay(600);busy=false;closing=true } }
                 when(open) {
-                    "Local" -> IconSetOptionsDialog(ResourceIconSet("fixture","本地图标集",icons=emptyList(),updatedAt=1),
-                        busy,null,::close,{_,value->submitted=value;saves++;busy=true},closing)
-                    "Remote" -> IconSetOptionsDialog(ResourceIconSet("remote","远程图标集","https://example.invalid/icons.json",emptyList(),1),
-                        busy,null,::close,{_,value->submitted=value;saves++;busy=true},closing)
                     "Import" -> ScriptRemoteDialog(busy,::close,{_,value->submitted=value;saves++;busy=true},
                         initialUrl="https://example.invalid/scripts/import.js",closing=closing,onClosed={if(closing) close()})
                     "Script" -> ScriptRemoteDialog(busy,::close,{_,value->submitted=value;saves++;busy=true},
@@ -51,39 +46,24 @@ class ResourceOptionsNaturalInstrumentedTest {
             settle()
             for(theme in listOf(false,true)) {
                 scenario.onActivity { dark=theme }
-                for(name in listOf("Local","Remote","Script","Import")) {
+                for(name in listOf("Script","Import")) {
                     mark("${if(theme) "dark" else "light"}-$name-open")
                     click(name);settle()
-                    val field=awaitNode{it.isEditable && (name != "Remote" || it.text?.toString()?.startsWith("https://") == true)}
+                    val field=awaitNode{it.isEditable}
                     clickNode(field);settle()
                     assertTrue(field.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT,Bundle().apply {
-                        putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,if(name=="Local") "图标新名称" else "https://example.invalid/edited-resource.json")
+                        putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,"https://example.invalid/edited-resource.json")
                     }))
                     mark("$name-ime");settle();back();settle();back();settle()
                     awaitNode { it.text?.toString()==name }
                     scenario.onActivity { assertEquals("",open) }
                     mark("$name-reopen-save");click(name);settle()
-                    if(name=="Remote") { back();settle() }
-                    if(name=="Remote") {
-                        val editable=awaitNode{it.isEditable}
-                        clickNode(editable);settle()
-                        // 作者 long：真实软键盘Done走原Sheet提交，同一点击后观察忙态及退场，不调用业务回调捷径。
-                        ins.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER)
-                    } else click(if(name=="Import") "导入" else "保存")
+                    click(if(name=="Import") "导入" else "保存")
                     settle(1400)
-                    // 作者 long：部分软键盘把Enter当无操作；通过原顶部确认触点提交并仍核对一次回调。
-                    if(name=="Remote") {
-                        var still=false;scenario.onActivity{still=open.isNotEmpty() && !busy && !closing}
-                        if(still) {
-                            val nodes=allNodes();val title=nodes.first{it.text?.toString()=="选项"};val b=android.graphics.Rect();title.getBoundsInScreen(b)
-                            val button=nodes.filter{it.isClickable && it.isEnabled}.filter { val r=android.graphics.Rect();it.getBoundsInScreen(r);r.left>b.right && kotlin.math.abs(r.centerY()-b.centerY())<50 }.maxByOrNull { val r=android.graphics.Rect();it.getBoundsInScreen(r);r.right }
-                            clickNode(checkNotNull(button));settle(1400)
-                        }
-                    }
                     scenario.onActivity { assertEquals("",open) };mark("$name-closed")
                 }
             }
-            scenario.onActivity { assertEquals(8,saves);assertTrue(submitted.startsWith("https://")) }
+            scenario.onActivity { assertEquals(4,saves);assertTrue(submitted.startsWith("https://")) }
         }
     }
     private fun allNodes(): List<AccessibilityNodeInfo> {

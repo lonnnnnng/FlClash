@@ -241,11 +241,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val appearance by appearanceSettings.state.collectAsState()
             com.lonnnnnng.flclash.ui.AppAppearance(this, appearance) {
-                val resources by resourcesViewModel.state.collectAsState()
                 val localProxies by localProxiesViewModel.state.collectAsState()
                 val filters by filterPresetsViewModel.state.collectAsState()
-                val resourceIcons = androidx.compose.runtime.remember(resources.iconSets) { resources.iconSets.flatMap { it.icons } }
-                CompositionLocalProvider(com.lonnnnnng.flclash.ui.LocalFilterPresets provides filters.rows, com.lonnnnnng.flclash.ui.LocalAddToLocalProxy provides localProxiesViewModel::addFromRuntime, com.lonnnnnng.flclash.ui.LocalGlobalProxies provides localProxies.rows, com.lonnnnnng.flclash.ui.LocalResourceIcons provides resourceIcons, com.lonnnnnng.flclash.ui.LocalResourceIconSets provides resources.iconSets) {
+                CompositionLocalProvider(com.lonnnnnng.flclash.ui.LocalFilterPresets provides filters.rows, com.lonnnnnng.flclash.ui.LocalAddToLocalProxy provides localProxiesViewModel::addFromRuntime, com.lonnnnnng.flclash.ui.LocalGlobalProxies provides localProxies.rows) {
                 KClashApp(
                     appearanceSettings = appearanceSettings,
                     runtimeViewModel = viewModel,

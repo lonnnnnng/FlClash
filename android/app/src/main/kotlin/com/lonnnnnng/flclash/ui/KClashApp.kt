@@ -334,34 +334,14 @@ fun KClashApp(
     if (appearancePicker != null && appearanceSettings != null) AppearancePicker(appearancePicker == "language", appearanceSettings) { appearancePicker = null }
     var showFilterPresets by rememberSaveable { mutableStateOf(false) }
     var showRuleUrls by rememberSaveable { mutableStateOf(false) }
-    var showIconUrls by rememberSaveable { mutableStateOf(false) }
     val resources = resourcesViewModel?.state?.collectAsState()?.value ?: com.lonnnnnng.flclash.data.ResourceUpdatesState(loading = false)
-    val iconBusy = resourcesViewModel?.iconBusy?.collectAsState()?.value ?: false
-    val iconError = resourcesViewModel?.iconError?.collectAsState()?.value
-    val iconCompleted = resourcesViewModel?.iconCompleted?.collectAsState()?.value ?: 0L
     val localProxiesState = localProxiesViewModel?.state?.collectAsState()?.value ?: LocalProxiesUiState(loading = false)
     val showLocalProxies = localProxiesState.isOpen
     fun openLocalProxies() { localProxiesViewModel?.open() }
     var showResources by rememberSaveable { mutableStateOf(false) }
-    var showIconSets by rememberSaveable { mutableStateOf(false) }
-    var iconFileToken by rememberSaveable { mutableStateOf<String?>(null) }
-    val restoredIconFileToken = remember { iconFileToken }
     val resourcePickerScope = rememberCoroutineScope()
-    val iconPickerState = resourcesViewModel?.filePicker?.state?.collectAsState()?.value
-    LaunchedEffect(Unit) { resourcesViewModel?.filePicker?.reconcile(restoredIconFileToken) }
-    val iconSetFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        val token = iconFileToken; iconFileToken = null
-        resourcesViewModel?.receiveIconsFilePick(token, uri?.toString())
-    }
-    fun pickIconFile() { resourcePickerScope.launch {
-        val token = resourcesViewModel?.beginIconsFilePick() ?: return@launch
-        iconFileToken = token
-        try { iconSetFilePicker.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }
-        catch (_: Exception) { iconFileToken = null; resourcesViewModel.receiveIconsFilePick(token, null) }
-    } }
     val ruleResources = ruleResourcesViewModel?.state?.collectAsState()?.value ?: RuleResourcesUiState(loading = false)
     var showRuleResources by rememberSaveable { mutableStateOf(false) }
-    var showCustomResources by rememberSaveable { mutableStateOf(false) }
     var ruleFileToken by rememberSaveable { mutableStateOf<String?>(null) }
     val restoredRuleFileToken = remember { ruleFileToken }
     val rulePickerState = ruleResourcesViewModel?.filePicker?.state?.collectAsState()?.value
@@ -516,11 +496,10 @@ fun KClashApp(
         if (extensionSession.draft != null || extensionSession.recoveryFailed) selectedDestinationIndex = MainDestination.PROFILES.ordinal
     }
     var toolsSubpage by rememberSaveable { mutableStateOf(ToolsSubpage.MENU) }
-    LaunchedEffect(ruleResources.session?.draft?.session, ruleResources.recoveryFailed, rulePickerState?.request?.token, iconPickerState?.request?.token) {
+    LaunchedEffect(ruleResources.session?.draft?.session, ruleResources.recoveryFailed, rulePickerState?.request?.token) {
         if (ruleResources.session != null || ruleResources.recoveryFailed || rulePickerState?.request != null) {
             selectedDestinationIndex = MainDestination.TOOLS.ordinal; showRuleResources = true
         }
-        if (iconPickerState?.request != null) { selectedDestinationIndex = MainDestination.TOOLS.ordinal; showIconSets = true }
     }
     val globalRulesSession by profilesViewModel.globalRules.state.collectAsState()
     LaunchedEffect(globalRulesSession.closeVersion) {
@@ -1294,7 +1273,6 @@ fun KClashApp(
                                     onOpenGeneral = { toolsSubpage = ToolsSubpage.GENERAL },
                                     onOpenAdvanced = { toolsSubpage = ToolsSubpage.ADVANCED },
                                     onOpenBackup = { showToolsBackup = true },
-                                    onOpenScripts = { showCustomResources = true },
                                     onOpenResources = { showResources = true },
                                     onOpenDeveloper = if (developerToolsEnabled) ({ toolsSubpage = ToolsSubpage.DEVELOPER }) else null,
                                     onShowUnavailable = { label ->
@@ -1350,7 +1328,10 @@ fun KClashApp(
                             ToolsSubpage.ADVANCED -> item {
                                 AdvancedSettingsPanel(onOpenNetwork = { toolsSubpage = ToolsSubpage.NETWORK },
                                     onOpenScripts = { showScriptsDialog = true },
-                                    onOpenDns = { toolsSubpage = ToolsSubpage.GLOBAL_DNS }, onOpenRules = { showGlobalRules = true })
+                                    onOpenDns = { toolsSubpage = ToolsSubpage.GLOBAL_DNS }, onOpenRules = { showGlobalRules = true },
+                                    onOpenLocalProxies = ::openLocalProxies,
+                                    onOpenRuleResources = { showRuleResources = true },
+                                    onOpenFilterPresets = { showFilterPresets = true })
                             }
                             ToolsSubpage.NETWORK -> item {
                                 NetworkSettingsPanel(networkSettings, vpnSettings,
@@ -1431,17 +1412,6 @@ fun KClashApp(
     if (showResources) ResourcesPage(resources, { showResources = false }, { resourcesViewModel?.refresh() },
         { resourcesViewModel?.sync(it) }, { resourcesViewModel?.syncAll() }, { resourcesViewModel?.settings(it) },
         { resourcesViewModel?.clearFeedback() })
-    if (showCustomResources) {
-        ProfileEditorPage(onDismissRequest = { showCustomResources = false }, title = { Text(tr("自定义资源")) }, text = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = ::openLocalProxies, modifier = Modifier.fillMaxWidth()) { Text(tr("本地代理")) }
-                TextButton(onClick = { showRuleResources = true }, modifier = Modifier.fillMaxWidth()) { Text(tr("规则资源")) }
-                TextButton(onClick = { showIconSets = true }, modifier = Modifier.fillMaxWidth()) { Text(tr("图标集")) }
-                TextButton(onClick = { showFilterPresets = true }, modifier = Modifier.fillMaxWidth().testTag("custom_resources_filters")) { Text(tr("过滤预设")) }
-                TextButton(onClick = { showScriptsDialog = true }, modifier = Modifier.fillMaxWidth()) { Text(tr("脚本库")) }
-            }
-        })
-    }
     if (showLocalProxies && localProxiesViewModel != null) LocalProxiesPage(localProxiesState,
         localProxiesViewModel::close, localProxiesViewModel::edit, localProxiesViewModel::save,
         localProxiesViewModel::dismissEditor, localProxiesViewModel::links, localProxiesViewModel::applyLinks,
@@ -1449,14 +1419,6 @@ fun KClashApp(
         localProxiesViewModel::delete, localProxiesViewModel::cancelDelete, localProxiesViewModel::confirmReplacement, localProxiesViewModel::updateEditor,
         { localProxiesViewModel.updateUiDraft(localProxiesState.session, it) }, localProxiesViewModel::updateLinksUiDraft, localProxiesViewModel::reportDraftFailure,
         localProxiesViewModel::updateEditorUiDraft)
-    if (showIconSets) IconSetsPage(resources.iconSets, iconBusy, iconError, iconCompleted,
-        { resourcesViewModel?.closeIcons { showIconSets = false } }, { name, url -> resourcesViewModel?.importIcons(name, url) }, ::pickIconFile,
-        { item, name, url -> resourcesViewModel?.iconOptions(item, name, url) },
-        { item -> resources.rows.firstOrNull { it.kind == com.lonnnnnng.flclash.data.ResourceKind.ICONS && it.id == item.id }?.let { resourcesViewModel?.sync(it) } },
-        { resourcesViewModel?.deleteIcons(it) }, { id, offset -> resourcesViewModel?.moveIcons(id, offset) },
-        onImportUrls = { resourcesViewModel?.iconUrlImports?.reset(); showIconUrls = true },
-        onReorder = { resourcesViewModel?.reorderIcons(it) },
-        onRetryRecovery = resourcesViewModel?.let { vm -> { vm.retryIconsImport() } }.takeIf { iconPickerState?.recoveryFailed == true || iconPickerState?.error != null && iconPickerState.request?.phase in setOf(FilePickerRequest.RESULT, FilePickerRequest.DONE) })
     if (showRuleResources && ruleResourcesViewModel != null) {
         RuleResourcesPage(ruleResources.copy(error = ruleResources.error ?: rulePickerState?.error), { ruleResourcesViewModel.closePage { showRuleResources = false } }, ruleResourcesViewModel::create,
             ::pickRuleFile, ruleResourcesViewModel::edit, ruleResourcesViewModel::sync,
@@ -1473,11 +1435,6 @@ fun KClashApp(
         val batch by ruleResourcesViewModel.urlImports.state.collectAsState()
         ResourceUrlImportPage(tr("导入规则资源"), batch, { showRuleUrls = false }, ruleResourcesViewModel.urlImports::start,
             ruleResourcesViewModel.urlImports::cancel, ruleResourcesViewModel.urlImports::retry, ruleResourcesViewModel.urlImports::reset)
-    }
-    if (showIconUrls && resourcesViewModel != null) {
-        val batch by resourcesViewModel.iconUrlImports.state.collectAsState()
-        ResourceUrlImportPage(tr("导入图标集"), batch, { showIconUrls = false }, resourcesViewModel.iconUrlImports::start,
-            resourcesViewModel.iconUrlImports::cancel, resourcesViewModel.iconUrlImports::retry, resourcesViewModel.iconUrlImports::reset)
     }
     if (selectedDestination == MainDestination.TOOLS && toolsSubpage == ToolsSubpage.GLOBAL_DNS) {
         GlobalDnsSettingsPage(globalDns,

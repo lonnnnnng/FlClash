@@ -14,11 +14,12 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
@@ -49,7 +50,6 @@ internal fun ToolsPanel(
     modifier: Modifier = Modifier,
     onOpenDeveloper: (() -> Unit)? = null,
     onOpenBackup: () -> Unit = { onShowUnavailable(tr("备份与恢复")) },
-    onOpenScripts: () -> Unit = { onShowUnavailable(tr("自定义资源")) },
     onOpenResources: () -> Unit = { onShowUnavailable(tr("资源")) },
     onOpenAdvanced: () -> Unit = { onShowUnavailable(tr("高级配置")) },
 ) {
@@ -89,9 +89,6 @@ internal fun ToolsPanel(
             ToolMenuRow(tr("高级配置"), Icons.Outlined.Tune, "tools_item_advanced") {
                 onOpenAdvanced()
             }
-            ToolMenuRow(tr("自定义资源"), Icons.Outlined.Layers, "tools_item_resources_settings") {
-                onOpenScripts()
-            }
             ToolMenuRow(tr("常规"), Icons.Outlined.Settings, "tools_item_general") {
                 onOpenGeneral()
             }
@@ -109,13 +106,21 @@ internal fun ToolsPanel(
 
 @Composable
 internal fun AdvancedSettingsPanel(onOpenNetwork: () -> Unit, onOpenScripts: () -> Unit,
-    onOpenDns: () -> Unit = {}, onOpenRules: () -> Unit = {}) {
+    onOpenDns: () -> Unit = {}, onOpenRules: () -> Unit = {},
+    onOpenLocalProxies: () -> Unit = {}, onOpenRuleResources: () -> Unit = {},
+    onOpenFilterPresets: () -> Unit = {}) {
     Column(Modifier.fillMaxWidth().testTag("page_advanced")) {
         ToolSection(title = tr("高级配置")) {
             ToolMenuRow(tr("网络"), Icons.Outlined.Hub, "advanced_item_network", onOpenNetwork)
             ToolMenuRow("DNS", Icons.Outlined.Dns, "advanced_item_dns", onOpenDns)
             ToolMenuRow(tr("附加规则"), Icons.Outlined.Description, "advanced_item_rules", onOpenRules)
             ToolMenuRow(tr("脚本"), Icons.Outlined.Code, "advanced_item_scripts", onOpenScripts)
+        }
+        ToolSection(title = tr("自定义资源")) {
+            // 作者 long：资源入口集中在高级设置分组，脚本仅保留上方一个入口，避免同一脚本库重复出现。
+            ToolMenuRow(tr("本地代理"), Icons.Outlined.Hub, "advanced_item_local_proxies", onOpenLocalProxies)
+            ToolMenuRow(tr("规则资源"), Icons.Outlined.Cloud, "advanced_item_rule_resources", onOpenRuleResources)
+            ToolMenuRow(tr("过滤预设"), Icons.Outlined.FilterList, "advanced_item_filter_presets", onOpenFilterPresets)
         }
     }
 }

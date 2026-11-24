@@ -80,7 +80,7 @@ internal fun ProfileEditorSheet(page: String, scroll: ScrollState, closing: Bool
             Box(Modifier.fillMaxSize().clipToBounds().sheetBackGesture(page, if (page != "root") "root" else null,
                 direction, gesture, { page !in listOf("root", "yaml") && !closing && entrance.value == 1f && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) }, {
                     if (currentPage == page && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) back()
-                    // 作者 long：图库取消可异步拒绝返回；只有页面确实切换才保留完成状态，否则恢复可交互的原页。
+                    // 作者 long：图片选择取消可异步拒绝返回；只有页面确实切换才保留完成状态，否则恢复可交互的原页。
                     scope.launch { kotlinx.coroutines.delay(500); if (currentPage == page) gesture.reset() }
                 }, thresholdPx = with(density) { 30.dp.toPx() })) {
                 if (gesture.active && page != "root") pageStates.SaveableStateProvider("root-preview") {

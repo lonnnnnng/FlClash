@@ -4,8 +4,6 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 
 class ProfileTypeConverters {
     @TypeConverter
@@ -17,7 +15,7 @@ class ProfileTypeConverters {
 
 /**
  * 作者 long：Room 只管理 KClash 自己的模型；诊断事件和 Profiles 都属于 Kotlin 应用自己的数据，
- * 不读取 Flutter/Drift 的历史数据库。
+ * 不读取 Flutter/Drift 的历史数据库。开发阶段结构变化直接重建，不保留旧版本迁移链。
  */
 @Database(
     entities = [
@@ -27,7 +25,7 @@ class ProfileTypeConverters {
         ScriptEntity::class,
         ProxyDelayEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 @TypeConverters(ProfileTypeConverters::class)
@@ -42,109 +40,4 @@ abstract class KClashDatabase : RoomDatabase() {
 
     abstract fun proxyDelayResults(): ProxyDelayDao
 
-    companion object {
-        val MIGRATION_1_2: Migration = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS profiles (
-                        id INTEGER NOT NULL,
-                        type TEXT NOT NULL,
-                        label TEXT NOT NULL,
-                        url TEXT NOT NULL,
-                        ageSecretKey TEXT NOT NULL,
-                        lastUpdateAt INTEGER,
-                        autoUpdate INTEGER NOT NULL,
-                        autoUpdateIntervalMillis INTEGER NOT NULL,
-                        uploadBytes INTEGER NOT NULL,
-                        downloadBytes INTEGER NOT NULL,
-                        totalBytes INTEGER NOT NULL,
-                        expireAtSeconds INTEGER NOT NULL,
-                        currentGroupName TEXT,
-                        selectedMapJson TEXT NOT NULL,
-                        unfoldSetJson TEXT NOT NULL,
-                        extendType TEXT NOT NULL,
-                        scriptId INTEGER,
-                        matchTarget TEXT,
-                        overridesJson TEXT NOT NULL,
-                        orderIndex INTEGER NOT NULL,
-                        PRIMARY KEY(id)
-                    )
-                    """.trimIndent(),
-                )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_profiles_url ON profiles(url)")
-            }
-        }
-
-        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS runtime_diagnostic_events (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        kind TEXT NOT NULL,
-                        detail TEXT NOT NULL,
-                        timestampMillis INTEGER NOT NULL
-                    )
-                    """.trimIndent(),
-                )
-                db.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_runtime_diagnostic_events_timestampMillis " +
-                        "ON runtime_diagnostic_events(timestampMillis)",
-                )
-            }
-        }
-
-        val MIGRATION_3_4: Migration = object : Migration(3, 4) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS scripts (
-                        id INTEGER NOT NULL,
-                        label TEXT NOT NULL,
-                        url TEXT NOT NULL,
-                        lastUpdateAt INTEGER,
-                        orderIndex INTEGER NOT NULL,
-                        PRIMARY KEY(id)
-                    )
-                    """.trimIndent(),
-                )
-                db.execSQL("CREATE INDEX IF NOT EXISTS index_scripts_orderIndex ON scripts(orderIndex)")
-            }
-        }
-
-        val MIGRATION_4_5: Migration = object : Migration(4, 5) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // 作者 long：自动更新失败只记录可脱敏的错误摘要，不能覆盖上一份有效配置文件。
-                db.execSQL("ALTER TABLE profiles ADD COLUMN lastUpdateError TEXT")
-            }
-        }
-
-        val MIGRATION_5_6: Migration = object : Migration(5, 6) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // 作者 long：测速缓存必须按 Profile、组、节点和 URL 共同隔离，避免同名节点复用错误延迟。
-                db.execSQL(
-                    """
-                    CREATE TABLE IF NOT EXISTS proxy_delay_results (
-                        profileId INTEGER NOT NULL,
-                        groupName TEXT NOT NULL,
-                        proxyName TEXT NOT NULL,
-                        testUrl TEXT NOT NULL,
-                        value INTEGER NOT NULL,
-                        updatedAtMillis INTEGER NOT NULL,
-                        PRIMARY KEY(profileId, groupName, proxyName, testUrl)
-                    )
-                    """.trimIndent(),
-                )
-                db.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_proxy_delay_results_profileId " +
-                        "ON proxy_delay_results(profileId)",
-                )
-                db.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_proxy_delay_results_updatedAtMillis " +
-                        "ON proxy_delay_results(updatedAtMillis)",
-                )
-            }
-        }
-    }
 }

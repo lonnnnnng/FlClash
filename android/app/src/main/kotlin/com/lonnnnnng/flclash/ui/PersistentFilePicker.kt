@@ -125,7 +125,7 @@ internal class PersistentFilePicker(
                 lock.withLock {
                     val pending = state.value.request
                     if (pending?.token != token || pending.phase != FilePickerRequest.READING) return@withLock
-                    // 作者 long：结果先加密落盘；预览、图库提交或父组交付另行确认，不把读取成功当作业务已保存。
+                    // 作者 long：结果先加密落盘；预览或父组交付另行确认，不把读取成功当作业务已保存。
                     persist(pending.copy(phase = FilePickerRequest.RESULT, name = file.name, bytes = file.bytes.copyOf(), error = null))
                 }
             } catch (cancelled: CancellationException) { throw cancelled }

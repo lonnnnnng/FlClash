@@ -35,8 +35,8 @@ class VisualMotionNaturalInstrumentedTest {
     @Test fun darkMenuDispatchThreadTimeline() = runMenuDispatchTimeline(true)
     @Test fun lightMenuWindowFramesWithoutThreadSampling() = runMenuDispatchTimeline(false, sampleCpu = false)
     @Test fun darkMenuWindowFramesWithoutThreadSampling() = runMenuDispatchTimeline(true, sampleCpu = false)
-    @Test fun lightGroupSheetMembersGalleryAndReturnUseNaturalMotion() = runGroupSheet(false)
-    @Test fun darkGroupSheetMembersGalleryAndReturnUseNaturalMotion() = runGroupSheet(true)
+    @Test fun lightGroupSheetMembersRecentImageAndReturnUseNaturalMotion() = runGroupSheet(false)
+    @Test fun darkGroupSheetMembersRecentImageAndReturnUseNaturalMotion() = runGroupSheet(true)
 
     private fun runGroupSheet(dark: Boolean) {
         assertPortraitDefaultFontConfiguration()
@@ -58,8 +58,8 @@ class VisualMotionNaturalInstrumentedTest {
             }))
             click("REJECT-DROP"); settle(); capture("group-sheet-member-selected")
             back(); settle(); back(); settle(); await("编辑策略组")
-            click("图标"); await("非空参考图库"); settle(); capture("group-sheet-gallery")
-            val label = bounds(checkNotNull(find("Red")))
+            click("图标"); await("最近使用"); settle(); capture("group-sheet-recent-image")
+            val label = bounds(checkNotNull(find("本地图片")))
             val y = label.top - (28 * density).toInt()
             tap(Rect(label.centerX() - 8, y - 8, label.centerX() + 8, y + 8)); settle(); await("编辑策略组")
             click("添加设置项"); await("健康检查"); settle(); capture("group-sheet-options")

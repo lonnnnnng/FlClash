@@ -28,6 +28,47 @@ class IntranetIpRuntimeLiveTest {
     @get:Rule(order = 0) val notifications = GrantPermissionRule.grant(Manifest.permission.POST_NOTIFICATIONS)
     @get:Rule(order = 1) val compose = createAndroidComposeRule<MainActivity>()
 
+    @Test fun dashboardLanSwitchCanBeEnabledAndDisabledWithoutStartingCore() {
+        assertPortraitDefaultFontConfiguration()
+        assertTrue(compose.activity.packageName.endsWith(".motion"))
+        val entry = EntryPointAccessors.fromApplication(compose.activity.application, ConnectionAcceptanceEntryPoint::class.java)
+        val manager = entry.runtimeManager()
+        val store = entry.lanSharingStore()
+        val context = compose.activity.applicationContext
+        assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
+        assertTrue("独立无配置用例不得读取或修改配置目录", runBlocking { entry.database().profiles().getAll().isEmpty() })
+        val originalLayout = DashboardLayoutStore.load(context)
+        val originalOverride = store.read()
+        lateinit var model: IntranetIpViewModel
+        compose.activityRule.scenario.onActivity { model = ViewModelProvider(it)[IntranetIpViewModel::class.java] }
+        try {
+            // 作者 long：无配置时开关只持久化用户意图；该用例验证真实卡片触点，不能依赖运行核心或VPN。
+            store.write(false)
+            runBlocking { manager.refreshLanSharing() }
+            compose.onNodeWithTag("nav_dashboard").performClick()
+            compose.onNodeWithTag("dashboard_edit_layout").performClick()
+            compose.onNodeWithTag("page_dashboard").performScrollToNode(hasTestTag("dashboard_add_intranet_ip"))
+            compose.onNodeWithTag("dashboard_add_intranet_ip").performClick()
+            compose.onNodeWithTag("dashboard_edit_layout").performClick()
+            compose.waitUntil(10_000) { compose.onAllNodesWithTag("intranet_allow_lan").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(10_000) { !model.state.value.settingsLoading && model.state.value.settingsError == null }
+            compose.onNodeWithTag("intranet_allow_lan").assertIsEnabled().assertIsOff()
+            compose.onNodeWithTag("intranet_allow_lan").performClick()
+            compose.waitUntil(10_000) { !model.state.value.saving && model.state.value.sharing.config.allowLan }
+            assertEquals(true, store.read())
+            compose.onNodeWithTag("intranet_allow_lan").assertIsOn()
+            compose.onNodeWithTag("intranet_allow_lan").performClick()
+            compose.waitUntil(10_000) { !model.state.value.saving && !model.state.value.sharing.config.allowLan }
+            assertEquals(false, store.read())
+            compose.onNodeWithTag("intranet_allow_lan").assertIsOff()
+            assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
+        } finally {
+            store.write(originalOverride)
+            runBlocking { manager.refreshLanSharing() }
+            DashboardLayoutStore.save(context, originalLayout)
+        }
+    }
+
     @Test fun realAddressCopySharingHotUpdateAndLifecyclePreserveProfiles() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val args = InstrumentationRegistry.getArguments()

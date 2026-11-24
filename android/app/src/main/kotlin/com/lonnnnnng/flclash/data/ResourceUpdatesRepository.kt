@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 
-enum class ResourceKind { GEO, ICONS, RULE, SCRIPT }
+enum class ResourceKind { GEO, RULE, SCRIPT }
 data class ResourceUpdateRow(val kind: ResourceKind, val id: String, val label: String, val url: String,
     val updatedAt: Long? = null, val size: Long? = null, val count: Int? = null) {
     val key get() = "${kind.name}:$id"
@@ -24,7 +24,6 @@ data class ResourceUpdatesState(
     val loading: Boolean = true,
     val settings: GeoResourceSettings = GeoResourceSettings(),
     val rows: List<ResourceUpdateRow> = emptyList(),
-    val iconSets: List<ResourceIconSet> = emptyList(),
     val updating: Set<String> = emptySet(),
     val transfers: Map<String, ResourceDownloadProgress> = emptyMap(),
     val settingsBusy: Boolean = false,
@@ -36,7 +35,6 @@ data class ResourceUpdatesState(
 class ResourceUpdatesRepository @Inject constructor(
     private val runtime: CoreRuntimeManager,
     private val paths: CoreRuntimePaths,
-    private val icons: IconSetRepository,
     private val rules: RuleResourceRepository,
     private val scripts: ScriptRepository,
     private val profiles: ProfileStore,
@@ -50,7 +48,7 @@ class ResourceUpdatesRepository @Inject constructor(
     private val manual = mutableSetOf<String>()
 
     init {
-        scope.launch { merge(icons.invalidations, rules.changes.map { Unit }, scripts.scripts.map { Unit },
+        scope.launch { merge(rules.changes.map { Unit }, scripts.scripts.map { Unit },
             runtime.geoSettings.map { Unit }).collect { refresh() } }
         scope.launch {
             var previous = emptyMap<String, com.lonnnnnng.flclash.core.CoreEvent.GeoUpdate>()
@@ -84,7 +82,6 @@ class ResourceUpdatesRepository @Inject constructor(
 
     suspend fun refresh() = withContext(Dispatchers.IO) { refreshLock.withLock {
         try {
-            val sets = icons.all()
             val settings = runtime.geoSettings.value
             val rows = buildList {
                 GeoResourceType.entries.forEach { type ->
@@ -92,7 +89,6 @@ class ResourceUpdatesRepository @Inject constructor(
                     add(ResourceUpdateRow(ResourceKind.GEO, type.name, type.name, settings.urls.getValue(type),
                         file.takeIf(File::isFile)?.lastModified(), file.takeIf(File::isFile)?.length()))
                 }
-                sets.filter { it.url.isNotEmpty() }.forEach { add(ResourceUpdateRow(ResourceKind.ICONS, it.id, it.name, it.url, it.updatedAt, count = it.icons.size)) }
                 rules.all().filter { it.url.isNotEmpty() }.forEach {
                     val file = rules.file(it)
                     add(ResourceUpdateRow(ResourceKind.RULE, it.id, it.label, it.url,
@@ -105,7 +101,7 @@ class ResourceUpdatesRepository @Inject constructor(
             }
             lock.withLock {
                 val coreUpdating = runtime.geoUpdates.value.values.filter { it.updating }.map { "GEO:${it.type}" }.toSet()
-                mutable.update { it.copy(loading = false, rows = rows, settings = settings, iconSets = sets, updating = manual + coreUpdating) }
+                mutable.update { it.copy(loading = false, rows = rows, settings = settings, updating = manual + coreUpdating) }
             }
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { mutable.update { state -> state.copy(loading = false,
@@ -141,7 +137,6 @@ class ResourceUpdatesRepository @Inject constructor(
                     val completion = withTimeout(180_000L) { runtime.geoUpdates.first { it[row.id]?.updating == false }.getValue(row.id) }
                     if (completion.error.isNotEmpty()) return ResourceUpdateFailure(row.label, geoUpdateFailureMessage(completion.error), row.key)
                 }
-                ResourceKind.ICONS -> icons.sync(icons.all().first { it.id == row.id && it.url == row.url }, reportProgress)
                 ResourceKind.RULE -> {
                     val expected = rules.all().first { it.id == row.id && it.url == row.url }
                     val saved = rules.sync(expected, reportProgress)

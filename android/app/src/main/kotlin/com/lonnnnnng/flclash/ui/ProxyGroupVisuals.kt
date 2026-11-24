@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -29,9 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.lonnnnnng.flclash.data.ProxyGroupIssue
-import com.lonnnnnng.flclash.data.IconRecommendations
-import com.lonnnnnng.flclash.data.GroupIconSource
-import com.lonnnnnng.flclash.data.ResourceIconSet
+import com.lonnnnnng.flclash.data.GroupIconChoice
+import com.lonnnnnng.flclash.data.RecentGroupIcons
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -163,31 +161,24 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
     } }
     val imageBusy = reading || pickerState?.busy == true
     val dismiss = { scope.launch { if (durable == null || durable.cancel()) onDismiss() }; Unit }
-    val resourceIcons = LocalResourceIcons.current
-    val namedSets = LocalResourceIconSets.current
-    val sets = remember(namedSets, resourceIcons, UiLanguage.english) { namedSets.ifEmpty {
-        if (resourceIcons.isEmpty()) emptyList() else listOf(ResourceIconSet("gallery", tr("图标集"), icons = resourceIcons, updatedAt = 0))
-    } }
-    // 作者 long：完整图库的匹配放到后台，输入或资源变化会取消旧计算，迟到结果不能覆盖新来源。
-    val loadedSources by produceState<List<GroupIconSource>?>(null, sets, recent, groupName) {
-        this.value = withContext(Dispatchers.Default) { IconRecommendations.sources(sets, recent, groupName) }
+    // 作者 long：每个策略组只从用户自己的最近选择复用图片，不引入全局目录依赖。
+    val loadedIcons by produceState<List<GroupIconChoice>?>(null, recent, groupName) {
+        this.value = withContext(Dispatchers.Default) { RecentGroupIcons.suggested(recent, groupName) }
     }
-    val sources = loadedSources.orEmpty()
-    var sourceKey by rememberSaveable { mutableStateOf<String?>(null) }
-    val source = sources.firstOrNull { it.key == sourceKey }
-        ?: sources.firstOrNull { it.key == IconRecommendations.initialKey(sources, value) }
-    val labels = remember(sets) { sets.flatMap { it.icons }.associate { it.url to IconRecommendations.label(it) } }
-    fun label(icon: String): String = labels[icon] ?: IconRecommendations.label(IconRecommendations.record(icon))
-    val shown = source?.icons.orEmpty().filter { query.isBlank() || IconRecommendations.label(it).contains(query, true) }
+    val icons = loadedIcons.orEmpty()
+    val recentSet = remember(recent) { recent.toSet() }
+    val labels = remember(icons) { icons.associate { it.url to RecentGroupIcons.label(it.name) } }
+    fun label(icon: String): String = labels[icon] ?: RecentGroupIcons.label(RecentGroupIcons.record(icon).name)
+    val shown = icons.filter { query.isBlank() || RecentGroupIcons.label(it.name).contains(query, true) }
     var bodyHeight by remember { mutableIntStateOf(0) }
     var gridHeight by remember { mutableIntStateOf(0) }
     val report = LocalEmbeddedProfilePage.current?.reportBodyHeight
-    val naturalHeight by remember(loadedSources, shown.size, bodyHeight, gridHeight, gridState) { derivedStateOf {
+    val naturalHeight by remember(loadedIcons, shown.size, bodyHeight, gridHeight, gridState) { derivedStateOf {
         // 作者 long：来源计算和Grid布局不同帧完成，加载空档不能被认成短内容而抹掉用户的展开档位。
         val info = gridState.layoutInfo
-        val measured = loadedSources != null && bodyHeight > 0 && (shown.isEmpty() ||
+        val measured = loadedIcons != null && bodyHeight > 0 && (shown.isEmpty() ||
             (info.totalItemsCount == shown.size && info.visibleItemsInfo.size == shown.size && gridHeight > 0))
-        // 作者 long：LazyGrid仍会占满获配视口；只有全表可见时扣掉视口空白，实际行高才是短图库的正文高度。
+        // 作者 long：LazyGrid仍会占满获配视口；只有全表可见时扣掉视口空白，实际行高才是短列表的正文高度。
         val itemsHeight = info.visibleItemsInfo.let { items ->
             if (items.isEmpty()) 0 else items.maxOf { it.offset.y + it.size.height } - items.minOf { it.offset.y }
         }
@@ -204,30 +195,20 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
             Column(Modifier.fillMaxWidth().onSizeChanged { bodyHeight = it.height }, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 (error ?: pickerState?.error)?.takeUnless { link }?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("group_icon_error")) }
                 if (pickerState?.recoveryFailed == true) TextButton({ durable.retryRecovery() }, modifier = Modifier.testTag("group_image_recovery_retry")) { Text(tr("重试恢复")) }
-                if (imageBusy || loadedSources == null) LinearProgressIndicator(Modifier.fillMaxWidth())
-                if (sources.isNotEmpty()) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    sources.forEach { item ->
-                        val selected = source?.key == item.key
-                        Surface(onClick = { sourceKey = item.key }, shape = AppSuperellipseShape(16.dp),
-                            color = if (selected) MaterialTheme.colorScheme.primary else dashboardCardColor(),
-                            modifier = Modifier.testTag("group_icon_source_${item.key}")) {
-                            Text(item.label, Modifier.padding(12.dp), fontSize = 15.sp, lineHeight = 20.sp,
-                                fontWeight = FontWeight.Normal, letterSpacing = 0.sp,
-                                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
-                        }
-                    }
-                }
+                if (imageBusy || loadedIcons == null) LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (icons.isNotEmpty()) Text(tr("最近使用"), style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag("group_icon_recent_label"))
                 if (value.isNotBlank()) Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = MaterialTheme.shapes.medium) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         ProfileGroupIcon(value, groupName, Modifier.size(40.dp))
                         Column(Modifier.weight(1f).padding(horizontal = 12.dp)) {
                             Text(label(value), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(sets.firstOrNull { set -> set.icons.any { it.url == value } }?.name ?: tr("当前图标"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(if (value in labels) label(value) else tr("当前图标"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         IconButton(onClick = { onSelect("") }, modifier = Modifier.testTag("group_icon_remove")) { Icon(Icons.Outlined.RemoveCircleOutline, null) }
                     }
                 }
-                if (shown.isEmpty() && loadedSources != null) Text(if (query.isBlank()) tr("暂无图标，可添加图标地址或选择本地图片") else tr("没有匹配的图标"),
+                if (shown.isEmpty() && loadedIcons != null) Text(if (query.isBlank()) tr("暂无图标，可添加图标地址或选择本地图片") else tr("没有匹配的图标"),
                     Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 else {
                     LazyVerticalGrid(GridCells.Adaptive(72.dp), state = gridState, modifier = Modifier.weight(1f, fill = false)
@@ -237,15 +218,15 @@ internal fun ProfileGroupIconPicker(value: String, groupName: String, recent: Li
                             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Surface(shape = AppSuperellipseShape(16.dp),
                                     color = if (icon.url == value) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    modifier = Modifier.size(56.dp).testTag("group_icon_choice_${source?.icons?.indexOf(icon)}")
+                                    modifier = Modifier.size(56.dp).testTag("group_icon_choice_${icons.indexOf(icon)}")
                                         .combinedClickable(onClick = { choose(icon.url) },
-                                            onLongClick = if (source?.key == IconRecommendations.RECOMMENDED && icon.url in recent) ({ deleteRecord = icon.url }) else null)) {
-                                    Box(contentAlignment = Alignment.Center) { ProfileGroupIcon(icon.url, IconRecommendations.label(icon), Modifier.size(40.dp)) }
+                                            onLongClick = if (icon.url in recentSet) ({ deleteRecord = icon.url }) else null)) {
+                                    Box(contentAlignment = Alignment.Center) { ProfileGroupIcon(icon.url, RecentGroupIcons.label(icon.name), Modifier.size(40.dp)) }
                                 }
-                                Text(IconRecommendations.label(icon), maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                Text(RecentGroupIcons.label(icon.name), maxLines = 1, overflow = TextOverflow.Ellipsis,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal, letterSpacing = 0.sp)
-                                if (source?.key == IconRecommendations.RECOMMENDED && icon.url in recent) IconButton(onClick = { deleteRecord = icon.url }, modifier = Modifier.size(40.dp)) { Icon(Icons.Outlined.Close, null, Modifier.size(16.dp)) }
+                                if (icon.url in recentSet) IconButton(onClick = { deleteRecord = icon.url }, modifier = Modifier.size(40.dp)) { Icon(Icons.Outlined.Close, null, Modifier.size(16.dp)) }
                             }
                         }
                     }

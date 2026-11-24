@@ -18,7 +18,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
-import com.lonnnnnng.flclash.data.ResourceIconSet
 import com.lonnnnnng.flclash.data.Script
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.*
@@ -136,74 +135,6 @@ class ResourceOptionsTransitionInstrumentedTest {
             InstrumentationRegistry.getInstrumentation().sendStatus(0,android.os.Bundle().apply {
                 putString("uri_break_strategy",name);putInt("uri_first_line_end",layouts.single().getLineEnd(0))
             })
-        }
-    }
-
-    @Test fun localIconOptionsKeepInvalidAndFailedDraftThenAnimateSuccessfulExit() {
-        prepareTouchVisualCapture()
-        var dark by mutableStateOf(false);var busy by mutableStateOf(false);var error by mutableStateOf<String?>(null)
-        var completed by mutableStateOf(0L);var writes=0;var submitted=""
-        val item=ResourceIconSet("local","本地图标集",icons=emptyList(),updatedAt=1)
-        compose.setContent { KClashTheme(darkTheme=dark) {
-            IconSetsPage(listOf(item),busy,error,completed,{}, {_,_->},{}, {_,name,_->writes++;submitted=name;busy=true}, {}, {}, {_,_->})
-        } }
-        for (theme in listOf(false,true)) {
-            compose.runOnIdle { dark=theme;error=null }
-            compose.onNodeWithTag("icon_set_local").performTouchInput { longClick() }
-            compose.onNodeWithText("选项").performClick()
-            compose.onNodeWithTag("icon_set_name").performTextReplacement("")
-            compose.onNodeWithTag("icon_set_save").performClick()
-            compose.onNodeWithTag("icon_set_error").assertIsDisplayed()
-            compose.onNodeWithTag("icon_set_name").performTextReplacement("图标新名称")
-            captureResourceOptions("local_${theme}_ime")
-            val old=writes
-            compose.onNodeWithTag("icon_set_name").performImeAction()
-            compose.onNodeWithTag("icon_set_save").assertIsNotEnabled()
-            compose.runOnIdle { assertEquals(old+1,writes);busy=false;error="保存失败，请重试" }
-            compose.onNodeWithTag("icon_set_name").assertTextEquals("图标新名称")
-            captureResourceOptions("local_${theme}_error")
-            compose.onNodeWithTag("icon_set_save").performClick()
-            compose.runOnIdle { assertEquals(old+2,writes);assertEquals("图标新名称",submitted);busy=false;error=null;completed++ }
-            compose.waitUntil(5000) { compose.onAllNodesWithTag("icon_set_options_dialog").fetchSemanticsNodes().isEmpty() }
-            compose.onNodeWithTag("icon_set_local").assertIsDisplayed()
-        }
-    }
-
-    @Test fun remoteIconSheetFocusesUrlKeepsBusyFailureAndReopensAfterClose() {
-        prepareTouchVisualCapture()
-        var dark by mutableStateOf(false);var busy by mutableStateOf(false);var error by mutableStateOf<String?>(null)
-        var completed by mutableStateOf(0L);var writes=0;var submitted=""
-        val item=ResourceIconSet("remote","远程图标集","https://example.invalid/icons.json",emptyList(),1)
-        compose.setContent { KClashTheme(darkTheme=dark) {
-            IconSetsPage(listOf(item),busy,error,completed,{}, {_,_->},{}, {_,_,url->writes++;submitted=url;busy=true}, {}, {}, {_,_->})
-        } }
-        for (theme in listOf(false,true)) {
-            compose.runOnIdle { dark=theme;error=null }
-            compose.onNodeWithTag("icon_set_remote").performTouchInput { longClick() }
-            compose.onNodeWithText("选项").performClick()
-            compose.waitForIdle()
-            compose.onNodeWithTag("icon_set_url").assertIsFocused()
-            captureResourceOptions("remote_${theme}_initial")
-            compose.onNodeWithTag("icon_set_url").performTextReplacement("file:///bad")
-            compose.onNodeWithTag("icon_set_url").performImeAction()
-            compose.onNodeWithTag("icon_set_error").assertIsDisplayed()
-            val url="https://example.invalid/"+"folder/".repeat(12)+"icons.json?mode=a%2Fb"
-            compose.onNodeWithTag("icon_set_url").performTextReplacement(url)
-            val old=writes
-            compose.onNodeWithTag("icon_set_url").performImeAction()
-            compose.onNodeWithTag("icon_set_cancel").assertIsNotEnabled()
-            compose.onNodeWithTag("icon_set_save").assertIsNotEnabled()
-            compose.runOnIdle { assertEquals(old+1,writes);busy=false;error="下载失败，请重试" }
-            compose.onNodeWithTag("icon_set_url").assertTextEquals(url)
-            captureResourceOptions("remote_${theme}_error")
-            compose.onNodeWithTag("icon_set_save").performClick()
-            compose.runOnIdle { assertEquals(old+2,writes);assertEquals(url,submitted);busy=false;error=null;completed++ }
-            compose.waitUntil(5000) { compose.onAllNodesWithTag("icon_set_options_sheet").fetchSemanticsNodes().isEmpty() }
-            compose.onNodeWithTag("icon_set_remote").performTouchInput { longClick() }
-            compose.onNodeWithText("选项").performClick()
-            compose.onNodeWithTag("icon_set_cancel").performClick()
-            compose.waitUntil(5000) { compose.onAllNodesWithTag("icon_set_options_sheet").fetchSemanticsNodes().isEmpty() }
-            assertEquals(old+2,writes)
         }
     }
 

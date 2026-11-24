@@ -2,6 +2,10 @@
 
 > **2026-11-23 用户确认边界**：主题、语言、检测更新保持 Kotlin 当前实现，不参与 Flutter 视觉或交互对齐；后续对照与待办排除这三项。
 
+> **2026-11-24功能范围调整**：全局图标集管理已从 Kotlin 版彻底删除，不再属于当前功能清单；Room 更新直接重建数据库，不保留旧迁移兼容。策略组的单独图片/URL及最近图片记录保留，历史图标集验收只作历史记录。
+
+> **2026-11-24 首页局域网开关空配置修复**：空 Profile 库时 `activeProfile()` 会抛出无配置异常，导致 LAN 卡片无法打开开关；改用可空 Profile ID 查询，无配置时只保存偏好、不启动核心。Redmi Note 8 Pro 真实 MainActivity 开关开/关及偏好回读1/1通过，核心保持停止；高级配置规则资源入口回归1/1。924项JVM、Debug/Motion构建及Debug Lint通过，设备和未覆盖网络边界见[验收证据](acceptance/dashboard-lan-switch-redmi-20261124.json)。
+
 2026-11-23视觉续验KUI-VIS-095：DNS非空字段、列表编辑、默认选择、错误重试、重建防重放和外部删除冲突已在POCO8/8集中回归；浅深真实MainActivity路线2/2，130相关JVM与2196组双语通过。全局DNS15项与当前Flutter上游字段集合一致。主题、语言、检测更新不纳入Flutter对齐；其余视觉性能继续PARTIAL。详见[实现](dns-nonempty-editor-alignment.md)与[验收](acceptance/dns-nonempty-editor-poco-20261123.json)。
 
 2026-11-24最新发布：KClash 0.1.20/code1020 已发布为 GitHub Latest，标签 kclash-v0.1.20 固定 a245d75f。CI 45338327994 用时13分10秒，签名 ARM64 Release、版本/ABI/R8/DEX/ML Kit/YAML/证书门禁和发布均通过；公开 APK 49,636,949字节，SHA-256 8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f 与 GitHub digest、SHA256SUMS一致，回下载验签及包元数据核对通过。版本包含 KUI-VIS-098 弹框测量定向优化；性能结论仍限于两份 POCO trace 的表单测量切片，未证明全局 jank 改善。POCO正式包仍为0.1.18，本次Release APK未安装。[发布验收](acceptance/release-0.1.20-20261124.json)。
@@ -72,7 +76,7 @@
 
 KUI-VIS-050 已在 POCO F2 Pro / API36 完成非空 Provider Kotlin 连续流程验收：真实资源选择器绑定隔离资源、添加并保存 TIMEOUT=5000、重开后 Room 回读；精确用例1/1、7张截图核验。未做 Flutter 同状态运行对照。[验收记录](acceptance/provider-options-nonempty-poco-20261119.json)
 
-KUI-VIS-049 已在 POCO F2 Pro / API36 完成图标集预览 Kotlin 真机验收：顶栏搜索、专属图块空态、无结果恢复和长网格滚动位置恢复；资源页类 3/3、19 张截图核验。对照固定 Flutter `be847366` 源码的 AppBarSearchState、NullStatusIllustration.icons、`iconTile` glyph 及 88dp 网格参数；没有运行同状态 Flutter 截图。[验收记录](acceptance/icon-set-preview-poco-20261119.json)
+历史记录（2026-11-19）：KUI-VIS-049 曾在 POCO F2 Pro / API36 验收图标集预览的搜索、空态、无结果恢复和长网格位置；该全局图标集功能已于2026-11-24移除，不代表当前存在。[历史验收记录](acceptance/icon-set-preview-poco-20261119.json)
 
 KUI-VIS-048 已在 POCO F2 Pro / API36 验收。CUSTOM 规则的类型、资源与策略选择器补齐顶栏搜索、选中定位、分组与筛选条目转场。6/6 定向用例通过、17 张截图核验、规则类型搜索跨进程恢复 1/1。菜单 Perfetto 深浅各 10 次打开与关闭；匹配的首开慢帧集中在主线程，首次 Popup 的重组、测量与布局可见，路径绘制仅是 ART 候选热点。收回分类存在重叠，trace 丢弃限制仍保留；优化收益未验证。[验收证据](acceptance/visual-048-rule-picker-poco-20261119.json)
 

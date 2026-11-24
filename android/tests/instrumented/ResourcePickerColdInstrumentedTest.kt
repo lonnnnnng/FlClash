@@ -38,32 +38,32 @@ class ResourcePickerColdInstrumentedTest {
     private fun backup() = EncryptedDraftFile(compose.activity,"resource-picker-fixture.v1","com.lonnnnnng.flclash.resource.picker.fixture.v1")
     private fun case(): String {
         assertEquals("true",InstrumentationRegistry.getArguments().getString("kclashResourceColdAcceptance"))
-        return requireNotNull(InstrumentationRegistry.getArguments().getString("kclashResourceColdCase"))
+        return requireNotNull(InstrumentationRegistry.getArguments().getString("kclashResourceColdCase")).also {
+            require(it.startsWith("rule") || it.startsWith("preview") || it.startsWith("image"))
+        }
     }
     private fun <T:androidx.lifecycle.ViewModel> vm(type:Class<T>):T {
         lateinit var result:T;compose.runOnIdle { result=ViewModelProvider(compose.activity)[type] };return result
     }
     private fun ruleVm()=vm(RuleResourcesViewModel::class.java)
-    private fun iconsVm()=vm(ResourcesViewModel::class.java)
     private fun profileVm()=vm(ProfilesViewModel::class.java)
     private fun exists(tag:String)=compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
     private fun awaitTag(tag:String)=compose.waitUntil(25_000){exists(tag)}
     private suspend fun originalRows():List<AppPreferenceEntity> = gson.fromJson(checkNotNull(backup().read()).decodeToString(),Array<AppPreferenceEntity>::class.java).toList()
     private suspend fun originalRules()=RuleResources.decode(originalRows().firstOrNull { it.key==RULE_RESOURCES_KEY }?.value)
-    private suspend fun originalIcons()=IconSetCodec.decode(originalRows().firstOrNull { it.key==ICON_SETS_KEY }?.value)
     private suspend fun preferences()=sha(gson.toJson(entry().database().appPreferences().getByPrefix("").associate { it.key to it.value }.toSortedMap()))
     private suspend fun scripts()=sha(gson.toJson(entry().database().scripts().getAll().sortedBy { it.id }))
     private fun signatures(ids:List<Long>)=ids.joinToString("|"){"$it:${signature(entry().profileRepository().profileFile(it))}"}
     private fun signature(file:File)=if(file.exists())"${file.length()}:${file.lastModified()}:${sha(file.readBytes())}" else "missing"
     private fun sha(bytes:ByteArray)=MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)}
     private fun sha(text:String)=sha(text.toByteArray())
-    private suspend fun noImports(){assertEquals(originalRules(),entry().rules().all());assertEquals(originalIcons(),entry().icons().all())}
+    private suspend fun noImports(){assertEquals(originalRules(),entry().rules().all())}
 
     @Test fun prepareAndHoldPickerOrPreview():Unit=runBlocking {
         val case=case();val input=ResourceAcceptanceInputs.manifest();val e=entry();val repo=e.profileRepository()
         repo.profilesLoaded.first{it};assertEquals(CoreRuntimeStatus.STOPPED,e.runtimeManager().state.value)
         assertFalse(marker().exists());assertNull(backup().read())
-        for(store in listOf(e.ruleFilePickerStore(),e.ruleResourceDraftStore(),e.iconFilePickerStore(),e.groupImagePickerStore(),e.profileDraftStore()))assertNull(store.read())
+        for(store in listOf(e.ruleFilePickerStore(),e.ruleResourceDraftStore(),e.groupImagePickerStore(),e.profileDraftStore()))assertNull(store.read())
         val rows=e.database().profiles().getAll().sortedBy{it.id};assertTrue(rows.isNotEmpty())
         val r=JsonObject().apply{
             addProperty("case",case);addProperty("token",UUID.randomUUID().toString());addProperty("inputToken",input.getString("token"))
@@ -71,7 +71,7 @@ class ResourcePickerColdInstrumentedTest {
             addProperty("preferences",preferences());addProperty("scripts",scripts());addProperty("selected",repo.currentProfileId.value)
             addProperty("ruleFiles",sha(gson.toJson(e.rules().all().associate{it.id to signature(e.rules().file(it))})))
         }
-        backup().write(gson.toJson(e.database().appPreferences().getByPrefix("").filter{it.key in setOf(RULE_RESOURCES_KEY,ICON_SETS_KEY,"group_icon_history")}).toByteArray())
+        backup().write(gson.toJson(e.database().appPreferences().getByPrefix("").filter{it.key in setOf(RULE_RESOURCES_KEY,"group_icon_history")}).toByteArray())
         marker().writeText(r.toString())
         val waitSystem=case.endsWith("return")||case.endsWith("cancel")
         val image=case.startsWith("image")
@@ -88,22 +88,20 @@ class ResourcePickerColdInstrumentedTest {
             if(case=="image-reading")EditorCommitProbe.arm(EditorCommitWindow.FILE_PICKER_READING)
             if(!waitSystem)compose.onNodeWithTag("group_icon_local").performClick()
         }else{
-            compose.onNodeWithTag("nav_tools").performClick();compose.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
-            compose.onNodeWithText(if(case.startsWith("icons"))"图标集" else "规则资源").performClick()
-            if(case=="icons-after")EditorCommitProbe.arm(EditorCommitWindow.ICON_FILE_APPLIED)
-            val addTag=if(case.startsWith("icons"))"icon_sets_add" else "rule_resources_add"
+            compose.onNodeWithTag("nav_tools").performClick();compose.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
+            compose.onNodeWithTag("advanced_item_rule_resources").performClick()
+            val addTag="rule_resources_add"
             compose.waitUntil(20_000){compose.onAllNodes(hasTestTag(addTag) and isEnabled()).fetchSemanticsNodes().isNotEmpty()}
             compose.waitForIdle();SystemClock.sleep(650)
             if(!waitSystem){compose.onNodeWithTag(addTag).performClick();compose.onNodeWithText("从文件导入").performClick()}
         }
         if(!waitSystem)picker()
-        val fileKey=when{image->"image";case.startsWith("icons")->"icons";case.contains("mrs")->"mrs";else->"rules"}
+        val fileKey=when{image->"image";case.contains("mrs")->"mrs";else->"rules"}
         r.addProperty("fileKey",fileKey);r.addProperty("systemPicker",waitSystem)
         if(!waitSystem){
             choose(ResourceAcceptanceInputs.name(input,fileKey))
-            if(case=="image-reading"||case=="icons-after"){
-                val window=if(image)EditorCommitWindow.FILE_PICKER_READING else EditorCommitWindow.ICON_FILE_APPLIED
-                compose.waitUntil(20_000){EditorCommitProbe.visits(window)==1}
+            if(case=="image-reading"){
+                compose.waitUntil(20_000){EditorCommitProbe.visits(EditorCommitWindow.FILE_PICKER_READING)==1}
             }else{
                 awaitTag(if(fileKey=="mrs")"rule_resource_preview" else "rule_resource_content")
                 val m=ruleVm();compose.waitUntil(20_000){!m.state.value.busy}
@@ -123,7 +121,7 @@ class ResourcePickerColdInstrumentedTest {
                 withTimeout(20_000){while(e.ruleResourceDraftStore().read()?.let{gson.fromJson(it.decodeToString(),RuleResourceSession::class.java).uiDraft}!=m.state.value.session?.uiDraft || m.state.value.session?.uiDraft==null)delay(100)}
             }
         }
-        val request=when{image->profileVm().groupImagePicker.state.value.request;case.startsWith("icons")->iconsVm().filePicker.state.value.request;else->ruleVm().filePicker.state.value.request}
+        val request=if(image)profileVm().groupImagePicker.state.value.request else ruleVm().filePicker.state.value.request
         request?.let{r.addProperty("pickerToken",it.token)}
         if(!waitSystem && exists("rule_resource_content")){
             val field=compose.onNodeWithTag("rule_resource_content").fetchSemanticsNode().config
@@ -146,7 +144,7 @@ class ResourcePickerColdInstrumentedTest {
         assertEquals(case,r["case"].asString);assertNotEquals(r["preparedPid"].asInt,android.os.Process.myPid())
         r["verifiedPid"]?.let{assertNotEquals(it.asInt,android.os.Process.myPid())}
         val e=entry();val repo=e.profileRepository();repo.profilesLoaded.first{it}
-        val image=case.startsWith("image");val icons=case.startsWith("icons")
+        val image=case.startsWith("image")
         if(image){
             val m=profileVm();m.awaitEditorDraftRestoration()
             compose.waitUntil(20_000){m.proxyGroupsEditorState.value.profile?.id==r["profileId"].asLong && !m.proxyGroupsEditorState.value.isLoading}
@@ -165,12 +163,6 @@ class ResourcePickerColdInstrumentedTest {
                     assertEquals(r["profileSignature"].asString,signature(repo.profileFile(r["profileId"].asLong)))
                 }
             }
-        }else if(icons){
-            val m=iconsVm();m.filePicker.awaitReady();compose.waitUntil(20_000){!m.iconBusy.value}
-            val rows=e.icons().all();val fresh=rows.filter{it.id !in originalIcons().map(ResourceIconSet::id)}
-            if(case.endsWith("cancel"))assertTrue(fresh.isEmpty())else{assertEquals(1,fresh.size);assertEquals(input.getString("token"),fresh.single().name)}
-            assertNull(m.filePicker.state.value.request)
-            // 作者 long：交付已完成的图库无需重开页面才能核对，重复进程仍只能存在同一资源ID。
         }else{
             val m=ruleVm();compose.waitUntil(25_000){m.state.value.ready && !m.state.value.busy}
             if(case=="rule-after"){
@@ -198,7 +190,7 @@ class ResourcePickerColdInstrumentedTest {
                 }
             }
         }
-        if(case in setOf("rule-after","icons-after") && InstrumentationRegistry.getArguments().getString("kclashResourceKeep")=="true"){
+        if(case == "rule-after" && InstrumentationRegistry.getArguments().getString("kclashResourceKeep")=="true"){
             r.addProperty("verifiedPid",android.os.Process.myPid());marker().writeText(r.toString());return@runBlocking
         }
         cleanup(r)
@@ -206,7 +198,7 @@ class ResourcePickerColdInstrumentedTest {
     }
     @Test fun inspectRetainedPickerState():Unit=runBlocking {
         case();val e=entry()
-        for((name,store) in listOf("rule" to e.ruleFilePickerStore(),"icons" to e.iconFilePickerStore(),"image" to e.groupImagePickerStore())) {
+        for((name,store) in listOf("rule" to e.ruleFilePickerStore(),"image" to e.groupImagePickerStore())) {
             val request=store.read()?.let{gson.fromJson(it.decodeToString(),FilePickerRequest::class.java)}
             ins.sendStatus(2,Bundle().apply{putString("kclash_picker_retained","kind=$name;phase=${request?.phase};error=${request?.error};bytes=${request?.bytes?.size};owner=${request?.owner}")})
         }
@@ -217,10 +209,10 @@ class ResourcePickerColdInstrumentedTest {
     }
     private suspend fun cleanup(r:JsonObject){
         val e=entry();val repo=e.profileRepository();repo.profilesLoaded.first{it}
-        val rules=ruleVm();val icons=iconsVm();val profiles=profileVm()
-        compose.waitUntil(20_000){rules.state.value.ready && !rules.state.value.busy && !icons.iconBusy.value}
-        compose.runOnIdle{rules.closePage{};icons.closeIcons{};profiles.closeProxyGroupsEditor()}
-        compose.waitUntil(20_000){rules.state.value.session==null && rules.filePicker.state.value.request==null && icons.filePicker.state.value.request==null && profiles.proxyGroupsEditorState.value.profile==null}
+        val rules=ruleVm();val profiles=profileVm()
+        compose.waitUntil(20_000){rules.state.value.ready && !rules.state.value.busy}
+        compose.runOnIdle{rules.closePage{};profiles.closeProxyGroupsEditor()}
+        compose.waitUntil(20_000){rules.state.value.session==null && rules.filePicker.state.value.request==null && profiles.proxyGroupsEditorState.value.profile==null}
         compose.runOnIdle{profiles.closeEditor()};compose.waitUntil(20_000){profiles.editorState.value.profile==null}
         profiles.groupImagePicker.cancel()
         val original=originalRules()
@@ -230,16 +222,15 @@ class ResourcePickerColdInstrumentedTest {
                 val file=File(e.rules().file(row).parentFile,name);check(name.matches(Regex("[a-zA-Z0-9-]+\\.rules(\\.mrs)?")));check(!file.exists()||file.delete())
             }
         }
-        for(row in e.icons().all().filter{it.id !in originalIcons().map(ResourceIconSet::id)}){check(row.name==r["inputToken"].asString);e.icons().delete(row.id)}
         r["profileId"]?.asLong?.let{id->e.database().profiles().getById(id)?.let{check(it.label=="resource-cold-${r["token"].asString}");repo.deleteProfile(id)}}
-        for(key in setOf(RULE_RESOURCES_KEY,ICON_SETS_KEY,"group_icon_history"))e.database().withTransaction{
+        for(key in setOf(RULE_RESOURCES_KEY,"group_icon_history"))e.database().withTransaction{
             val row=originalRows().firstOrNull{it.key==key};if(row==null)e.database().appPreferences().delete(key)else e.database().appPreferences().put(row)
         }
-        assertEquals(original,e.rules().all());assertEquals(originalIcons(),e.icons().all())
+        assertEquals(original,e.rules().all())
         assertEquals(r["ruleFiles"].asString,sha(gson.toJson(e.rules().all().associate{it.id to signature(e.rules().file(it))})))
         val rows=e.database().profiles().getAll().sortedBy{it.id};assertEquals(r["rows"].asString,sha(gson.toJson(rows)));assertEquals(r["files"].asString,signatures(rows.map{it.id}))
         assertEquals(r["preferences"].asString,preferences());assertEquals(r["scripts"].asString,scripts());assertEquals(r["selected"].asLong,repo.currentProfileId.value)
-        for(store in listOf(e.ruleFilePickerStore(),e.ruleResourceDraftStore(),e.iconFilePickerStore(),e.groupImagePickerStore(),e.profileDraftStore()))assertNull(store.read())
+        for(store in listOf(e.ruleFilePickerStore(),e.ruleResourceDraftStore(),e.groupImagePickerStore(),e.profileDraftStore()))assertNull(store.read())
         assertEquals(CoreRuntimeStatus.STOPPED,e.runtimeManager().state.value);backup().write(null);assertTrue(marker().delete())
     }
     private fun assertPrivate(){

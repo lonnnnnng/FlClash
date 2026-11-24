@@ -114,7 +114,6 @@ class BackupRepository(
                     if (manifest.includesScripts) {
                         putText(zip, APPLICATION_SETTINGS_ENTRY, ApplicationSettingsBackupCodec.encode(applicationSettingsStore.read()))
                         putText(zip, RESOURCE_PREFERENCES_ENTRY, ResourcePreferencesCodec.encode(ResourcePreferences(
-                            IconSetCodec.decode(preferenceDao.get(ICON_SETS_KEY)),
                             FilterPresets.decode(preferenceDao.get(FILTER_PRESETS_KEY)),
                             geoSettingsStore?.read() ?: com.lonnnnnng.flclash.service.GeoResourceSettings(),
                         )))
@@ -222,8 +221,7 @@ class BackupRepository(
                     if (scope == BackupRestoreScope.ALL_DATA) {
                         parsed.resourcePreferences?.let { incoming ->
                             val settings = if (strategy == BackupRestoreStrategy.OVERRIDE) incoming else ResourcePreferencesCodec.merge(
-                                ResourcePreferences(IconSetCodec.decode(preferenceDao.get(ICON_SETS_KEY)), FilterPresets.decode(preferenceDao.get(FILTER_PRESETS_KEY)), previousGeo ?: incoming.geo), incoming)
-                            preferenceDao.put(AppPreferenceEntity(ICON_SETS_KEY, IconSetCodec.encode(settings.icons), System.currentTimeMillis()))
+                                ResourcePreferences(FilterPresets.decode(preferenceDao.get(FILTER_PRESETS_KEY)), previousGeo ?: incoming.geo), incoming)
                             preferenceDao.put(AppPreferenceEntity(FILTER_PRESETS_KEY, FilterPresets.encode(settings.filters), System.currentTimeMillis()))
                         }
                         parsed.scripts.forEach { scriptDao.insert(it) }

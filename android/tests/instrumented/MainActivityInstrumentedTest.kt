@@ -146,28 +146,36 @@ class MainActivityInstrumentedTest {
     }
 
     @Test
+    fun advancedSettingsContainsResourceRowsAndSingleScriptEntry() {
+        composeRule.onNodeWithTag("nav_tools").performClick()
+        composeRule.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
+        composeRule.onNodeWithTag("page_advanced").assertIsDisplayed()
+        listOf(
+            "advanced_item_local_proxies",
+            "advanced_item_rule_resources",
+            "advanced_item_filter_presets",
+            "advanced_item_scripts",
+        ).forEach { tag -> composeRule.onNodeWithTag(tag).assertIsDisplayed() }
+        composeRule.onNodeWithTag("tools_item_resources_settings").assertDoesNotExist()
+    }
+
+    @Test
     fun mainActivityOpensFilterPresetsAndBothResourceUrlFormsWithoutChangingProfiles() {
         com.lonnnnnng.flclash.ui.assertPortraitDefaultFontConfiguration()
         verifyPreservedProfileMetadata()
         composeRule.onNodeWithTag("nav_tools").performClick()
-        composeRule.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
-        composeRule.onNodeWithTag("custom_resources_filters").performClick()
+        composeRule.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
+        composeRule.onNodeWithTag("advanced_item_filter_presets").performClick()
         composeRule.onNodeWithTag("filter_presets_page").assertIsDisplayed()
         composeRule.activityRule.scenario.recreate()
         composeRule.waitUntil(5000) { composeRule.onAllNodesWithTag("filter_presets_page").fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithTag("filter_presets_back").performClick()
-        composeRule.onNodeWithText("规则资源").performClick()
+        composeRule.onNodeWithTag("advanced_item_rule_resources").performClick()
         composeRule.onNodeWithTag("rule_resources_add").performClick()
         composeRule.onNodeWithText("从 URL 导入").performClick()
         composeRule.onNodeWithTag("resource_urls_input").assertIsDisplayed()
         composeRule.onNodeWithTag("resource_urls_back").performClick()
         composeRule.onNodeWithTag("rule_resources_back").performClick()
-        composeRule.onNodeWithText("图标集").performClick()
-        composeRule.onNodeWithTag("icon_sets_add").performClick()
-        composeRule.onNodeWithText("从 URL 导入").performClick()
-        composeRule.onNodeWithTag("resource_urls_input").assertIsDisplayed()
-        composeRule.onNodeWithTag("resource_urls_back").performClick()
-        composeRule.onNodeWithTag("icon_sets_back").performClick()
     }
 
     @Test

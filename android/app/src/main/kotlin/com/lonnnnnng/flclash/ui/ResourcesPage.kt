@@ -29,7 +29,7 @@ import com.lonnnnnng.flclash.data.*
 import com.lonnnnnng.flclash.service.GeoResourceSettings
 import com.lonnnnnng.flclash.service.GeoResourceType
 
-/** 作者 long：工具资源页显示下载状态，资源定义的增删改留在自定义资源页，保持与 Flutter 相同的入口归属。 */
+/** 作者 long：工具资源页只显示下载状态，资源定义的增删改从高级配置进入，避免重复维护入口。 */
 @Composable
 internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, onRefresh: () -> Unit,
     onSync: (ResourceUpdateRow) -> Unit, onSyncAll: () -> Unit, onSettings: (GeoResourceSettings) -> Unit,
@@ -86,7 +86,7 @@ internal fun ResourcesPage(state: ResourceUpdatesState, onDismiss: () -> Unit, o
                     val rows = state.rows.filter { it.kind == kind }
                     if (rows.isNotEmpty()) {
                         item(key = "header_$kind") { Text(when (kind) {
-                            ResourceKind.GEO -> "Geo"; ResourceKind.ICONS -> tr("图标集"); ResourceKind.RULE -> tr("规则资源"); ResourceKind.SCRIPT -> tr("脚本")
+                            ResourceKind.GEO -> "Geo"; ResourceKind.RULE -> tr("规则资源"); ResourceKind.SCRIPT -> tr("脚本")
                         }, Modifier.padding(top = 24.dp, bottom = 13.dp, start = 16.dp), style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant) }
                         itemsIndexed(rows, key = { _, row -> row.key }) { index, row ->

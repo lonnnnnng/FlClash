@@ -59,7 +59,7 @@ class ResourceSafHostInstrumentedTest {
     private val entry get() = EntryPointAccessors.fromApplication(compose.activity.application, ConnectionAcceptanceEntryPoint::class.java)
 
     @Test fun ruleYamlPickerCancelsRejectsEmptyPreviewsAndPersists() = fixture { manifest ->
-        open(false)
+        open()
         launch("rule_resources_add"); cancel(); assertNoNewResources()
         launch("rule_resources_add"); choose(ResourceAcceptanceInputs.name(manifest, "empty"))
         awaitText("无法读取所选文件，请重新选择")
@@ -86,7 +86,7 @@ class ResourceSafHostInstrumentedTest {
     }
 
     @Test fun ruleMrsPickerPreservesBinaryAndUsesNativePreview() = fixture { manifest ->
-        open(false); launch("rule_resources_add"); choose(ResourceAcceptanceInputs.name(manifest, "mrs"))
+        open(); launch("rule_resources_add"); choose(ResourceAcceptanceInputs.name(manifest, "mrs"))
         awaitTag("rule_resource_preview")
         compose.onNodeWithTag("rule_resource_preview").assertTextEquals("MRS 二进制资源，保存后可预览")
         assertNoNewResources(); compose.onNodeWithTag("rule_resource_save").performClick()
@@ -111,21 +111,6 @@ class ResourceSafHostInstrumentedTest {
         compose.onNodeWithTag("rule_resource_save").assertDoesNotExist(); capture("resource_rule_mrs_native_preview")
         compose.onNodeWithTag("rule_resource_editor_back").performClick()
         ResourceAcceptanceInputs.report(JSONObject().put("case", "rule-mrs").put("sha256", ResourceAcceptanceInputs.sha(entry.rules().file(row).readBytes())).put("previewBytes", preview.toByteArray().size))
-    }
-
-    @Test fun iconSetPickerCancelsRejectsMalformedAndPersists() = fixture { manifest ->
-        open(true); launch("icon_sets_add"); cancel(); assertNoNewResources()
-        launch("icon_sets_add"); choose(ResourceAcceptanceInputs.name(manifest, "badIcons"))
-        awaitText("文件已读取，但处理尚未完成，请重试")
-        compose.onNodeWithText("文件已读取，但处理尚未完成，请重试").assertIsDisplayed()
-        assertNoNewResources(); capture("resource_icons_invalid_rejected")
-        launch("icon_sets_add"); choose(ResourceAcceptanceInputs.name(manifest, "icons"))
-        compose.waitUntil(20_000) { runBlocking { entry.icons().all().size == beforeIcons.size + 1 } }
-        val row = runBlocking { entry.icons().all().single { it.id !in beforeIcons.map(ResourceIconSet::id) } }
-        assertEquals(manifest.getString("token"), row.name); assertEquals(1, row.icons.size)
-        compose.activityRule.scenario.recreate(); compose.onNodeWithTag("icon_sets_page").assertIsDisplayed()
-        assertEquals(row, runBlocking { entry.icons().all().single { it.id == row.id } }); capture("resource_icons_saved")
-        ResourceAcceptanceInputs.report(JSONObject().put("case", "icon-set").put("count", row.icons.size).put("recreated", true))
     }
 
     @Test fun groupImageGetContentCancelsRejectsInvalidAndPersistsInCustomCopy() = fixture { manifest ->
@@ -199,7 +184,7 @@ class ResourceSafHostInstrumentedTest {
     }
 
     @Test fun rulePickerRecreationAndDuplicateLateCallbacksDoNotWrite() = fixture { manifest ->
-        open(false); launch("rule_resources_add"); systemPicker()
+        open(); launch("rule_resources_add"); systemPicker()
         lateinit var model: RuleResourcesViewModel
         compose.runOnIdle { model = ViewModelProvider(compose.activity)[RuleResourcesViewModel::class.java] }
         val token = checkNotNull(model.filePicker.state.value.request).token
@@ -225,21 +210,8 @@ class ResourceSafHostInstrumentedTest {
         compose.waitForIdle();assertNull(model.state.value.editor);assertNoNewResources()
     }
 
-    @Test fun iconPickerRecreationAndDuplicateCallbackImportOnlyOnce() = fixture { manifest ->
-        open(true); launch("icon_sets_add");systemPicker()
-        lateinit var model: ResourcesViewModel
-        compose.runOnIdle { model = ViewModelProvider(compose.activity)[ResourcesViewModel::class.java] }
-        val token=checkNotNull(model.filePicker.state.value.request).token
-        recreateBehindPicker();choose(ResourceAcceptanceInputs.name(manifest,"icons"))
-        compose.waitUntil(20_000) { runBlocking { entry.icons().all().size==beforeIcons.size+1 } && !model.iconBusy.value }
-        val before=runBlocking { entry.icons().all() }
-        compose.runOnIdle { model.receiveIconsFilePick(token,"content://invalid/duplicate") }
-        compose.waitForIdle();assertEquals(before,runBlocking { entry.icons().all() })
-        capture("resource_icons_picker_recreated_once")
-    }
-
     @Test fun unavailableUriAndOrphanRequestReleaseBusyAndAllowRealPickerRetry() = fixture { manifest ->
-        open(false)
+        open()
         lateinit var model: RuleResourcesViewModel
         compose.runOnIdle { model = ViewModelProvider(compose.activity)[RuleResourcesViewModel::class.java] }
         compose.waitUntil(20_000) { model.state.value.ready && !model.state.value.busy }
@@ -259,7 +231,7 @@ class ResourceSafHostInstrumentedTest {
     }
 
     @Test fun inspectRealPickerFileInventory() = fixture { manifest ->
-        open(false);launch("rule_resources_add");picker()
+        open();launch("rule_resources_add");picker()
         fun report(phase:String) { val items=root()?.let { nodes(it).map { node ->
             "${node.className}|${node.viewIdResourceName}|${node.text}|${node.contentDescription}|scroll=${node.isScrollable}"
         }.toList() }.orEmpty()
@@ -272,14 +244,6 @@ class ResourceSafHostInstrumentedTest {
         cancel()
     }
 
-    @Test fun recoverExactEmptyCatalogPreference() = runBlocking {
-        assertEquals("true", InstrumentationRegistry.getArguments().getString("kclashEmptyResourceRecovery"))
-        val dao=entry.database().appPreferences()
-        val row=dao.getByPrefix(ICON_SETS_KEY).single{it.key==ICON_SETS_KEY}
-        assertEquals("[]",row.value)
-        assertTrue(entry.icons().all().isEmpty())
-        dao.delete(ICON_SETS_KEY)
-    }
     private fun recreateBehindPicker() {
         // 作者 long：系统选择器在前台时宿主合法处于STOPPED；Scenario.recreate会强等RESUMED，必须请求真实Activity重建后由系统结果恢复。
         instrumentation.runOnMainSync { compose.activity.recreate() }
@@ -288,7 +252,6 @@ class ResourceSafHostInstrumentedTest {
     private var beforeCatalogRows = emptyList<AppPreferenceEntity>()
     private var beforeProfiles = emptyList<ProfileEntity>()
     private var beforeRules = emptyList<RuleResource>()
-    private var beforeIcons = emptyList<ResourceIconSet>()
     private var beforeRecent = emptyList<String>()
     private var beforeHistory: AppPreferenceEntity? = null
     private fun fixture(block: (JSONObject) -> Unit) = runBlocking {
@@ -298,19 +261,17 @@ class ResourceSafHostInstrumentedTest {
         beforeProfiles = e.database().profiles().getAll()
         val selected = withTimeout(20_000) { repo.currentProfileId.first { id -> beforeProfiles.any { it.id == id } } }
         val files = beforeProfiles.associate { it.id to ResourceAcceptanceInputs.signature(repo.profileFile(it.id)) }
-        beforeCatalogRows=e.database().appPreferences().getByPrefix("").filter{it.key in setOf(RULE_RESOURCES_KEY,ICON_SETS_KEY)}
-        beforeRules = e.rules().all(); beforeIcons = e.icons().all(); beforeRecent = repo.recentGroupIcons()
+        beforeCatalogRows=e.database().appPreferences().getByPrefix("").filter{it.key == RULE_RESOURCES_KEY}
+        beforeRules = e.rules().all(); beforeRecent = repo.recentGroupIcons()
         beforeHistory = e.database().appPreferences().getByPrefix("group_icon_history").singleOrNull()
         val ruleFiles = beforeRules.associate { it.id to ResourceAcceptanceInputs.signature(e.rules().file(it)) }
         try { block(manifest) } finally {
             lateinit var ruleVm: RuleResourcesViewModel
-            lateinit var iconVm: ResourcesViewModel
             compose.runOnIdle {
                 ruleVm = ViewModelProvider(compose.activity)[RuleResourcesViewModel::class.java]
-                iconVm = ViewModelProvider(compose.activity)[ResourcesViewModel::class.java]
-                ruleVm.closePage {}; iconVm.closeIcons {}
+                ruleVm.closePage {}
             }
-            compose.waitUntil(20_000) { ruleVm.state.value.session == null && ruleVm.filePicker.state.value.request == null && iconVm.filePicker.state.value.request == null }
+            compose.waitUntil(20_000) { ruleVm.state.value.session == null && ruleVm.filePicker.state.value.request == null }
             // 作者 long：失败也只回收本批唯一名称的新资源；正式目录及文件内容先断言再收尾，避免隐藏并发修改。
             e.rules().all().filter { it.id !in beforeRules.map(RuleResource::id) }.forEach { row ->
                 check(row.label.startsWith(manifest.getString("token")))
@@ -321,25 +282,22 @@ class ResourceSafHostInstrumentedTest {
                     check(!file.exists() || file.delete())
                 }
             }
-            e.icons().all().filter { it.id !in beforeIcons.map(ResourceIconSet::id) }.forEach { check(it.name == manifest.getString("token")); e.icons().delete(it.id) }
-            for(key in setOf(RULE_RESOURCES_KEY,ICON_SETS_KEY)) {
-                val original=beforeCatalogRows.firstOrNull{it.key==key}
-                if(original==null)e.database().appPreferences().delete(key)else e.database().appPreferences().put(original)
-            }
-            assertEquals(beforeRules, e.rules().all()); assertEquals(beforeIcons, e.icons().all())
+            val originalCatalog=beforeCatalogRows.singleOrNull()
+            if(originalCatalog==null)e.database().appPreferences().delete(RULE_RESOURCES_KEY)else e.database().appPreferences().put(originalCatalog)
+            assertEquals(beforeRules, e.rules().all())
             assertEquals(ruleFiles, beforeRules.associate { it.id to ResourceAcceptanceInputs.signature(e.rules().file(it)) })
             assertEquals(beforeProfiles, e.database().profiles().getAll()); assertEquals(selected, repo.currentProfileId.value)
             assertEquals(files, beforeProfiles.associate { it.id to ResourceAcceptanceInputs.signature(repo.profileFile(it.id)) })
             assertEquals(CoreRuntimeStatus.STOPPED, e.runtimeManager().state.value)
         }
     }
-    private fun assertNoNewResources() = runBlocking { assertEquals(beforeRules, entry.rules().all()); assertEquals(beforeIcons, entry.icons().all()) }
+    private fun assertNoNewResources() = runBlocking { assertEquals(beforeRules, entry.rules().all()) }
     private fun awaitTag(tag: String) = compose.waitUntil(20_000) { compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
     private fun awaitText(text: String) = compose.waitUntil(20_000) { compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
-    private fun open(icons: Boolean) {
+    private fun open() {
         compose.onNodeWithTag("nav_tools").performClick()
-        compose.onNodeWithTag("tools_item_resources_settings").performScrollTo().performClick()
-        compose.onNodeWithText(if (icons) "图标集" else "规则资源").performClick()
+        compose.onNodeWithTag("tools_item_advanced").performScrollTo().performClick()
+        compose.onNodeWithTag("advanced_item_rule_resources").performClick()
     }
     private fun launch(tag: String) {
         lateinit var rule: RuleResourcesViewModel

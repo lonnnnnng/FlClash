@@ -26,7 +26,7 @@ import kotlin.math.abs
 
 internal data class ResourceOrderItem(val id: String, val title: String, val subtitle: String, val icon: String? = null)
 
-/** 作者 long：规则资源和图库共用视口手势；整行被回收或换位后仍可拖动，只有松手才提交完整顺序。 */
+/** 作者 long：排序列表共用视口手势；整行被回收或换位后仍可拖动，只有松手才提交完整顺序。 */
 @Composable
 internal fun ResourceOrderList(rows: List<ResourceOrderItem>, saving: Boolean, tag: String, onReorder: (List<String>) -> Unit,
     modifier: Modifier = Modifier, compactRows: Boolean = false, bottomPadding: androidx.compose.ui.unit.Dp = 16.dp, rowContent: (@Composable (ResourceOrderItem) -> Unit)? = null) {

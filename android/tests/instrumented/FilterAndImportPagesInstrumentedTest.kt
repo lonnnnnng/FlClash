@@ -61,7 +61,7 @@ class FilterAndImportPagesInstrumentedTest {
             } }
             controller = imports
             val state by imports.state.collectAsState()
-            ResourceUrlImportPage("导入图标集", state, {}, imports::start, imports::cancel, imports::retry, imports::reset)
+            ResourceUrlImportPage("导入规则资源", state, {}, imports::start, imports::cancel, imports::retry, imports::reset)
         } }
         for (theme in listOf(false, true)) {
             compose.runOnIdle { dark = theme; controller.reset(); calls.clear() }
