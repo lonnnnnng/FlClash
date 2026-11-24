@@ -1,0 +1,55 @@
+{
+  "tag": "kclash-v0.1.21",
+  "versionName": "0.1.21",
+  "versionCode": 1021,
+  "date": "2026-11-24",
+  "sourceCommit": "81fa6aec6dc473559297c5f2fc3646b0d7fe70e7",
+  "branch": "kotlin",
+  "release": {
+    "status": "published-by-successful-tag-workflow",
+    "workflowRunId": 45412491836,
+    "workflowRunUrl": "https://github.com/lonnnnnng/FlClash/actions/runs/45412491836",
+    "workflowResult": "success",
+    "job": "Build and publish KClash Android arm64",
+    "jobDuration": "11m 10s",
+    "versionSummaryVerifiedInActionsPage": true,
+    "isLatest": true,
+    "expectedAssets": [
+      {
+        "name": "KClash-0.1.21-android-arm64-v8a.apk",
+        "size": 49596849,
+        "sha256": "e5a012245406e37fdec39086dfb851d2c47fba5b051154fc14eff063c3814a6b"
+      },
+      {
+        "name": "SHA256SUMS",
+        "size": 102,
+        "sha256": "a9dc555b549f756ba98d02c336d6624b7399321fb1fc328144c5798d88962820"
+      }
+    ],
+    "independentDownloadAndSignatureVerification": "passed",
+    "downloadedApkChecksum": "passed",
+    "downloadedApkPackage": "com.lonnnnnng.flclash",
+    "downloadedApkVersion": "0.1.21/code1021",
+    "downloadedApkSdk": "minSdk 24, targetSdk 37",
+    "downloadedApkAbi": "arm64-v8a only",
+    "signing": {
+      "signatureSchemeV2": true,
+      "signers": 1,
+      "certificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+      "matchesExistingReleaseIdentity": true
+    }
+  },
+  "preReleaseChecks": {
+    "command": "./gradlew test :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 --max-workers=2",
+    "result": "passed-before-version-only-preparation",
+    "jvmTests": 924,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "debugLint": "0 errors, 11 warnings, 1 hint",
+    "redmiDashboardLanSwitch": "passed 1/1",
+    "redmiAdvancedRuleResourcesEntry": "passed 1/1"
+  },
+  "releaseInstallation": false,
+  "roomRebuildNotice": "The release notes state that upgrading may clear Room-backed configuration, script, and preference data."
+}

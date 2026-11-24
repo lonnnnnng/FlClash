@@ -1,4 +1,5 @@
 # KClash Kotlin 重写路线图
+> **KClash 0.1.21 正式发布（2026-11-24）**：提交 `81fa6aec` 的标签 `kclash-v0.1.21` 触发发布流水线 `45412491836`，Actions页面确认成功，签名ARM64 Release构建与发布作业耗时11分10秒；版本为0.1.21/code1021，已成为GitHub Latest。APK 49,596,849字节，SHA-256 `e5a012245406e37fdec39086dfb851d2c47fba5b051154fc14eff063c3814a6b` 与 GitHub digest、`SHA256SUMS`一致；回下载校验、包名/版本/SDK/ABI和既有签名证书核验通过。发布内容包括移除全局图标集、集中高级配置资源入口、修复空配置时首页局域网开关。未安装Release包。[验收记录](acceptance/release-0.1.21-20261124.json)、[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.21)。
 > **2026-11-24 首页局域网开关与工具入口修正（Redmi）**：空配置时 `ProfileRepository.activeProfile()` 会抛出“没有可用配置”，导致首页局域网卡片把设置标为错误并禁用开关。`CoreRuntimeManager` 改为用可空活动配置 ID 判断；没有配置时只保存开关偏好，不加载/启动 Mihomo。Redmi Note 8 Pro/API36 的真实 `MainActivity` 空库用例开关开/关和持久化通过1/1，核心保持STOPPED；高级配置中的规则资源入口回归1/1。全量924项JVM报告失败/错误/跳过为0（App630本次执行，其余模块按Gradle复用），Debug/Motion构建和Debug Lint通过（0错误、11警告、1提示）。没有复验真实局域网客户端流量、配置运行态热更新、IPv6-only或Wi-Fi/蜂窝切换。[验收证据](acceptance/dashboard-lan-switch-redmi-20261124.json)。
 > **当前视觉/性能快照（KUI-VIS-098，2026-11-24）**：配置订阅弹框每行原先用 BoxWithConstraints 测标题宽度，现改为 Modifier.layout 按当前测量约束计算，保留带 leading 控件时的 48dp 触点宽度规则。POCO F2 Pro/API36冷开 Perfetto 的 AndroidOwner:onMeasure 从基线31.838ms降至候选25.331/27.429ms，测量窗口 Compose:recompose 切片4→1；Popup→Dialog间隙仍约13ms，开合jank没有稳定全局收益。POCO-only真实MainActivity表单/IME/草稿重建回归1/1；Motion JVM634项，Debug/Release/Motion构建和Lint通过（0错误、11警告、1提示）。这是局部测量开销下降，不代表首窗、总体掉帧或菜单归因闭环；公开版0.1.20；KUI-VIS-098已随该版发布，剩余首窗和总体掉帧仍未闭环。下一步继续其它子页连续转场和首次绘制、菜单慢帧归因。[实现与限制](profile-form-measurement-optimization.md)、[验收trace](acceptance/profile-form-measurement-poco-20261124.json)。
 > **KClash 0.1.20正式发布（2026-11-24）**：标签 kclash-v0.1.20 固定提交 a245d75f，CI 45338327994 用时13分10秒，签名 ARM64 Release、R8/DEX/ML Kit/YAML/ABI及证书门禁通过。GitHub Release 为 Latest；公开 APK 49,636,949字节，SHA-256 8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f 与 GitHub digest、SHA256SUMS一致；回下载验签及包名/版本/code/minSdk/ABI/非debuggable核对通过。包含KUI-VIS-098弹框测量定向优化。POCO仍安装正式0.1.18，本次APK未安装。[发布页](https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.20)、[CI](https://github.com/lonnnnnng/FlClash/actions/runs/45338327994)、[验收证据](acceptance/release-0.1.20-20261124.json)。
@@ -971,8 +972,8 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.20/code1020**，标签`kclash-v0.1.20`指向`a245d75f`；沿用既有正式证书 |
-| 发布范围 | KClash 0.1.20/code1020 已发布为 GitHub Latest，标签`kclash-v0.1.20`固定`a245d75f`。CI `45338327994`用时13分10秒，签名ARM64打包及R8/DEX/ML Kit/YAML/ABI/证书门禁通过；公开APK 49,636,949字节，SHA-256 `8ecc90b590d09187efc8150300d5041c00332e900b4194312d7cdb84f3c1cb2f`与GitHub digest、SHA256SUMS一致，回下载验签通过。[证据](acceptance/release-0.1.20-20261124.json)。 |
+| 当前公开版本 | **0.1.21/code1021**，标签`kclash-v0.1.21`指向`81fa6aec`；沿用既有正式证书 |
+| 发布范围 | KClash 0.1.21/code1021 已成为 GitHub Latest。标签流水线 `45412491836` 成功；公开APK及SHA256SUMS回下载与GitHub digest一致，证书沿用既有身份。包含全局图标集移除、高级配置资源入口及首页LAN空配置修复。[证据](acceptance/release-0.1.21-20261124.json)。 |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
 | 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
@@ -983,7 +984,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 数据保护 | Redmi 本轮只安装独立 Motion 与测试壳执行两个定向用例，之后已卸载 Motion、Motion.test 和遗留 Debug 测试包；正式 KClash 包未安装，`com.follow.clash`未操作。未访问工作区根`1.yaml`，核心保持STOPPED。 |
 | 正在推进 | KUI-VIS-096已补Tools→资源概览行内失败与分块下载进度，并完成真实触摸资源输入和R8菜单trace。剩余其它子页/面板连续转场及完整Flutter主应用同态路线仍待。最终R8菜单帧显示部分Deadline Missed由UI Traversal/动画/Popup测量忙帧伴随；早期trace的shader compile解释未在最终重跑稳定复现。关闭帧有waitForBufferRelease但量级有限，Dropped Frame未归因，GPU fence字段缺失，discarded owner未知；不宣称稳定性能收益。玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [首页局域网开关空配置修复](acceptance/dashboard-lan-switch-redmi-20261124.json)、[KUI-VIS-098弹框测量优化](acceptance/profile-form-measurement-poco-20261124.json)、[KUI-VIS-096资源更新行反馈/进度与菜单trace](acceptance/resource-updates-poco-20261124.json)、[0.1.20发布](acceptance/release-0.1.20-20261124.json)。 |
+| 最新证据 | [0.1.21发布](acceptance/release-0.1.21-20261124.json)、[首页局域网开关空配置修复](acceptance/dashboard-lan-switch-redmi-20261124.json)、[KUI-VIS-098弹框测量优化](acceptance/profile-form-measurement-poco-20261124.json)、[KUI-VIS-096资源更新行反馈/进度与菜单trace](acceptance/resource-updates-poco-20261124.json)。 |
 
 ## 4. 目标架构图
 
