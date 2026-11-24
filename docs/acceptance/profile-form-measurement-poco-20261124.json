@@ -1,0 +1,109 @@
+{
+  "id": "KUI-VIS-098-profile-form-first-measurement",
+  "date": "2026-11-24",
+  "status": "completed-with-limits",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36
+  },
+  "source": {
+    "startingCommit": "ebf5c2a6",
+    "branch": "kotlin",
+    "file": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+    "sha256": "8ab5dbcee2c0131c95272f3c4846e05d54d1aae1cd87865401982ec19aead9d8",
+    "change": "Replace per-row BoxWithConstraints in ProfileFormRow with Modifier.layout and compute the same title-width limit from incoming constraints, preserving optional leading-control width."
+  },
+  "perfetto": {
+    "processor": "Perfetto trace_processor v59.1",
+    "route": "Cold source-menu open into the remote subscription form",
+    "measureWindow": "The same MainActivity AndroidOwner:onMeasure slice in each trace",
+    "baseline": {
+      "androidOwnerOnMeasureMs": 31.838,
+      "composeRecomposeSlicesDuringMeasure": 4,
+      "popupToDialogGapMs": 12.719,
+      "trace": {
+        "path": "../../../acceptance-artifacts/dialog-first-measure-poco-20261124/base-trace1/trace.perfetto-trace",
+        "sha256": "6a7edc0f534dcc739ce45732a050f21874b430346548c3d2321afbb88c1cf35d"
+      }
+    },
+    "candidates": [
+      {
+        "androidOwnerOnMeasureMs": 25.331,
+        "composeRecomposeSlicesDuringMeasure": 1,
+        "popupToDialogGapMs": 12.993,
+        "trace": {
+          "path": "../../../acceptance-artifacts/dialog-first-measure-poco-20261124/candidate-trace1/trace.perfetto-trace",
+          "sha256": "688b9d3cf57dd2e0a65f3e8f08b8afb48e6c279502cdeac77edf7c8415c7862a"
+        }
+      },
+      {
+        "androidOwnerOnMeasureMs": 27.429,
+        "composeRecomposeSlicesDuringMeasure": 1,
+        "popupToDialogGapMs": 13.095,
+        "trace": {
+          "path": "../../../acceptance-artifacts/dialog-first-measure-poco-20261124/candidate-trace2/trace.perfetto-trace",
+          "sha256": "7b944b256f134227dd6b620121bb4273e7b1399d83fda0866e4d9451d6eb41fc"
+        }
+      }
+    ],
+    "geometry": "Subscription form labels and placeholders retained the baseline coordinates in the recorded UI hierarchy.",
+    "conclusion": "The measured AndroidOwner:onMeasure slice fell by about 14%-20% across two candidate traces, while Popup-to-Dialog handoff did not improve. This is a localized reduction in repeated measurement-time composition, not proof of a unique root cause, faster overall first visibility, or stable app-wide jank improvement.",
+    "rawEvidenceRoot": "../../../acceptance-artifacts/dialog-first-measure-poco-20261124/"
+  },
+  "deviceRegression": {
+    "command": "adb -s 31936bb6 shell am instrument -w -r -e class com.lonnnnnng.flclash.ui.MainRemoteProfileFormInstrumentedTest#invalidSingleInputImeNavigationAndRecreationKeepDraftWithoutImporting -e kclashRemoteFormAcceptance true -e kclashRemoteFormEmptyAcceptance true com.lonnnnnng.flclash.motion.test/androidx.test.runner.AndroidJUnitRunner",
+    "result": "passed",
+    "tests": 1,
+    "failures": 0,
+    "durationSeconds": 9.111,
+    "assertions": [
+      "Real IME navigation and visibility",
+      "Invalid URL validation without submitting or downloading",
+      "Activity recreation preserves the label and URL draft",
+      "Age key clears when the app backgrounds",
+      "Back closes the form",
+      "Profiles, scripts, body files, preferences, selection, and STOPPED runtime remain unchanged"
+    ],
+    "log": "../../../acceptance-artifacts/dialog-first-measure-poco-20261124/final-source-form-regression-poco-only.log"
+  },
+  "build": {
+    "command": "./gradlew :app:testMotionBenchmarkUnitTest :app:assembleDebug :app:assembleRelease :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:lintDebug :app:lintRelease :app:lintMotionBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+    "result": "passed",
+    "appJvm": {
+      "suites": 85,
+      "tests": 634,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "lint": {
+      "debug": "0 errors, 11 warnings, 1 hint",
+      "release": "0 errors, 11 warnings, 1 hint",
+      "motion": "0 errors, 11 warnings, 1 hint"
+    },
+    "log": "../../../acceptance-artifacts/dialog-first-measure-poco-20261124/final-build-and-lint.log",
+    "motionApkSha256": "a0445035f2330cb00f795565ba89acd7252d36324c8449b8b8385c611c291d18",
+    "motionAndroidTestApkSha256": "ef556eadd6dc9f16e96262e32bc3b62fed6b9469e80819475bf818fc9833f9c0",
+    "releaseArtifact": "android/app/build/outputs/apk/release/app-release-unsigned.apk"
+  },
+  "deviceProtection": {
+    "productionPackage": "com.lonnnnnng.flclash",
+    "productionVersionAfter": "0.1.18/code1018",
+    "productionInstallTimesUnchanged": true,
+    "motionAndPerformancePackagesRemovedFromPoco": true,
+    "proxyOrVpnRuntimeChanged": false,
+    "authorizedConfigChanged": false,
+    "flutterReferencePackageChanged": false
+  },
+  "automationIncident": {
+    "command": "Gradle connectedMotionBenchmarkAndroidTest was invoked with -Pandroid.injected.device.serial=31936bb6",
+    "observedBehavior": "AGP ignored that serial property and ran the test on every connected device, including Redmi Note 8 Pro.",
+    "disposition": "The Redmi result is excluded from acceptance. The same final-source test was rerun with explicit adb -s 31936bb6 and passed on POCO. No further Redmi commands were issued; Redmi residual package state was not queried."
+  },
+  "release": {
+    "requested": false,
+    "published": false,
+    "publicLatest": "0.1.19"
+  }
+}

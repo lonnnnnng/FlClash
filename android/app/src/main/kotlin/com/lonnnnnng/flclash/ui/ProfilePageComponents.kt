@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -31,6 +32,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.unit.IntRect
@@ -220,16 +222,19 @@ internal fun ProfileFormSection(
 @Composable
 internal fun ProfileFormRow(title: String, modifier: Modifier = Modifier, leading: (@Composable () -> Unit)? = null,
     content: @Composable RowScope.() -> Unit) {
-    BoxWithConstraints(modifier.fillMaxWidth()) {
-    // 作者 long：Flutter的标题上限在leading布局之后计算；Android保留48dp删除触点，不能把它再挤进标题和值的共享宽度。
-    val titleLimit = ((maxWidth - 32.dp - 16.dp - if (leading != null) 48.dp else 0.dp) / 2).coerceAtLeast(0.dp)
     Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         leading?.invoke()
         Text(title, maxLines = 2, style = MaterialTheme.typography.bodyLarge,
-            overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = titleLimit))
+            overflow = TextOverflow.Ellipsis, modifier = Modifier.layout { measurable, constraints ->
+                // 作者 long：标题限宽直接用当前剩余约束计算，避免每个输入行通过BoxWithConstraints在首窗测量中二次组合。
+                val maxTitleWidth = if (constraints.maxWidth == Constraints.Infinity) Constraints.Infinity
+                    else ((constraints.maxWidth - 16.dp.roundToPx()).coerceAtLeast(0) / 2)
+                        .coerceAtLeast(constraints.minWidth)
+                val placeable = measurable.measure(constraints.copy(maxWidth = maxTitleWidth))
+                layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
+            })
         Spacer(Modifier.width(16.dp))
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.End, content = content)
-    }
     }
 }
 
