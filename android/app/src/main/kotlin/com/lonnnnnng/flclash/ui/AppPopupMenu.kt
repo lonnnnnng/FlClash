@@ -163,6 +163,7 @@ internal fun AppDropdownMenu(
     source: AppMenuSource? = null,
     carriedPointer: AppMenuCarry? = null,
     dismissEnabled: Boolean = true,
+    actionCloseDurationMillis: Int = 500,
     content: @Composable ColumnScope.(Any?) -> Unit,
 ) {
     val visible = remember { MutableTransitionState(false) }
@@ -256,8 +257,13 @@ internal fun AppDropdownMenu(
             returnCard = if (returnFrom >= .45f) stack.topCardBounds.takeUnless { it.isEmpty }
                 ?.translate(Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat())) else null
             returning.snapTo(0f)
-            val duration = if (sourceReady) 500 else 200
-            returning.animateTo(duration / 1000f, tween(duration, easing = LinearEasing))
+            val duration = when {
+                !sourceReady -> 200
+                pendingAction != null -> actionCloseDurationMillis
+                else -> 500
+            }
+            // 作者 long：选择菜单项后下一页已明确，沿用完整回源进度但缩短驻留；点外关闭仍保留原形变时长。
+            returning.animateTo(if (sourceReady) .5f else duration / 1000f, tween(duration, easing = LinearEasing))
             MenuCloseCaptureProbe.afterAnimation()
             menuTrace("kclash/menu/cleanup/restore-source-before-detach") { source?.hidden = false }
             menuWindowTrace("kclash/menu/detach-window") { awaitAppWindowRemoved(popupWindow.view) { present = false } }

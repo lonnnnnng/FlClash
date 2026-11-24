@@ -251,6 +251,7 @@ internal fun ProfileSourceMenu(
     source: AppMenuSource? = null,
 ) {
     AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor, source = source,
+        actionCloseDurationMillis = 250,
         modifier = Modifier.testTag("profile_add_source_menu")) {
         AppDropdownMenuItem(text = { Text(tr("扫描二维码导入")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
             onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))

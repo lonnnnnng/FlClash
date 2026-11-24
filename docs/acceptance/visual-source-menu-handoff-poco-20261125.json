@@ -1,0 +1,108 @@
+{
+  "id": "KUI-VIS-099-profile-source-menu-handoff",
+  "date": "2026-11-25",
+  "status": "completed-with-limits",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "rotation": 0,
+    "fontScale": 1.0
+  },
+  "scope": "独立R8 MainActivity空库，从配置页来源菜单选择订阅链接到订阅表单首帧；不提交配置、不访问网络、不启动核心/VPN。",
+  "change": {
+    "files": [
+      {
+        "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppPopupMenu.kt",
+        "sha256": "bb91753b3fb3625e5406fbf311b5939e64734779c6cf455c000f2ac09c93b010"
+      },
+      {
+        "path": "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/ProfilePageComponents.kt",
+        "sha256": "63732a2c9657343244fed7cf558ab4db7e32bc4ce7279f8164d1557e52de374c"
+      }
+    ],
+    "behavior": "通用菜单动作关闭时长默认500ms；配置来源菜单选择项改为250ms，并保持完整归一化回源形变和Popup detach后再交接。点外关闭仍为500ms。"
+  },
+  "measurement": {
+    "metric": "点击菜单项的输入分发结束到订阅表单Activity首帧",
+    "unit": "ms",
+    "baseline": {
+      "value": 586.763,
+      "popupToDialogWindowGap": 12.973,
+      "trace": {
+        "path": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/baseline-original/trace.perfetto-trace",
+        "sha256": "2a6a20d85e8472921874860a479b60ab82f0500419008e9abe77d4ac85da733b"
+      }
+    },
+    "candidates": [
+      {
+        "value": 337.567,
+        "popupToDialogWindowGap": 13.381,
+        "trace": {
+          "path": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/action-fast1/trace.perfetto-trace",
+          "sha256": "dcfa4d0bf5ae1462c130ba3ddcdba84f287c3e0c247f49bce874f4eea33ae5df"
+        }
+      },
+      {
+        "value": 336.829,
+        "popupToDialogWindowGap": 13.752,
+        "trace": {
+          "path": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/action-fast2/trace.perfetto-trace",
+          "sha256": "499f2055b8b2eeddbff11bc95c896f592c6211accc39b481b640094c747d9798"
+        }
+      }
+    ],
+    "medianCandidate": 337.198,
+    "medianImprovementMs": 249.565,
+    "medianImprovementPercent": 42.5,
+    "interpretation": "交接等待下降与250ms动作关闭动画一致；Popup到Dialog窗口间隔没有明显变化。单组路线、单个基线和两次候选不能证明全局掉帧改善。"
+  },
+  "verification": {
+    "buildCommand": "./gradlew :app:testMotionBenchmarkUnitTest :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:assemblePerformanceBenchmark --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true -PkclashPerformanceBenchmark=true",
+    "build": "passed",
+    "jvm": {
+      "suites": 84,
+      "tests": 630,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "instrumented": {
+      "test": "ProfileInputWindowInstrumentedTest#menuActionRunsAfterPopupViewHasDetached",
+      "result": "passed",
+      "tests": 1,
+      "failures": 0,
+      "log": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/menu-action-detach-poco.log",
+      "sha256": "9f7994adfe22e3769ca1f43de8225aa461ccabce296ceaac208d93298c8ffc56"
+    },
+    "performanceApkSha256": "be93965d4ea702e74fa804c1cf84315ab612c1f2db1e797f18eb548062f23cfa",
+    "buildLog": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/build-final.log"
+  },
+  "frameLimitations": {
+    "firstPopupFrameObservedMs": [67.157, 73.782],
+    "gpuFenceAttributed": false,
+    "renderThreadRootCauseConfirmed": false
+  },
+  "deviceProtection": {
+    "productionPackage": "com.lonnnnnng.flclash",
+    "productionVersionAfter": "0.1.21/code1021",
+    "productionInstallTimesUnchanged": true,
+    "flutterReferencePackage": "com.follow.clash",
+    "flutterVersionAfter": "0.9.4",
+    "flutterInstallTimesUnchanged": true,
+    "temporaryPackagesRemoved": [
+      "com.lonnnnnng.flclash.performance",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.motion.test"
+    ],
+    "proxyOrVpnRuntimeChanged": false,
+    "authorizedConfigChanged": false,
+    "originalYamlReadOrUploaded": false,
+    "flutterReferenceModified": false
+  },
+  "release": {
+    "requested": false,
+    "published": false
+  }
+}
