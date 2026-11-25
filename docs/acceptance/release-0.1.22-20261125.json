@@ -1,0 +1,77 @@
+{
+  "version": "0.1.22",
+  "versionCode": 1022,
+  "tag": "kclash-v0.1.22",
+  "sourceCommit": "4434f900199fbebe0ef6da951ac8f63ffe390957",
+  "remoteBranch": "origin/kotlin",
+  "remoteTagCommit": "4434f900199fbebe0ef6da951ac8f63ffe390957",
+  "release": {
+    "repository": "lonnnnnng/FlClash",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.22",
+    "publishedAt": "2026-11-25T06:55:02Z",
+    "latest": true,
+    "draft": false,
+    "prerelease": false
+  },
+  "workflow": {
+    "name": "KClash Android Kotlin",
+    "runId": 45562535994,
+    "url": "https://github.com/lonnnnnng/FlClash/actions/runs/45562535994",
+    "event": "push",
+    "conclusion": "success",
+    "durationSeconds": 789,
+    "jobs": {
+      "Build signed arm64 Release APK": "success",
+      "Verify Release artifact": "success",
+      "Publish GitHub Release": "success",
+      "Remove runner signing material": "success"
+    }
+  },
+  "assets": {
+    "apk": {
+      "name": "KClash-0.1.22-android-arm64-v8a.apk",
+      "size": 49602753,
+      "sha256": "bfcd929ac5e3ec5b0990298a02d5bc109602c7b107c12f3e4897ea4b09938166",
+      "githubDigestMatches": true,
+      "sha256SumsMatches": true,
+      "downloadedAndVerified": true
+    },
+    "sha256Sums": {
+      "name": "SHA256SUMS",
+      "size": 102,
+      "githubDigest": "595bce460d61a2348a09e4c297e3b37df6372dd0f3e3b0e9475f2873811aa545"
+    }
+  },
+  "apkVerification": {
+    "applicationId": "com.lonnnnnng.flclash",
+    "versionName": "0.1.22",
+    "versionCode": 1022,
+    "minSdk": 24,
+    "targetSdk": 37,
+    "abi": ["arm64-v8a"],
+    "debuggable": false,
+    "signatureSchemeV2": true,
+    "signerCertificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "existingSigningIdentityPreserved": true
+  },
+  "localPreflight": {
+    "serviceAndAppJvm": "passed",
+    "goRace": "passed with TestFilterPresetsMatchTheirNamesOnly skipped because it reads removed upstream Flutter lib/models/config.dart",
+    "nestedMihomoRace": "route, http, updater passed",
+    "debugLint": "passed; common 3 warnings, service 8 warnings, app 12 warnings and 1 hint",
+    "bilingualResourceCheck": "passed; 2182 pairs",
+    "liveDeviceAcceptance": "not repeated for release",
+    "releaseInstalledOnPhone": false
+  },
+  "releaseScope": [
+    "General core overrides for test URL, unified delay, TCP concurrency, IPv6 and geodata loader",
+    "Hot update eligible core options while running, with rollback on failure",
+    "Prompt before restarting when effective Android VPN service options change",
+    "Clear external controller secret when disabling the controller and use the KClash default User-Agent",
+    "Select Provider timeout only from providers that contain the tested proxy and whose URL matches"
+  ],
+  "installation": {
+    "performed": false,
+    "device": null
+  }
+}
