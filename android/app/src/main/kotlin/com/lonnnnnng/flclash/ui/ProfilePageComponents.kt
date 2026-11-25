@@ -253,15 +253,31 @@ internal fun ProfileSourceMenu(
     AppDropdownMenu(expanded = true, onDismissRequest = onDismiss, anchor = anchor, source = source,
         actionCloseDurationMillis = 250,
         modifier = Modifier.testTag("profile_add_source_menu")) {
-        AppDropdownMenuItem(text = { Text(tr("扫描二维码导入")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
-            onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr"))
-        AppDropdownMenuItem(text = { Text(tr("从文件导入 YAML")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles) },
-            onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file"))
-        AppDropdownMenuItem(text = { Text(tr("添加订阅链接")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.link) },
-            onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote"))
-        HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
-        AppDropdownMenuItem(text = { Text(tr("创建自定义配置")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
-            onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom"))
+        menuTraceComposable("kclash/menu/source/qr-compose") {
+            AppDropdownMenuItem(text = { Text(tr("扫描二维码导入")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.qrCode) },
+                onClick = onQr, enabled = !busy, modifier = Modifier.testTag("profile_add_source_qr")
+                    .menuTraceMeasure("kclash/menu/source/qr").menuTraceDraw("kclash/menu/source/qr-draw"))
+        }
+        menuTraceComposable("kclash/menu/source/file-compose") {
+            AppDropdownMenuItem(text = { Text(tr("从文件导入 YAML")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.profiles) },
+                onClick = onFile, enabled = !busy, modifier = Modifier.testTag("profile_add_source_file")
+                    .menuTraceMeasure("kclash/menu/source/file").menuTraceDraw("kclash/menu/source/file-draw"))
+        }
+        menuTraceComposable("kclash/menu/source/remote-compose") {
+            AppDropdownMenuItem(text = { Text(tr("添加订阅链接")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.link) },
+                onClick = onRemote, enabled = !busy, modifier = Modifier.testTag("profile_add_source_remote")
+                    .menuTraceMeasure("kclash/menu/source/remote").menuTraceDraw("kclash/menu/source/remote-draw"))
+        }
+        menuTraceComposable("kclash/menu/source/divider-compose") {
+            HorizontalDivider(Modifier.padding(vertical = 8.dp)
+                .menuTraceMeasure("kclash/menu/source/divider").menuTraceDraw("kclash/menu/source/divider-draw"),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = .14f))
+        }
+        menuTraceComposable("kclash/menu/source/custom-compose") {
+            AppDropdownMenuItem(text = { Text(tr("创建自定义配置")) }, leadingIcon = { AppGlyphIcon(AppGlyphs.edit) },
+                onClick = onCustom, enabled = !busy, modifier = Modifier.testTag("profile_add_source_custom")
+                    .menuTraceMeasure("kclash/menu/source/custom").menuTraceDraw("kclash/menu/source/custom-draw"))
+        }
     }
 }
 

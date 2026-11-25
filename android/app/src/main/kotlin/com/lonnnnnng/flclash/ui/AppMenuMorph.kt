@@ -74,13 +74,17 @@ internal fun AppMenuPlatterShadow(modifier: Modifier, size: State<IntSize>, fram
     val shape = remember { AppSuperellipseShape(24.dp) }
     val radius = with(LocalDensity.current) { appMenuShadowRadiusPx(density).toDp() }
     Box(modifier.drawWithContent {
-        if (!visible() || size.value.width <= 0 || size.value.height <= 0) return@drawWithContent
-        val motion = frame(this.size)
-        if (motion.outerShadowStrength(glass) <= 0f) return@drawWithContent
-        // 作者 long：液滴联合轮廓内部仍扣空；只在动画瞬间缩放柔和阴影，稳定终帧的尺寸/半径与旧实现相同。
-        val bounds = motion.outline().getBounds().inflate((3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density)
-        clipRect(bounds.left, bounds.top, bounds.right, bounds.bottom) {
-            clipPath(motion.outline(), clipOp = ClipOp.Difference) { this@drawWithContent.drawContent() }
+        menuTrace("kclash/menu/platter-shadow-draw") {
+            if (visible() && size.value.width > 0 && size.value.height > 0) {
+                val motion = frame(this.size)
+                if (motion.outerShadowStrength(glass) > 0f) {
+                    // 作者 long：液滴联合轮廓内部仍扣空；只在动画瞬间缩放柔和阴影，稳定终帧的尺寸/半径与旧实现相同。
+                    val bounds = motion.outline().getBounds().inflate((3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density)
+                    clipRect(bounds.left, bounds.top, bounds.right, bounds.bottom) {
+                        clipPath(motion.outline(), clipOp = ClipOp.Difference) { this@drawWithContent.drawContent() }
+                    }
+                }
+            }
         }
     }.graphicsLayer {
         val motion = frame(this.size)
@@ -233,43 +237,45 @@ internal fun Modifier.appMenuMorph(surface: Color, frame: (Size) -> AppMenuMorph
     val contentLayer = rememberGraphicsLayer()
     val sourceLayer = rememberGraphicsLayer()
     drawWithContent {
-        if (!drawSurface()) { drawContent(); return@drawWithContent }
-        val motion = frame(size)
-        val scale = motion.contentScale(size)
-        val contentCenter = motion.contentBounds?.center ?: Offset(size.width / 2f, size.height / 2f)
-        val path = motion.path()
-        val outline = motion.outline()
-        // 作者 long：文字100ms先退场，材质沿回源弹簧继续；磨砂只在按钮吸收阶段减弱，三条时间线互不替代。
-        if (backdrop != null) {
-            val material = regular.interpolate(menu, motion.materialProgress).copy(blur = regular.blur + (menu.blur - regular.blur) * motion.frostProgress)
-            if (!glass.draw(this, motion, backdrop, backdropOffset(), tint, dark, style = material, quality = quality))
-                clipPath(outline) { drawAppGlassFallback(motion, backdrop, backdropOffset(), material, quality) }
-        }
-        val controlFill = sourceColor.takeOrElse { if (backdrop != null) Color.Transparent else surface }
-        drawPath(outline, motion.fillColor(controlFill, surface, backdrop != null))
-        motion.droplet?.let { drop -> if (source != null && drop.width > 0 && drop.height > 0) {
-            drawAppMenuFiltered(sourceLayer, drop, motion.sourceBlur, motion.sourceAlpha) {
-                // 作者 long：浮点变换保留亚像素轨迹，整数目标框会让小图标在吸收阶段逐像素抖动。
-                withTransform({ translate(drop.left, drop.top); scale(drop.width / source.width, drop.height / source.height, Offset.Zero) }) {
-                    drawImage(source, dstSize = IntSize(source.width, source.height), filterQuality = FilterQuality.Medium)
+        menuTrace("kclash/menu/morph-draw") {
+            if (!drawSurface()) { drawContent(); return@menuTrace }
+            val motion = frame(size)
+            val scale = motion.contentScale(size)
+            val contentCenter = motion.contentBounds?.center ?: Offset(size.width / 2f, size.height / 2f)
+            val path = motion.path()
+            val outline = motion.outline()
+            // 作者 long：文字100ms先退场，材质沿回源弹簧继续；磨砂只在按钮吸收阶段减弱，三条时间线互不替代。
+            if (backdrop != null) {
+                val material = regular.interpolate(menu, motion.materialProgress).copy(blur = regular.blur + (menu.blur - regular.blur) * motion.frostProgress)
+                if (!glass.draw(this, motion, backdrop, backdropOffset(), tint, dark, style = material, quality = quality))
+                    clipPath(outline) { drawAppGlassFallback(motion, backdrop, backdropOffset(), material, quality) }
+            }
+            val controlFill = sourceColor.takeOrElse { if (backdrop != null) Color.Transparent else surface }
+            drawPath(outline, motion.fillColor(controlFill, surface, backdrop != null))
+            motion.droplet?.let { drop -> if (source != null && drop.width > 0 && drop.height > 0) {
+                drawAppMenuFiltered(sourceLayer, drop, motion.sourceBlur, motion.sourceAlpha) {
+                    // 作者 long：浮点变换保留亚像素轨迹，整数目标框会让小图标在吸收阶段逐像素抖动。
+                    withTransform({ translate(drop.left, drop.top); scale(drop.width / source.width, drop.height / source.height, Offset.Zero) }) {
+                        drawImage(source, dstSize = IntSize(source.width, source.height), filterQuality = FilterQuality.Medium)
+                    }
+                }
+            } }
+            val content: ContentDrawScope.() -> Unit = {
+                val contentSize = motion.contentBounds?.size ?: size
+                val painted = Rect(motion.platter.center - Offset(contentSize.width, contentSize.height) * (scale / 2f), contentSize * scale)
+                // 作者 long：回源正文带着自身阴影淡出；阴影先随卡片缩放，之后正文模糊再按屏幕sigma外扩。
+                val reach = if (motion.returning) (3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density * scale else 0f
+                drawAppMenuFiltered(contentLayer, painted.inflate(reach), motion.blur, motion.progress) {
+                    withTransform({
+                        translate(motion.platter.center.x, motion.platter.center.y)
+                        scale(scale, scale, Offset.Zero)
+                        translate(-contentCenter.x, -contentCenter.y)
+                    }) {
+                        this@drawWithContent.drawContent()
+                    }
                 }
             }
-        } }
-        val content: ContentDrawScope.() -> Unit = {
-            val contentSize = motion.contentBounds?.size ?: size
-            val painted = Rect(motion.platter.center - Offset(contentSize.width, contentSize.height) * (scale / 2f), contentSize * scale)
-            // 作者 long：回源正文带着自身阴影淡出；阴影先随卡片缩放，之后正文模糊再按屏幕sigma外扩。
-            val reach = if (motion.returning) (3 * APP_MENU_SHADOW_SIGMA_DP + 8f) * density * scale else 0f
-            drawAppMenuFiltered(contentLayer, painted.inflate(reach), motion.blur, motion.progress) {
-                withTransform({
-                    translate(motion.platter.center.x, motion.platter.center.y)
-                    scale(scale, scale, Offset.Zero)
-                    translate(-contentCenter.x, -contentCenter.y)
-                }) {
-                    this@drawWithContent.drawContent()
-                }
-            }
+            if (motion.returning) content() else clipPath(path) { content(this@drawWithContent) }
         }
-        if (motion.returning) content() else clipPath(path) { content(this@drawWithContent) }
-}
+    }
 }

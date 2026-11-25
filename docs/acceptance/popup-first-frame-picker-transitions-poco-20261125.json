@@ -1,0 +1,119 @@
+{
+  "id": "KUI-VIS-100-popup-first-frame-picker-transitions",
+  "date": "2026-11-25",
+  "status": "partial-with-evidence",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "rotation": 0,
+    "fontScale": 1.0
+  },
+  "popupBreakdown": {
+    "metric": "first Choreographer#doFrame on UI thread, milliseconds",
+    "traces": [
+      "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/popup-draw-detail1/trace.perfetto-trace",
+      "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/popup-draw-detail2/trace.perfetto-trace"
+    ],
+    "frames": [
+      {
+        "uiWallMs": 66.373,
+        "uiRunningMs": 54.773,
+        "uiWaitingMs": 9.79,
+        "popupComposeMs": 8.924,
+        "stackComposeMs": 6.294,
+        "qrRowComposeMs": 2.035,
+        "fileRowComposeMs": 0.576,
+        "remoteRowComposeMs": 0.858,
+        "morphDrawMs": 0.385,
+        "shadowDrawMs": 0.048
+      },
+      {
+        "uiWallMs": 73.765,
+        "uiRunningMs": 58.838,
+        "uiWaitingMs": 13.69,
+        "popupComposeMs": 10.93,
+        "stackComposeMs": 7.383,
+        "qrRowComposeMs": 2.51,
+        "fileRowComposeMs": 0.772,
+        "remoteRowComposeMs": 0.838,
+        "morphDrawMs": 0.373,
+        "shadowDrawMs": 0.067
+      }
+    ],
+    "aggregationWarning": "Popup, stack, and row composition slices are nested; do not add them. Wall, Running, and category slices have different/overlapping accounting. IntrinsicSize candidate showed no stable reduction and was reverted.",
+    "followupAnimationDrawMs": {
+      "morphRange": [3.6, 4.3],
+      "shadowRange": [3.6, 4.3],
+      "source": "popup-draw-detail1/2 Perfetto animation frames"
+    }
+  },
+  "pickerTransition": {
+    "flow": "open source menu, launch Android DocumentsUI, cancel with system Back, return to page, reopen and close source menu",
+    "fileSelected": false,
+    "configurationImported": false,
+    "kotlin": {
+      "package": "com.lonnnnnng.flclash.performance",
+      "video": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/picker-transition-r1/kotlin-picker-continuity-r3.mp4",
+      "durationSeconds": 13.391578,
+      "frames": 203,
+      "sha256": "828873ed9c23864104f84a7cc90355a49e0907625592a2b22fcfd7c1175a6b21",
+      "documentsUiStart": "最近"
+    },
+    "flutterReference": {
+      "package": "com.follow.clash",
+      "version": "0.9.4",
+      "fixedSourceCommit": "be84736605527034689c95bf27828ff27d912c5e",
+      "source": "lib/common/picker.dart:10-11 passes appPath.downloadDirPath",
+      "video": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/picker-transition-r1/flutter-picker-continuity-r1.mp4",
+      "durationSeconds": 13.122978,
+      "frames": 225,
+      "sha256": "b612c5b1d8fcbf06b1acaa4352ab176e15118917a3c319b1479d988f6640542c",
+      "documentsUiStart": "下载"
+    },
+    "interpretation": "Kotlin uses OpenDocument and */* without initial URI. Flutter caller provides a Downloads directory, but its locked native plugin intent/URI mapping was not verified, so no Kotlin picker behavior was changed."
+  },
+  "pickerPerfetto": {
+    "trace": "../../../acceptance-artifacts/dialog-first-measure-poco-20261125/picker-perfetto-r2/trace.perfetto-trace",
+    "sha256": "1c4a20a350a9eeb22281807f56834c36af299e1112db17d56ebaa3df2856e5bc",
+    "durationSeconds": 12,
+    "kotlinUiFrameCount": 79,
+    "uiFramesOver16_6ms": 5,
+    "firstUiFrameMs": {
+      "wall": 75.257,
+      "running": 61.368,
+      "waiting": 12.624,
+      "recompose": 21.206,
+      "measure": 8.642,
+      "draw": 13.907,
+      "binder": 11.125
+    },
+    "attributionLimit": "Trace covers menu opening, DocumentsUI launch, and return. It does not isolate a single component or confirm GPU/fence/RenderThread root cause."
+  },
+  "verification": {
+    "motionJvm": {
+      "xmlSuites": 84,
+      "tests": 630,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "taskResultReused": false
+    },
+    "performanceR8Build": "passed",
+    "performanceApkSha256": "d326076a1c7cc6731d6274e0041759e50a30bcc4e96d0163e0b85ca6944464a9",
+    "debugBuild": "passed",
+    "debugApkSha256": "8f5c5ae8a9be20c21d3e125a69e75be10d2d29648c20ffc7fbc68a0dcc28b030",
+    "temporaryPerformancePackageRemoved": true,
+    "productionPackageVersion": "0.1.21",
+    "productionInstallTimesUnchanged": true,
+    "flutterInstallTimesUnchanged": true,
+    "proxyOrVpnServiceRunningAtEnd": false
+  },
+  "remaining": [
+    "contentful remaining subpages and cross-page continuous transitions",
+    "stable RenderThread, GPU/fence, and menu-disposal attribution",
+    "verify the locked Flutter picker plugin native mapping before aligning its initial directory"
+  ],
+  "report": "../popup-first-frame-and-picker-transitions.md"
+}

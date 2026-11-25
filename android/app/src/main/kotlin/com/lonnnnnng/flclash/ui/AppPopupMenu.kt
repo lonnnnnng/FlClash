@@ -245,7 +245,7 @@ internal fun AppDropdownMenu(
             present = true
             opening.snapTo(0f)
             returning.snapTo(0f)
-            sourceImage = source?.capture()
+            sourceImage = menuTrace("kclash/menu/capture-source-image") { source?.capture() }
             source?.hidden = sourceImage != null
             // 作者 long：原按钮隐藏后的宿主帧才可作为磨砂背景，否则玻璃会留下按钮的蓝色残影。
             if (glass) withFrameNanos { }
@@ -314,7 +314,8 @@ internal fun AppDropdownMenu(
         }) {
             Box(Modifier.matchParentSize().testTag("app_popup_outside").pointerInput(active) { detectTapGestures { close() } })
             Layout(content = {
-                AppMenuVisibility(sourceReady, visible) {
+                menuTraceComposable("kclash/menu/popup-content-compose") {
+                    AppMenuVisibility(sourceReady, visible) {
                     val dark = LocalKClashDarkTheme.current
                     val surface = if (dark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceBright
                     val frameCache = remember { AppMenuFrameCache() }
@@ -335,21 +336,29 @@ internal fun AppDropdownMenu(
                     Box(modifier.menuTraceMeasure("popup-shell").widthIn(min = 160.dp, max = 280.dp).width(IntrinsicSize.Max)
                         .onSizeChanged { measuredSize.value = it }.testTag("app_popup_menu")) {
                         // 作者 long：只有入场/回源绘制外层变形阴影，展开完成交给各层；零透明度阴影也会产生缓存和路径工作。
-                        AppMenuPlatterShadow(Modifier.matchParentSize(), measuredSize, morph,
-                            visible = { opening.value < .45f || !active }, dark = dark, glass = backdrop != null)
+                        menuTraceComposable("kclash/menu/platter-shadow-compose") {
+                            AppMenuPlatterShadow(Modifier.matchParentSize(), measuredSize, morph,
+                                visible = { opening.value < .45f || !active }, dark = dark, glass = backdrop != null)
+                        }
                         // 作者 long：正文先保留为独立绘制节点；外层每帧重录变形/模糊时复用它，避免重复遍历菜单正文与软件阴影。
-                        Box(Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
-                            // 作者 long：定位在测量阶段产生，绘制时读取即可，不能让首次坐标回写重组整棵菜单。
-                            { Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()) },
-                            sourceColor = source?.color ?: Color.Unspecified,
-                            drawSurface = { opening.value < .45f || !active }).graphicsLayer()) {
-                        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
-                            LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
-                            LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
-                            AppMenuStack(stack, pageKey, active, surface, backdrop, opening.asState(), returning.asState(), sourceReady,
-                                onScrollable = { scrollable = it }, content = content)
+                        val morphModifier = menuTraceComposable("kclash/menu/morph-modifier-compose") {
+                            Modifier.appMenuMorph(surface, morph, sourceImage, backdrop,
+                                // 作者 long：定位在测量阶段产生，绘制时读取即可，不能让首次坐标回写重组整棵菜单。
+                                { Offset(-menuPosition.x.toFloat(), -menuPosition.y.toFloat()) },
+                                sourceColor = source?.color ?: Color.Unspecified,
+                                drawSurface = { opening.value < .45f || !active }).graphicsLayer()
+                        }
+                        Box(morphModifier) {
+                        menuTraceComposable("kclash/menu/stack-compose") {
+                            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface,
+                                LocalAppMenuEnabled provides active, LocalAppMenuCarry provides registry,
+                                LocalAppMenuAction provides { action -> if (active && pendingAction == null) { pendingAction = action; requestedClose = true } }) {
+                                AppMenuStack(stack, pageKey, active, surface, backdrop, opening.asState(), returning.asState(), sourceReady,
+                                    onScrollable = { scrollable = it }, content = content)
+                            }
                         }
                         }
+                    }
                     }
                 }
             }) { children, constraints ->

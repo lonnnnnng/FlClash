@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.ui
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.layout.*
 import com.lonnnnnng.flclash.BuildConfig
 
@@ -9,6 +11,16 @@ internal inline fun <T> menuTrace(name: String, block: () -> T): T {
     if (!BuildConfig.MENU_TRACE) return block()
     android.os.Trace.beginSection(name)
     return try { block() } finally { android.os.Trace.endSection() }
+}
+
+/** 作者 long：菜单内容组合仅在独立R8诊断包圈定，确认首次Popup重组开销归属时不改变正式包行为。 */
+@Composable
+internal inline fun <T> menuTraceComposable(name: String, crossinline block: @Composable () -> T): T {
+    if (!BuildConfig.MENU_TRACE) return block()
+    android.os.Trace.beginSection(name)
+    val result = block()
+    android.os.Trace.endSection()
+    return result
 }
 
 private val menuTraceSequence = java.util.concurrent.atomic.AtomicInteger()
@@ -23,6 +35,9 @@ internal suspend fun <T> menuWindowTrace(name: String, block: suspend () -> T): 
 
 internal fun Modifier.menuTraceMeasure(name: String): Modifier =
     if (BuildConfig.MENU_TRACE) then(MenuTraceMeasure(name)) else this
+
+internal fun Modifier.menuTraceDraw(name: String): Modifier =
+    if (BuildConfig.MENU_TRACE) drawWithContent { menuTrace(name) { drawContent() } } else this
 
 private data class MenuTraceMeasure(val name: String) : LayoutModifier {
     override fun MeasureScope.measure(measurable: Measurable, constraints: androidx.compose.ui.unit.Constraints): MeasureResult =
