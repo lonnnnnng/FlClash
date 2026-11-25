@@ -1,0 +1,231 @@
+{
+  "id": "general-settings-runtime-boundaries",
+  "date": "2026-11-26",
+  "status": "passed-scoped-acceptance",
+  "sourceBaseline": "e99be51b39ad9902e15081cd4df74bf6e47160bf",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36
+  },
+  "changes": [
+    "Debug-only one-shot malformed CoreOptions request sent to actual Go decoder; release implementation is stateless pass-through with no arm/reset API.",
+    "Host tests grant notification permission before launching MainActivity to prevent a fresh-install permission dialog from hiding Compose.",
+    "VPN acceptance may use a SHA-bound temporary copy of workspace 1.yaml and now checks pending MTU/system-proxy settings before explicit restart.",
+    "Cold-process test verifies selected overrides and automatic runtime initialization using real MainActivity in three fresh target processes.",
+    "Cold-process original-settings snapshots use existing AES-GCM EncryptedDraftFile/AndroidKeyStore; first-time VPN consent preserves calling Activity result identity."
+  ],
+  "build": {
+    "debug": "passed",
+    "androidTest": "passed",
+    "coreReleaseCompilation": "passed",
+    "fullReleaseApk": "not-run",
+    "lint": {
+      "errors": 0,
+      "warnings": 12,
+      "notes": 1
+    },
+    "jvm": {
+      "app": {
+        "tests": 630,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 230,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core": {
+        "tests": 39,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "debugApkSha256": "4e1cad2eb94153fabc25c5d207a91a723ee56e205f1ab65d5fe890e0e65ec953",
+    "finalTestApkSha256": "05137f4897525233ac58f0d6e82da5cef3ab9b0f94135047c9aaa3a78f4cbc2f",
+    "initialVpnAndColdTestApkSha256": "f4d6aa108901795763ec2b4c55c9856881e859c2bb647a6f4379b4d51c8c8396",
+    "testRevisionNote": "Product Debug APK stayed identical. Host/native rollback final batch used fc507299cb1096bca205d82e8e863a013c0cb015df365bcc2798c45cba23cd77. Cold tests were then changed to encrypted snapshots and rerun for all three modes; final APK additionally corrected the first-time VPN consent launch. VPN explicit-restart method remained unchanged after its pass.",
+    "jvmNote": "App 630, Service230 and Core39 results pass; final repeat was Gradle UP-TO-DATE and is not counted again.",
+    "finalTestApkIncludes": [
+      "Go invalid_arguments code assertion",
+      "CoreBridge direct probe for old core-held URL",
+      "GrantPermissionRule for notification permission",
+      "Android Keystore encrypted cold-recovery snapshot",
+      "VPN permission startActivityForResult"
+    ],
+    "latestAndroidTestBuildLog": "../../../acceptance-artifacts/general-settings-runtime-redmi-20261126/build-vpn-cold-permission.log",
+    "releaseBoundaryApiInspection": "javap: release has arguments(JSONObject) only; no arm/reset or mutable fault state. Debug APIs are present only in debug classes."
+  },
+  "deviceResults": {
+    "successfulDistinctScenarios": 6,
+    "notASingleBatch": true,
+    "finalHostAndNativeRollback": {
+      "tests": 2,
+      "passed": 2,
+      "log": "final-core-and-host.txt",
+      "finalAssertions": "Go error code is exactly invalid_arguments; direct CoreBridge probe confirmed the old core-held URL and returned positive latency with explicit restored 8000ms timeout. The test intentionally does not claim the Go Provider default timeout was independently observed.",
+      "methods": [
+        "GeneralSettingsHostInstrumentedTest#actualGeneralPersistsPortsAndRecentsFlagAcrossRecreationAndKeepsProfiles",
+        "GeneralCoreProbeOptionsRuntimeLiveTest#liveCoreRejectsGeneralOptionsAndRestoresOriginalSettingsAndSession"
+      ],
+      "errorCode": "invalid_arguments"
+    },
+    "vpnExplicitRestart": {
+      "tests": 1,
+      "passed": 1,
+      "log": "vpn-restart.txt",
+      "method": "VpnSettingsRuntimeLiveTest#vpnChoicePersistsAndExplicitRestartSwitchesRealTunAndProxyModes",
+      "assertions": [
+        "Proxy -> VPN -> proxy using actual dashboard controls",
+        "Save MTU/system proxy while retaining old ServiceConfig and running session",
+        "Explicit dashboard restart changes the session and Android LinkProperties MTU/httpProxy",
+        "Stop removes proxy service/listener and restores network/VPN/layout/profile selection"
+      ]
+    },
+    "coldMainActivity": [
+      {
+        "mode": "stopped",
+        "oldPid": "23216",
+        "oldPidConfirmedGone": true,
+        "newPid": "23411",
+        "passed": true,
+        "encryptedSnapshot": true
+      },
+      {
+        "mode": "proxy",
+        "oldPid": "23560",
+        "oldPidConfirmedGone": true,
+        "newPid": "23710",
+        "passed": true,
+        "encryptedSnapshot": true
+      },
+      {
+        "mode": "vpn",
+        "oldPid": "24073",
+        "oldPidConfirmedGone": true,
+        "newPid": "24278",
+        "passed": true,
+        "encryptedSnapshot": true
+      }
+    ],
+    "coldMethod": "GeneralSettingsMainColdInstrumentedTest#mainActivityRestoresSelectedOverridesAfterRealProcessDeath",
+    "coldAssertions": [
+      "Host checked prepare PID alive, force-stopped exactly target package, confirmed PID absent, then launched verification in new PID",
+      "Verification did not invoke start/restart/apply before reading Application initialization result",
+      "Selected override keys and values persisted; MainActivity general page displayed selected unified-delay=false and timeout2000",
+      "Proxy/VPN mode recovered RUNNING and saved YAML override values; VPN service was alive in VPN case",
+      "Real core used persisted loopback URL with restored caller-supplied 2000ms timeout",
+      "Each case restored original settings and empty profile database/current selection, deleted private snapshot, and stopped runtime"
+    ],
+    "coldLogs": [
+      "cold-stopped-verify-encrypted.txt",
+      "cold-proxy-verify-encrypted.txt",
+      "cold-vpn-verify-encrypted-final.txt"
+    ]
+  },
+  "nativeRollback": {
+    "errorCode": "invalid_arguments",
+    "boundaryVisits": 2,
+    "mutation": "options.delay-test-timeout changed to an invalid string for one request only",
+    "checks": [
+      "Real Go method decoder rejects first request",
+      "Rollback request follows through real bridge",
+      "Original preferences, StateFlow, staged YAML bytes and running session preserved",
+      "Direct CoreBridge probe confirms old core-held URL and succeeds with explicit old 8000ms timeout",
+      "Final assertion requires the CoreBridgeException error code from the Go method decoder to equal invalid_arguments."
+    ]
+  },
+  "failuresRetained": [
+    {
+      "log": "host-locked-failure/",
+      "reason": "No Compose hierarchy before first setting click; first run occurred on lock screen and fresh-install notification permission had not yet been granted."
+    },
+    {
+      "log": "host-unlocked.txt",
+      "reason": "After unlocking, the same failure remained; Activity logs showed NotificationPermissionController over MainActivity. Granting permission made unchanged UI assertions pass."
+    },
+    {
+      "kind": "test-compilation",
+      "reason": "Initial new VPN fixture code missed Flow.first import and coroutine wrappers; fixed before device acceptance"
+    },
+    {
+      "log": "cold-stopped-prepare-encrypted.txt",
+      "reason": "Host successfully force-stopped PID23216, then check_output treated pidof exit1 (no process) as a script error. Android exit-info confirmed USER REQUESTED/FORCE STOP. Same-token verify subsequently passed with PID23411. Driver was corrected; Process crashed is the expected runner message for the intentional kill."
+    },
+    {
+      "log": "cold-vpn-prepare-encrypted.txt",
+      "reason": "Using regular startActivity did not authorize the VPN package; permission wait timed out before core startup. Cleanup emitted cleaned. startActivityForResult fixed this test driver and the final encrypted VPN restore passed."
+    },
+    {
+      "kind": "device-readback-limit",
+      "reason": "run-as private directory listing was denied by Redmi SELinux. Snapshot cleanup is asserted by the in-app EncryptedDraftFile write(null) implementation and final package uninstall, not by run-as."
+    }
+  ],
+  "limits": [
+    "Cold restart was initiated by instrumentation starting real MainActivity after target-app force-stop; not launcher-tap E2E, unattended Android service resurrection, reboot, Always-on or other OEM/API coverage.",
+    "Native failure is request decode rejection before application, not a partially-applied core state, disk failure or double-failure rollback.",
+    "Loopback tests do not prove external subscription-node performance, public network or independent-UID traffic after recovery.",
+    "Manual probe timeout is supplied by Kotlin/Bridge. This run does not independently establish Go Provider default-timeout rollback.",
+    "Full release/R8 package, signed APK device acceptance, installation byte readback, and Flutter visual parity were not performed."
+  ],
+  "cleanup": {
+    "initialKclashInstalled": false,
+    "finalKclashInstalled": false,
+    "testPackageRemoved": true,
+    "coreStopped": true,
+    "noTunInterface": true,
+    "temporaryProfilesRemoved": true,
+    "privateSnapshotsRemovedByTests": true,
+    "deviceYamlAndJsonRemoved": true,
+    "hostTmpInputsRemoved": true,
+    "flutterReference": "com.follow.clash remained installed; no install/start/setting operations",
+    "workspace1Yaml": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "size": 34220,
+      "changed": false,
+      "uploadedOnline": false
+    }
+  },
+  "localEvidenceDirectory": "../acceptance-artifacts/general-settings-runtime-redmi-20261126",
+  "release": {
+    "requested": false,
+    "published": false
+  },
+  "evidenceHashes": {
+    "boundary-class-api.txt": "15e6343e300b40403f83e7d982454f6062b05073d3d53b3111e900b496c5aed1",
+    "cold-proxy-prepare-encrypted.txt": "bc6755399039f0fa30b59040fa5b68df1234c1f6fe8e1166031c7aeacb252b2f",
+    "cold-proxy-prepare.txt": "3745b8410bcf2dc370792d0cc763686c7e3a4f49ba6bfc85a508e98b06a67b4e",
+    "cold-proxy-verify-encrypted.txt": "1b4c9255801d4c055f6e50926f429da99138387d4425791ddd9e104a791f57ea",
+    "cold-proxy-verify.txt": "eea94c1e77ba7b148dd55c478c3852dd6fa4efbfb63b00f56f53c788561d0b0f",
+    "cold-stopped-prepare-encrypted.txt": "2195dfb64784b71f209e957c5ffcbccee02dfa3bada5851ab54a3bdbb1af7f5d",
+    "cold-stopped-prepare.txt": "de522c10e33456e58aa4b08a30f1d6aa7be02c3cea33bde095912bcf236c734c",
+    "cold-stopped-verify-encrypted.txt": "e70b2cc741b4767880d9acc01c581d753669c409c1f58426d64bf704f2e9f9aa",
+    "cold-stopped-verify.txt": "7cafcd27c28f574669541ad457b61c748980be80d92eadbb0cb52610b6f81b87",
+    "cold-vpn-prepare-encrypted-pid.txt": "4ccd50d5da9ffea267901f0c0c00b0df63c853face9e075ff6f95a2564ca7dee",
+    "cold-vpn-prepare-encrypted-retry.txt": "7e2959ed03c0288f3e419fb9569444f47455279d03b826ff8cade4126a95fdee",
+    "cold-vpn-prepare-encrypted.txt": "e102aa544df0e2aa24dea5d03145f9f7f6aeec7a261ebdd65a1c974e90c63518",
+    "cold-vpn-prepare.txt": "e7c4401ec0571d227cd99b758788316a4f539acc02d168eae7d5769152a92102",
+    "cold-vpn-verify-encrypted-final.txt": "0a36db118ee71367b77c7d9d5198afba277b5d3f593eef14ba93b97327f42f99",
+    "cold-vpn-verify.txt": "64d918a34e3f97d97ad0c6942d321b42392b8010e97b5514b4cd7cf67eb69d24",
+    "final-core-and-host.txt": "e781420b09abd30b5e7ea3c901a0064b297976262cdcb55d4ca97ce2c6cf1703",
+    "host-notification-granted.txt": "f81657c99e1fcc7707d21526cb1eca66df9792cffc55c15ac86fdb3b7a39a1d6",
+    "host-unlocked.txt": "d1d8555c774cae3518bb99ad0166afcd0f5c9e257bc8efcb5fb79a64d52c9262",
+    "live-rollback-direct-core.txt": "66c89c49a14e384f92df9fa43c3d109adbb227d0b0e2840890f62eb915ff4bf9",
+    "live-rollback.txt": "a6f07aa1e1705eac0990ff451d7ac8e16815ffd1a16f38cb0de45a718af78cbd",
+    "vpn-restart.txt": "3594fbe81320f3f53f89923e6c3d315d7592c037a4a8620c31363e97b3ec137f"
+  },
+  "sourceFileSha256": {
+    "android/core/src/main/java/com/lonnnnnng/flclash/core/CoreBridge.kt": "4ac5c081e2633d1a8d83139cf06b9df247ea09a2a943a882a36767376215ae69",
+    "android/core/src/debug/kotlin/com/lonnnnnng/flclash/core/GeneralUpdateBoundary.kt": "055f6fcde374703afc9c2ce5beefbda88d62f28af908149ecf11aa0d9af8d13a",
+    "android/core/src/release/kotlin/com/lonnnnnng/flclash/core/GeneralUpdateBoundary.kt": "a0349b8f9075f084eb9a0fa8f5d7e59fe6cc52ab4a35bc437f21f16e5b59315a",
+    "android/tests/instrumented/GeneralCoreProbeOptionsRuntimeLiveTest.kt": "d817811e2764ad1a9cbf661d94e703e52e0aca73253a4710126ce4240972a571",
+    "android/tests/instrumented/GeneralSettingsHostInstrumentedTest.kt": "bd4c3b64904976ad6d93a96ef40265b90315bcb130a8e1375de39359d2dc15e2",
+    "android/tests/instrumented/VpnSettingsRuntimeLiveTest.kt": "157fc5ec7c8a1bc0ca929a79cd134c9da8d172df2be655516f9a68ad4c739386",
+    "android/tests/instrumented/GeneralSettingsMainColdInstrumentedTest.kt": "355498fe681f6db0fa11a539ae1728431ece71668f2a5be2caed3da4d431e8e8"
+  },
+  "coldProcessSnapshot": "AES-GCM ciphertext via EncryptedDraftFile/AndroidKeyStore; all successful modes removed snapshot in finally cleanup."
+}

@@ -15,7 +15,9 @@ import org.junit.Rule
 import org.junit.Test
 
 class GeneralSettingsHostInstrumentedTest {
-    @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    // 作者 long：全新安装会先弹通知权限窗口；它不能遮住本例真正要验的设置页。
+    @get:Rule(order = 0) val notifications = androidx.test.rule.GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
+    @get:Rule(order = 1) val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun actualGeneralPersistsPortsAndRecentsFlagAcrossRecreationAndKeepsProfiles() = runBlocking {
         assertPortraitDefaultFontConfiguration()

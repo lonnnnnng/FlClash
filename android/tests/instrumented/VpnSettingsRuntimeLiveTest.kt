@@ -16,6 +16,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.Assert.*
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
@@ -36,15 +37,32 @@ class VpnSettingsRuntimeLiveTest {
         val observer = NetworkObserver.snapshot()
         assertTrue("加载配置前就应注册进程级底层网络观察", observer.started && observer.registeredAt > 0)
         val repository = entry.profileRepository()
-        compose.waitUntil(10_000) { repository.profiles.value.isNotEmpty() }
-        val profile = repository.profiles.value.first { it.id == repository.currentProfileId.value }
-        assertTrue("只复用授权来源", profile.url == args.getString("kclashVpnAuthorizedSource"))
-        assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
-        val metadata = repository.profiles.value.associate { it.id to repository.profileFile(it.id).let { file -> file.length() to file.lastModified() } }
+        runBlocking { repository.profilesLoaded.first { it } }
+        val originalRows = runBlocking { entry.database().profiles().getAll() }
+        val originalSelected = repository.currentProfileId.value
+        val localYamlPath = args.getString("kclashVpnAcceptanceLocalYamlPath").orEmpty()
+        val localYamlSha = args.getString("kclashVpnAcceptanceLocalYamlSha256").orEmpty()
+        var temporaryProfile: com.lonnnnnng.flclash.data.Profile? = null
         val original = entry.vpnSettingsStore().read()
+        val originalNetwork = entry.networkSettingsStore().read()
         val context = compose.activity.applicationContext
         val layout = DashboardLayoutStore.load(context)
         try {
+            val activeProfile = if (localYamlPath.isNotEmpty()) {
+                require(Regex("/data/local/tmp/kclash-vpn-settings-[a-f0-9]{32}\\.yaml").matches(localYamlPath))
+                require(localYamlSha.matches(Regex("[a-f0-9]{64}")))
+                val descriptor = instrumentation.uiAutomation.executeShellCommand("cat $localYamlPath")
+                val source = descriptor.use { FileInputStream(it.fileDescriptor).readBytes() }
+                assertEquals(localYamlSha, java.security.MessageDigest.getInstance("SHA-256").digest(source).joinToString("") { "%02x".format(it) })
+                runBlocking { repository.addFileProfile("常规设置 VPN 重启验收", source) }.also { temporaryProfile = it }
+            } else {
+                compose.waitUntil(10_000) { repository.profiles.value.isNotEmpty() }
+                repository.profiles.value.first { it.id == repository.currentProfileId.value }
+            }
+            if (localYamlPath.isEmpty()) assertEquals("只复用授权来源", args.getString("kclashVpnAuthorizedSource"), activeProfile.url)
+            runBlocking { manager.selectProfile(activeProfile.id, repository::selectProfile) }
+            assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
+            val metadata = repository.profiles.value.associate { it.id to repository.profileFile(it.id).let { file -> file.length() to file.lastModified() } }
             runBlocking(Dispatchers.IO) { manager.setVpnEnabled(true).getOrThrow() }
             DashboardLayoutStore.save(context, DashboardLayoutState(visible = setOf(DashboardSection.CURRENT_OUTBOUND)))
             compose.activityRule.scenario.recreate()
@@ -76,6 +94,25 @@ class VpnSettingsRuntimeLiveTest {
             assertTrue(ServiceConfig.vpnAlive.value)
             assertEquals(VpnRuntimeState.CONNECTED, ServiceConfig.vpnState.value)
             assertTrue(hasTunInterface())
+            // 作者 long：新网络参数只能作为下次启动意图；保存后立刻改现有 TUN 会中断正在使用的代理连接。
+            val appliedBefore = checkNotNull(ServiceConfig.vpnOptions)
+            val beforeParameterSave = manager.runningSinceElapsedMillis.value
+            val nextNetwork = originalNetwork.copy(mtu = if (originalNetwork.mtu == 1400) 1500 else 1400,
+                systemProxy = !originalNetwork.systemProxy)
+            runBlocking { manager.updateNetworkSettings(originalNetwork, nextNetwork).getOrThrow() }
+            assertTrue(manager.vpnSettings.value.restartRequired)
+            assertEquals(beforeParameterSave, manager.runningSinceElapsedMillis.value)
+            assertEquals(appliedBefore, ServiceConfig.vpnOptions)
+            compose.onNodeWithTag("vpn_restart").performScrollTo().performClick()
+            waitForRuntime()
+            assertNotEquals(beforeParameterSave, manager.runningSinceElapsedMillis.value)
+            assertEquals(nextNetwork.mtu, ServiceConfig.vpnOptions?.mtu)
+            assertEquals(nextNetwork.systemProxy, ServiceConfig.vpnOptions?.systemProxy)
+            val connectivity = context.getSystemService(android.net.ConnectivityManager::class.java)
+            @Suppress("DEPRECATION")
+            val links = connectivity.allNetworks.filter { connectivity.getNetworkCapabilities(it)
+                ?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN) == true }.mapNotNull(connectivity::getLinkProperties)
+            assertTrue("系统必须建立带新 MTU/HTTP代理的 VPN", links.any { it.mtu == nextNetwork.mtu && (it.httpProxy != null) == nextNetwork.systemProxy })
             val vpnSession = manager.runningSinceElapsedMillis.value
             vpn().performClick()
             compose.waitUntil(5_000) { manager.vpnSettings.value.restartRequired }
@@ -94,16 +131,27 @@ class VpnSettingsRuntimeLiveTest {
             assertEquals(observer.registeredAt, NetworkObserver.snapshot().registeredAt)
             assertTrue(NetworkObserver.snapshot().dnsServerCount > 0)
             assertEquals(metadata.keys, repository.profiles.value.map { it.id }.toSet())
-            assertEquals(profile.id, repository.currentProfileId.value)
+            assertEquals(activeProfile.id, repository.currentProfileId.value)
             metadata.forEach { (id, stamp) -> repository.profileFile(id).let { assertEquals(stamp, it.length() to it.lastModified()) } }
-            instrumentation.sendStatus(2, Bundle().apply { putString("kclash_vpn_acceptance", "saved-choice-pending-explicit-restart-proxy-tun-proxy-listener-cleanup-passed") })
+            instrumentation.sendStatus(2, Bundle().apply { putString("kclash_vpn_acceptance", "proxy-tun-parameter-pending-explicit-restart-system-mtu-http-proxy-proxy-listener-cleanup-passed") })
         } finally {
             runBlocking(Dispatchers.IO) {
                 manager.stop().getOrThrow()
+                manager.updateNetworkSettings(entry.networkSettingsStore().read(), originalNetwork).getOrThrow()
                 manager.setVpnEnabled(original).getOrThrow()
+                originalSelected?.let { selected ->
+                    if (repository.profiles.value.any { it.id == selected }) manager.selectProfile(selected, repository::selectProfile)
+                }
+                temporaryProfile?.let { row ->
+                    val owned = repository.profiles.value.firstOrNull { it.id == row.id }
+                    if (owned?.label == row.label && owned.type == com.lonnnnnng.flclash.data.ProfileType.FILE) repository.deleteProfile(row.id)
+                }
             }
             DashboardLayoutStore.save(context, layout)
             compose.activityRule.scenario.recreate()
+            assertEquals(originalRows, runBlocking { entry.database().profiles().getAll() })
+            assertEquals(originalSelected, repository.currentProfileId.value)
+            temporaryProfile?.let { row -> assertTrue("验收副本必须收回", repository.profiles.value.none { it.id == row.id }) }
         }
     }
 

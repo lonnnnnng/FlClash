@@ -9,6 +9,7 @@ import com.lonnnnnng.flclash.data.Profile
 import com.lonnnnnng.flclash.data.ProfileType
 import com.lonnnnnng.flclash.service.CoreRuntimeStatus
 import com.lonnnnnng.flclash.service.GeneralSettings
+import com.lonnnnnng.flclash.core.GeneralUpdateBoundary
 import dagger.hilt.android.EntryPointAccessors
 import java.io.Closeable
 import java.io.File
@@ -29,7 +30,8 @@ import org.junit.Test
 
 /** 作者 long：用授权本地正文和回环 HTTP 验证运行态测速 URL/超时热更新，不把设备配置切换成联网样本。 */
 class GeneralCoreProbeOptionsRuntimeLiveTest {
-    @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @get:Rule(order = 0) val notifications = androidx.test.rule.GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
+    @get:Rule(order = 1) val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun runningCoreUsesUpdatedProbeUrlAndTimeoutWithoutRestarting() = runBlocking {
         val args = InstrumentationRegistry.getArguments()
@@ -100,6 +102,94 @@ class GeneralCoreProbeOptionsRuntimeLiveTest {
                 fixture?.let { row ->
                     val stillOwned = entry.database().profiles().getAll().firstOrNull { it.id == row.id }
                     if (stillOwned?.label == row.label && stillOwned.type == ProfileType.FILE) repository.deleteProfile(row.id)
+                }
+                assertEquals(originalRows, entry.database().profiles().getAll())
+                assertEquals(originalProfileId, repository.currentProfileId.value)
+                assertEquals(originalFiles, originalRows.associate { it.id to signature(repository.profileFile(it.id)) })
+                assertEquals(originalGeneral, entry.generalSettingsStore().read())
+                assertEquals(originalVpn, entry.vpnSettingsStore().read())
+                assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
+            } catch (cleanup: Throwable) {
+                if (failure != null) failure.addSuppressed(cleanup) else throw cleanup
+            }
+        }
+    }
+
+    @Test fun liveCoreRejectsGeneralOptionsAndRestoresOriginalSettingsAndSession() = runBlocking {
+        val args = InstrumentationRegistry.getArguments()
+        assumeTrue(args.getString("kclashGeneralProbeOptionsFailureAcceptance") == "true")
+        assertPortraitDefaultFontConfiguration()
+        val inputPath = args.getString("kclashGeneralProbeOptionsInput").orEmpty()
+        require(Regex("/data/local/tmp/kclash-general-probe-[a-f0-9]{32}\\.json").matches(inputPath))
+        val input = JSONObject(shellText("cat $inputPath"))
+        val bytes = Base64.getDecoder().decode(input.getString("configBase64"))
+        assertEquals(input.getString("configSha256"), sha(bytes))
+
+        val context = compose.activity.applicationContext
+        val entry = EntryPointAccessors.fromApplication(context, ConnectionAcceptanceEntryPoint::class.java)
+        val repository = entry.profileRepository()
+        val manager = entry.runtimeManager()
+        repository.profilesLoaded.first { it }
+        assertEquals(CoreRuntimeStatus.STOPPED, manager.state.value)
+        val originalRows = entry.database().profiles().getAll()
+        val originalFiles = originalRows.associate { it.id to signature(repository.profileFile(it.id)) }
+        val originalProfileId = repository.currentProfileId.value
+        val originalGeneral = entry.generalSettingsStore().read()
+        val originalVpn = entry.vpnSettingsStore().read()
+        var fixture: Profile? = null
+        var failure: Throwable? = null
+        try {
+            manager.setVpnEnabled(false).getOrThrow()
+            fixture = repository.addFileProfile("常规设置实核回滚-${System.nanoTime()}", bytes)
+            manager.selectProfile(fixture.id, repository::selectProfile)
+            LocalDelayProbe().use { probe ->
+                val prepared = originalGeneral.copy(mixedPort = freeInboundPort(), testUrl = probe.url, delayTestTimeout = 8000)
+                manager.updateGeneralSettings(originalGeneral, prepared).getOrThrow()
+                manager.startProxy().getOrThrow()
+                val runningSession = manager.runningSinceElapsedMillis.value
+                val appliedBefore = entry.paths().configFile.readBytes()
+
+                GeneralUpdateBoundary.arm(context.packageName, true)
+                val rejected = manager.updateGeneralSettings(
+                    prepared,
+                    prepared.copy(testUrl = "${probe.url}?rejected=1", delayTestTimeout = 500),
+                ).exceptionOrNull()
+                assertNotNull("真实 Go updateConfig 必须拒绝无效 CoreOptions 类型", rejected)
+                assertEquals("必须是 Go 参数解码失败，不接受无关平台异常代替", "invalid_arguments",
+                    (rejected as? com.lonnnnnng.flclash.core.CoreBridgeException)?.code)
+                assertEquals("一次故障加一次原值回滚应恰好到达 Bridge 两次", 2, GeneralUpdateBoundary.visits)
+                assertEquals(prepared, entry.generalSettingsStore().read())
+                assertEquals(prepared, manager.generalSettings.value)
+                assertArrayEquals("失败后暂存配置正文必须恢复到本次注入前", appliedBefore, entry.paths().configFile.readBytes())
+                assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
+                assertEquals("热更新失败不能重启或停止核心", runningSession, manager.runningSinceElapsedMillis.value)
+
+                // 作者 long：绕过已回滚的 Kotlin 设置状态，直接读取 Go 核心自己的默认探测目标。
+                val delay = entry.coreBridge().testDelay("DIRECT", "", prepared.delayTestTimeout.toLong())
+                assertNotNull(delay)
+                assertEquals("核心仍应使用失败前的测速地址", probe.url, delay!!.url)
+                assertTrue("原 8000ms 超时应允许回环探测完成", delay.value > 0)
+                assertEquals(1, probe.requests.get())
+            }
+            InstrumentationRegistry.getInstrumentation().sendStatus(2, Bundle().apply {
+                putString("kclash_general_update_rollback", "passed;goRejectedMalformedOptions=true;settingsAndYamlRestored=true;runningSessionPreserved=true;vpn=false")
+            })
+        } catch (error: Throwable) {
+            failure = error
+            throw error
+        } finally {
+            GeneralUpdateBoundary.reset()
+            try {
+                manager.stop().getOrThrow()
+                val currentGeneral = entry.generalSettingsStore().read()
+                if (currentGeneral != originalGeneral) manager.updateGeneralSettings(currentGeneral, originalGeneral).getOrThrow()
+                manager.setVpnEnabled(originalVpn).getOrThrow()
+                originalProfileId?.let { selected ->
+                    if (repository.profiles.value.any { it.id == selected }) manager.selectProfile(selected, repository::selectProfile)
+                }
+                fixture?.let { row ->
+                    val owned = repository.profiles.value.firstOrNull { it.id == row.id }
+                    if (owned?.label == row.label && owned.type == ProfileType.FILE) repository.deleteProfile(row.id)
                 }
                 assertEquals(originalRows, entry.database().profiles().getAll())
                 assertEquals(originalProfileId, repository.currentProfileId.value)

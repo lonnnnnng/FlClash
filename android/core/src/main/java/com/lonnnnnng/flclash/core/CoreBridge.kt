@@ -635,7 +635,7 @@ class CoreBridge {
             if (options.length() > 0) put("options", options)
         }
         require(arguments.length() > 0) { "常规核心热更新没有待应用字段" }
-        parseMessageResult(invoke("updateConfig", arguments).optString("result", ""), "update_general_settings_failed")
+        parseMessageResult(invoke("updateConfig", GeneralUpdateBoundary.arguments(arguments)).optString("result", ""), "update_general_settings_failed")
     }
 
     fun startListener() = Core.startListener()

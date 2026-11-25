@@ -1,5 +1,9 @@
 # Testing
 
+## 新常规设置运行态补验（2026-11-26）
+
+Redmi Note 8 Pro/API36 已补 MainActivity 设置重建、真实 VPN 参数保存后显式重启、Go CoreOptions 解码拒绝后回滚和停止/纯代理/VPN三种冷启动，六个分批具名场景通过。冷启动只在本轮空库中运行，`GeneralSettingsMainColdInstrumentedTest`必须按 `prepare→外部核对PID并force-stop→verify` 执行，原设置和Profile ID用Android Keystore加密快照保存；VPN授权使用`startActivityForResult`，失败用相同 token 的 `cleanup` 恢复；不得整类执行。原文只复制授权根目录1.yaml并核对SHA。命令参数/证据边界见 `docs/general-settings-runtime-acceptance.md` 和 `docs/acceptance/general-settings-runtime-redmi-20261126.json`。这是Instrumentation显式启动MainActivity，不是后台系统复活；故障仅为真实Go `invalid_arguments`拒绝，不推广部分生效后或双失败。测试后自有双包/临时输入已清，Flutter未操作。
+
 ## KUI-VIS-095 DNS非空字段与编辑面板（2026-11-23）
 
 POCO F2 Pro/31936bb6/API36：motion组件8/8（GlobalSettingsInstrumentedTest七个方法+GlobalSettingsHost实际MainActivity方法），自然`MainGlobalDnsNaturalInstrumentedTest#dnsNonEmptyEditorsPersistAndRestoreWithoutReplay`浅/深各1/1。前者覆盖15字段选择/失败重试/两主题/列表拖拽增删重复快速编辑/清空/重置/冲突/防保存重放；自然路线覆盖系统IME、列表草稿Activity重建、保存偏好回读及STOPPED/null选择门禁。必须只运行具名方法，不跑整类；自然宿主要求空motion库，finally恢复global_dns与appearance原值和键集合，核对无正式Profile并保持STOPPED。当前 release 0.1.18 VPN PID20700保持运行。motion双包和本组设备文件已回收；固定完整参考包恢复DNS空态/浅色并保留安装、force-stop。
