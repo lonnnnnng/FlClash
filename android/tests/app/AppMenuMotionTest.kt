@@ -85,6 +85,15 @@ class AppMenuMotionTest {
         }
     }
 
+    @Test fun adaptiveGooTolerancePreservesFlutterLogicalErrorAcrossDensityAndReturn() {
+        for (density in listOf(1f, 2.75f, 3.5f)) {
+            val opened = appMenuMorphFrame(anchor, card, .45f, density, source = true)
+            assertEquals(.05f * density, opened.gooTolerance, .00001f)
+            val returning = appMenuReturnFrame(anchor, opened, .12f, density)
+            assertEquals(.05f * density, returning.gooTolerance, .00001f)
+        }
+    }
+
     @Test fun settledReturnUsesFlutterRevealGlyphAndAbsorptionCurves() {
         val from = appMenuMorphFrame(anchor, card, .45f, 1f, true)
         val start = appMenuReturnFrame(anchor, from, 0f, 1f)

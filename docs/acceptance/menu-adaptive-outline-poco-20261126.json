@@ -1,0 +1,729 @@
+{
+  "id": "KUI-VIS-102",
+  "date": "2026-11-26",
+  "status": "DONE-VERIFIED-local optimization; whole menu performance remains PARTIAL",
+  "baselineCommit": "d9dec0133d49b3282649eb8316bf5133835f5376",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "resolution": "1080x2400",
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "sourceReference": {
+    "FlClash": "be84736605527034689c95bf27828ff27d912c5e",
+    "Prism": "63450c0ac0e8e1b2c0f3ed4ad7926dc94e083185"
+  },
+  "implementation": {
+    "file": "../../android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuGoo.kt",
+    "change": "fixed128-ray bridge replaced with Flutter-style one seed every fourth ray (32 seeds across 128 directions), adaptive midpoint/chord refinement and Douglas-Peucker reduction; local tolerance 0.05 logical px converted to device px. Blur-effect cache attempt was reverted."
+  },
+  "builds": {
+    "debugUnitTest": {
+      "suites": 84,
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "motionUnitTest": {
+      "suites": 84,
+      "tests": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "commands": {
+      "debugReleaseLint": "./gradlew :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease",
+      "motionPerfetto": "./gradlew :app:testMotionBenchmarkUnitTest :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest :app:assemblePerformanceBenchmark -PkclashMotionBenchmark=true -PkclashPerformanceBenchmark=true -PkclashMenuTrace=true",
+      "motionInstrumentationBuild": "./gradlew :app:assembleMotionBenchmarkAndroidTest :app:lintMotionBenchmark -PkclashMotionBenchmark=true"
+    },
+    "lint": {
+      "debug": {
+        "Warning": 12,
+        "Hint": 1
+      },
+      "release": {
+        "Warning": 12,
+        "Hint": 1
+      },
+      "motionBenchmark": {
+        "Warning": 12,
+        "Hint": 1
+      }
+    },
+    "apk": {
+      "performanceR8": {
+        "path": "../acceptance-artifacts/menu-jank-optimization-poco-20261126/adaptive-goo/performance.apk",
+        "bytes": 49608029,
+        "sha256": "6f7b6f03d80da30b04edd69196ae5fe2de0158ceef701d12e430171eb935cfa8"
+      },
+      "motion": {
+        "path": "../acceptance-artifacts/menu-jank-optimization-poco-20261126/adaptive-goo/motion.apk",
+        "bytes": 67554137,
+        "sha256": "861be6ea97743cb2640ae8ecb770e8a55934f0a434409103c8be731a7d2ace9e"
+      },
+      "motionAndroidTest": {
+        "path": "android/app/build/outputs/apk/androidTest/motionBenchmark/app-motionBenchmark-androidTest.apk",
+        "bytes": 3363167,
+        "sha256": "86d57c2d37eef79fcc33fd5d4bebb668f94b92b03733ffba8cfb62cdb163f82b"
+      },
+      "debug": {
+        "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+        "bytes": 85701125,
+        "sha256": "2c22bf41e8849dd9d4812948648709da9f4dd3a1abe07a4e3dbe2bfdb494b16f"
+      },
+      "releaseR8": {
+        "path": "android/app/build/outputs/apk/release/app-release-unsigned.apk",
+        "bytes": 49590621,
+        "sha256": "10e3544efd9877a201e5244d9fdb03962a7d90d81a71ac147c26fe4ef613d7a2"
+      }
+    },
+    "mlKitReleaseGate": {
+      "passed": true,
+      "registrars": 3,
+      "publicNoArgConstructors": true,
+      "command": "python3 tool/check_mlkit_release.py android/app/build/outputs/apk/release/app-release-unsigned.apk"
+    }
+  },
+  "deviceTests": {
+    "adaptiveShapeVsFixed128Raster": {
+      "ok": true,
+      "summary": "OK (1 test)"
+    },
+    "menuCancelAndResume": {
+      "ok": true,
+      "summary": "OK (1 test)"
+    },
+    "menuFixedFramesNestedReturnAndShadow": {
+      "passed": true,
+      "testSummary": "OK (3 tests)",
+      "pngs": 23
+    },
+    "pathMicrobenchmark": {
+      "test": "AppMenuGooAdaptiveInstrumentedTest#adaptivePathExecutionTimeAgainstFixedRayReference",
+      "frames": 11,
+      "repetitionsPerBatch": 8,
+      "oldFixed128MedianNs": 22857969,
+      "adaptiveMedianNs": 19231250,
+      "adaptiveOverFixedRatio": 0.8413367784338145,
+      "fixedSamplesNs": [
+        34728229,
+        24716563,
+        24191510,
+        23750938,
+        22857969,
+        22224427,
+        21550365,
+        21512605,
+        21201614
+      ],
+      "adaptiveSamplesNs": [
+        33391562,
+        26773073,
+        20801563,
+        20325104,
+        19231250,
+        18500625,
+        17816875,
+        17270261,
+        17144844
+      ],
+      "interpretation": "local path construction plus bounds microbenchmark; not UI/GPU or end-to-end frame time"
+    },
+    "geometrySampling": "11 opening/return frames; Region bool sample every2 physical px; differing covered samples <0.2% of old path filled samples; coarse geometry guard only, not antialias/pixel equivalence"
+  },
+  "visualComparison": {
+    "reference": "../acceptance-artifacts/interaction-memory-poco-20261120/ui-final1",
+    "scope": "历史同机固定几何截图；不是完整Flutter对照",
+    "images": [
+      {
+        "name": "geometry_false_false_140",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 123,
+        "fraction": 0.00013414211211663167,
+        "maxChannelDifference": 4,
+        "bounds": [
+          116,
+          215,
+          789,
+          626
+        ]
+      },
+      {
+        "name": "geometry_false_false_20",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 444,
+        "fraction": 0.00048422030715271916,
+        "maxChannelDifference": 60,
+        "bounds": [
+          647,
+          49,
+          786,
+          195
+        ]
+      },
+      {
+        "name": "geometry_false_false_250",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_false_false_450",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_false_false_70",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 120,
+        "fraction": 0.0001308703532845187,
+        "maxChannelDifference": 15,
+        "bounds": [
+          652,
+          161,
+          731,
+          222
+        ]
+      },
+      {
+        "name": "geometry_false_true_140",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 175,
+        "fraction": 0.0001908525985399231,
+        "maxChannelDifference": 21,
+        "bounds": [
+          449,
+          77,
+          767,
+          321
+        ]
+      },
+      {
+        "name": "geometry_false_true_20",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_false_true_250",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 50,
+        "fraction": 5.4529313868549456e-05,
+        "maxChannelDifference": 85,
+        "bounds": [
+          652,
+          23,
+          782,
+          149
+        ]
+      },
+      {
+        "name": "geometry_false_true_400",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_false_true_70",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 317,
+        "fraction": 0.00034571584992660356,
+        "maxChannelDifference": 11,
+        "bounds": [
+          212,
+          168,
+          782,
+          463
+        ]
+      },
+      {
+        "name": "geometry_true_false_140",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 211,
+        "fraction": 0.0002301137045252787,
+        "maxChannelDifference": 7,
+        "bounds": [
+          116,
+          215,
+          789,
+          626
+        ]
+      },
+      {
+        "name": "geometry_true_false_20",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 443,
+        "fraction": 0.0004831297208753482,
+        "maxChannelDifference": 46,
+        "bounds": [
+          647,
+          49,
+          786,
+          195
+        ]
+      },
+      {
+        "name": "geometry_true_false_250",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_true_false_450",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_true_false_70",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 118,
+        "fraction": 0.0001286891807297767,
+        "maxChannelDifference": 12,
+        "bounds": [
+          652,
+          161,
+          731,
+          222
+        ]
+      },
+      {
+        "name": "geometry_true_true_140",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 176,
+        "fraction": 0.0001919431848172941,
+        "maxChannelDifference": 17,
+        "bounds": [
+          449,
+          77,
+          767,
+          321
+        ]
+      },
+      {
+        "name": "geometry_true_true_20",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_true_true_250",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 50,
+        "fraction": 5.4529313868549456e-05,
+        "maxChannelDifference": 66,
+        "bounds": [
+          652,
+          23,
+          782,
+          149
+        ]
+      },
+      {
+        "name": "geometry_true_true_400",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 0,
+        "fraction": 0.0,
+        "maxChannelDifference": 0,
+        "bounds": null
+      },
+      {
+        "name": "geometry_true_true_70",
+        "size": [
+          842,
+          1089
+        ],
+        "changedPixels": 358,
+        "fraction": 0.0003904298872988141,
+        "maxChannelDifference": 13,
+        "bounds": [
+          212,
+          168,
+          782,
+          463
+        ]
+      }
+    ]
+  },
+  "performanceR8": {
+    "route": "8 empty-profile source-menu open/outside-close cycles per trace; no screen recording or instrumentation concurrent; screen-share timer/floating controls remained visible",
+    "baselineRuns": [
+      {
+        "kclash/menu/open-window": {
+          "frames": 221,
+          "appDeadlineMissed": 9,
+          "droppedFrame": 7,
+          "bufferStuffing": 37,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "kclash/menu/close-window": {
+          "frames": 248,
+          "appDeadlineMissed": 1,
+          "droppedFrame": 0,
+          "bufferStuffing": 78,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "allPopupFrames": 493,
+        "ui": {
+          "frames": 501,
+          "over16_6ms": 25,
+          "maxWallMs": 81.841,
+          "medianWallMs": 2.707
+        },
+        "renderThread": {
+          "roots": 517,
+          "medianRunningMs": 4.403,
+          "maxRunningMs": 22.949
+        },
+        "platterShadowDraw": {
+          "count": 485,
+          "medianMs": 0.293,
+          "maxMs": 7.125,
+          "sumMs": 348.871
+        },
+        "traceIntegrity": {
+          "globalTracedChunksDiscarded": 57,
+          "positiveErrorOrDataLoss": [],
+          "bufferDiscarded": 0,
+          "bufferOverwrite": 0
+        },
+        "trace": {
+          "sha256": "e8e7be90161b8eb42fc671b2102103841e871f6d5239545731746a5e1228458a",
+          "bytes": 32054224
+        }
+      },
+      {
+        "kclash/menu/open-window": {
+          "frames": 218,
+          "appDeadlineMissed": 9,
+          "droppedFrame": 8,
+          "bufferStuffing": 34,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "kclash/menu/close-window": {
+          "frames": 248,
+          "appDeadlineMissed": 1,
+          "droppedFrame": 0,
+          "bufferStuffing": 91,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "allPopupFrames": 492,
+        "ui": {
+          "frames": 495,
+          "over16_6ms": 25,
+          "maxWallMs": 82.531,
+          "medianWallMs": 2.635
+        },
+        "renderThread": {
+          "roots": 511,
+          "medianRunningMs": 4.401,
+          "maxRunningMs": 12.938
+        },
+        "platterShadowDraw": {
+          "count": 479,
+          "medianMs": 0.273,
+          "maxMs": 7.057,
+          "sumMs": 345.244
+        },
+        "traceIntegrity": {
+          "globalTracedChunksDiscarded": 63,
+          "positiveErrorOrDataLoss": [],
+          "bufferDiscarded": 0,
+          "bufferOverwrite": 0
+        },
+        "trace": {
+          "sha256": "efc9afa3c52b3f7440f025d0332fabb3b9177c2126fc9abcdaa0e3e330496187",
+          "bytes": 32341389
+        }
+      }
+    ],
+    "adaptiveRuns": [
+      {
+        "kclash/menu/open-window": {
+          "frames": 217,
+          "appDeadlineMissed": 9,
+          "droppedFrame": 6,
+          "bufferStuffing": 60,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "kclash/menu/close-window": {
+          "frames": 248,
+          "appDeadlineMissed": 0,
+          "droppedFrame": 1,
+          "bufferStuffing": 102,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "allPopupFrames": 489,
+        "ui": {
+          "frames": 497,
+          "over16_6ms": 28,
+          "maxWallMs": 79.796,
+          "medianWallMs": 2.671
+        },
+        "renderThread": {
+          "roots": 513,
+          "medianRunningMs": 4.421,
+          "maxRunningMs": 26.828
+        },
+        "platterShadowDraw": {
+          "count": 481,
+          "medianMs": 0.31,
+          "maxMs": 3.463,
+          "sumMs": 323.413
+        },
+        "gooOutline": {
+          "count": 457,
+          "medianMs": 0.683,
+          "p90Ms": 1.465,
+          "maxMs": 3.409,
+          "sumMs": 318.305
+        },
+        "traceIntegrity": {
+          "globalTracedChunksDiscarded": 65,
+          "positiveErrorOrDataLoss": [],
+          "bufferDiscarded": 0,
+          "bufferOverwrite": 0
+        },
+        "trace": {
+          "sha256": "e5418ccd6b3229663b2473bb45ec4971d73454a793b0b82ab6193ccf6f4ab6ee",
+          "bytes": 31466009
+        }
+      },
+      {
+        "kclash/menu/open-window": {
+          "frames": 219,
+          "appDeadlineMissed": 6,
+          "droppedFrame": 6,
+          "bufferStuffing": 31,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "kclash/menu/close-window": {
+          "frames": 248,
+          "appDeadlineMissed": 1,
+          "droppedFrame": 0,
+          "bufferStuffing": 47,
+          "fenceRows": 0,
+          "unsignaledFenceRows": 0
+        },
+        "allPopupFrames": 492,
+        "ui": {
+          "frames": 500,
+          "over16_6ms": 25,
+          "maxWallMs": 79.086,
+          "medianWallMs": 2.634
+        },
+        "renderThread": {
+          "roots": 516,
+          "medianRunningMs": 4.362500000000001,
+          "maxRunningMs": 12.079
+        },
+        "platterShadowDraw": {
+          "count": 484,
+          "medianMs": 0.3,
+          "maxMs": 4.229,
+          "sumMs": 326.728
+        },
+        "gooOutline": {
+          "count": 459,
+          "medianMs": 0.678,
+          "p90Ms": 1.52,
+          "maxMs": 4.025,
+          "sumMs": 323.74
+        },
+        "traceIntegrity": {
+          "globalTracedChunksDiscarded": 67,
+          "positiveErrorOrDataLoss": [],
+          "bufferDiscarded": 0,
+          "bufferOverwrite": 0
+        },
+        "trace": {
+          "sha256": "f6ee2ba0dafa3f56760f72324b50606d868424d26e81bbef50aeeefa6cf420e7",
+          "bytes": 31569938
+        }
+      }
+    ],
+    "conclusion": "path-level local cost improved, shadow draw tail lower in these samples, but overall UI >16.6ms ratio and RenderThread work overlapped; do not claim stable whole-menu jank or GPU/fence root cause"
+  },
+  "referenceBoundary": {
+    "productionKclash": "not modified or installed during this batch",
+    "originalFlutter": "com.follow.clash untouched",
+    "fullFlutterReference": "not opened or changed during this batch; previous first-run acknowledgement remains pending",
+    "config": "1.yaml not read, copied or uploaded",
+    "services": "VPN/core not started"
+  },
+  "artifacts": "../../../acceptance-artifacts/menu-jank-optimization-poco-20261126/",
+  "cleanup": {
+    "removedOwnFiles": [
+      "/data/misc/perfetto-traces/menu-102-baseline-r1.perfetto-trace",
+      "/data/misc/perfetto-traces/menu-102-baseline-r2.perfetto-trace",
+      "/data/misc/perfetto-traces/menu-102-blur-cache-r1.perfetto-trace",
+      "/data/misc/perfetto-traces/menu-102-blur-cache-r2.perfetto-trace",
+      "/data/misc/perfetto-traces/menu-102-baseline-reverse.perfetto-trace",
+      "/data/misc/perfetto-traces/menu-102-adaptive-goo-r1.perfetto-trace",
+      "/data/misc/perfetto-traces/menu-102-adaptive-goo-r2.perfetto-trace",
+      "/sdcard/kclash-menu-baseline.xml"
+    ],
+    "removedPackages": [
+      "com.lonnnnnng.flclash.motion.test",
+      "com.lonnnnnng.flclash.motion",
+      "com.lonnnnnng.flclash.performance"
+    ],
+    "formal": {
+      "com.lonnnnnng.flclash": [
+        "versionName=0.1.21",
+        "lastUpdateTime=2026-11-24 23:03:27",
+        "firstInstallTime=2026-11-24 23:03:27",
+        "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      ],
+      "com.follow.clash": [
+        "versionName=0.9.4",
+        "lastUpdateTime=2026-11-22 14:21:51",
+        "firstInstallTime=2026-11-07 02:44:08",
+        "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      ]
+    },
+    "fullReferenceRetained": true,
+    "fullReferenceState": "Retained; manual disclaimer not accepted by agent; no operation in menu batch"
+  },
+  "installationReadback": {
+    "model": "POCO F2 Pro",
+    "api": "36",
+    "packages": {
+      "com.lonnnnnng.flclash.performance": {
+        "path": "/data/app/~~_j35gT2hrKEHehFkuEpbYw==/com.lonnnnnng.flclash.performance-axOtpqh5zFYK4KkrsBzLxQ==/base.apk",
+        "sha256": "6f7b6f03d80da30b04edd69196ae5fe2de0158ceef701d12e430171eb935cfa8",
+        "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      },
+      "com.lonnnnnng.flclash.motion": {
+        "path": "/data/app/~~PYfbu9U9YgxS8eX8wnUTxA==/com.lonnnnnng.flclash.motion-9XlygHQ-0MKLPm3BJeeRmA==/base.apk",
+        "sha256": "861be6ea97743cb2640ae8ecb770e8a55934f0a434409103c8be731a7d2ace9e",
+        "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      },
+      "com.lonnnnnng.flclash.motion.test": {
+        "path": "/data/app/~~DpQ3f1sb3xpg-JUk-QoSmA==/com.lonnnnnng.flclash.motion.test-UZ5a7d0e3kkX3xg5Wzotng==/base.apk",
+        "sha256": "86d57c2d37eef79fcc33fd5d4bebb668f94b92b03733ffba8cfb62cdb163f82b",
+        "services": "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      }
+    },
+    "formal": {
+      "com.lonnnnnng.flclash": [
+        "versionName=0.1.21",
+        "lastUpdateTime=2026-11-24 23:03:27",
+        "firstInstallTime=2026-11-24 23:03:27",
+        "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      ],
+      "com.follow.clash": [
+        "versionName=0.9.4",
+        "lastUpdateTime=2026-11-22 14:21:51",
+        "firstInstallTime=2026-11-07 02:44:08",
+        "ACTIVITY MANAGER SERVICES (dumpsys activity services)\n  (nothing)"
+      ]
+    }
+  },
+  "sourceSha256": {
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuGoo.kt": "72bc5e682dbeecbc47d1696ce0d2937a6bd9166a34447ddd79c4ee3cc9ea2d4d",
+    "android/app/src/main/kotlin/com/lonnnnnng/flclash/ui/AppMenuMorph.kt": "96f1ac9d9da0fcca75e4fc66b26b06005e080af1886f9125b5451878c188f0ec",
+    "android/tests/app/AppMenuMotionTest.kt": "7558845ad28d9e46ed9fb0a1b8675aab1cc73a02d0b0dd6c0ada5fe232e8b3ae",
+    "android/tests/instrumented/AppMenuGooAdaptiveInstrumentedTest.kt": "f2b2faea7ac445c1a01d33af27d469b1af81cef17ee34012899aecfd3e875a85"
+  },
+  "scopeLimitations": [
+    "R8 diagnostic MENU_TRACE enabled; not public signed-release performance.",
+    "Microbenchmark executes on instrumentation test thread, not main thread or GPU; early JIT/warm-cache trend remains in samples.",
+    "Shape regression uses 2px Region samples and excludes antialiasing; historical static PNG comparison is not a complete Flutter runtime visual comparison.",
+    "Formal package metadata/services were read; formal Room contents were not opened or independently hashed during menu batch.",
+    "Global discarded producer remains unknown; session-local buffers have no reported loss.",
+    "No stable whole-menu jank improvement; one candidate close interval contains a dropped frame."
+  ],
+  "artifactsHashes": {
+    "capture.py": "f244327e46f2ec3d2fa8a55ec1e78d7980672b3afa17d0142c1a3fef4e369f57",
+    "analyze.py": "659ec90b6dffa5c0ac0704d35937730fcda2ef2241c79bf684b7dede90a1d857",
+    "visual/screenshots.json": "18cb1bbe1f1c9991995e871b207ece50adae23dbf637686d5b9c1fb1f1531310",
+    "visual/historical-pixel-comparison.json": "fe43934cd37b93b865ad21a5863d1a6b93caa1028c88a9d7bad561679f052acd",
+    "adaptive-goo/geometry-regression-final.log": "38df22446c958f3391ec7a3ff566d09d1ed5982451de1595b608532faa9bd97a",
+    "adaptive-goo/interaction-regression.log": "49e6edd11131590aa992b853057415a192c05e7cdd5ee7fa6f0e5d0d36375f01",
+    "adaptive-goo/path-benchmark-final.log": "94a5fc06f87532ab89a3b4b0370a45c79df95d6fca553af62915e5a8debf6ed8",
+    "cleanup.json": "d6506f6a85fef6e717f6515af685afa5a099553fd7ac75db964864f970fe82fe"
+  }
+}

@@ -35,12 +35,16 @@ internal data class AppMenuMorphFrame(val platter: Rect, val radius: Float, val 
     val droplet: Rect? = null, val blend: Float = 0f, val blur: Float = 0f, val sourceAlpha: Float = 0f,
     val materialProgress: Float = 1f, val frostProgress: Float = 1f,
     val returning: Boolean = false, val shadowProgress: Float = 1f, val contentBounds: Rect? = null,
-    val sourceBlur: Float = 0f, val opening: Boolean = false) {
+    val sourceBlur: Float = 0f, val opening: Boolean = false,
+    // 作者 long：Prism 的轮廓误差用逻辑像素定义，绘制在高密度屏幕时需转换为物理像素。
+    val gooTolerance: Float = .05f) {
     // 作者 long：一份不可变帧同时供阴影、裁剪和材质读取；只算一次轮廓，读者不能修改返回的Path。
     private val platterPath by lazy(LazyThreadSafetyMode.NONE) {
         superellipsePath(platter.size, List(4) { radius }).apply { translate(platter.topLeft) }
     }
-    private val outlinePath by lazy(LazyThreadSafetyMode.NONE) { droplet?.let { appMenuGooPath(platter, radius, it, blend) } ?: platterPath }
+    private val outlinePath by lazy(LazyThreadSafetyMode.NONE) {
+        droplet?.let { menuTrace("kclash/menu/goo-outline") { appMenuGooPath(platter, radius, it, blend, gooTolerance) } } ?: platterPath
+    }
     fun path() = platterPath
     fun outline() = outlinePath
 }
@@ -162,13 +166,13 @@ internal fun appMenuMorphFrame(anchor: Rect, card: Size, seconds: Float, unit: F
     return AppMenuMorphFrame(Rect(center - Offset(size.width / 2f, size.height / 2f), size), radius, settled,
         droplet, 28f * unit, sqrt((4f * (1f - settled)).pow(2) + (1.9f * riseAndFall(seconds, .069f, 2.1f)).pow(2)) * unit,
         1f - min(1f, settled / .25f), materialProgress = settled, shadowProgress = settled,
-        sourceBlur = 4f * min(1f, settled / .25f) * unit, opening = seconds < .45f)
+        sourceBlur = 4f * min(1f, settled / .25f) * unit, opening = seconds < .45f, gooTolerance = .05f * unit)
 }
 
 /** 作者 long：回源从实际中断帧起算，500ms内消除弹簧余振；100ms隐去文字，470ms重建按钮图像。 */
 internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: Float, unit: Float): AppMenuMorphFrame {
     if (seconds >= .5f) return AppMenuMorphFrame(anchor, anchor.size.minDimension / 2f, 0f, anchor, 0f, 0f, 1f,
-        materialProgress = 0f, frostProgress = 0f, returning = true, shadowProgress = 0f)
+        materialProgress = 0f, frostProgress = 0f, returning = true, shadowProgress = 0f, gooTolerance = from.gooTolerance)
     val ringing = 1f - menuEaseIn.transform(((seconds - .4f) / .1f).coerceIn(0f, 1f))
     val p = 1f + (menuSpring(165f, .8f, seconds) - 1f) * ringing
     val distance = from.platter.center.y - anchor.center.y
@@ -195,7 +199,8 @@ internal fun appMenuReturnFrame(anchor: Rect, from: AppMenuMorphFrame, seconds: 
         materialProgress = from.materialProgress * (1f - p).coerceIn(0f, 1f),
         frostProgress = from.frostProgress * (1f - absorbed), returning = true, shadowProgress = (1f - p).coerceIn(0f, 1f),
         contentBounds = from.contentBounds,
-        sourceBlur = if (from.opening) from.sourceBlur * (1f - min(1f, seconds / .1f)) else 0f)
+        sourceBlur = if (from.opening) from.sourceBlur * (1f - min(1f, seconds / .1f)) else 0f,
+        gooTolerance = .05f * unit)
 }
 
 // 作者 long：Android RenderEffect内部会把radius换成sigma；Flutter直接给sigma，需反算才能保留相同屏幕模糊宽度。
