@@ -969,7 +969,7 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 
 以上仅记录2026-11-05该批验收边界：当时规则重建使用保存状态模拟，未做冷进程，未重跑实网/核心/VPN、低API、Go、正式签名运行或远端CI。后续编辑器、独立全局规则及资源选择器冷恢复已有具名证据；0.1.1正式签名、Go race、远端CI和Redmi发布资产回验已完成，当前状态以第3节和`acceptance/qr-camera-r8-redmi-20261110.json`为准。整体Flutter视觉、菜单性能和低API仍PARTIAL；玻璃默认关闭，Dock/按钮实时背景和触点光效后排，既定暂缓项保持。
 
-## 3. 当前快照（2026-11-24核对）
+## 3. 当前快照（2026-11-25核对）
 
 > **2026-11-24功能范围调整**：全局图标集管理已从 Kotlin 版彻底移除，不再作为现存能力或待办。Room 当前版本变更时直接 destructive rebuild，不保留旧迁移链；策略组逐组选择本地图片/HTTP(S)图片及最近图片记录仍保留。工具页不再提供独立“自定义资源”入口，本地代理、规则资源、过滤预设与脚本库统一从“高级配置”进入。此前图标集开发和验收记录仅为历史，不代表当前仍存在该功能。
 
@@ -978,19 +978,19 @@ App451/Service193/Core38/Common31共713项单测零失败/错误/跳过；build4
 | 维度 | 当前状态 |
 | --- | --- |
 | 当前分支 | `kotlin`，跟踪 `origin/kotlin` |
-| 当前公开版本 | **0.1.21/code1021**，标签`kclash-v0.1.21`指向`81fa6aec`；沿用既有正式证书 |
-| 发布范围 | KClash 0.1.21/code1021 已成为 GitHub Latest。标签流水线 `45412491836` 成功；公开APK及SHA256SUMS回下载与GitHub digest一致，证书沿用既有身份。包含全局图标集移除、高级配置资源入口及首页LAN空配置修复。[证据](acceptance/release-0.1.21-20261124.json)。 |
+| 当前公开版本 | **0.1.22/code1022**，标签`kclash-v0.1.22`固定`4434f900`；签名身份保持。 |
+| 发布范围 | 0.1.22为GitHub Latest，签名流水线`45562535994`成功，公开APK/SHA256SUMS/GitHub digest及既有证书已回下载核验。新增常规核心覆盖、运行态CoreOptions热更新、有效VPN参数重启提示、默认UA/关闭控制器清密钥及Provider测速期限修正；完整视觉/性能继续PARTIAL。[发布证据](acceptance/release-0.1.22-20261125.json)。 |
 | 工程与架构 | 根Wrapper，app/core/service/common；Compose/Material3、ViewModel/StateFlow、Room、Hilt；生命周期统一由CoreRuntimeManager负责 |
-| 内核 | gitlink`1a1036cf`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考 |
+| 内核 | gitlink`d4877e3e734ecbaa49f6d40ff70f150fb593956b`，自有`lonnnnnng/Clash.Meta:kclash-fixes`；代码同步唯一上游`chen08209/Clash.Meta:FlClash`，Flutter只作行为/视觉参考。 |
 | 六项功能收尾 | 5 项已收口。语义预检主流程已验，条件边界保持原覆盖。首次联网 TLS 按用户决定归档。 |
-| 最新自动化记录 | KUI-VIS-098表单测量局部优化已随0.1.20发布；本轮另在Redmi验证无配置时首页局域网开关可保存/切换1/1、工具→高级配置→规则资源入口1/1。菜单global discarded来源、GPU/fence和关闭帧整体归因仍未闭环，Flutter完整子页/连续转场继续PARTIAL，玻璃关闭。[LAN修复证据](acceptance/dashboard-lan-switch-redmi-20261124.json)、[菜单及资源更新证据](acceptance/resource-updates-poco-20261124.json)。 |
-| 最近真机具名结果 | POCO CUSTOM 系统选档、92 份缓存规则预检和 VMess 实流 1/1。在线 age 1/1、KUI-042 38/38、语义运行保护 6/6、原生拒绝 1/1 和 TUN 补偿 5/5 分别保留。 |
+| 最新自动化记录 | 0.1.22发版前App/Service JVM、Go父模块race（仅排除引用已删除Flutter文件的历史用例）、Mihomo route/http/updater race、全模块Debug Lint及2182组双语检查通过；CI签名Release/R8/DEX与资产门禁通过。本轮发布未安装手机，不把历史单测数累加成全仓新实跑数。 |
+| 最近真机具名结果 | KUI-VIS-101：POCO Sniffer真实MainActivity保存/重开/Activity重建与Room回读2次，DNS非空IME/Nameserver草稿重建1/1，21张PNG核验；Sniffer86.508秒录像只作交互记录。Redmi常规设置与实核回环合并5/5、偏好真实进程重启回读通过；活动VPN恢复/重启和实核失败注入未验。[设置证据](acceptance/general-settings-core-overrides-redmi-20261125.json)、[视觉证据](acceptance/sniffer-continuation-poco-20261125.json)。 |
 | 网络与系统证据 | Redmi Wi-Fi↔蜂窝/全断网后恢复6/6，原矩阵9/10失败保留；POCO11月12日冷进程5/5未复现；11月17日RULE请求再现TLS失败，固定index2节点恢复联网10/10，首次联网TLS已按用户决定归档。首次正式VPN授权与MacroDroid前台5次已验；后台/Tasker/其他OEM另列 |
-| 当前验收设备 | 本轮局域网开关回归按用户指定使用 Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API36）；每轮显式 serial 核对。POCO F2 Pro（`31936bb6`）为近期视觉/Perfetto历史证据设备；当前禁止模拟器 |
-| 数据保护 | Redmi 本轮只安装独立 Motion 与测试壳执行两个定向用例，之后已卸载 Motion、Motion.test 和遗留 Debug 测试包；正式 KClash 包未安装，`com.follow.clash`未操作。未访问工作区根`1.yaml`，核心保持STOPPED。 |
-| 正在推进 | KUI-VIS-096已补Tools→资源概览行内失败与分块下载进度，并完成真实触摸资源输入和R8菜单trace。剩余其它子页/面板连续转场及完整Flutter主应用同态路线仍待。最终R8菜单帧显示部分Deadline Missed由UI Traversal/动画/Popup测量忙帧伴随；早期trace的shader compile解释未在最终重跑稳定复现。关闭帧有waitForBufferRelease但量级有限，Dropped Frame未归因，GPU fence字段缺失，discarded owner未知；不宣称稳定性能收益。玻璃默认关闭。 |
+| 当前验收设备 | 最近视觉/Perfetto使用POCO F2 Pro（`31936bb6`、API36），常规设置/测速参考使用Redmi Note 8 Pro（`wsvwypiz7xwslvl7`、API36）；后续每轮沿用户最新指定核对serial，禁止模拟器。 |
+| 数据保护 | KUI-VIS-101正式配置/正文/脚本/偏好/选择保持；Motion/Test/Performance和full.dev隔离包已卸载，临时正文移除、无服务/TUN，正式Kotlin与原版Flutter安装信息保持。原`1.yaml`摘要保持且未上传。0.1.22发布本身没有设备安装动作。 |
+| 正在推进 | 完整Flutter有内容页面、面板几何与真实主路由连续转场；菜单首窗/后续动画帧/关闭性能仍PARTIAL。最新双轮R8捕获Shader编译（最大34.313ms），KGSL关闭等待仅R1有3次/3.661ms，R2关闭无记录；GPU执行slice/fence字段与discarded producer仍不足，未证明稳定主因或收益。另保留常规设置MainActivity/活动核心/VPN冷恢复、VPN显式重启、实核热更新失败回滚补验，以及历史延迟差值同设备/叶节点/URL的A/B/A复测。玻璃默认关闭。 |
 | 后排及暂缓 | 语义预检边界与系统兼容按用户决定保留现状。8 MiB正文性能、备份与系统恢复继续暂缓；语言/主题已于062完成本组实现与验收，不再列为暂缓。玻璃默认关闭。 |
-| 最新证据 | [0.1.21发布](acceptance/release-0.1.21-20261124.json)、[首页局域网开关空配置修复](acceptance/dashboard-lan-switch-redmi-20261124.json)、[KUI-VIS-098弹框测量优化](acceptance/profile-form-measurement-poco-20261124.json)、[KUI-VIS-096资源更新行反馈/进度与菜单trace](acceptance/resource-updates-poco-20261124.json)。 |
+| 最新证据 | [0.1.22发布](acceptance/release-0.1.22-20261125.json)、[常规设置及核心覆盖](acceptance/general-settings-core-overrides-redmi-20261125.json)、[KUI-VIS-101有内容路线与R8逐帧](acceptance/sniffer-continuation-poco-20261125.json)、[测速源码对照](latency-test-parity.md)。 |
 
 ## 4. 目标架构图
 
