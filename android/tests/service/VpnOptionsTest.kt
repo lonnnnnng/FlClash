@@ -170,3 +170,24 @@ class TunOptionsTest {
         assertEquals("", json["congestion-controller"].asString)
     }
 }
+
+class VpnEffectiveOptionsTest {
+    @Test fun `disabled system proxy ignores its stale port and bypass domains`() {
+        val first = optionsWithRoutes(emptyList()).copy(systemProxy = false, port = 7890, bypassDomain = listOf("*.example"))
+        val second = first.copy(port = 1080, bypassDomain = listOf("other.example"), mtu = 9000, congestionController = "")
+        assertEquals(first.effective(), second.effective())
+    }
+
+    @Test fun `disabled VPN ignores all parameters not applied by the service`() {
+        val first = optionsWithRoutes(listOf("192.0.2.0/24")).copy(enable = false, port = 7890)
+        val second = first.copy(port = 1080, ipv6 = true, dnsHijacking = true, allowBypass = true,
+            systemProxy = true, bypassDomain = listOf("*.example"), stack = "system", mtu = 1400,
+            congestionController = "bbr", routeAddress = emptyList())
+        assertEquals(first.effective(), second.effective())
+    }
+
+    @Test fun `unset MTU compares as the Android builder default`() {
+        assertEquals(optionsWithRoutes(emptyList()).copy(mtu = 9000, congestionController = "").effective(),
+            optionsWithRoutes(emptyList()).copy(mtu = 0, congestionController = null).effective())
+    }
+}

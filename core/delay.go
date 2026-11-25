@@ -8,6 +8,7 @@ import (
 	"github.com/metacubex/mihomo/adapter/provider"
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/constant"
+	P "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/tunnel"
 )
 
@@ -23,7 +24,16 @@ var (
 
 	testURL                 atomic.Pointer[string]
 	missingDelayTestProxyAt atomic.Int64
+	providerTestTimeout     atomic.Int64
 )
+
+func setDefaultProviderTestTimeout(timeout time.Duration) {
+	if timeout <= 0 {
+		return
+	}
+	provider.SetDefaultTestTimeout(timeout)
+	providerTestTimeout.Store(int64(timeout))
+}
 
 func setTestURL(url string) {
 	if url == "" {
@@ -72,14 +82,27 @@ func reportMissingDelayTestProxy(name string) {
 }
 
 func configuredDelayTestTimeout(proxy constant.Proxy, url string, fallback time.Duration) time.Duration {
-	providerName := proxy.ProxyInfo().ProviderName
-	if providerName == "" {
-		return fallback
-	}
-	if pp, ok := tunnel.ProvidersSnapshot()[providerName]; ok {
-		if configured, ok := provider.ConfiguredTestTimeout(pp, url); ok && configured > fallback {
-			return configured
+	return configuredDelayTestTimeoutForProviders(proxy.Name(), url, fallback, tunnel.ProvidersSnapshot())
+}
+
+func configuredDelayTestTimeoutForProviders(proxyName, url string, fallback time.Duration, providers map[string]P.ProxyProvider) time.Duration {
+	var longest time.Duration
+	for _, pp := range providers {
+		configured, ok := provider.ConfiguredTestTimeout(pp, url)
+		if !ok || configured <= longest {
+			continue
 		}
+		for _, candidate := range pp.Proxies() {
+			if candidate.Name() == proxyName {
+				longest = configured
+				break
+			}
+		}
+	}
+	// 作者 long：命中该节点和测速地址的 Provider 显式期限就是实际健康检查期限；
+	// 即使它短于应用通用超时也必须优先采用，避免手动测试与 Flutter 的判定窗口不同。
+	if longest > 0 {
+		return longest
 	}
 	return fallback
 }

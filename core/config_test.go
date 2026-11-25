@@ -18,6 +18,7 @@ import (
 	"github.com/metacubex/mihomo/component/updater"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
+	cp "github.com/metacubex/mihomo/constant/provider"
 	"github.com/metacubex/mihomo/hub/route"
 	authStore "github.com/metacubex/mihomo/listener/auth"
 	"github.com/metacubex/mihomo/log"
@@ -101,6 +102,51 @@ func TestUpdateConfigRejectsAnUnappliedConfig(t *testing.T) {
 
 	if err := updateConfig(&UpdateParams{}); err != errConfigNotApplied {
 		t.Errorf("updateConfig error = %v, want errConfigNotApplied", err)
+	}
+}
+
+func TestUpdateConfigAppliesHostOwnedCoreOptionsWithoutReloadingTheProfile(t *testing.T) {
+	withCurrentConfig(t, &config.Config{General: &config.General{}, Controller: &config.Controller{}})
+	previousURL := testURL.Load()
+	previousTimeout := providerTestTimeout.Load()
+	previousSkipCertVerify := skipCertVerify.Load()
+	previousDefaultURL := constant.DefaultTestURL
+	t.Cleanup(func() {
+		constant.DefaultTestURL = previousDefaultURL
+		testURL.Store(previousURL)
+		if previousTimeout > 0 {
+			setDefaultProviderTestTimeout(time.Duration(previousTimeout))
+		} else {
+			setDefaultProviderTestTimeout(defaultDelayTestTimeout)
+		}
+		skipCertVerify.Store(previousSkipCertVerify)
+	})
+
+	url := "https://probe.example/generate_204"
+	payload := []byte(`{"options":{"test-url":"` + url + `","delay-test-timeout":2500,"skip-cert-verify":true}}`)
+	var params UpdateParams
+	if err := json.Unmarshal(payload, &params); err != nil {
+		t.Fatalf("Flutter-compatible options payload did not decode: %v", err)
+	}
+	if params.Options == nil || params.Options.TestURL == nil || *params.Options.TestURL != url ||
+		params.Options.DelayTestTimeoutMs == nil || *params.Options.DelayTestTimeoutMs != 2500 ||
+		params.Options.SkipCertVerify == nil || !*params.Options.SkipCertVerify {
+		t.Fatalf("decoded options = %+v, want all nested CoreOptions values", params.Options)
+	}
+	if err := updateConfig(&params); err != nil {
+		t.Fatalf("updateConfig error: %v", err)
+	}
+	if got := currentTestURL(); got != url {
+		t.Errorf("currentTestURL = %q, want %q", got, url)
+	}
+	if got := constant.DefaultTestURL; got != url {
+		t.Errorf("DefaultTestURL = %q, want %q", got, url)
+	}
+	if got := time.Duration(providerTestTimeout.Load()); got != 2500*time.Millisecond {
+		t.Errorf("provider fallback timeout = %v, want 2500ms", got)
+	}
+	if got := skipCertVerify.Load(); !got {
+		t.Errorf("skipCertVerify = false, want true from nested CoreOptions")
 	}
 }
 
@@ -549,6 +595,73 @@ func TestTestDelayRejectsAnUnknownProxyWithoutWaitingForASlot(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Fatal("an unknown proxy queued behind a saturated delay-test semaphore")
+	}
+}
+
+type delayTimeoutTestProvider struct {
+	cp.ProxyProvider
+	proxies      []constant.Proxy
+	timeoutByURL map[string]time.Duration
+}
+
+func (p *delayTimeoutTestProvider) Proxies() []constant.Proxy { return p.proxies }
+func (p *delayTimeoutTestProvider) TestTimeout(url string) (time.Duration, bool) {
+	timeout, ok := p.timeoutByURL[url]
+	return timeout, ok
+}
+
+func TestConfiguredDelayTestTimeoutMatchesFlutterProviderSelection(t *testing.T) {
+	proxy := namedProxy("provider-node")
+	other := namedProxy("other-node")
+	providerWith := func(proxies []constant.Proxy, url string, timeout time.Duration) cp.ProxyProvider {
+		return &delayTimeoutTestProvider{
+			proxies:      proxies,
+			timeoutByURL: map[string]time.Duration{url: timeout},
+		}
+	}
+
+	for _, test := range []struct {
+		name      string
+		providers map[string]cp.ProxyProvider
+		url       string
+		fallback  time.Duration
+		want      time.Duration
+	}{
+		{
+			name: "matching explicit timeout overrides a longer app timeout",
+			providers: map[string]cp.ProxyProvider{
+				"one": providerWith([]constant.Proxy{proxy}, "https://probe.test/204", 3*time.Second),
+			},
+			url: "https://probe.test/204", fallback: 8 * time.Second, want: 3 * time.Second,
+		},
+		{
+			name: "longest matching provider timeout wins",
+			providers: map[string]cp.ProxyProvider{
+				"one": providerWith([]constant.Proxy{proxy}, "https://probe.test/204", 4*time.Second),
+				"two": providerWith([]constant.Proxy{proxy}, "https://probe.test/204", 6*time.Second),
+			},
+			url: "https://probe.test/204", fallback: 8 * time.Second, want: 6 * time.Second,
+		},
+		{
+			name: "provider that does not contain the node is ignored",
+			providers: map[string]cp.ProxyProvider{
+				"other": providerWith([]constant.Proxy{other}, "https://probe.test/204", 12*time.Second),
+			},
+			url: "https://probe.test/204", fallback: 8 * time.Second, want: 8 * time.Second,
+		},
+		{
+			name: "provider timeout for another url is ignored",
+			providers: map[string]cp.ProxyProvider{
+				"one": providerWith([]constant.Proxy{proxy}, "https://other.test/204", 12*time.Second),
+			},
+			url: "https://probe.test/204", fallback: 8 * time.Second, want: 8 * time.Second,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			if got := configuredDelayTestTimeoutForProviders(proxy.Name(), test.url, test.fallback, test.providers); got != test.want {
+				t.Errorf("configured timeout = %v, want %v", got, test.want)
+			}
+		})
 	}
 }
 

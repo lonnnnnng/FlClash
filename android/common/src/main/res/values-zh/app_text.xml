@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="text_afbf6097a077" formatted="false">"VPN 参数已变化，重启服务后生效"</string>
+    <string name="text_665bd507aed6" formatted="false">"VPN 设置已变更，重启服务后生效"</string>
+    <string name="text_a8105f8a96b5" formatted="false">"测速地址"</string>
+    <string name="text_3ee4133f3aa5" formatted="false">"统一延迟"</string>
+    <string name="text_6b82bc37bf32" formatted="false">"TCP 并发"</string>
+    <string name="text_b5ca13522433" formatted="false">"GeoData 加载器"</string>
+    <string name="text_a0dd364da502" formatted="false">"内存保守"</string>
+    <string name="text_544fac400db7" formatted="false">"标准"</string>
+    <string name="text_d05b4a502dbf" formatted="false">"未启用的核心字段沿用配置正文；测速地址用作代理组未单独设置时的探测地址。"</string>
+    <string name="text_5b3f857f5fbd" formatted="false">"编辑测速地址"</string>
     <string name="text_22dbcd7c38fc" formatted="false">"DNS详情"</string>
     <!-- 作者 long：中英界面文案共用稳定资源键；花括号参数由 AppText 一次替换，避免参数内容被再次解释。 -->
     <string name="text_000d1ddc0117" formatted="false">"WebDAV 密码不能为空"</string>

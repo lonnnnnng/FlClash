@@ -33,6 +33,25 @@ enum class CoreOutboundMode(val wireValue: String) {
     }
 }
 
+data class CoreGeneralConfigUpdate(
+    val mixedPort: Int? = null,
+    val findProcessMode: String? = null,
+    val logLevel: String? = null,
+    val ipv6: Boolean? = null,
+    val tcpConcurrent: Boolean? = null,
+    val unifiedDelay: Boolean? = null,
+    val externalController: String? = null,
+    val secret: String? = null,
+    val authentication: List<String>? = null,
+    val testUrl: String? = null,
+    val delayTestTimeoutMs: Long? = null,
+    val skipCertVerify: Boolean? = null,
+) {
+    fun hasValues() = mixedPort != null || findProcessMode != null || logLevel != null || ipv6 != null ||
+        tcpConcurrent != null || unifiedDelay != null || externalController != null || secret != null ||
+        authentication != null || testUrl != null || delayTestTimeoutMs != null || skipCertVerify != null
+}
+
 /**
  * 作者 long：把 Go 核心的 JSON method/event 协议收敛成可等待的 Kotlin API，
  * 这样服务层不会在页面或生命周期代码里拼接原始方法名，也不会把错误响应误当成成功。
@@ -594,6 +613,29 @@ class CoreBridge {
         // 作者 long：诊断窗口只热切日志等级，不重新应用配置或重置连接；拒绝把任意字段带进updateConfig。
         require(level in setOf("debug", "info", "warning", "error", "silent"))
         parseMessageResult(invoke("updateConfig", JSONObject().put("log-level", level)).optString("result", ""), "update_log_level_failed")
+    }
+
+    suspend fun updateGeneralConfig(update: CoreGeneralConfigUpdate) {
+        val arguments = JSONObject().apply {
+            update.mixedPort?.let { put("mixed-port", it) }
+            update.findProcessMode?.let { put("find-process-mode", it) }
+            update.logLevel?.let { put("log-level", it) }
+            update.ipv6?.let { put("ipv6", it) }
+            update.tcpConcurrent?.let { put("tcp-concurrent", it) }
+            update.unifiedDelay?.let { put("unified-delay", it) }
+            update.externalController?.let { put("external-controller", it) }
+            update.secret?.let { put("secret", it) }
+            update.authentication?.let { put("authentication", JSONArray(it)) }
+            // 作者 long：Flutter 将测速目标、超时和证书策略作为 CoreOptions 一起热更新，避免改探测偏好时重跑订阅构建。
+            val options = JSONObject().apply {
+                update.testUrl?.let { put("test-url", it) }
+                update.delayTestTimeoutMs?.let { put("delay-test-timeout", it) }
+                update.skipCertVerify?.let { put("skip-cert-verify", it) }
+            }
+            if (options.length() > 0) put("options", options)
+        }
+        require(arguments.length() > 0) { "常规核心热更新没有待应用字段" }
+        parseMessageResult(invoke("updateConfig", arguments).optString("result", ""), "update_general_settings_failed")
     }
 
     fun startListener() = Core.startListener()

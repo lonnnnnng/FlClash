@@ -13,6 +13,7 @@ import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
 import com.lonnnnnng.flclash.core.ProxyGroupsSnapshot
 import com.lonnnnnng.flclash.service.models.NotificationParams
+import com.lonnnnnng.flclash.service.models.effective
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -97,6 +98,7 @@ class CoreRuntimeManager(
     private val networkSettingsStore: NetworkSettingsStore? = null,
     private val globalDnsSettingsStore: GlobalDnsSettingsStore? = null,
     private val generalSettingsStore: GeneralSettingsStore? = null,
+    private val defaultUserAgent: String = GeneralSettingsApplier.DEFAULT_USER_AGENT,
 ) : ProxyGroupsRuntime, OutboundIpRuntime, RuntimeConfigPreviewProvider, ProfileStatisticsRuntime, MemoryRuntime, LanSharingRuntime, ServiceStatusRuntime {
     init {
         RuntimeDiagnosticHistory.configure(runtimeDiagnosticStore)
@@ -120,11 +122,11 @@ class CoreRuntimeManager(
                     if (listenerStarted.get()) { bridge.stopListener(); listenerStarted.set(false) }
                 } else {
                     ensureConfigLoaded()
-                    val options = vpnOptionsProvider.current().copy(enable = appliedVpnOptions?.enable ?: mutableVpnSettings.value.enabled)
+                    val desiredOptions = vpnOptionsProvider.current()
+                    val options = desiredOptions.copy(enable = appliedVpnOptions?.enable ?: mutableVpnSettings.value.enabled)
                     serviceController.start(options)
                     if (!listenerStarted.get()) { bridge.startListener(); listenerStarted.set(true) }
-                    appliedVpnOptions = options
-                    mutableVpnSettings.update { it.copy(appliedEnabled = options.enable) }
+                    publishVpnOptions(options, desiredOptions)
                 }
                 mutableOnDemandSuspended.value = excluded
                 invalidateIpRoute()
@@ -132,7 +134,7 @@ class CoreRuntimeManager(
                 // 作者 long：暂停或恢复失败时收掉半开的系统服务，保留明确失败态，不能误报仍在接管网络。
                 mutableRunningSince.value = null
                 mutableOnDemandSuspended.value = false
-                mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+                clearAppliedVpnOptions()
                 mutableState.value = CoreRuntimeStatus.FAILED
                 invalidateIpRoute()
                 // 作者 long：持久化或诊断再次失败也不能打断收尾、更不能终止应用级网络观察协程。
@@ -254,20 +256,49 @@ class CoreRuntimeManager(
                 check(previous == expected) { "常规设置已变化，请重新打开后保存" }
                 val next = value.prepared()
                 if (next == previous) return@runCatching
+                val coreProjectionChanged = previous.runtimeKey() != next.runtimeKey()
+                val targetId = profileProvider.activeProfileId()
+                val hotUpdate = next.coreUpdateFrom(previous)
+                val isHotUpdateCandidate = coreProjectionChanged && mutableState.value.isRunning && targetId != null &&
+                    loadedConfigKey != null && previous.configurationReloadKey() == next.configurationReloadKey() && hotUpdate.hasValues()
+                val previousConfig = if (isHotUpdateCandidate) paths.configFile.takeIf { it.isFile }?.readBytes() else null
+                val canUpdateLive = isHotUpdateCandidate && previousConfig != null
+                val previousLoadedKey = loadedConfigKey
+                val previousAutomaticKey = loadedAutomaticConfigKey
                 store.write(next)
+                var coreUpdateRequested = false
                 try {
-                    if (previous.runtimeKey() != next.runtimeKey()) {
-                        profileProvider.activeProfileId()?.let { id -> applyProfileLocked(id) { target -> check(target == id) } }
-                        invalidateIpRoute()
+                    if (coreProjectionChanged) {
+                        targetId?.let { id ->
+                            if (canUpdateLive) {
+                                val profile = requireNotNull(profileProvider.activeProfile())
+                                check(profile.id == id) { "运行配置已变化，请重新应用后重试" }
+                                // 作者 long：只把应用拥有的全局字段投影到当前暂存正文，不重跑可能有动态输出的订阅脚本。
+                                val nextContent = GeneralSettingsApplier.apply(previousConfig.decodeToString(), next, defaultUserAgent)
+                                writeConfigAtomically(nextContent)
+                                bridge.validateConfig(paths.configFile.path)
+                                coreUpdateRequested = true
+                                bridge.updateGeneralConfig(hotUpdate)
+                                loadedConfigKey = configKey(profile)
+                                loadedAutomaticConfigKey = automaticConfigKey(profile)
+                            } else applyProfileLocked(id) { target -> check(target == id) }
+                        }
+                        if (!canUpdateLive || previous.ipv6 != next.ipv6) invalidateIpRoute()
                     }
                     syncGeneralRuntimeHooks(next)
                     mutableGeneralSettings.value = next
                 } catch (failure: Throwable) {
                     try {
                         store.write(previous)
-                        // 作者 long：日志订阅失败也需要恢复刚应用的核心参数，避免偏好已回滚而核心仍用新端口或新认证。
-                        if (previous.runtimeKey() != next.runtimeKey()) profileProvider.activeProfileId()?.let { id ->
-                            applyProfileLocked(id) { target -> check(target == id) }
+                        if (canUpdateLive) {
+                            // 作者 long：热更新或日志订阅任一步失败，都恢复旧暂存正文、核心值与已加载键。
+                            paths.configFile.writeBytes(checkNotNull(previousConfig))
+                            if (coreUpdateRequested) bridge.updateGeneralConfig(previous.coreUpdateFrom(next))
+                            loadedConfigKey = previousLoadedKey
+                            loadedAutomaticConfigKey = previousAutomaticKey
+                            if (previous.ipv6 != next.ipv6) invalidateIpRoute()
+                        } else if (coreProjectionChanged) {
+                            targetId?.let { id -> applyProfileLocked(id) { target -> check(target == id) } }
                         }
                         syncGeneralRuntimeHooks(previous)
                     } catch (_: Exception) {
@@ -295,7 +326,10 @@ class CoreRuntimeManager(
             runCatching {
                 // 作者 long：运行中只保存下次接管方式，用户点击重启后才中断现有连接。
                 vpnSettingsStore.write(enabled)
-                mutableVpnSettings.update { it.copy(enabled = enabled) }
+                mutableVpnSettings.update { current ->
+                    val baseline = current.desiredOptions ?: current.appliedOptions
+                    current.copy(enabled = enabled, desiredOptions = baseline?.copy(enable = enabled))
+                }
             }
         }
     }
@@ -330,6 +364,16 @@ class CoreRuntimeManager(
     private val mutableOutboundMode = MutableStateFlow(preferredOutboundMode ?: CoreOutboundMode.RULE)
     private val profileScriptApplier = ProfileScriptApplier(profileScriptEvaluator)
     private var appliedVpnOptions: com.lonnnnnng.flclash.service.models.VpnOptions? = null
+    private fun publishVpnOptions(applied: com.lonnnnnng.flclash.service.models.VpnOptions, desired: com.lonnnnnng.flclash.service.models.VpnOptions = applied) {
+        appliedVpnOptions = applied
+        mutableVpnSettings.update { it.copy(appliedEnabled = applied.enable, appliedOptions = applied, desiredOptions = desired) }
+    }
+
+    private fun clearAppliedVpnOptions() {
+        appliedVpnOptions = null
+        mutableVpnSettings.update { it.copy(appliedEnabled = null, appliedOptions = null, desiredOptions = null) }
+    }
+
     private var hasSuccessfulRun = false
     private var loadedConfigKey: List<Any?>? = null
     private var loadedAutomaticConfigKey: List<Any?>? = null
@@ -453,6 +497,7 @@ class CoreRuntimeManager(
                 profile.selectedMap,
                 skipCertVerify = settings?.checkCertificate == false,
                 testTimeoutMs = settings?.delayTestTimeout?.toLong() ?: CoreBridge.DEFAULT_DELAY_TIMEOUT_MS,
+                testUrl = settings?.testUrl ?: CoreBridge.DEFAULT_TEST_URL,
             )
             val mode = preferredOutboundMode ?: bridge.getConfiguredMode(paths.configFile.path)
             if (preferredOutboundMode != null) bridge.updateMode(mode)
@@ -584,22 +629,18 @@ class CoreRuntimeManager(
             check(!mutableState.value.isRunning || previousId != null && previousContent != null && previousKey?.firstOrNull() == previousId) {
                 "原运行配置无法确认，请停止服务后切换"
             }
-            var servicesChanged = false
             try {
                 select(id)
                 ensureConfigLoaded(force = true)
                 if (mutableState.value.isRunning && previousOptions != null) {
-                    // 作者 long：配置换端口或 TUN 参数后必须同步系统网络；待重启的 VPN 开关仍保持当前会话选择。
-                    val nextOptions = vpnOptionsProvider.current().copy(enable = previousOptions.enable)
-                    if (nextOptions != previousOptions) {
-                        // 作者 long：暂停期间仍允许配置投影更新，但不能因为端口/TUN变化重新接管排除Wi-Fi。
-                        if (!mutableOnDemandSuspended.value) {
-                            servicesChanged = true
-                            serviceController.stopAndAwait()
-                            serviceController.start(nextOptions)
-                        }
-                        appliedVpnOptions = nextOptions
+                    // 作者 long：上游先提示用户确认再重启，配置变化不能静默打断当前接管会话。
+                    val desiredOptions = vpnOptionsProvider.current()
+                    val nextAppliedOptions = desiredOptions.copy(enable = previousOptions.enable)
+                    if (nextAppliedOptions.effective() == previousOptions.effective() || mutableOnDemandSuspended.value) {
+                        appliedVpnOptions = nextAppliedOptions
                     }
+                    mutableVpnSettings.update { it.copy(appliedEnabled = previousOptions.enable,
+                        appliedOptions = appliedVpnOptions ?: previousOptions, desiredOptions = desiredOptions) }
                 }
             } catch (failure: Throwable) {
                 var restored = true
@@ -614,13 +655,10 @@ class CoreRuntimeManager(
                                 previousSelectedMap,
                                 skipCertVerify = !mutableGeneralSettings.value.checkCertificate,
                                 testTimeoutMs = mutableGeneralSettings.value.delayTestTimeout.toLong(),
+                                testUrl = mutableGeneralSettings.value.testUrl,
                             )
                             bridge.updateMode(mutableOutboundMode.value)
-                            if (servicesChanged && previousOptions != null) {
-                                serviceController.stopAndAwait()
-                                serviceController.start(previousOptions)
-                                appliedVpnOptions = previousOptions
-                            }
+                            if (previousOptions != null) publishVpnOptions(previousOptions)
                             loadedConfigKey = previousKey
                             loadedAutomaticConfigKey = previousAutomaticKey
                         } catch (_: Exception) {
@@ -630,7 +668,7 @@ class CoreRuntimeManager(
                             runCatching { runtimeResumeStore.setShouldResume(false) }
                             mutableOnDemandSuspended.value = false
                             mutableRunningSince.value = null
-                            mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+                            clearAppliedVpnOptions()
                             mutableState.value = CoreRuntimeStatus.FAILED
                         }
                     }
@@ -694,7 +732,7 @@ class CoreRuntimeManager(
         mutableState.value = CoreRuntimeStatus.STARTING
         invalidateIpRoute()
         mutableRunningSince.value = null
-        mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+        clearAppliedVpnOptions()
         return runCatching {
             // 作者 long：先记录恢复意图，再进行配置和服务启动，进程若在启动中断开也能由 Application 重试。
             runtimeResumeStore.setShouldResume(true)
@@ -716,7 +754,6 @@ class CoreRuntimeManager(
                     onlyStatisticsProxy = mutableGeneralSettings.value.onlyStatisticsProxy),
             )
             val vpnOptions = vpnOptionsProvider.current()
-            appliedVpnOptions = vpnOptions
             if (!onDemandExcluded) {
                 serviceController.start(vpnOptions)
                 if (!listenerStarted.get()) {
@@ -728,7 +765,7 @@ class CoreRuntimeManager(
             mutableOnDemandSuspended.value = onDemandExcluded
             mutableRunningSince.value = elapsedRealtimeMillis()
             mutableState.value = CoreRuntimeStatus.RUNNING
-            mutableVpnSettings.update { it.copy(appliedEnabled = vpnOptions.enable) }
+            publishVpnOptions(vpnOptions)
             RuntimeDiagnosticHistory.recordAndFlush(
                 if (hasSuccessfulRun) {
                     RuntimeDiagnosticKind.CORE_RESTARTED
@@ -756,7 +793,7 @@ class CoreRuntimeManager(
             mutableState.value = CoreRuntimeStatus.FAILED
             mutableOnDemandSuspended.value = false
             mutableRunningSince.value = null
-            mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+            clearAppliedVpnOptions()
             RuntimeDiagnosticHistory.record(
                 RuntimeDiagnosticKind.CORE_FAILED,
                 formatRuntimeFailure(error),
@@ -772,7 +809,7 @@ class CoreRuntimeManager(
         invalidateIpRoute()
         mutableOnDemandSuspended.value = false
         mutableRunningSince.value = null
-        mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+        clearAppliedVpnOptions()
         return runCatching {
             // 作者 long：显式停止必须先清除恢复意图，避免下一次 Application 启动把用户停止误判成系统重建。
             runtimeResumeStore.setShouldResume(false)
@@ -821,7 +858,7 @@ class CoreRuntimeManager(
         invalidateIpRoute()
         mutableOnDemandSuspended.value = false
         mutableRunningSince.value = null
-        mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+        clearAppliedVpnOptions()
         runCatching {
             runtimeResumeStore.setShouldResume(false)
             if (mutableState.value == CoreRuntimeStatus.STOPPED ||
@@ -1089,7 +1126,7 @@ class CoreRuntimeManager(
                         runCatching { runtimeResumeStore.setShouldResume(false) }
                         mutableOnDemandSuspended.value = false
                         mutableRunningSince.value = null
-                        mutableVpnSettings.update { it.copy(appliedEnabled = null) }
+                        clearAppliedVpnOptions()
                         mutableState.value = CoreRuntimeStatus.FAILED
                     }
                     invalidateIpRoute()
@@ -1571,19 +1608,23 @@ class CoreRuntimeManager(
             GlobalDnsSettings.apply(ProfileDnsBaselineApplier.apply(ProfileExtensionApplier.apply(scriptedContent, profile.standardExtension)),
                 if (profile.usesGlobalDns) globalDns ?: ProfileDnsOverrides() else ProfileDnsOverrides()),
             ProfileProviderOverrides.fromJsonString(profile.overridesJson),
-        ), networkSettings), generalSettings), lanOverride)
+        ), networkSettings), generalSettings, defaultUserAgent), lanOverride)
         return if (geoSettingsStore == null) content else GeoResourceSettingsApplier.apply(content, mutableGeoSettings.value)
     }
 
     private suspend fun stageConfig(profile: ActiveProfile, lanOverride: Boolean? = lanSharingStore.read()) {
         val source = File(profile.filePath)
         require(source.isFile) { "配置文件不存在：${source.path}" }
-        paths.homeDir.mkdirs()
-        val temporary = File(paths.homeDir, ".${paths.configFile.name}.tmp")
         val sourceContent = source.readText(Charsets.UTF_8)
         val effectiveContent = renderProfileContent(profile, sourceContent, lanOverride)
+        writeConfigAtomically(effectiveContent)
+    }
+
+    private fun writeConfigAtomically(content: String) {
+        paths.homeDir.mkdirs()
+        val temporary = File(paths.homeDir, ".${paths.configFile.name}.tmp")
         try {
-            temporary.writeText(effectiveContent, Charsets.UTF_8)
+            temporary.writeText(content, Charsets.UTF_8)
             if (!temporary.renameTo(paths.configFile)) {
                 paths.configFile.outputStream().use { output ->
                     temporary.inputStream().use { input -> input.copyTo(output) }

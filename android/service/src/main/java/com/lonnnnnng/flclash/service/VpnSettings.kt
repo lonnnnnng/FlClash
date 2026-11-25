@@ -1,6 +1,8 @@
 package com.lonnnnnng.flclash.service
 
 import android.content.Context
+import com.lonnnnnng.flclash.service.models.VpnOptions
+import com.lonnnnnng.flclash.service.models.effective
 
 interface VpnSettingsStore {
     fun read(): Boolean
@@ -24,6 +26,11 @@ class SharedPreferencesVpnSettingsStore(context: Context) : VpnSettingsStore {
 data class VpnSettingsState(
     val enabled: Boolean = true,
     val appliedEnabled: Boolean? = null,
+    val appliedOptions: VpnOptions? = null,
+    val desiredOptions: VpnOptions? = null,
 ) {
-    val restartRequired: Boolean get() = appliedEnabled != null && appliedEnabled != enabled
+    val restartRequired: Boolean get() = appliedOptions?.effective()?.let { applied ->
+        desiredOptions?.effective()?.let { desired -> applied != desired }
+            ?: (appliedEnabled != null && appliedEnabled != enabled)
+    } ?: (appliedEnabled != null && appliedEnabled != enabled)
 }

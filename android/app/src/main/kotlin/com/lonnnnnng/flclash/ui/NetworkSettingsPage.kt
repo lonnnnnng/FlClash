@@ -43,7 +43,7 @@ internal fun NetworkSettingsPanel(
         NetworkSection {
             NetworkToggle("VPN", tr("启用后接管此设备的网络流量"), "network_vpn", vpn.enabled, busy, onVpnEnabled)
             if (vpn.restartRequired) {
-                Text(tr("VPN 接管方式已保存，重启服务后生效"), Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
+                Text(tr("VPN 设置已变更，重启服务后生效"), Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
                 TextButton(onRestart, Modifier.padding(horizontal = 8.dp).testTag("network_restart"), enabled = !busy) { Text(tr("重启生效")) }
             }
         }

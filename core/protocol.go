@@ -137,22 +137,30 @@ type ProfileOutbound struct {
 }
 
 type UpdateParams struct {
-	Tun                *tunSchema         `json:"tun"`
-	AllowLan           *bool              `json:"allow-lan"`
-	MixedPort          *int               `json:"mixed-port"`
-	FindProcessMode    *P.FindProcessMode `json:"find-process-mode"`
-	Mode               *tunnel.TunnelMode `json:"mode"`
-	LogLevel           *log.LogLevel      `json:"log-level"`
-	IPv6               *bool              `json:"ipv6"`
-	TCPConcurrent      *bool              `json:"tcp-concurrent"`
-	ExternalController *string            `json:"external-controller"`
-	Secret             *string            `json:"secret"`
-	UnifiedDelay       *bool              `json:"unified-delay"`
-	Authentication     *[]string          `json:"authentication"`
-	GeoAutoUpdate      *bool              `json:"geo-auto-update"`
-	GeoUpdateInterval  *int               `json:"geo-update-interval"`
-	GeoXUrl            map[string]string  `json:"geox-url"`
-	SkipCertVerify     *bool              `json:"skip-cert-verify"`
+	Tun                *tunSchema          `json:"tun"`
+	AllowLan           *bool               `json:"allow-lan"`
+	MixedPort          *int                `json:"mixed-port"`
+	FindProcessMode    *P.FindProcessMode  `json:"find-process-mode"`
+	Mode               *tunnel.TunnelMode  `json:"mode"`
+	LogLevel           *log.LogLevel       `json:"log-level"`
+	IPv6               *bool               `json:"ipv6"`
+	TCPConcurrent      *bool               `json:"tcp-concurrent"`
+	ExternalController *string             `json:"external-controller"`
+	Secret             *string             `json:"secret"`
+	UnifiedDelay       *bool               `json:"unified-delay"`
+	Authentication     *[]string           `json:"authentication"`
+	GeoAutoUpdate      *bool               `json:"geo-auto-update"`
+	GeoUpdateInterval  *int                `json:"geo-update-interval"`
+	GeoXUrl            map[string]string   `json:"geox-url"`
+	SkipCertVerify     *bool               `json:"skip-cert-verify"`
+	Options            *RuntimeCoreOptions `json:"options"`
+}
+
+// 作者 long：承载Flutter与Kotlin共用的运行态测速参数，避免探测偏好变化时重建整份配置。
+type RuntimeCoreOptions struct {
+	TestURL            *string `json:"test-url"`
+	DelayTestTimeoutMs *int64  `json:"delay-test-timeout"`
+	SkipCertVerify     *bool   `json:"skip-cert-verify"`
 }
 
 type tunSchema struct {

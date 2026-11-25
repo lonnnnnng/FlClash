@@ -1,0 +1,234 @@
+{
+  "date": "2026-11-25",
+  "device": {
+    "model": "POCO F2 Pro",
+    "serial": "31936bb6",
+    "api": 36,
+    "orientation": "portrait",
+    "fontScale": 1.0
+  },
+  "source": {
+    "head": "8a8c0331870dda96a622e045bb94f12d1ddc9a0f",
+    "workingTreeWasDirty": true,
+    "motionApkSha256": "3213fe993f8a672b90b0c4a59829e367b7c105b3d93c0af5950ea0f91d7b60e5",
+    "instrumentationApkSha256": "59fcd1c9071418e7c03af2c97dc5c7b6431052e82ef31a0effbdfa03dbfb5a57",
+    "build": {
+      "command": "JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew :app:assembleMotionBenchmark :app:assembleMotionBenchmarkAndroidTest --no-daemon -Ptarget-platform=android-arm64 -PkclashMotionBenchmark=true",
+      "result": "BUILD SUCCESSFUL",
+      "elapsed": "2m26s"
+    }
+  },
+  "snifferRoute": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.MainSnifferNaturalInstrumentedTest",
+    "method": "snifferPortsSaveReopenAndRapidBackUseRealNavigation",
+    "successfulRuns": 2,
+    "finalRun": {
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "elapsedSeconds": 54.384,
+      "log": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/sniffer-instrumentation-with-png.log",
+      "logSha256": "b25a7e8e553568cc54e969e98e052eecdf75235d126376b296e6d22ce7d66b49",
+      "preservationReceipt": "rows-bodies-scripts-preferences-selection-preserved=true;own-row-and-file-removed=true;runtime=STOPPED"
+    },
+    "screenshots": {
+      "count": 12,
+      "dimensions": "1080x2400",
+      "manifest": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/sniffer-screenshots.json",
+      "visuallyReviewedContactSheet": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/sniffer-dark-contact.png"
+    },
+    "routeVideo": {
+      "file": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/kotlin-main-route.mp4",
+      "durationSeconds": 86.508189,
+      "frames": 1635,
+      "dimensions": "1080x2400",
+      "bytes": 23215729,
+      "sha256": "5ce85ad807f5fb4809bab006183e08ba47c0c1bbe6673cc3dd5dd5c17f297b32",
+      "performanceEvidence": false
+    },
+    "checks": [
+      "real MainActivity navigation through Profiles, CUSTOM editor, More, Sniffer, HTTP and Ports",
+      "search/IME and rapid system Back",
+      "save two port rows and override-destination=false with receipt",
+      "reopen, recreate Activity and read values back from Room",
+      "source body unchanged; original rows, scripts, preferences and selection preserved",
+      "temporary Profile row and body removed; core runtime STOPPED"
+    ]
+  },
+  "dnsNonemptyRoute": {
+    "instrumentedClass": "com.lonnnnnng.flclash.ui.MainGlobalDnsNaturalInstrumentedTest",
+    "method": "dnsNonEmptyEditorsPersistAndRestoreWithoutReplay",
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "elapsedSeconds": 54.759,
+    "log": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/dns-instrumentation.log",
+    "logSha256": "fac8a01ef47ad148c89316e8587d4034dcd1b78743104b528cf3d5143942668b",
+    "screenshots": {
+      "count": 9,
+      "dimensions": "1080x2400",
+      "manifest": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/dns-screenshots.json",
+      "visuallyReviewedContactSheet": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/dns-dark-contact.png"
+    },
+    "checks": [
+      "real MainActivity route through Tools and Advanced Configuration to nonempty DNS fields",
+      "edit Listen address and select DNS mode",
+      "add a Nameserver through the real IME, recreate the Activity while its draft is open, then save",
+      "recreate again and verify DNS values from the backing store",
+      "restore exact original DNS and appearance preferences; no Profile row, no active selection, runtime STOPPED"
+    ]
+  },
+  "flutterComparison": {
+    "fullContinuousFlutterRouteCompleted": false,
+    "reason": "The isolated full.dev reference host stopped at its disclosure requiring a manually retyped statement; it was not accepted on the user's behalf. This run therefore does not claim a full Flutter route or matching continuous transition.",
+    "referencePackageModified": false,
+    "comFollowClashVersion": "0.9.4",
+    "comFollowClashLastUpdateTimeBeforeAndAfter": "2026-11-22 14:21:51",
+    "currentNonemptyScreensComparedAgainstFlutter": false,
+    "existingStaticSnifferReference": "../../../acceptance-artifacts/sniffer-full-parity-poco-20261120/"
+  },
+  "menuTrace": {
+    "package": "com.lonnnnnng.flclash.performance",
+    "buildType": "R8 performanceBenchmark",
+    "device": "POCO F2 Pro / API 36",
+    "interaction": "two independent traces; each includes eight source-menu open/outside-close cycles; no recording or instrumentation during trace",
+    "runs": [
+      {
+        "directory": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/r8-menu-joint-r1/",
+        "traceBytes": 20739777,
+        "traceSha256": "1b056a195505058807a9d4818ef36436a438a5df74f1c4b0f335fe9a59b87e2c",
+        "renderRoots": 517,
+        "uniqueTokens": 501,
+        "tokensWithTwoDistinctRoots": 16,
+        "popupFrameTimelineRows": 493,
+        "popupUniqueFrameIds": 493,
+        "popupOpenFrames": 220,
+        "popupOpenJankCounts": {
+          "appDeadlineMissed": 8,
+          "droppedFrame": 7,
+          "bufferStuffing": 57
+        },
+        "popupCloseFrames": 248,
+        "popupCloseJankCounts": {
+          "appDeadlineMissed": 0,
+          "droppedFrame": 0,
+          "bufferStuffing": 216
+        },
+        "shaderCompileRoots": [
+          {
+            "rootId": 4978,
+            "token": 19498889,
+            "phase": "open-window",
+            "renderThreadWallMs": 19.147,
+            "shaderCompileCount": 1,
+            "shaderCompileWallMs": 11.035,
+            "cacheMissWallMs": 10.636,
+            "driverCompileWallMs": 2.79,
+            "driverLinkWallMs": 7.186
+          },
+          {
+            "rootId": 43966,
+            "token": 19500585,
+            "phase": "close-window",
+            "renderThreadWallMs": 16.324,
+            "shaderCompileCount": 1,
+            "shaderCompileWallMs": 7.162,
+            "cacheMissWallMs": 6.887,
+            "driverCompileWallMs": 2.063,
+            "driverLinkWallMs": 4.291
+          },
+          {
+            "rootId": 57453,
+            "token": 19501061,
+            "phase": "open-window",
+            "renderThreadWallMs": 39.899,
+            "shaderCompileCount": 4,
+            "shaderCompileWallMs": 34.313,
+            "cacheMissWallMs": 33.404,
+            "driverCompileWallMs": 11.322,
+            "driverLinkWallMs": 19.865
+          }
+        ],
+        "kgslWaits": [
+          {"phase": "close-window", "waitMs": 1.266, "context": 13, "waitTimestamp": 12697, "renderRoots": 1},
+          {"phase": "close-window", "waitMs": 2.159, "context": 13, "waitTimestamp": 12900, "renderRoots": 1},
+          {"phase": "close-window", "waitMs": 0.236, "context": 13, "waitTimestamp": 12967, "renderRoots": 1},
+          {"phase": "open-window", "waitMs": 3.828, "context": 13, "waitTimestamp": 13004, "renderRoots": 0}
+        ],
+        "tracedChunksDiscarded": 51,
+        "sessionBufferOverwriteOrDataLoss": 0
+      },
+      {
+        "directory": "../../../acceptance-artifacts/sniffer-continuation-poco-20261125/r8-menu-joint-r2/",
+        "traceBytes": 20656217,
+        "traceSha256": "121adcfa285d38fe7d13307f504f47cc8f595b6e3e0ba3878ceb9444392e23d8",
+        "renderRoots": 520,
+        "uniqueTokens": 504,
+        "tokensWithTwoDistinctRoots": 16,
+        "popupFrameTimelineRows": 496,
+        "popupUniqueFrameIds": 496,
+        "popupOpenFrames": 223,
+        "popupOpenJankCounts": {
+          "appDeadlineMissed": 4,
+          "droppedFrame": 8,
+          "bufferStuffing": 24
+        },
+        "popupCloseFrames": 248,
+        "popupCloseJankCounts": {
+          "appDeadlineMissed": 0,
+          "droppedFrame": 0,
+          "bufferStuffing": 217
+        },
+        "shaderCompileRoots": [
+          {
+            "rootId": 8733,
+            "token": 19508176,
+            "phase": "open-window",
+            "renderThreadWallMs": 22.231,
+            "shaderCompileCount": 1,
+            "shaderCompileWallMs": 15.732,
+            "cacheMissWallMs": 15.291,
+            "driverCompileWallMs": 6.251,
+            "driverLinkWallMs": 8.07
+          }
+        ],
+        "kgslWaits": [
+          {"phase": "open-window", "waitMs": 1.251, "context": 13, "waitTimestamp": 13542, "renderRoots": 0}
+        ],
+        "tracedChunksDiscarded": 53,
+        "sessionBufferOverwriteOrDataLoss": 0
+      }
+    ],
+    "renderRootIdentityRule": "Keep every distinct slice.id (root_id). The 16 duplicate tokens per trace have separate, non-identical, non-overlapping depth-0 RenderThread roots on the same track; token-only deduplication would discard real work.",
+    "jankCountRule": "Count distinct actual_frame_timeline_slice.id rows on Popup layers, not distinct RenderThread roots or tokens. A row may have a compound jank_type, so category counts can overlap.",
+    "gpuAndFenceLimit": "The trace includes KGSL submit and dma_fence_signaled events, but gpu_slice has 0 rows and FrameTimeline latched_fence_state/unsignaled counters are empty. KGSL waittimestamp was present in both traces but sparse and varied in phase (three close waits totalling 3.661 ms in run 1; only a 1.251 ms open wait in run 2). Some run-1 close waits overlap boundary-spanning frame records and one RT root; this is temporal correlation, not proof that GPU wait caused the frame miss. No stable GPU/fence root cause or performance gain is established.",
+    "discardedLimit": "Global traced_chunks_discarded is 51/53; session ring-buffer overwrite and data-loss counters are 0. The discarded producer owner is not exposed by these summaries."
+  },
+  "cleanup": {
+    "motionAndTestPackagesUninstalled": true,
+    "performancePackageUninstalled": true,
+    "isolatedFullDevDisclosurePackageUninstalled": true,
+    "deviceYamlCopyRemovedWithAppSandboxOnUninstall": true,
+    "tun0Present": false,
+    "coreAndVpnServicesRunning": false,
+    "flutterReferenceForegroundRestored": true,
+    "formalKclashVersionAndInstallTimeUnchanged": true,
+    "flutterReferenceVersionAndInstallTimeUnchanged": true,
+    "workspaceOneYaml": {
+      "sha256": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "bytes": 34220,
+      "mtimeEpoch": 1794392072,
+      "uploadedToInternet": false,
+      "contentIncludedInEvidence": false
+    },
+    "originalFlutterPackageModified": false
+  },
+  "remaining": [
+    "Full nonempty Flutter MainActivity route was not completed because the isolated host's disclosure was not accepted; only historical static/reference comparisons and Kotlin natural routes are available.",
+    "GPU execution slices and populated FrameTimeline fence state remain unavailable; sparse KGSL waits do not establish a stable cause.",
+    "traced_chunks_discarded producer ownership remains unresolved despite zero session-buffer overwrite/data-loss counters.",
+    "This was not a performance before/after experiment and demonstrates no stable global animation improvement."
+  ]
+}

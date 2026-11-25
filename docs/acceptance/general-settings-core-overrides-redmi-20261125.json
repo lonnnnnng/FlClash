@@ -1,0 +1,165 @@
+{
+  "id": "general-settings-core-overrides-parity",
+  "date": "2026-11-25",
+  "status": "passed-limited-slice",
+  "sourceBaseline": "4075e300ed87a1821dc6fc7f3dc1f2581f6d8896",
+  "device": {
+    "model": "Redmi Note 8 Pro",
+    "serial": "wsvwypiz7xwslvl7",
+    "api": 36
+  },
+  "reference": {
+    "repository": "local read-only Flutter snapshot",
+    "revision": "be84736605527034689c95bf27828ff27d912c5e",
+    "scope": [
+      "global core override selection semantics",
+      "default User-Agent fallback",
+      "external controller secret clearing",
+      "runtime core update behavior",
+      "restart prompt for effective VPN parameter changes"
+    ]
+  },
+  "changes": {
+    "defaultUserAgent": "When no custom value is selected, generated runtime YAML uses KClash/v<version> clash-verge Platform/android and replaces a profile-provided global-ua.",
+    "externalController": "Preparing settings with the controller disabled clears the stored secret.",
+    "generalCoreOverrides": [
+      "test-url",
+      "unified-delay",
+      "tcp-concurrent",
+      "ipv6",
+      "geodata-loader"
+    ],
+    "inheritance": "Unselected YAML overrides are inherited from the profile. The global test URL is still passed as the default health-check and manual-probe URL; a proxy group's own URL takes precedence.",
+    "runningHotUpdates": [
+      "application test-url and delay-test-timeout via CoreOptions",
+      "authentication",
+      "external-controller and secret",
+      "find-process-mode",
+      "ipv6 when its override selection is unchanged",
+      "log-level",
+      "mixed-port",
+      "skip-cert-verify",
+      "tcp-concurrent when its override selection is unchanged",
+      "unified-delay when its override selection is unchanged"
+    ],
+    "transaction": "While running, eligible values update only the application-owned staged YAML fields and call the core updateConfig bridge; application probe URL/timeout are carried in Flutter-compatible nested CoreOptions and update without rebuilding proxy groups. Validation or later hook failure restores staged bytes, persisted settings and previous core parameters. Other profile inputs keep the full apply path.",
+    "vpnRestartPrompt": "Network and active-profile changes compare effective Android service options, including route, stack, DNS hijack, system proxy and access-control scope. A changed effective snapshot stays pending without replacing the current service session until the user invokes restart. Flutter-compatible normalization ignores disabled-VPN fields and system-proxy-only port/domain fields when that mode is disabled."
+  },
+  "buildAndTests": {
+    "command": "./gradlew :service:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug --no-daemon -Ptarget-platform=android-arm64 ; androidTest cold-process restoration was compiled and invoked in two separate instrumentation runs",
+    "result": "passed",
+    "jvm": {
+      "service": {
+        "tests": 230,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "app": {
+        "tests": 630,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "lintDebug": {
+      "errors": 0,
+      "warnings": 11,
+      "hints": 1
+    },
+    "appTextCheck": {
+      "command": "python3 tool/check_app_text.py",
+      "result": "passed",
+      "bilingualPairs": 2182
+    },
+    "artifacts": {
+      "debugApkSha256": "a5a3d92ced3bf4a47f3d5e062b659a13437e3bd1fc66ce42626c4fbd32f3c031",
+      "androidTestApkSha256": "3084a1f251206640862cb1818b8cf9ba8caeb8a3abd31b9ca316512227b6b44a"
+    }
+  },
+  "deviceRegression": {
+    "device": "Redmi Note 8 Pro / wsvwypiz7xwslvl7 / API 36",
+    "command": "ANDROID_SERIAL=wsvwypiz7xwslvl7 ./gradlew :app:connectedDebugAndroidTest --no-daemon -Ptarget-platform=android-arm64 with GeneralSettingsInstrumentedTest and GeneralCoreProbeOptionsRuntimeLiveTest",
+    "result": "passed",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "covered": [
+      "General settings Compose page 4/4: selected override/value separation, URL editing, save validation and existing settings behavior",
+      "Running Mihomo accepted a new application probe URL without restarting the core session",
+      "A loopback HEAD probe exceeded 500 ms and returned timeout; after changing the runtime timeout to 2000 ms, the same probe completed successfully",
+      "Both URL and timeout updates preserved the running session; no VPN was enabled",
+      "Test restored general/VPN settings and selected profile, deleted its temporary copy of the workspace fixture, and verified formal profile rows and files unchanged"
+    ],
+    "limitations": [
+      "Real-core traffic check used only a local loopback HTTP probe; it did not test public network or subscription-node performance.",
+      "Core update failure rollback is covered by CoreRuntimeManager fake-bridge tests and Go option tests; a live core failure injection was not performed.",
+      "Cold process restoration and VPN-enabled restart behavior remain unverified."
+    ],
+    "resultFile": "android/app/build/outputs/androidTest-results/connected/debug/TEST-Redmi Note 8 Pro - 16.xml"
+  },
+  "remaining": [
+    "Full MainActivity and running-core cold restart restoration of selected general overrides.",
+    "Live Mihomo failure injection for application CoreOptions rollback; unit/Go coverage passes but device fault injection was not performed.",
+    "The historic 2733 ms versus 3969 ms comparison still needs same-device, same-node, same-URL A/B/A reproduction; the Provider timeout fix and local CoreOptions test do not identify its cause."
+  ],
+  "cleanup": {
+    "kclashPackageInstalledAfterTest": false,
+    "flutterReferencePackageUntouched": "com.follow.clash 0.9.3/code2026112401 remained installed and its normal settings were only read",
+    "workspaceRoot1Yaml": {
+      "readAsAuthorizedLocalFixture": true,
+      "sha256BeforeAndAfter": "7536dd03c962ad47a076feea860c3a573f338024e60c2853685d91b18aeee8d7",
+      "changed": false,
+      "uploaded": false
+    },
+    "formalProfileRowsAndFilesChanged": false,
+    "temporaryProfileRemoved": true,
+    "coreStateAfterTest": "STOPPED",
+    "vpnEnabledDuringRuntimeProbe": false,
+    "temporaryDeviceInputRemoved": true
+  },
+  "release": {
+    "requested": false,
+    "published": false
+  },
+  "sourceParityAudit": {
+    "result": "the reviewed Flutter application probe update path is now matched; no additional confirmed global-settings divergence was found in this slice",
+    "deviceObservation": "Redmi Note 8 Pro running com.follow.clash 0.9.3/code2026112401 showed delay timeout 8000 ms and no selected general override rows; the reference app was read-only.",
+    "verifiedSemantics": [
+      "Flutter CoreOptions always carries the application test URL and delay timeout for manual delay tests; test-url is intentionally excluded from generated override YAML. Kotlin also keeps the selected global test URL as the core fallback/manual probe target.",
+      "Flutter listens to both updateParams and setupPatch. A general override-key-set change reaches the setup path; Kotlin also uses full profile application when the selected override set changes, allowing deselected values to be restored from the profile source.",
+      "Legacy Flutter Drift migration remains outside the Kotlin data boundary; no cross-app database migration was attempted.",
+      "Flutter serializes CoreOptions inside UpdateParams.options on a running core update. Kotlin now uses the same nested wire shape for test-url, delay-test-timeout and skip-cert-verify; Redmi live-core loopback acceptance proved URL/timeout changes take effect without restarting the service session."
+    ],
+    "remaining": [
+      "Cold-process restoration of selected general overrides and settings.",
+      "Live core failure injection for nested CoreOptions rollback; rollback logic is unit-tested with a fake bridge.",
+      "Historical 2733 ms versus 3969 ms values still lack a same-device, same-node A/B/A reproduction."
+    ],
+    "referenceSource": "../acceptance-artifacts/flutter-reference-be847366/lib/models/clash_config.dart, lib/models/core.dart, lib/providers/state/system.dart, lib/manager/core_manager.dart"
+  },
+  "preferencePersistenceProcessCheck": {
+    "device": "Redmi Note 8 Pro / wsvwypiz7xwslvl7 / API 36",
+    "result": "passed-target-app-process-restart",
+    "phases": [
+      "The first instrumentation invocation backed up actual GeneralSettings in the app-private noBackupFilesDir and wrote a unique core override URL, 500 ms timeout, and selection keys.",
+      "The host captured the target app PID, issued am force-stop against com.lonnnnnng.flclash itself, and confirmed the old PID was gone.",
+      "A second instrumentation invocation started a new target app PID, read and verified the persisted values, restored the exact original settings in finally, and deleted the private snapshot."
+    ],
+    "restoredOriginalSettings": true,
+    "temporarySnapshotRemoved": true,
+    "formalProfilesTouched": false,
+    "coreState": "STOPPED",
+    "vpnEnabled": false,
+    "temporaryKclashPackagesRemoved": true,
+    "flutterReferenceUntouched": "com.follow.clash 0.9.3/code2026112401",
+    "limitation": "This verifies GeneralSettings SharedPreferences across an actual target-app process stop and relaunch. It did not cold-launch MainActivity or restore an active Mihomo/VPN session.",
+    "resultFile": "Two direct am instrument invocations passed; first/second target process PIDs are recorded above.",
+    "targetAppPidBeforeAfter": {
+      "before": "1579",
+      "after": "1807",
+      "changed": true
+    }
+  }
+}

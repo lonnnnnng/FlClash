@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.lonnnnnng.flclash.service.GeneralCoreOverrideKey
 import com.lonnnnnng.flclash.service.GeneralSettings
 
 /** 作者 long：常规设置逐项保存并接真实系统/核心行为；输入失败保持草稿，不把未落盘值显示成已生效。 */
@@ -31,6 +32,10 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
     var ua by rememberSaveable { mutableStateOf(false) }
     var hosts by rememberSaveable { mutableStateOf(false) }
     fun save(value: GeneralSettings) { onSave(value) { if (!it) error = "设置未能应用，请检查当前状态后重试" else error = null } }
+    fun setOverride(key: GeneralCoreOverrideKey, enabled: Boolean) {
+        val keys = settings.generalOverrideKeys.toMutableSet().apply { if (enabled) add(key) else remove(key) }
+        save(settings.copy(generalOverrideKeys = keys))
+    }
     Column(Modifier.fillMaxWidth().testTag("page_general"), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         if (saving || lanBusy) GeneralSaveProgress(if (lanBusy) tr("正在更新局域网设置…") else tr("正在保存并应用常规设置…"))
         error?.let { Text(tr(it), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("general_error")) }
@@ -70,6 +75,26 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
             GeneralOpenRow("Hosts", tr("{0} 项", settings.hosts.size), "general_hosts", busy) { hosts = true }
             GeneralToggle(tr("追加系统 DNS"), settings.appendSystemDns, busy, "general_system_dns") { save(settings.copy(appendSystemDns = it)) }
         }
+        GeneralSection(tr("通用覆盖")) {
+            GeneralCoreOverrideUrl(settings.testUrl, GeneralCoreOverrideKey.TEST_URL in settings.generalOverrideKeys, busy,
+                { setOverride(GeneralCoreOverrideKey.TEST_URL, it) }, { editing = "testUrl" })
+            GeneralCoreOverrideToggle(tr("统一延迟"), GeneralCoreOverrideKey.UNIFIED_DELAY in settings.generalOverrideKeys,
+                settings.unifiedDelay, busy, "general_override_unified_delay",
+                { setOverride(GeneralCoreOverrideKey.UNIFIED_DELAY, it) }, { save(settings.copy(unifiedDelay = it)) })
+            GeneralCoreOverrideToggle(tr("TCP 并发"), GeneralCoreOverrideKey.TCP_CONCURRENT in settings.generalOverrideKeys,
+                settings.tcpConcurrent, busy, "general_override_tcp_concurrent",
+                { setOverride(GeneralCoreOverrideKey.TCP_CONCURRENT, it) }, { save(settings.copy(tcpConcurrent = it)) })
+            GeneralCoreOverrideToggle("IPv6", GeneralCoreOverrideKey.IPV6 in settings.generalOverrideKeys,
+                settings.ipv6, busy, "general_override_ipv6",
+                { setOverride(GeneralCoreOverrideKey.IPV6, it) }, { save(settings.copy(ipv6 = it)) })
+            GeneralCoreOverrideToggle(tr("GeoData 加载器"), GeneralCoreOverrideKey.GEODATA_LOADER in settings.generalOverrideKeys,
+                settings.geodataLoader == "memconservative", busy, "general_override_geodata_loader",
+                { setOverride(GeneralCoreOverrideKey.GEODATA_LOADER, it) },
+                { save(settings.copy(geodataLoader = if (it) "memconservative" else "standard")) },
+                enabledText = tr("内存保守"), disabledText = tr("标准"))
+        }
+        Text(tr("未启用的核心字段沿用配置正文；测速地址用作代理组未单独设置时的探测地址。"),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         GeneralSection(tr("日志")) {
             GeneralOpenRow(tr("日志等级"), settings.logLevel, "general_log_level", busy) { editing = "logLevel" }
             GeneralToggle(tr("收集核心日志"), settings.openLogs, busy, "general_logs") { save(settings.copy(openLogs = it)) }
@@ -85,9 +110,12 @@ internal fun GeneralSettingsPanel(onOpenOnDemand: () -> Unit, settings: GeneralS
                 if (field == "timeout") settings.delayTestTimeout.toString() else settings.logLevel, busy, saving, { editing = null }) { value, done ->
                 onSave(if (field == "timeout") settings.copy(delayTestTimeout = value.toInt()) else settings.copy(logLevel = value), done)
             }
-        } else GeneralTextEditor(field, when (field) { "secret" -> settings.controllerSecret; "username" -> settings.username; else -> settings.password }, busy,
-            saving, onDismiss = { editing = null }) { value, done -> onSave(when (field) {
-                "secret" -> settings.copy(controllerSecret = value); "username" -> settings.copy(username = value); else -> settings.copy(password = value)
+        } else GeneralTextEditor(field, when (field) { "secret" -> settings.controllerSecret; "username" -> settings.username; "testUrl" -> settings.testUrl; else -> settings.password }, busy,
+            saving, onDismiss = { editing = null }, validate = { value ->
+                if (field == "testUrl") runCatching { settings.copy(testUrl = value).validated() }.exceptionOrNull()?.message else null
+            }) { value, done -> onSave(when (field) {
+                "secret" -> settings.copy(controllerSecret = value); "username" -> settings.copy(username = value)
+                "testUrl" -> settings.copy(testUrl = value); else -> settings.copy(password = value)
             }, done) }
     }
 }
@@ -122,6 +150,37 @@ private fun GeneralOpenRow(title: String, subtitle: String?, tag: String, busy: 
     Row(Modifier.fillMaxWidth().clickable(enabled = !busy, onClick = onOpen).testTag(tag).padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) { Text(title); subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2) } }
         Icon(Icons.Outlined.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun GeneralCoreOverrideUrl(value: String, selected: Boolean, busy: Boolean,
+    onSelected: (Boolean) -> Unit, onEdit: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(selected, onSelected, enabled = !busy, modifier = Modifier.testTag("general_override_test_url_enabled"))
+        Column(Modifier.weight(1f).then(if (selected) Modifier.clickable(enabled = !busy, onClick = onEdit) else Modifier).padding(vertical = 8.dp)) {
+            Text(tr("测速地址"))
+            if (selected) Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
+        }
+        if (selected) IconButton(onEdit, enabled = !busy, modifier = Modifier.testTag("general_override_test_url_edit")) {
+            Icon(Icons.Outlined.Edit, contentDescription = tr("编辑测速地址"))
+        }
+    }
+}
+
+@Composable
+private fun GeneralCoreOverrideToggle(title: String, selected: Boolean, value: Boolean, busy: Boolean, tag: String,
+    onSelected: (Boolean) -> Unit, onValue: (Boolean) -> Unit, enabledText: String? = null, disabledText: String? = null) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(selected, onSelected, enabled = !busy, modifier = Modifier.testTag("${tag}_enabled"))
+        Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
+            Text(title)
+            if (selected && enabledText != null && disabledText != null) {
+                Text(if (value) enabledText else disabledText, style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        if (selected) Switch(value, onValue, enabled = !busy, modifier = Modifier.testTag("${tag}_value"))
     }
 }
 
@@ -175,15 +234,17 @@ private fun GeneralPortsEditor(settings: GeneralSettings, busy: Boolean, saving:
 
 @Composable
 private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, saving: Boolean, onDismiss: () -> Unit,
+    validate: (String) -> String? = { null },
     onSave: (String, (Boolean) -> Unit) -> Unit) {
-    val label = when (field) { "secret" -> tr("控制器密钥"); "username" -> tr("账号"); "password" -> tr("密码"); else -> "User-Agent" }
+    val label = when (field) { "secret" -> tr("控制器密钥"); "username" -> tr("账号"); "password" -> tr("密码"); "testUrl" -> tr("测速地址"); else -> "User-Agent" }
+    val maxLength = if (field == "testUrl") 4096 else 1024
     var value by rememberSaveable(field) { mutableStateOf(initial) }
     var revealed by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() }, title = { Text(label) }, text = {
         Column { if (saving) GeneralSaveProgress(tr("正在保存并应用常规设置…"))
-            OutlinedTextField(value, { if (it.length <= 1024 && it.none(Char::isISOControl)) value = it }, enabled = !busy, singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = if (field in listOf("secret", "password")) KeyboardType.Password else KeyboardType.Text),
+            OutlinedTextField(value, { if (it.length <= maxLength && it.none(Char::isISOControl)) value = it }, enabled = !busy, singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = when (field) { "secret", "password" -> KeyboardType.Password; "testUrl" -> KeyboardType.Uri; else -> KeyboardType.Text }),
             visualTransformation = if (field in listOf("secret", "password") && !revealed) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = { if (field in listOf("secret", "password")) IconButton({ revealed = !revealed }) { Icon(Icons.Outlined.Visibility, null) } },
             modifier = Modifier.fillMaxWidth().testTag("general_text_input"))
@@ -191,7 +252,10 @@ private fun GeneralTextEditor(field: String, initial: String, busy: Boolean, sav
         }
     }, confirmButton = { TextButton({
         if (field == "ua" && value.isBlank()) { error = "请输入 User-Agent"; return@TextButton }
-        onSave(value.trim()) { if (it) onDismiss() else error = "保存失败，输入已保留，请重试" }
+        val trimmed = value.trim()
+        val validationError = validate(trimmed)
+        if (validationError != null) { error = validationError; return@TextButton }
+        onSave(trimmed) { if (it) onDismiss() else error = "保存失败，输入已保留，请重试" }
     }, enabled = !busy, modifier = Modifier.testTag("general_text_save")) { Text(tr("保存")) } }, dismissButton = { TextButton(onDismiss, enabled = !busy) { Text(tr("取消")) } })
 }
 

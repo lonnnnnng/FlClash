@@ -10,6 +10,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.service.GeneralSettings
+import com.lonnnnnng.flclash.service.GeneralCoreOverrideKey
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import org.junit.Assert.*
 import org.junit.Rule
@@ -52,6 +53,8 @@ class GeneralSettingsInstrumentedTest {
         compose.onNodeWithTag("general_controller").performScrollTo().performClick()
         compose.runOnIdle { assertEquals(32, value.controllerSecret.length) }
         capture("general_dark_inbound")
+        compose.onNodeWithTag("general_controller").performScrollTo().performClick()
+        compose.runOnIdle { assertFalse(value.externalController); assertEquals("", value.controllerSecret) }
         compose.onNodeWithTag("general_timeout").performScrollTo().performClick()
         compose.onNodeWithTag("general_option_1000").performClick()
         compose.onNodeWithTag("general_only_proxy").performScrollTo().performClick()
@@ -102,6 +105,32 @@ class GeneralSettingsInstrumentedTest {
         capture("general_user_agents_light")
         compose.onNodeWithTag("general_ua_default").performClick()
         compose.runOnIdle { assertNull(value.userAgent) }
+    }
+
+    @Test fun optionalCoreOverridesKeepSelectionSeparateFromValueAndEditProbeUrl() {
+        var value by mutableStateOf(GeneralSettings())
+        compose.setContent { KClashTheme { ProfileEditorPage({}, { Text("常规") }, {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                GeneralSettingsPanel({}, value, onSave = { next, done -> value = next.prepared(); done(true) })
+            }
+        }) } }
+        compose.onNodeWithTag("general_override_unified_delay_enabled").performScrollTo().performClick()
+        compose.onNodeWithTag("general_override_unified_delay_value").performScrollTo().performClick()
+        compose.onNodeWithTag("general_override_geodata_loader_enabled").performScrollTo().performClick()
+        compose.onNodeWithTag("general_override_geodata_loader_value").performScrollTo().performClick()
+        compose.runOnIdle {
+            assertTrue(GeneralCoreOverrideKey.UNIFIED_DELAY in value.generalOverrideKeys)
+            assertFalse(value.unifiedDelay)
+            assertEquals("standard", value.geodataLoader)
+        }
+        compose.onNodeWithTag("general_override_test_url_enabled").performScrollTo().performClick()
+        compose.onNodeWithTag("general_override_test_url_edit").performClick()
+        compose.onNodeWithTag("general_text_input").performTextReplacement("https://probe.example/check")
+        compose.onNodeWithTag("general_text_save").performClick()
+        compose.runOnIdle {
+            assertTrue(GeneralCoreOverrideKey.TEST_URL in value.generalOverrideKeys)
+            assertEquals("https://probe.example/check", value.testUrl)
+        }
     }
 
     private fun capture(name: String) {

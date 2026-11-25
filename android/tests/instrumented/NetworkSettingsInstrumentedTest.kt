@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import com.lonnnnnng.flclash.service.NetworkSettings
 import com.lonnnnnng.flclash.service.VpnSettingsState
+import com.lonnnnnng.flclash.service.models.AccessControlProps
+import com.lonnnnnng.flclash.service.models.VpnOptions
 import com.lonnnnnng.flclash.ui.theme.KClashTheme
 import java.io.ByteArrayOutputStream
 import org.junit.Assert.*
@@ -21,6 +23,20 @@ import org.junit.Test
 
 class NetworkSettingsInstrumentedTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun effectiveVpnParameterChangesShowExplicitRestartAction() {
+        val applied = VpnOptions(true, 7890, false, false, AccessControlProps(), false, true,
+            emptyList(), "mips", emptyList(), 9000, "cubic")
+        val desired = applied.copy(stack = "system", mtu = 1400)
+        val state = VpnSettingsState(enabled = true, appliedEnabled = true, appliedOptions = applied, desiredOptions = desired)
+        var restarts = 0
+        compose.setContent { KClashTheme { ProfileEditorPage({}, { Text("网络") }, {
+            NetworkSettingsPanel(NetworkSettings(), state, false, {}, { restarts++ }, { _, done -> done(true) })
+        }) } }
+        compose.onNodeWithTag("network_restart").assertIsDisplayed().performClick()
+        compose.onNodeWithText("VPN 设置已变更，重启服务后生效").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(1, restarts); assertTrue(state.restartRequired); assertTrue(state.enabled) }
+    }
 
     @Test fun networkSectionsSaveOptionsAndRenderBothThemes() {
         assertPortraitDefaultFontConfiguration()

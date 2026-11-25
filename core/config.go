@@ -186,7 +186,7 @@ func applyConfig(params *SetupParams) error {
 
 	setTestURL(params.TestURL)
 	if params.TestTimeoutMs > 0 {
-		provider.SetDefaultTestTimeout(time.Duration(params.TestTimeoutMs) * time.Millisecond)
+		setDefaultProviderTestTimeout(time.Duration(params.TestTimeoutMs) * time.Millisecond)
 	}
 	skipCertVerify.Store(params.SkipCertVerify)
 	cfg, err := loadSetupConfig(params)
@@ -222,6 +222,18 @@ func updateConfig(params *UpdateParams) error {
 	defer configMu.Unlock()
 	if currentConfig == nil {
 		return errConfigNotApplied
+	}
+	if params.Options != nil {
+		// 作者 long：应用级测速目标与超时允许在服务运行中变化，不必重建代理组或重跑订阅脚本。
+		if params.Options.TestURL != nil {
+			setTestURL(*params.Options.TestURL)
+		}
+		if params.Options.DelayTestTimeoutMs != nil && *params.Options.DelayTestTimeoutMs > 0 {
+			setDefaultProviderTestTimeout(time.Duration(*params.Options.DelayTestTimeoutMs) * time.Millisecond)
+		}
+		if params.Options.SkipCertVerify != nil {
+			skipCertVerify.Store(*params.Options.SkipCertVerify)
+		}
 	}
 
 	general := currentConfig.General

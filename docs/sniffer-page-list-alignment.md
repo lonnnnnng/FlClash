@@ -1,5 +1,15 @@
 # 域名嗅探页面、列表草稿与真实转场
 
+## 2026-11-25 KUI-VIS-101 有内容子页与连续路线接续（POCO）
+
+在当前源码快照的 POCO F2 Pro/API36 上重建独立 Motion/Test APK，真实 MainActivity 的 Sniffer 路线复跑2次，最终带截图批次1/1：配置→CUSTOM→更多→域名嗅探→HTTP→端口；输入两条端口，走搜索/IME、快速系统返回、目标关闭保存回执、YAML返回保存、退出重开和 Activity 重建。Room回读两条端口、`override-destination=false` 与 `enable=false`；正式配置行/正文、脚本、偏好和选择保持，临时行/正文被 finally 清除，核心保持STOPPED。最终12张1080×2400截图的全部分片、PNG签名、尺寸、字节数和SHA已核验并目视；单独86.508秒连续录屏只作为自然交互记录，不作帧率证据。
+
+另外补了真实 MainActivity 中 DNS 非空字段路线1/1：打开监听地址编辑、真实键盘输入、切换 fake-ip、在 Nameserver 添加 `9.9.9.9`，Activity重建时保留未保存草稿，保存后再重建读回；最后精确恢复DNS与外观偏好，配置为空、没有活动选择、核心STOPPED。9张1080×2400截图完整性校验并目视。此批同时覆盖了一个有内容详情页和一个有内容输入/列表子页；没有为缺少实网内容的空配置页面伪造节点或订阅。
+
+安装隔离 Flutter `full.dev` 参考后停在要求手工复述免责声明的确认页；没有代替用户输入/接受，完整 Flutter MainActivity 连续路线仍未完成。已有 Flutter 静态/隔离组件截图只作为历史局部参考；本批不声称当前两个有内容状态与 Flutter 同态或逐帧视觉等价。原版 `com.follow.clash` 未改动，验收结束已恢复至前台。正式 KClash 0.1.21与Flutter 0.9.4安装信息保持，Motion/Test/Performance隔离包卸载，设备沙箱内本地配置副本随包卸载，未上传公网，服务/TUN不存在。
+
+测试来自 `HEAD 8a8c0331` 加当时已有的未提交工作树状态，不能把APK绑定成干净提交制品。Motion/Test构建成功；本批没有执行JVM、Release/R8产品包、完整Lint或正式签名包验收。测试日志、APK哈希、截图清单、连续录像及数据保护见[KUI-VIS-101验收 JSON](acceptance/sniffer-continuation-poco-20261125.json)和本机附件`../../acceptance-artifacts/sniffer-continuation-poco-20261125/natural-route-final/`。
+
 ## 2026-11-23 KUI-VIS-087 真实父子路由复验
 
 当前提交 `0e1d9b5` 的 Motion 与 AndroidTest APK 在 POCO F2 Pro/API36 上重新运行 `MainSnifferNaturalInstrumentedTest#snifferPortsSaveReopenAndRapidBackUseRealNavigation` 两次通过，最终录制批次 1/1。真实 MainActivity 路径覆盖配置列表、临时 CUSTOM、更多、Sniffer、HTTP、端口、IME 搜索、快速返回、独立保存、退出重开、Activity 重建和 Room 回读。原有配置行/正文/脚本/偏好/选择保持，临时 profile/body 清除，runtime 停止。12 张截图分片完整性和 PNG SHA/尺寸核验通过；56.2 秒自然交互录像设备端 SHA 回读一致。

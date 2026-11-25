@@ -33,7 +33,12 @@ internal fun DashboardVpnCard(
             Switch(state.enabled, onCheckedChange = null, enabled = !busy)
         }
         if (state.restartRequired) {
-            Text(if (state.appliedEnabled == true) tr("重启后停用 VPN，当前仍在接管流量") else tr("重启后启用 VPN，当前仅运行本地代理"),
+            val hint = when {
+                state.appliedEnabled == true && !state.enabled -> tr("重启后停用 VPN，当前仍在接管流量")
+                state.appliedEnabled == false && state.enabled -> tr("重启后启用 VPN，当前仅运行本地代理")
+                else -> tr("VPN 参数已变化，重启服务后生效")
+            }
+            Text(hint,
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.testTag("vpn_restart_hint"))
             TextButton(onClick = onRestart, enabled = !busy, modifier = Modifier.testTag("vpn_restart")) { Text(tr("重启生效")) }

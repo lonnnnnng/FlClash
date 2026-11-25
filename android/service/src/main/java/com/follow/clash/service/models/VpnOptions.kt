@@ -33,6 +33,30 @@ data class VpnOptions(
     val routeAll: Boolean = routeAddress.isEmpty(),
 )
 
+/** 作者 long：仅比较交给 Android Builder 的有效字段，系统代理关闭后的残留端口和应用排序不触发无效重启提示。 */
+fun VpnOptions.effective(): VpnOptions {
+    if (!enable) return copy(enable = false, port = 0, ipv6 = false, dnsHijacking = false,
+        accessControlProps = AccessControlProps(), allowBypass = false, systemProxy = false,
+        bypassDomain = emptyList(), stack = "", routeAddress = emptyList(), mtu = 0,
+        congestionController = null, routeAll = false)
+    val access = accessControlProps
+    val selected = if (!access.enable) AccessControlProps() else access.copy(
+        acceptList = if (access.mode == AccessControlMode.ACCEPT_SELECTED) access.acceptList else emptyList(),
+        rejectList = if (access.mode == AccessControlMode.REJECT_SELECTED) access.rejectList else emptyList(),
+        sort = AccessSortType.NONE,
+        isFilterSystemApp = true,
+        isFilterNonInternetApp = true,
+    )
+    return copy(
+        port = if (systemProxy) port else 0,
+        bypassDomain = if (systemProxy) bypassDomain else emptyList(),
+        routeAddress = if (routeAll) emptyList() else routeAddress,
+        accessControlProps = selected,
+        mtu = tunMtu,
+        congestionController = congestionController.orEmpty(),
+    )
+}
+
 private const val DEFAULT_TUN_MTU = 9000
 
 // establish() rejects an MTU above 65535, and below 1280 the kernel drops the

@@ -3,6 +3,16 @@ package com.lonnnnnng.flclash.common
 /** 作者 long：固定文案与Android资源对应；按字面长度优先匹配完整错误模板，禁止对任意用户字符串逐词替换。 */
 internal object AppTextCatalog {
     val ids: Map<String, Int> by lazy { buildMap {
+        put("VPN 参数已变化，重启服务后生效", R.string.text_afbf6097a077)
+        put("VPN 设置已变更，重启服务后生效", R.string.text_665bd507aed6)
+        put("测速地址", R.string.text_a8105f8a96b5)
+        put("统一延迟", R.string.text_3ee4133f3aa5)
+        put("TCP 并发", R.string.text_6b82bc37bf32)
+        put("GeoData 加载器", R.string.text_b5ca13522433)
+        put("内存保守", R.string.text_a0dd364da502)
+        put("标准", R.string.text_544fac400db7)
+        put("未启用的核心字段沿用配置正文；测速地址用作代理组未单独设置时的探测地址。", R.string.text_d05b4a502dbf)
+        put("编辑测速地址", R.string.text_5b3f857f5fbd)
         put("正在识别链接…", R.string.text_dd44ca603959)
         put("玻璃效果", R.string.visual_glass_effect)
         put("age 私钥", R.string.visual_age_identity)

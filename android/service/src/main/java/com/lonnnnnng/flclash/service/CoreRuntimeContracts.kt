@@ -8,6 +8,7 @@ import com.lonnnnnng.flclash.core.CoreConnection
 import com.lonnnnnng.flclash.core.CoreOutboundMode
 import com.lonnnnnng.flclash.core.CoreEvent
 import com.lonnnnnng.flclash.core.CoreEventFlowStats
+import com.lonnnnnng.flclash.core.CoreGeneralConfigUpdate
 import com.lonnnnnng.flclash.core.CoreProbeResult
 import com.lonnnnnng.flclash.core.CoreTraffic
 import com.lonnnnnng.flclash.core.ProxyDelay
@@ -370,10 +371,14 @@ interface CoreRuntimeBridge {
     suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) = setupConfig(selectedMap)
     suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long) =
         setupConfig(selectedMap, skipCertVerify)
+    suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long, testUrl: String) =
+        setupConfig(selectedMap, skipCertVerify, testTimeoutMs)
 
     suspend fun getConfiguredMode(path: String): CoreOutboundMode
 
     suspend fun updateMode(mode: CoreOutboundMode)
+    suspend fun updateLogLevel(level: String) { error("核心未提供日志等级热更新") }
+    suspend fun updateGeneralConfig(update: CoreGeneralConfigUpdate) { error("核心未提供常规设置热更新") }
 
     suspend fun getProxyGroups(): ProxyGroupsSnapshot
 
@@ -458,10 +463,14 @@ class NativeCoreRuntimeBridge(
     override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean) = coreBridge.setupConfig(selectedMap, skipCertVerify = skipCertVerify)
     override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long) =
         coreBridge.setupConfig(selectedMap, skipCertVerify = skipCertVerify, testTimeoutMs = testTimeoutMs)
+    override suspend fun setupConfig(selectedMap: Map<String, String>, skipCertVerify: Boolean, testTimeoutMs: Long, testUrl: String) =
+        coreBridge.setupConfig(selectedMap, testUrl = testUrl, skipCertVerify = skipCertVerify, testTimeoutMs = testTimeoutMs)
 
     override suspend fun getConfiguredMode(path: String): CoreOutboundMode = coreBridge.getConfiguredMode(path)
 
     override suspend fun updateMode(mode: CoreOutboundMode) = coreBridge.updateMode(mode)
+    override suspend fun updateLogLevel(level: String) = coreBridge.updateLogLevel(level)
+    override suspend fun updateGeneralConfig(update: CoreGeneralConfigUpdate) = coreBridge.updateGeneralConfig(update)
 
     override suspend fun getProxyGroups(): ProxyGroupsSnapshot = coreBridge.getProxyGroups()
 

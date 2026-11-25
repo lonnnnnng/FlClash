@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="text_afbf6097a077" formatted="false">"VPN parameters changed. Restart the service to apply them."</string>
+    <string name="text_665bd507aed6" formatted="false">"VPN settings changed. Restart the service to apply them."</string>
+    <string name="text_a8105f8a96b5" formatted="false">"Test URL"</string>
+    <string name="text_3ee4133f3aa5" formatted="false">"Unified delay"</string>
+    <string name="text_6b82bc37bf32" formatted="false">"TCP concurrent"</string>
+    <string name="text_b5ca13522433" formatted="false">"GeoData loader"</string>
+    <string name="text_a0dd364da502" formatted="false">"Memory conservative"</string>
+    <string name="text_544fac400db7" formatted="false">"Standard"</string>
+    <string name="text_d05b4a502dbf" formatted="false">"Unset core overrides inherit values from the profile; the test URL is used when a proxy group has no URL of its own."</string>
+    <string name="text_5b3f857f5fbd" formatted="false">"Edit test URL"</string>
     <string name="text_22dbcd7c38fc" formatted="false">"DNS details"</string>
     <!-- 作者 long：中英界面文案共用稳定资源键；花括号参数由 AppText 一次替换，避免参数内容被再次解释。 -->
     <string name="text_000d1ddc0117" formatted="false">"WebDAV password cannot be empty"</string>
@@ -87,7 +97,6 @@
     <string name="text_0a5f9a892960" formatted="false">"Last updated"</string>
     <string name="text_0a6b179fd07a" formatted="false">"Failed to restore network settings. The service has stopped. Save settings again before starting."</string>
     <string name="text_0a98a48eaaac" formatted="false">"Test connection"</string>
-    <string name="text_0ace8108a0b8" formatted="false">"The icon set list has changed. Please reorder it again"</string>
     <string name="text_0aefe516aa7a" formatted="false">"{0} issues"</string>
     <string name="text_0afd17980ac8" formatted="false">"Duplicate provider statistics"</string>
     <string name="text_0b1a21ffd1f8" formatted="false">"The core is changing state"</string>
@@ -152,7 +161,6 @@
     <string name="text_13542b37636e" formatted="false">"Separate multiple expressions with backticks"</string>
     <string name="text_13572dfb9151" formatted="false">"Proxy chaining · {0}"</string>
     <string name="text_137d65bfd0f0" formatted="false">"Block STUN"</string>
-    <string name="text_138cbb01f0ea" formatted="false">"No icon sets"</string>
     <string name="text_13d0e68e0478" formatted="false">"VPN revoked by the system"</string>
     <string name="text_13d61fea9f17" formatted="false">"Preview"</string>
     <string name="text_145219e726b8" formatted="false">"Hidden"</string>
@@ -238,7 +246,6 @@
     <string name="text_1cf09da87bb9" formatted="false">"Enter a non-negative integer"</string>
     <string name="text_1cf11a4d597c" formatted="false">"Local proxies"</string>
     <string name="text_1d0fd5f9336d" formatted="false">"Tabs"</string>
-    <string name="text_1d11498b6c18" formatted="false">"The icon set is too large"</string>
     <string name="text_1d1be8275f38" formatted="false">"Save failed. Your input is preserved. Check the proxy format, or reopen the profile if it has changed."</string>
     <string name="text_1d6b1b062c8b" formatted="false">"The target is no longer valid or would create a cycle. Please select another."</string>
     <string name="text_1d82c44f8c13" formatted="false">"Failed to stop the core"</string>
@@ -323,7 +330,6 @@
     <string name="text_27a64028992d" formatted="false">"Could not replace the profile file. The original profile has been kept."</string>
     <string name="text_27aceef129d1" formatted="false">"Long press to reorder"</string>
     <string name="text_27e2d9e2d924" formatted="false">"Allowlist"</string>
-    <string name="text_27f3337ca7b1" formatted="false">"The icon set has been deleted"</string>
     <string name="text_280da21fe70d" formatted="false">"Memory release requested. Memory data refreshed."</string>
     <string name="text_280e79b5c2c6" formatted="false">" (can be kept; fix before running)"</string>
     <string name="text_281ce960e4c5" formatted="false">"URL profile"</string>
@@ -505,12 +511,9 @@
     <string name="text_3a47fe70da82" formatted="false">"Inbound"</string>
     <string name="text_3a92fd9de827" formatted="false">"Could not read local proxies. Restore a valid backup and try again."</string>
     <string name="text_3aadb5ebbbee" formatted="false">"Memory usage cannot be negative"</string>
-    <string name="text_3adc22a8829a" formatted="false">"The icon set has changed. Please try again"</string>
     <string name="text_3added0ce3f8" formatted="false">"Global DNS contains unsupported fields"</string>
-    <string name="text_3ae28b67cbae" formatted="false">"Invalid icon set metadata"</string>
     <string name="text_3aef12a27fc5" formatted="false">"Could not check for updates. Check your network and try again."</string>
     <string name="text_3aef878f17b6" formatted="false">"Sort profiles"</string>
-    <string name="text_3b3f68e320f5" formatted="false">"Operation failed. Check the icon set JSON, name, or network and try again."</string>
     <string name="text_3b63bcf680d5" formatted="false">"Filter expressions already used in profiles will be kept."</string>
     <string name="text_3b6fefc50feb" formatted="false">"hours"</string>
     <string name="text_3b96b8a6f50b" formatted="false">"Profile file is empty or exceeds 8 MiB"</string>
@@ -757,18 +760,15 @@
     <string name="text_570d60206779" formatted="false">"Saving"</string>
     <string name="text_572c01ee2bf2" formatted="false">"IP address"</string>
     <string name="text_572cf45ba436" formatted="false">"Back"</string>
-    <string name="text_5730e5f2aadc" formatted="false">"Invalid icon set field"</string>
     <string name="text_5741b5f027c8" formatted="false">"Duplicate proxy or proxy group name: "</string>
     <string name="text_575059b934f6" formatted="false">"Proxy chain"</string>
     <string name="text_576d81bb0631" formatted="false">"Import"</string>
     <string name="text_577b9b9c5b99" formatted="false">"{0} rules need attention. Edit their targets or resource references to fix them."</string>
-    <string name="text_57833b0aa1ba" formatted="false">"Invalid icon set timestamp"</string>
     <string name="text_57a3d82cc458" formatted="false">"Unsupported editor draft state policy"</string>
     <string name="text_57a9c961e004" formatted="false">"Style: {0}"</string>
     <string name="text_57d2e79be363" formatted="false">"The script list has changed. Sort it again."</string>
     <string name="text_57e88a43ef2b" formatted="false">"Local file"</string>
     <string name="text_57eb642456cb" formatted="false">"Reload the app list. If the system blocks access, allow it in app settings first."</string>
-    <string name="text_581bf439599d" formatted="false">"The icon set contains no valid icons"</string>
     <string name="text_58232954944d" formatted="false">"Download backup"</string>
     <string name="text_582b5c8cda6b" formatted="false">"Discard option changes\?"</string>
     <string name="text_5831995e457c" formatted="false">"Unsaved filter and setting changes will be lost."</string>
@@ -931,7 +931,6 @@
     <string name="text_6a113a5edfc9" formatted="false">"Subscription URL"</string>
     <string name="text_6a1cb5cce225" formatted="false">"Check that the core is still running, then test the current route again."</string>
     <string name="text_6a77bad5e7af" formatted="false">"Hash by inbound user"</string>
-    <string name="text_6a94c80f9da8" formatted="false">"Icon set URL"</string>
     <string name="text_6a9b31b7efc5" formatted="false">"Proxy validation failed. Refresh the proxy list and try again."</string>
     <string name="text_6aa27f14bff1" formatted="false">"Failed to load"</string>
     <string name="text_6aa8be418850" formatted="false">"Enter the number of hours"</string>
@@ -1069,7 +1068,6 @@
     <string name="text_79464200f2c3" formatted="false">"By name"</string>
     <string name="text_794b8daa9726" formatted="false">"Connection status: {0}"</string>
     <string name="text_798b90e687c6" formatted="false">"Enter a route in IP/prefix-length format"</string>
-    <string name="text_79954992ecaa" formatted="false">"The backup is missing icon sets"</string>
     <string name="text_799892c5543e" formatted="false">"Remote destination"</string>
     <string name="text_79a02937e74d" formatted="false">"App (excluding core runtime)"</string>
     <string name="text_7a24c4a24f86" formatted="false">"WebDAV credentials cleared"</string>
@@ -1140,7 +1138,6 @@
     <string name="text_82399ed67dc4" formatted="false">"DNS details"</string>
     <string name="text_823bef472b89" formatted="false">"Enter a secret when enabling the external controller"</string>
     <string name="text_8247cabad4ef" formatted="false">"The backup contains invalid paths"</string>
-    <string name="text_82c52bd76f29" formatted="false">"The icon set is missing the icons list"</string>
     <string name="text_82cd27cd2e18" formatted="false">"Add a profile to use this"</string>
     <string name="text_82cf4e351907" formatted="false">"Received a response from the target. The current proxy chain can be identified."</string>
     <string name="text_82f07089d15b" formatted="false">"Rules saved, but the result could not be verified. Try verifying again."</string>
@@ -1384,13 +1381,11 @@
     <string name="text_a0f21b6ad97a" formatted="false">"The resource editing state has changed"</string>
     <string name="text_a0f309a7536c" formatted="false">"The previous proxy save is confirmed. Please leave this page and check whether the current profile is applied."</string>
     <string name="text_a0f83e93f1c2" formatted="false">"Skip destination addresses"</string>
-    <string name="text_a13dab8702e1" formatted="false">"Import icon set"</string>
     <string name="text_a1465136f22f" formatted="false">"The backup is missing its manifest"</string>
     <string name="text_a1a42cd9b16e" formatted="false">"App settings"</string>
     <string name="text_a1b1820d5116" formatted="false">"Discard changes\?"</string>
     <string name="text_a1b9d9aea5b9" formatted="false">"Long press and drag to reorder; release to save. You can also use the move up and down buttons."</string>
     <string name="text_a1dee6659ca4" formatted="false">"The backup is missing app settings"</string>
-    <string name="text_a2299b57fc1d" formatted="false">"An icon set can contain up to 8192 items"</string>
     <string name="text_a22d18d67fd0" formatted="false">"Check all"</string>
     <string name="text_a2608220b976" formatted="false">"One DNS server per line"</string>
     <string name="text_a2c3e83f30fb" formatted="false">"The profile file is not valid UTF-8 text"</string>
@@ -1509,14 +1504,12 @@
     <string name="text_af576b290fd8" formatted="false">"Next step: {0}"</string>
     <string name="text_af9e720d25dd" formatted="false">"Invalid rule provider definition"</string>
     <string name="text_afa1394b18f2" formatted="false">"Find process"</string>
-    <string name="text_afb88719b0e8" formatted="false">"The icon set has changed. Please select it again"</string>
     <string name="text_afc4284d4c82" formatted="false">"The profile has switched. Reopen the proxy menu."</string>
     <string name="text_afc4f4a74084" formatted="false">"Rule provider not found: {0}"</string>
     <string name="text_b009946e35e1" formatted="false">"Restore profiles only"</string>
     <string name="text_b06325c5660f" formatted="false">"Direct"</string>
     <string name="text_b09180526087" formatted="false">"Lookup source"</string>
     <string name="text_b096842c67b2" formatted="false">"Word wrap"</string>
-    <string name="text_b0df1c94ba9f" formatted="false">"The icon set catalog exceeds the size limit"</string>
     <string name="text_b10018385612" formatted="false">"Finish sorting"</string>
     <string name="text_b154d597e81e" formatted="false">"Import failed. Please check the link, file format, or decryption key."</string>
     <string name="text_b1554836d21d" formatted="false">"Import from link"</string>
@@ -1645,7 +1638,6 @@
     <string name="text_c13b73f83979" formatted="false">"Extensions have been changed or deleted. Please reopen the page."</string>
     <string name="text_c15837faf6cc" formatted="false">"The core does not support Geo updates"</string>
     <string name="text_c16514974683" formatted="false">"WebDAV authentication failed. Check the username and password."</string>
-    <string name="text_c16e46bf54d9" formatted="false">"Duplicate icon set IDs"</string>
     <string name="text_c185ba92b723" formatted="false">"HTTP status, proxy chain, and core attribution are valid"</string>
     <string name="text_c1ba39ea6b79" formatted="false">"Line {0}: Must start with a provider entry"</string>
     <string name="text_c1d8cf194a1f" formatted="false">"Could not save sort order. Please try again."</string>
@@ -1715,14 +1707,12 @@
     <string name="text_c9d07210d1c0" formatted="false">"Operation completed, but draft cleanup failed. Close this window and try again."</string>
     <string name="text_c9f9e18b0623" formatted="false">"Add rule"</string>
     <string name="text_ca01bee31d19" formatted="false">"Core call failed"</string>
-    <string name="text_ca203f98cd66" formatted="false">"The icon set exceeds 2 MiB"</string>
     <string name="text_ca94fab98f1e" formatted="false">"Diagnosing…"</string>
     <string name="text_caadeb2b5d32" formatted="false">"Live connections, recent requests, DNS queries"</string>
     <string name="text_cac4a343346d" formatted="false">"Each rule must be on one line and no larger than 16 KiB"</string>
     <string name="text_cad0c598d671" formatted="false">"Profile file is empty"</string>
     <string name="text_caeb137406e6" formatted="false">"Could not read the selected file. Please select it again."</string>
     <string name="text_caf66f3b0b18" formatted="false">"Raw details: {0}"</string>
-    <string name="text_cafc03e87381" formatted="false">"Icon sets"</string>
     <string name="text_cb1e0e22c7de" formatted="false">"Custom profile"</string>
     <string name="text_cb290d55a075" formatted="false">"Draft nesting is too deep"</string>
     <string name="text_cb4237f3e648" formatted="false">"Profile content cannot be empty"</string>
@@ -1759,11 +1749,9 @@
     <string name="text_ce79f3f87d1e" formatted="false">"Waiting for the core to report DNS queries."</string>
     <string name="text_ce820ae814b9" formatted="false">"Answers"</string>
     <string name="text_cea1aafe9416" formatted="false">"Request headers"</string>
-    <string name="text_ceda743fcdb7" formatted="false">"This local icon set has no remote URL"</string>
     <string name="text_cef4c378465e" formatted="false">"Congestion control"</string>
     <string name="text_cf048cf5e66b" formatted="false">"Developer mode"</string>
     <string name="text_cf2abdf7d8fa" formatted="false">", core stopped"</string>
-    <string name="text_cf396d3ed8b6" formatted="false">"Invalid icon set catalog"</string>
     <string name="text_cf42ccc99335" formatted="false">"The backup file is empty"</string>
     <string name="text_cf46c729e1ba" formatted="false">"References to these global rules in profiles will no longer take effect."</string>
     <string name="text_cf4b615400f2" formatted="false">"Failed to restore backup"</string>
@@ -1834,7 +1822,6 @@
     <string name="text_d5330ed81331" formatted="false">"Select a rule resource"</string>
     <string name="text_d5602ae7068d" formatted="false">"Proxy definitions must be objects"</string>
     <string name="text_d5764aa845e6" formatted="false">"{0} updates failed. Previous resources were preserved."</string>
-    <string name="text_d59099a1ed38" formatted="false">"Could not read the icon set. Check the JSON and select it again."</string>
     <string name="text_d59ae02a59c9" formatted="false">"Rate limited"</string>
     <string name="text_d5aa861120dd" formatted="false">"This resource is binary and cannot be previewed or edited. Go back to import it from a file."</string>
     <string name="text_d5c0161dd185" formatted="false">"Invalid icon entry"</string>
@@ -2062,7 +2049,6 @@
     <string name="text_f1039b16b7fe" formatted="false">"Script saved, but the current profile could not be applied. Fix the script in the script library or retry from Profiles."</string>
     <string name="text_f112bc6039d0" formatted="false">"You can add up to 128 bypass domains"</string>
     <string name="text_f118c694699c" formatted="false">"Could not remove the temporary core profile file"</string>
-    <string name="text_f13f7c2fd6fa" formatted="false">"The icon set is missing icons"</string>
     <string name="text_f1655a1c5872" formatted="false">"Provider no longer exists. Refresh the list."</string>
     <string name="text_f165d22fa441" formatted="false">"WebDAV server temporarily unavailable. Try again later."</string>
     <string name="text_f1663cea1e3b" formatted="false">"Enter a profile name of up to 64 characters"</string>
@@ -2106,7 +2092,6 @@
     <string name="text_f6ef72685b6b" formatted="false">"Choose a subscription or file profile as a proxy resource"</string>
     <string name="text_f700797d4091" formatted="false">"Automatically included"</string>
     <string name="text_f70c0007f30f" formatted="false">"Linked"</string>
-    <string name="text_f78a449defcc" formatted="false">"An icon set with this name already exists"</string>
     <string name="text_f7cb4968a2fe" formatted="false">"Could not open battery optimization settings"</string>
     <string name="text_f7e1cccb6008" formatted="false">"Optional settings"</string>
     <string name="text_f81163f1ad7c" formatted="false">"The backup version is too new"</string>
@@ -2115,7 +2100,6 @@
     <string name="text_f853a70b1204" formatted="false">"Move up"</string>
     <string name="text_f864824df79b" formatted="false">"Proxy resource “{0}” is unavailable. Select a subscription or file profile again."</string>
     <string name="text_f876762b5d8b" formatted="false">"The core does not support node exit lookups"</string>
-    <string name="text_f8a20f4a5d72" formatted="false">"Invalid icon set URL"</string>
     <string name="text_f8a933dfbe14" formatted="false">"Failed to save DNS"</string>
     <string name="text_f8b23394b67d" formatted="false">"Stopping core"</string>
     <string name="text_f8d416f8f2d8" formatted="false">"Core started"</string>

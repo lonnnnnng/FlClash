@@ -66,6 +66,7 @@ class ControllerRuntimeLiveTest {
                 assertEquals(405, request(rotated.controllerSecret, "PUT", "/configs/"))
                 val disabled = rotated.copy(externalController = false)
                 manager.updateGeneralSettings(rotated, disabled).getOrThrow()
+                assertEquals("", entry.generalSettingsStore().read().controllerSecret)
                 assertPortFree()
                 assertEquals(CoreRuntimeStatus.RUNNING, manager.state.value)
                 assertEquals(runningSince, manager.runningSinceElapsedMillis.value)

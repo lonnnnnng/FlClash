@@ -416,6 +416,7 @@ object AppModule {
         networkSettingsStore = networkSettingsStore,
         globalDnsSettingsStore = globalDnsSettingsStore,
         generalSettingsStore = generalSettingsStore,
+        defaultUserAgent = "KClash/v${com.lonnnnnng.flclash.BuildConfig.VERSION_NAME} clash-verge Platform/android",
     )
 
     @Provides
