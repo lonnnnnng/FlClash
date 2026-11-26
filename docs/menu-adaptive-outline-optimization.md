@@ -42,4 +42,4 @@ KUI-VIS-102，2026-11-26，作者 long。POCO F2 Pro（`31936bb6`，API36）独�
 
 本轮Motion/Test/Performance三个自有包和8份设备采集文件已在SHA核对后回收。正式Kotlin0.1.21和原Flutter0.9.4的安装元数据及服务状态前后相同；没有打开正式Room做字节级数据检查。
 
-原始材料位于本机 `../acceptance-artifacts/menu-jank-optimization-poco-20261126/`。验收JSON：[`acceptance/menu-adaptive-outline-poco-20261126.json`](acceptance/menu-adaptive-outline-poco-20261126.json)。本轮不发版；正式Kotlin与原版Flutter安装状态保持，原`1.yaml`未读取或上传。
+原始材料位于本机 `../acceptance-artifacts/menu-jank-optimization-poco-20261126/`。验收JSON：[`acceptance/menu-adaptive-outline-poco-20261126.json`](acceptance/menu-adaptive-outline-poco-20261126.json)。本优化随后于2026-11-26随0.1.23发布；发布APK未安装手机，正式Kotlin与原版Flutter安装状态保持，原`1.yaml`未读取或上传。

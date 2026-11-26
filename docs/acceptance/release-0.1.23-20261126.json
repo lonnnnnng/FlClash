@@ -1,0 +1,105 @@
+{
+  "version": "0.1.23",
+  "versionCode": 1023,
+  "tag": "kclash-v0.1.23",
+  "sourceCommit": "5d59746444304db9f0e75242fcd1337ca28bad91",
+  "remoteTagCommit": "5d59746444304db9f0e75242fcd1337ca28bad91",
+  "release": {
+    "repository": "lonnnnnng/FlClash",
+    "url": "https://github.com/lonnnnnng/FlClash/releases/tag/kclash-v0.1.23",
+    "publishedAt": "2026-11-26T00:26:41Z",
+    "latest": true,
+    "draft": false,
+    "prerelease": false
+  },
+  "workflow": {
+    "runId": 45727010218,
+    "url": "https://github.com/lonnnnnng/FlClash/actions/runs/45727010218",
+    "attempt": 2,
+    "event": "push",
+    "conclusion": "success",
+    "durationSeconds": 755,
+    "firstAttempt": {
+      "conclusion": "failure",
+      "jobId": 139599289930,
+      "reason": "Maven Central returned HTTP429 while resolving Kotlin Compose plugin marker; classpath resolution failed before source compilation or publication",
+      "retry": "Rerun failed job on same tag, source and run; no tag rewrite"
+    },
+    "steps": {
+      "Set up job": "success",
+      "Checkout": "success",
+      "Set up Java": "success",
+      "Set up Android SDK": "success",
+      "Install Android build tools": "success",
+      "Set up Gradle": "success",
+      "Resolve build version": "success",
+      "Configure KClash release signing": "success",
+      "Build signed arm64 Release APK": "success",
+      "Verify Release artifact": "success",
+      "Publish GitHub Release": "success",
+      "Remove runner signing material": "success",
+      "Post Set up Gradle": "success",
+      "Post Set up Java": "success",
+      "Post Checkout": "success",
+      "Complete job": "success"
+    }
+  },
+  "assets": {
+    "apk": {
+      "name": "KClash-0.1.23-android-arm64-v8a.apk",
+      "size": 49604473,
+      "sha256": "efe2791cc1fe653ba89b9d581562ea1f3a7391eb53d737c4c294524c263877c1",
+      "githubDigestMatches": true,
+      "sha256SumsMatches": true,
+      "downloadedAndVerified": true
+    },
+    "sha256Sums": {
+      "name": "SHA256SUMS",
+      "sha256": "a4b4e68069110295ba2116865ba4ebd2ed21987dcad8299bb5584bd94b0a6576",
+      "githubDigestMatches": true
+    }
+  },
+  "apkVerification": {
+    "applicationId": "com.lonnnnnng.flclash",
+    "versionName": "0.1.23",
+    "versionCode": 1023,
+    "minSdk": 24,
+    "targetSdk": 37,
+    "abi": [
+      "arm64-v8a"
+    ],
+    "debuggable": false,
+    "signatureSchemeV2": true,
+    "signerCertificateSha256": "3d6cf8aab47ed321b7ca4b3c85960c63168d57ca9f35bd03e739c815444c0f49",
+    "existingSigningIdentityPreserved": true,
+    "mlKitRegistrarGate": "3/3 passed on downloaded APK; also CI gated",
+    "yamlR8MappingGate": "passed in CI"
+  },
+  "localPreflight": {
+    "scope": "Reused preceding accepted code increment evidence; version defaults and README/release notes only changed for publication",
+    "featureAcceptance": "menu-adaptive-outline-poco-20261126.json",
+    "appJvm": {
+      "debug": 631,
+      "motion": 631,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "builds": "prior Debug/Release-R8/Motion/Performance-R8 and relevant Lint passed; CI rebuilt signed0.1.23",
+    "deviceRegression": "prior POCO 5 named geometry/interaction tests and local path benchmark; no release device actions",
+    "releaseInstalledOnPhone": false
+  },
+  "scope": [
+    "Adaptive menu droplet outline sampling based on fixed Flutter source",
+    "General settings cold recovery, VPN explicit restart and core rejection rollback acceptance evidence"
+  ],
+  "limits": [
+    "Local path calculation reduction does not establish stable overall menu frame-rate improvement",
+    "Popup first-open/close and GPU/fence/discarded source investigations remain partial"
+  ],
+  "installation": {
+    "performed": false,
+    "device": null
+  },
+  "localArtifacts": "../../../acceptance-artifacts/release-0.1.23-20261126/"
+}

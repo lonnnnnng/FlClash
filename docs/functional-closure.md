@@ -1,6 +1,6 @@
 # 功能性剩余项收尾
 
-> **2026-11-26 当前状态**：0.1.22/code1022已发布为GitHub Latest，标签签名CI、公开资产摘要和既有证书回验通过，Release APK未安装手机。新常规核心覆盖与测速超时逻辑已发布；偏好真实进程回读、MainActivity/活动核心/VPN会话冷恢复、VPN参数显式重启及Go参数解码拒绝后的实核回滚已于2026-11-26在Redmi具名补验；具体限制见[补验JSON](acceptance/general-settings-runtime-redmi-20261126.json)。历史延迟差值仍需同设备/同叶节点/同URL的A/B/A复测，Provider期限修复不等于数值差异已定因。主要执行方向仍为有内容Flutter页面/面板与完整连续转场、菜单首开/关闭及RenderThread/GPU归因；其他协议节点缺少输入时保留未验证，语义预检/系统兼容维持现状，不重开TLS和已接受历史异常。[当前roadmap](roadmap.md#3-当前快照2026-11-26核对)、[发布证据](acceptance/release-0.1.22-20261125.json)。
+> **2026-11-26 当前状态**：0.1.23/code1023已发布为GitHub Latest，标签签名CI、公开资产摘要和既有证书回验通过，Release APK未安装手机。菜单自适应轮廓减负已随0.1.23发布，整体帧率仍未收口；新常规核心覆盖与测速超时逻辑已发布；偏好真实进程回读、MainActivity/活动核心/VPN会话冷恢复、VPN参数显式重启及Go参数解码拒绝后的实核回滚已于2026-11-26在Redmi具名补验；具体限制见[补验JSON](acceptance/general-settings-runtime-redmi-20261126.json)。历史延迟差值仍需同设备/同叶节点/同URL的A/B/A复测，Provider期限修复不等于数值差异已定因。主要执行方向仍为有内容Flutter页面/面板与完整连续转场、菜单首开/关闭及RenderThread/GPU归因；其他协议节点缺少输入时保留未验证，语义预检/系统兼容维持现状，不重开TLS和已接受历史异常。[当前roadmap](roadmap.md#3-当前快照2026-11-26核对)、[发布证据](acceptance/release-0.1.23-20261126.json)。
 
 > **2026-11-23 用户确认边界**：主题、语言、检测更新保持 Kotlin 当前实现，不参与 Flutter 视觉或交互对齐；后续对照与待办排除这三项。
 
